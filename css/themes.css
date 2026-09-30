@@ -1,0 +1,136 @@
+/**
+ * Color definitions and custom CSS variables for all 4 themes
+ * InsalAtlas Sala Trofei
+ */
+
+/* THEME 1: GALA DARK GOLD (Sky Sport / Serie A Night) */
+body.theme-gala {
+  background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #090d16 65%, #05070c 100%);
+  color: #f8fafc;
+  --bg-color: #090d16;
+  --nav-bg: #0b1120;
+  --nav-border: #1e293b;
+  --nav-text: #f8fafc;
+  --btn-bg: #1e293b;
+  --btn-border: #334155;
+  --btn-text: #f8fafc;
+  --btn-hover: #334155;
+  --select-bg: #0f172a;
+  --select-border: #334155;
+  --select-text: #fbbf24;
+  --table-surface: rgba(15, 23, 42, 0.88);
+  --table-border: rgba(51, 65, 85, 0.65);
+  --shelf-line: rgba(100, 116, 139, 0.55);
+  --row-hover: rgba(30, 41, 59, 0.65);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent-color: #f59e0b;
+  --badge-trophy: #fbbf24;
+  --header-bg: #0b1329;
+  --header-text: #cbd5e1;
+  --modal-bg: #0f172a;
+  --modal-border: #334155;
+  --modal-text: #f8fafc;
+  --input-bg: #1e293b;
+  --input-border: #334155;
+  --input-text: #f8fafc;
+}
+
+/* THEME 2: SERIE A CYAN NIGHT (Stadium Floodlights) */
+body.theme-seriea {
+  background: radial-gradient(circle at 50% 0%, #032b43 0%, #020b1c 65%, #010409 100%);
+  color: #f8fafc;
+  --bg-color: #020b1c;
+  --nav-bg: #041426;
+  --nav-border: #0e7490;
+  --nav-text: #f8fafc;
+  --btn-bg: #082846;
+  --btn-border: #0e7490;
+  --btn-text: #7dd3fc;
+  --btn-hover: #0c355e;
+  --select-bg: #061e38;
+  --select-border: #0891b2;
+  --select-text: #38bdf8;
+  --table-surface: rgba(8, 23, 44, 0.88);
+  --table-border: rgba(14, 116, 144, 0.45);
+  --shelf-line: rgba(56, 189, 248, 0.45);
+  --row-hover: rgba(12, 38, 70, 0.65);
+  --text-main: #f8fafc;
+  --text-muted: #38bdf8;
+  --accent-color: #06b6d4;
+  --badge-trophy: #38bdf8;
+  --header-bg: #051930;
+  --header-text: #7dd3fc;
+  --modal-bg: #071a33;
+  --modal-border: #0e7490;
+  --modal-text: #f8fafc;
+  --input-bg: #0c2646;
+  --input-border: #0e7490;
+  --input-text: #f8fafc;
+}
+
+/* THEME 3: GAZZETTA ROSA VINTAGE (Editorial Newsprint) */
+body.theme-gazzetta {
+  background: #fce7ec;
+  color: #1c1917;
+  --bg-color: #fce7ec;
+  --nav-bg: #be123c;
+  --nav-border: #9f1239;
+  --nav-text: #ffffff;
+  --btn-bg: #9f1239;
+  --btn-border: #fb7185;
+  --btn-text: #ffffff;
+  --btn-hover: #881337;
+  --select-bg: #9f1239;
+  --select-border: #fb7185;
+  --select-text: #ffffff;
+  --table-surface: #ffffff;
+  --table-border: #f43f5e;
+  --shelf-line: rgba(225, 29, 72, 0.40);
+  --row-hover: #fff1f2;
+  --text-main: #1c1917;
+  --text-muted: #881337;
+  --accent-color: #be123c;
+  --badge-trophy: #b45309;
+  --header-bg: #9f1239;
+  --header-text: #ffffff;
+  --modal-bg: #ffffff;
+  --modal-border: #e11d48;
+  --modal-text: #1c1917;
+  --input-bg: #fff1f2;
+  --input-border: #fda4af;
+  --input-text: #1c1917;
+}
+
+/* THEME 4: CLEAN STUDIO WHITE (Premium Sports Minimal) */
+body.theme-studio {
+  background: #f1f5f9;
+  color: #0f172a;
+  --bg-color: #f1f5f9;
+  --nav-bg: #0f172a;
+  --nav-border: #334155;
+  --nav-text: #f8fafc;
+  --btn-bg: #1e293b;
+  --btn-border: #475569;
+  --btn-text: #f8fafc;
+  --btn-hover: #334155;
+  --select-bg: #1e293b;
+  --select-border: #475569;
+  --select-text: #38bdf8;
+  --table-surface: #ffffff;
+  --table-border: #cbd5e1;
+  --shelf-line: #cbd5e1;
+  --row-hover: #f8fafc;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --accent-color: #2563eb;
+  --badge-trophy: #b45309;
+  --header-bg: #0f172a;
+  --header-text: #f8fafc;
+  --modal-bg: #ffffff;
+  --modal-border: #cbd5e1;
+  --modal-text: #0f172a;
+  --input-bg: #f8fafc;
+  --input-border: #cbd5e1;
+  --input-text: #0f172a;
+}

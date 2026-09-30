@@ -1,0 +1,85 @@
+name: Purge Old Deployments
+
+on:
+  workflow_dispatch:
+    inputs:
+      keep_latest:
+        description: 'Number of recent deployments to preserve (0 = delete all)'
+        required: true
+        type: choice
+        default: '3'
+        options:
+          - '3'
+          - '2'
+          - '1'
+          - '0'
+
+permissions:
+  deployments: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prune older GitHub Pages deployments
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ENVIRONMENT: 'github-pages'
+          KEEP_LATEST: ${{ inputs.keep_latest || '3' }}
+        run: |
+          echo "=========================================================="
+          echo "Repository: $REPO"
+          echo "Preserving latest deployments: $KEEP_LATEST"
+          echo "=========================================================="
+
+          # 1. Fetch deployments for the environment, fallback to all deployments if empty
+          DEPLOYMENTS=$(gh api --paginate "repos/$REPO/deployments?environment=$ENVIRONMENT" --jq '.[].id' 2>/dev/null || true)
+          if [ -z "$DEPLOYMENTS" ]; then
+            echo "No deployments found for environment '$ENVIRONMENT', fetching all repository deployments..."
+            DEPLOYMENTS=$(gh api --paginate "repos/$REPO/deployments" --jq '.[].id' 2>/dev/null || true)
+          fi
+
+          if [ -z "$DEPLOYMENTS" ]; then
+            echo "No deployments found in repository. Nothing to clean."
+            exit 0
+          fi
+
+          TOTAL=$(echo "$DEPLOYMENTS" | grep -c -v '^$' || echo 0)
+          echo "Total deployments detected: $TOTAL"
+
+          # 2. Select IDs to delete
+          if [ "$KEEP_LATEST" -eq 0 ]; then
+            TO_DELETE="$DEPLOYMENTS"
+          else
+            # Keep newest N deployments, delete older ones (tail from line N+1)
+            TO_DELETE=$(echo "$DEPLOYMENTS" | tail -n +$((KEEP_LATEST + 1)))
+          fi
+
+          if [ -z "$TO_DELETE" ]; then
+            echo "All $TOTAL deployments are within the latest $KEEP_LATEST to preserve. No deletion needed."
+            exit 0
+          fi
+
+          DELETE_COUNT=$(echo "$TO_DELETE" | grep -c -v '^$' || echo 0)
+          echo "Deployments to delete: $DELETE_COUNT"
+
+          # 3. Deactivate and delete each target deployment
+          for id in $TO_DELETE; do
+            echo "--- Processing deployment ID: $id ---"
+            
+            # Step A: Mark deployment inactive (GitHub API requires inactive status before deletion)
+            gh api --method POST "repos/$REPO/deployments/$id/statuses" \
+              -f state=inactive > /dev/null 2>&1 || true
+
+            # Step B: Delete deployment record
+            if gh api --method DELETE "repos/$REPO/deployments/$id"; then
+              echo "Deleted deployment ID: $id"
+            else
+              echo "Failed to delete deployment ID: $id"
+            fi
+          done
+
+          echo "=========================================================="
+          echo "Cleanup complete! Preserved the latest $KEEP_LATEST deployment(s)."
+          echo "=========================================================="

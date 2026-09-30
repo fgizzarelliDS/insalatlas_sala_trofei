@@ -1,0 +1,100 @@
+/**
+ * Unified dynamic CSS Grid, table shelf styles, SVG transforms, sticky layout
+ * InsalAtlas Sala Trofei
+ */
+
+/* --- PALMARES - COLONNE VARIABILI --- */
+:root {
+  --col-manager: minmax(280px, 1.2fr);
+  --col-championship: minmax(270px, 1.4fr);
+  --col-spoon: 90px;
+  --col-cup: 150px;
+  --col-supercup: 120px;
+  --col-mundialito: 120px;
+  --col-cartonato: minmax(220px, 1.2fr);
+}
+
+.albo-grid-row {
+  display: grid;
+  grid-template-columns:
+    var(--col-manager)
+    var(--col-championship)
+    var(--col-spoon)
+    var(--col-cup)
+    var(--col-supercup)
+    var(--col-mundialito)
+    var(--col-cartonato);
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  transition: background 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-sport {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.albo-table-wrap {
+  background-color: var(--table-surface);
+  border: 1px solid var(--table-border);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.35);
+}
+
+.table-shelf-row {
+  border-bottom: 2px solid var(--shelf-line);
+  min-height: 52px;
+  transition: background-color 0.15s ease;
+}
+
+.table-shelf-row:hover {
+  background-color: var(--row-hover);
+}
+
+.trophy-svg {
+  transition: transform 0.15s ease;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.22));
+  display: block;
+}
+
+.trophy-svg:hover {
+  transform: translateY(-2px) scale(1.12);
+}
+
+/* Coach Playout Banners */
+.coach-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.28);
+  white-space: nowrap;
+  transition: transform 0.15s ease;
+}
+
+.coach-banner:hover {
+  transform: translateY(-1px) scale(1.05);
+}
+
+/* Editable elements in active edit mode */
+.editable-active {
+  outline: 2px dashed #f59e0b !important;
+  outline-offset: 3px;
+  border-radius: 4px;
+  cursor: text;
+  position: relative;
+}
+
+.editable-active:hover {
+  background-color: rgba(245, 158, 11, 0.15);
+}

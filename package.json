@@ -1,0 +1,22 @@
+{
+  "name": "insalatlas-sala-trofei",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "canvas-confetti": "^1.9.4",
+    "html2canvas": "^1.4.1",
+    "lucide": "^0.475.0"
+  },
+  "devDependencies": {
+    "@types/canvas-confetti": "^1.9.0",
+    "typescript": "^5.7.3",
+    "vite": "^6.1.0"
+  }
+}

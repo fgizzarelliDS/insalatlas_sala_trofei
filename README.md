@@ -85,7 +85,7 @@ Per calcolare il prestigio storico complessivo di ogni fantallenatore, l'applica
 | 🥈 | **2° Posto Campionato** | **+0.50 pt** | Vice-Campione della regular season |
 | 🥈 | **Coppa di Lega (Argento)** | **+0.25 pt** | Finalista sconfitto in Coppa di Lega |
 | 🥉 | **3° Posto Campionato** | **+0.25 pt** | Medaglia di bronzo della regular season |
-| 🥄 | **Cucchiaio di Legno** | **0.00 pt** | Ultimo classificato della regular season |
+| 🥄 | **Cucchiaio di Legno** | **0.00 pt** | Quarto classificato della regular season |
 | 🏷️ | **Banner Cartonato (Playout)** | **-2.00 pt** | Retrocessione o sconfitta ai playout |
 
 ### Criteri di Ordinamento Disponibili

@@ -79,13 +79,24 @@ export interface ScoringWeights {
   cartonato: number;
 }
 
-export interface ManagerTrophyShare {
+export type AnalyticsTab = 'macro' | 'clutch' | 'risk';
+
+export interface ManagerAnalyticsProfile {
   id: string;
   name: string;
-  trophies: number;
-  sharePct: number;
   years: number;
+  trophies: number;
+  trophySharePct: number;
   efficiency: number; // Trophies / Years
+  score: number;
+  finalsPlayed: number;
+  finalsWon: number;
+  conversionRatePct: number; // Finals Won / Finals Played
+  dishonors: number; // Spoon + Cartonato
+  feastOrFamineRatio: number; // (Gold + Spoon + Cartonato) / Years
+  archetypeTag: string;
+  archetypeColor: string;
+  archetypeIcon: string;
 }
 
 export interface DishonorShare {
@@ -103,10 +114,11 @@ export interface LeagueConcentrationAnalysis {
   cr3DishonorPct: number;
   hhi: number;
   hhiDescription: string;
+  relativeEntropy: number; // 0 to 1
   tierTitle: string;
   tierDescription: string;
   tierColor: string;
-  shares: ManagerTrophyShare[];
-  top3Names: string[];
+  profiles: ManagerAnalyticsProfile[];
+  top3SilverwareNames: string[];
   dishonorShares: DishonorShare[];
 }

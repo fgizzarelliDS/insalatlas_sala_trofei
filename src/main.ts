@@ -23,6 +23,8 @@ import {
   closeManagerModal,
   openConcentrationModal,
   closeConcentrationModal,
+  switchAnalyticsTab,
+  toggleGuide,
   toggleConcentrationGuide,
   saveManager,
   deleteCurrentManager,
@@ -43,6 +45,8 @@ declare global {
     closeProfileModal: typeof closeProfileModal;
     openConcentrationModal: typeof openConcentrationModal;
     closeConcentrationModal: typeof closeConcentrationModal;
+    switchAnalyticsTab: typeof switchAnalyticsTab;
+    toggleGuide: typeof toggleGuide;
     toggleConcentrationGuide: typeof toggleConcentrationGuide;
     saveManager: typeof saveManager;
     deleteCurrentManager: typeof deleteCurrentManager;
@@ -318,6 +322,8 @@ Object.assign(window, {
   closeProfileModal,
   openConcentrationModal,
   closeConcentrationModal,
+  switchAnalyticsTab,
+  toggleGuide,
   toggleConcentrationGuide,
   saveManager,
   deleteCurrentManager,

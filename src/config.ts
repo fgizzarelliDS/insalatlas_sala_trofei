@@ -8,7 +8,7 @@ export const SCORING_WEIGHTS: ScoringWeights = {
   silver: 0.5,
   cup_silver: 0.25,
   bronze: 0.25,
-  spoon: 0.0,
+  spoon: -1.0,
   cartonato: -2.0
 };
 

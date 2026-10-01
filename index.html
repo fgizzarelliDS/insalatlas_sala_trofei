@@ -120,6 +120,14 @@
           <i class="fa-solid fa-user-plus"></i> Nuovo Allenatore
         </button>
 
+        <!-- League Health & Parity Analytics Button -->
+        <button type="button" onclick="openConcentrationModal()"
+          class="px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 transition flex items-center gap-1.5 shadow-sm"
+          title="Analisi di Parità ed Equilibrio della Lega">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span class="hidden sm:inline">Analisi Lega</span>
+        </button>
+
         <!-- HD Export Button -->
         <button onclick="exportGraphicHD()"
           class="px-3.5 py-1.5 rounded-lg text-xs font-extrabold bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white shadow-lg transition flex items-center gap-1.5">
@@ -561,6 +569,15 @@
         </div>
 
       </form>
+    </div>
+  </div>
+
+  <!-- Modal: Concentration & Competitive Health -->
+  <div id="concentration-modal"
+    class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
+    <div class="w-full max-w-2xl rounded-3xl border shadow-2xl flex flex-col max-h-[92vh] overflow-hidden relative"
+      style="background-color: var(--modal-bg); border-color: var(--modal-border); color: var(--modal-text);">
+      <div id="concentration-modal-content" class="flex flex-col h-full overflow-hidden"></div>
     </div>
   </div>
 

@@ -7,6 +7,7 @@ import { calculateManagerScore, formatScore } from './score';
 import { showToast, enableEditMode } from './ui';
 import { saveData } from './storage';
 import { renderBoard, updateStatistics } from './main';
+import { computeLeagueConcentration } from './analytics';
 
 /**
  * Opens read-only manager profile modal displaying career honors and trophy shelf
@@ -312,15 +313,213 @@ export function initModalListeners(): void {
     }
   });
 
+  // Backdrop click: close concentration modal when clicking outside card
+  const concentrationModal = document.getElementById('concentration-modal');
+  concentrationModal?.addEventListener('click', (e: MouseEvent) => {
+    if (e.target === concentrationModal) {
+      closeConcentrationModal();
+    }
+  });
+
   // Global Escape key handler
   window.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
-      if (managerModal && !managerModal.classList.contains('hidden')) {
+      if (concentrationModal && !concentrationModal.classList.contains('hidden')) {
+        closeConcentrationModal();
+      } else if (managerModal && !managerModal.classList.contains('hidden')) {
         closeManagerModal();
       } else if (profileModal && !profileModal.classList.contains('hidden')) {
         closeProfileModal();
       }
     }
   });
+}
+
+/**
+ * Toggles the educational econometric guide accordion inside the concentration modal
+ */
+export function toggleConcentrationGuide(): void {
+  const guideContent = document.getElementById('concentration-guide-content');
+  const guideChevron = document.getElementById('concentration-guide-chevron');
+  if (guideContent && guideChevron) {
+    const isHidden = guideContent.classList.contains('hidden');
+    if (isHidden) {
+      guideContent.classList.remove('hidden');
+      guideChevron.classList.add('rotate-180');
+    } else {
+      guideContent.classList.add('hidden');
+      guideChevron.classList.remove('rotate-180');
+    }
+  }
+}
+
+/**
+ * Opens modal displaying league concentration, econometric balance, and historical parity
+ */
+export function openConcentrationModal(): void {
+  const analysis = computeLeagueConcentration(state.managers);
+  const container = document.getElementById('concentration-modal-content');
+  const modal = document.getElementById('concentration-modal');
+
+  if (!container || !modal) return;
+
+  const top3Label = analysis.top3Names.length > 0 ? analysis.top3Names.join(', ') : 'Nessuno';
+
+  container.innerHTML = `
+    <!-- Modal Fixed Header -->
+    <div class="p-5 sm:p-6 pb-4 border-b flex items-center justify-between shrink-0" style="border-color: var(--table-border);">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-sm" style="background: rgba(255,255,255,0.05); border: 1px solid var(--table-border);">
+          <i class="fa-solid fa-chart-pie text-amber-400"></i>
+        </div>
+        <div>
+          <h2 class="text-lg sm:text-xl font-black tracking-tight" style="color: var(--text-main);">Stato di Salute della Lega</h2>
+          <span class="text-xs" style="color: var(--text-muted);">Indice di Concentrazione, Parità &amp; Dinastie</span>
+        </div>
+      </div>
+      <button type="button" onclick="closeConcentrationModal()" class="w-8 h-8 rounded-full flex items-center justify-center transition border"
+        style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- Modal Scrollable Body -->
+    <div class="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 min-h-0">
+      
+      <!-- Diagnostic Banner -->
+      <div class="p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4" style="background: rgba(255,255,255,0.02); border-color: var(--table-border);">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${analysis.tierColor};"></span>
+            <span class="text-sm uppercase tracking-widest font-black" style="color: ${analysis.tierColor};">${analysis.tierTitle}</span>
+          </div>
+          <p class="text-xs sm:text-sm mt-1" style="color: var(--text-main);">${analysis.tierDescription}</p>
+        </div>
+        <div class="flex items-center gap-2 text-right shrink-0 self-end sm:self-center">
+          <div class="px-3 py-1.5 rounded-xl border text-center" style="border-color: var(--table-border); background: var(--table-surface);">
+            <span class="block text-[10px] uppercase font-bold" style="color: var(--text-muted);">Gini Trofei</span>
+            <span class="text-base sm:text-lg font-black text-amber-400">${analysis.giniTrophies.toFixed(2)}</span>
+          </div>
+          <div class="px-3 py-1.5 rounded-xl border text-center" style="border-color: var(--table-border); background: var(--table-surface);">
+            <span class="block text-[10px] uppercase font-bold" style="color: var(--text-muted);">Gini Rating</span>
+            <span class="text-base sm:text-lg font-black text-blue-400">${analysis.giniRating.toFixed(2)}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Core Metrics Matrix -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="p-3 rounded-xl border text-center" style="background: rgba(255,255,255,0.02); border-color: var(--table-border);">
+          <span class="block text-[11px] uppercase font-bold" style="color: var(--text-muted);">Monopolio Top 3 (CR3)</span>
+          <span class="text-xl font-black text-amber-400">${analysis.cr3Pct}%</span>
+          <span class="block text-[10px] mt-0.5" style="color: var(--text-muted);">dei titoli ai primi 3</span>
+        </div>
+
+        <div class="p-3 rounded-xl border text-center" style="background: rgba(255,255,255,0.02); border-color: var(--table-border);">
+          <span class="block text-[11px] uppercase font-bold" style="color: var(--text-muted);">Indice HHI</span>
+          <span class="text-xl font-black text-amber-400">${analysis.hhi}</span>
+          <span class="block text-[10px] mt-0.5" style="color: var(--text-muted);">${analysis.hhiDescription}</span>
+        </div>
+
+        <div class="p-3 rounded-xl border text-center" style="background: rgba(255,255,255,0.02); border-color: var(--table-border);">
+          <span class="block text-[11px] uppercase font-bold" style="color: var(--text-muted);">Concentrazione Cartonati</span>
+          <span class="text-xl font-black text-rose-400">${analysis.cr3DishonorPct}%</span>
+          <span class="block text-[10px] mt-0.5" style="color: var(--text-muted);">nei peggiori 3 mister</span>
+        </div>
+      </div>
+
+      <!-- Stacked Dominance Bar -->
+      <div>
+        <div class="flex items-center justify-between text-xs mb-1.5" style="color: var(--text-main);">
+          <span class="font-bold">Egemoni del Torneo (Top 3): <span class="text-amber-400 font-semibold">${top3Label}</span></span>
+          <span class="font-mono font-bold">${analysis.cr3Pct}%</span>
+        </div>
+        <div class="w-full h-3 rounded-full overflow-hidden flex bg-white/5 border" style="border-color: var(--table-border);">
+          <div style="width: ${analysis.cr3Pct}%; background-color: ${analysis.tierColor};" class="h-full transition-all duration-500"></div>
+          <div style="width: ${100 - analysis.cr3Pct}%; background: rgba(255,255,255,0.15);" class="h-full"></div>
+        </div>
+      </div>
+
+      <!-- Silverware & Efficiency Share Table -->
+      <div class="border rounded-xl overflow-hidden" style="border-color: var(--table-border);">
+        <div class="px-3 py-2 text-[11px] uppercase font-bold tracking-wider flex justify-between border-b" style="border-color: var(--table-border); background: rgba(0,0,0,0.12); color: var(--text-muted);">
+          <span>Allenatore</span>
+          <div class="flex gap-4">
+            <span>Efficienza/Anno</span>
+            <span class="w-16 text-right">Quota (%)</span>
+          </div>
+        </div>
+        <div class="divide-y max-h-56 overflow-y-auto" style="border-color: var(--table-border);">
+          ${analysis.shares.map((s, idx) => `
+            <div class="px-3 py-2 flex items-center justify-between text-xs sm:text-sm hover:bg-white/5 transition">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="w-4 text-center font-bold text-[11px] shrink-0 ${idx < 3 ? 'text-amber-400 font-black' : ''}" style="${idx >= 3 ? 'color: var(--text-muted);' : ''}">${idx + 1}</span>
+                <span class="font-bold truncate" style="color: var(--text-main);">${s.name}</span>
+                <span class="text-[11px] shrink-0" style="color: var(--text-muted);">(${s.trophies} titol${s.trophies === 1 ? 'o' : 'i'})</span>
+              </div>
+              <div class="flex items-center gap-4 shrink-0">
+                <span class="font-mono text-xs" style="color: var(--text-muted);">${s.efficiency} tit/anno</span>
+                <span class="font-mono font-bold text-xs text-right w-12" style="color: var(--text-main);">${s.sharePct.toFixed(1)}%</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Collapsible Educational Info Box -->
+      <div class="border rounded-2xl overflow-hidden text-xs" style="border-color: var(--table-border); background: rgba(255,255,255,0.02);">
+        <button type="button" onclick="toggleConcentrationGuide()" class="w-full px-4 py-3 flex items-center justify-between font-bold text-left transition hover:bg-white/5" style="color: var(--text-main);">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-question text-amber-400"></i>
+            <span>Guida agli Indici Econometrici</span>
+          </div>
+          <i id="concentration-guide-chevron" class="fa-solid fa-chevron-down transition-transform duration-200" style="color: var(--text-muted);"></i>
+        </button>
+        <div id="concentration-guide-content" class="px-4 pb-4 pt-1 space-y-2 border-t hidden" style="border-color: var(--table-border); color: var(--text-muted);">
+          <div>
+            <strong class="font-semibold" style="color: var(--text-main);">Gini Trofei:</strong> Misura la disuguaglianza nella bacheca (0 = ogni squadra ha vinto gli stessi titoli, 1 = un solo padrone assoluto).
+          </div>
+          <div>
+            <strong class="font-semibold" style="color: var(--text-main);">Gini Rating:</strong> Misura la concentrazione della competitività globale: include podi (2° e 3° posti), finali perse, piazzamenti e malus playout, pesati tramite il sistema di punteggio storico.
+          </div>
+          <div>
+            <strong class="font-semibold" style="color: var(--text-main);">Monopolio Top 3 (CR3):</strong> Percentuale cumulativa dei titoli maggiori detenuta dai primi 3 all-time.
+          </div>
+          <div>
+            <strong class="font-semibold" style="color: var(--text-main);">Indice HHI (Herfindahl-Hirschman):</strong> Misura la concentrazione di mercato (somma dei quadrati delle quote). Sotto 1500 indica parità elevata, sopra 2500 oligopolio/dinastia.
+          </div>
+          <div>
+            <strong class="font-semibold" style="color: var(--text-main);">Concentrazione Cartonati:</strong> Quota percentuale di sconfitte ai playout accentrata nei 3 peggiori manager storici.
+          </div>
+          <div>
+            <strong class="font-semibold" style="color: var(--text-main);">Efficienza/Anno:</strong> Rapporto tra trofei vinti e anni di permanenza nella lega (<span class="font-mono">Trofei / Anni</span>), che premia chi converte rapidamente le stagioni in trionfi.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Modal Fixed Footer -->
+    <div class="p-4 sm:p-5 border-t flex justify-end shrink-0" style="border-color: var(--table-border);">
+      <button type="button" onclick="closeConcentrationModal()" class="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold border transition shadow-sm"
+        style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);">
+        Chiudi
+      </button>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+/**
+ * Closes concentration modal
+ */
+export function closeConcentrationModal(): void {
+  const modal = document.getElementById('concentration-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
 }
 

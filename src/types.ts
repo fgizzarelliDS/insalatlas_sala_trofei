@@ -78,3 +78,35 @@ export interface ScoringWeights {
   spoon: number;
   cartonato: number;
 }
+
+export interface ManagerTrophyShare {
+  id: string;
+  name: string;
+  trophies: number;
+  sharePct: number;
+  years: number;
+  efficiency: number; // Trophies / Years
+}
+
+export interface DishonorShare {
+  name: string;
+  count: number;
+  sharePct: number;
+}
+
+export interface LeagueConcentrationAnalysis {
+  totalTrophies: number;
+  totalDishonors: number;
+  giniTrophies: number;
+  giniRating: number;
+  cr3Pct: number;
+  cr3DishonorPct: number;
+  hhi: number;
+  hhiDescription: string;
+  tierTitle: string;
+  tierDescription: string;
+  tierColor: string;
+  shares: ManagerTrophyShare[];
+  top3Names: string[];
+  dishonorShares: DishonorShare[];
+}

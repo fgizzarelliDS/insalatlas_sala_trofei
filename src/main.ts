@@ -1,21 +1,21 @@
-import { SortMode } from './types';
-import { state } from './state';
-import { renderTrophySVG, renderCoachBanner } from './trophies';
-import { calculateManagerScore, formatScore, getSortedManagers } from './score';
+import { SortMode } from '@/types';
+import { state } from '@/state';
+import { renderTrophySVG, renderCoachBanner } from '@/trophies';
+import { calculateManagerScore, formatScore, getSortedManagers } from '@/score';
 import {
   changeTheme,
   showToast,
   toggleEditMode,
   handleTitleBlur,
   applyTitlesToDOM
-} from './ui';
+} from '@/ui';
 import {
   loadLeagueData,
   exportBackupJSON,
   importBackupJSON,
   resetDefaultTitles,
   resetOfficialData
-} from './storage';
+} from '@/storage';
 import {
   openProfileModal,
   closeProfileModal,
@@ -33,8 +33,8 @@ import {
   saveManager,
   deleteCurrentManager,
   initModalListeners
-} from './modals';
-import { exportGraphicHD } from './export';
+} from '@/modals';
+import { exportGraphicHD } from '@/export';
 
 // Global window augmentation for inline HTML event handlers
 declare global {

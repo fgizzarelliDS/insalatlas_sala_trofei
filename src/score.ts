@@ -1,6 +1,6 @@
-import { Manager, SortMode } from './types';
-import { SCORING_WEIGHTS } from './config';
-import { state } from './state';
+import { Manager, SortMode } from '@/types';
+import { SCORING_WEIGHTS } from '@/config';
+import { state } from '@/state';
 
 /**
  * Calculates weighted historical palmares rating for a manager

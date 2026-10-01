@@ -1,6 +1,5 @@
-import html2canvas from 'html2canvas';
-import { state } from './state';
-import { showToast } from './ui';
+import { state } from '@/state';
+import { showToast } from '@/ui';
 
 /**
  * Renders #palmares-export-wrapper to a high-resolution PNG image and triggers download
@@ -26,6 +25,7 @@ export async function exportGraphicHD(): Promise<void> {
   window.scrollTo(0, 0);
 
   try {
+    const html2canvas = (await import('html2canvas')).default;
     const canvas = await html2canvas(wrapper, {
       scale: 2.2,
       useCORS: true,

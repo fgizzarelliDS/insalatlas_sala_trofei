@@ -1,13 +1,12 @@
-import confetti from 'canvas-confetti';
-import { Manager, AnalyticsTab, Tab2SortField, Tab2SortDirection, MacroMetricMode } from './types';
-import { state } from './state';
-import { verifyAdminPassword } from './config';
-import { renderTrophySVG, renderCoachBanner } from './trophies';
-import { calculateManagerScore, formatScore } from './score';
-import { showToast, enableEditMode } from './ui';
-import { saveData } from './storage';
-import { renderBoard, updateStatistics } from './main';
-import { computeLeagueConcentration, getManagerArchetype, computeTailRiskProfile } from './analytics';
+import { Manager, AnalyticsTab, Tab2SortField, Tab2SortDirection, MacroMetricMode } from '@/types';
+import { state } from '@/state';
+import { verifyAdminPassword } from '@/config';
+import { renderTrophySVG, renderCoachBanner } from '@/trophies';
+import { calculateManagerScore, formatScore } from '@/score';
+import { showToast, enableEditMode } from '@/ui';
+import { saveData } from '@/storage';
+import { renderBoard, updateStatistics } from '@/main';
+import { computeLeagueConcentration, getManagerArchetype, computeTailRiskProfile } from '@/analytics';
 
 /**
  * Opens read-only manager profile modal displaying career honors and trophy shelf
@@ -294,7 +293,9 @@ export function saveManager(e: Event): void {
   closeManagerModal();
 
   if (payload.gold > 0 || payload.mundialito > 0) {
-    confetti({ particleCount: 70, spread: 80, origin: { y: 0.6 } });
+    import('canvas-confetti').then(m => {
+      m.default({ particleCount: 70, spread: 80, origin: { y: 0.6 } });
+    });
   }
 }
 

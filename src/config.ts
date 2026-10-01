@@ -1,4 +1,4 @@
-import { ScoringWeights, TitlesConfig } from './types';
+import { ScoringWeights, TitlesConfig } from '@/types';
 
 export const SCORING_WEIGHTS: ScoringWeights = {
   gold: 3.0,

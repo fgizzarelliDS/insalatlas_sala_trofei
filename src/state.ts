@@ -1,5 +1,5 @@
-import { AppState } from './types';
-import { DEFAULT_TITLES } from './config';
+import { AppState } from '@/types';
+import { DEFAULT_TITLES } from '@/config';
 
 export const state: AppState = {
   managers: [],

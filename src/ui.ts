@@ -1,8 +1,8 @@
-import { ThemeKey, TitlesConfig } from './types';
-import { state } from './state';
-import { verifyAdminPassword } from './config';
-import { saveTitles } from './storage';
-import { renderBoard } from './main';
+import { ThemeKey, TitlesConfig } from '@/types';
+import { state } from '@/state';
+import { verifyAdminPassword } from '@/config';
+import { saveTitles } from '@/storage';
+import { renderBoard } from '@/main';
 
 /**
  * Changes active visual theme, adjusts body class, re-renders board and notifies user

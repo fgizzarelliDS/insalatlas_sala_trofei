@@ -15,14 +15,7 @@ export default defineConfig({
     target: 'es2022',
     sourcemap: false,
     minify: 'esbuild',
-    emptyOutDir: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['html2canvas', 'canvas-confetti', 'lucide']
-        }
-      }
-    }
+    emptyOutDir: true
   },
   server: {
     host: true,

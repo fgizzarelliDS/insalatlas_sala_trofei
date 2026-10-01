@@ -1,5 +1,5 @@
-import type { Manager, LeagueConcentrationAnalysis, ManagerAnalyticsProfile, DishonorShare } from './types';
-import { calculateManagerScore } from './score';
+import type { Manager, LeagueConcentrationAnalysis, ManagerAnalyticsProfile, DishonorShare } from '@/types';
+import { calculateManagerScore } from '@/score';
 
 /**
  * Computes asymmetric disaster mass with Spoon priority:

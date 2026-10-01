@@ -334,8 +334,8 @@
 
   <!-- MODAL: SCHEDA PROFILO ALLENATORE (SOLA LETTURA) -->
   <div id="manager-profile-modal"
-    class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="border w-full max-w-xl rounded-3xl shadow-2xl p-6 max-h-[92vh] overflow-y-auto transition-colors"
+    class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+    <div id="manager-profile-card" class="border w-full max-w-xl rounded-3xl shadow-2xl p-5 sm:p-6 max-h-[92vh] overflow-y-auto transition-colors"
       style="background-color: var(--modal-bg); border-color: var(--modal-border); color: var(--modal-text);">
 
       <!-- Header Profilo -->
@@ -345,18 +345,20 @@
             class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-sport font-black text-xl border border-amber-500/30">
             <i class="fa-solid fa-user-tie"></i>
           </div>
-          <div>
-            <h3 id="profile-name" class="font-sport font-extrabold text-2xl uppercase tracking-wide leading-tight"
+          <div class="flex flex-col justify-center">
+            <h3 id="profile-name" class="font-sport font-extrabold text-2xl uppercase tracking-wide leading-snug mb-1.5"
               style="color: var(--text-main);">
               -
             </h3>
-            <span id="profile-years-badge"
-              class="inline-block mt-0.5 text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-              0 Anni di Partecipazione
-            </span>
+            <div>
+              <span id="profile-years-badge"
+                class="inline-block text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                0 Anni di Partecipazione
+              </span>
+            </div>
           </div>
         </div>
-        <button onclick="closeProfileModal()"
+        <button id="profile-modal-close-btn" onclick="closeProfileModal()"
           class="w-9 h-9 rounded-full flex items-center justify-center font-bold opacity-75 hover:opacity-100 transition border"
           style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);">
           ✕
@@ -402,10 +404,41 @@
         <div id="profile-trophy-shelf" class="space-y-3"></div>
       </div>
 
-      <!-- Footer Button -->
-      <div class="text-right pt-2 border-t" style="border-color: var(--table-border);">
-        <button onclick="closeProfileModal()" class="px-5 py-2 rounded-xl text-xs font-bold border transition shadow-sm"
-          style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);">
+      <!-- Footer Buttons: Compact Share Dropdown & Chiudi Scheda -->
+      <div id="profile-modal-footer-actions" class="flex items-center justify-between pt-3 border-t relative" style="border-color: var(--table-border);">
+        <div class="relative">
+          <button id="btn-share-dropdown" onclick="toggleShareDropdown(event)"
+            class="px-4 py-2 rounded-xl text-xs font-bold border transition shadow-sm flex items-center gap-1.5 opacity-90 hover:opacity-100"
+            style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);">
+            <i class="fa-solid fa-share-nodes text-xs"></i>
+            <span>Scarica / Condividi</span>
+            <i class="fa-solid fa-chevron-up text-[10px] ml-0.5"></i>
+          </button>
+
+          <!-- Dropdown Popover Menu (opens upward) -->
+          <div id="share-dropdown-menu" class="hidden absolute bottom-full left-0 mb-2 w-52 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
+            style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--modal-text);">
+            <button onclick="exportCurrentProfileModalHD(); closeShareDropdown();"
+              class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition">
+              <i class="fa-solid fa-download text-amber-500"></i>
+              <span>Scarica PNG</span>
+            </button>
+            <button onclick="copyCurrentProfileModalToClipboard(); closeShareDropdown();"
+              class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition">
+              <i class="fa-solid fa-copy text-emerald-500"></i>
+              <span>Copia per WhatsApp</span>
+            </button>
+            <button onclick="shareCurrentManagerWhatsApp(); closeShareDropdown();"
+              class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition border-t mt-1 pt-2"
+              style="border-color: var(--table-border);">
+              <i class="fa-brands fa-whatsapp text-emerald-500"></i>
+              <span>Invia Link WhatsApp</span>
+            </button>
+          </div>
+        </div>
+
+        <button onclick="closeProfileModal()" class="px-5 py-2 rounded-xl text-xs font-bold transition shadow-sm"
+          style="background-color: var(--btn-bg); border: 1px solid var(--btn-border); color: var(--btn-text);">
           Chiudi Scheda
         </button>
       </div>
@@ -581,6 +614,9 @@
       <div id="concentration-modal-content" class="flex flex-col h-full overflow-hidden"></div>
     </div>
   </div>
+
+  <!-- Off-screen buffer for rendering high-res trading cards without viewport jumps -->
+  <div id="card-render-buffer" class="fixed -left-[9999px] top-0 pointer-events-none opacity-0 z-[-1]" aria-hidden="true"></div>
 
   <!-- TypeScript Vite Entry Point -->
   <script type="module" src="/src/main.ts"></script>

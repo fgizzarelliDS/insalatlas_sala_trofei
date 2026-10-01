@@ -151,3 +151,10 @@ export interface LeagueConcentrationAnalysis {
   top3PrestigeNames: string[];
   dishonorShares: DishonorShare[];
 }
+
+export interface TradingCardBadge {
+  label: string;
+  icon: string;
+  color?: string;
+  customStyle?: string;
+}

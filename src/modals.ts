@@ -1,4 +1,4 @@
-import { Manager, AnalyticsTab, Tab2SortField, Tab2SortDirection, MacroMetricMode } from '@/types';
+import { Manager, AnalyticsTab, Tab2SortField, Tab2SortDirection, MacroMetricMode, TradingCardBadge } from '@/types';
 import { state } from '@/state';
 import { verifyAdminPassword } from '@/config';
 import { renderTrophySVG, renderCoachBanner } from '@/trophies';
@@ -7,6 +7,12 @@ import { showToast, enableEditMode } from '@/ui';
 import { saveData } from '@/storage';
 import { renderBoard, updateStatistics } from '@/main';
 import { computeLeagueConcentration, getManagerArchetype, computeTailRiskProfile } from '@/analytics';
+import {
+  shareViaWhatsApp,
+  exportProfileModalHD,
+  copyProfileModalToClipboard
+} from '@/export';
+
 
 /**
  * Opens read-only manager profile modal displaying career honors and trophy shelf
@@ -15,6 +21,7 @@ import { computeLeagueConcentration, getManagerArchetype, computeTailRiskProfile
 export function openProfileModal(id: string): void {
   const m = state.managers.find(item => item.id === id);
   if (!m) return;
+  state.selectedManagerId = id;
 
   const totalMajor = (m.gold || 0) + (m.cup_gold || 0) + (m.supercup || 0) + (m.mundialito || 0);
   const score = calculateManagerScore(m);
@@ -37,7 +44,7 @@ export function openProfileModal(id: string): void {
   const badgesContainer = document.getElementById('profile-badges-container');
   if (badgesContainer) {
     badgesContainer.innerHTML = '';
-    const badges: { label: string; icon: string; color: string; customStyle?: string }[] = [];
+    const badges: TradingCardBadge[] = [];
 
     // Behavioral Archetype Badge from Analytics
     const efficiency = m.years > 0 ? parseFloat((totalMajor / m.years).toFixed(2)) : 0;
@@ -107,7 +114,7 @@ export function openProfileModal(id: string): void {
     } else {
       badges.forEach(b => {
         const el = document.createElement('span');
-        el.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold border ${b.color}`;
+        el.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold border ${b.color || ''}`;
         if (b.customStyle) el.style.cssText = b.customStyle;
         el.innerHTML = `<i class="fa-solid ${b.icon}"></i> ${b.label}`;
         badgesContainer.appendChild(el);
@@ -115,7 +122,7 @@ export function openProfileModal(id: string): void {
     }
   }
 
-  // 3. Graphic Trophy Shelf
+  // 3. Graphic Trophy Shelf (Original Image 2 View)
   const shelf = document.getElementById('profile-trophy-shelf');
   if (shelf) {
     shelf.innerHTML = '';
@@ -167,15 +174,112 @@ export function openProfileModal(id: string): void {
     }
   }
 
-  document.getElementById('manager-profile-modal')?.classList.remove('hidden');
+  const modal = document.getElementById('manager-profile-modal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  // Synchronize browser URL query param with ?manager=<id>
+  if (typeof window !== 'undefined' && window.history && window.location) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('manager', id);
+    window.history.replaceState({ managerId: id }, '', url.toString());
+  }
 }
 
 /**
- * Closes manager profile modal
+ * Closes manager profile modal and cleans URL
  */
 export function closeProfileModal(): void {
-  document.getElementById('manager-profile-modal')?.classList.add('hidden');
+  closeShareDropdown();
+  const modal = document.getElementById('manager-profile-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+  state.selectedManagerId = null;
+
+  // Clear query param from browser URL
+  if (typeof window !== 'undefined' && window.history && window.location) {
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('manager')) {
+      url.searchParams.delete('manager');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }
 }
+
+/**
+ * Toggles the export / share dropdown menu inside the profile modal
+ */
+export function toggleShareDropdown(e?: Event): void {
+  if (e) {
+    e.stopPropagation();
+  }
+  const dropdown = document.getElementById('share-dropdown-menu');
+  if (dropdown) {
+    dropdown.classList.toggle('hidden');
+  }
+}
+
+/**
+ * Closes the export / share dropdown menu inside the profile modal
+ */
+export function closeShareDropdown(): void {
+  const dropdown = document.getElementById('share-dropdown-menu');
+  if (dropdown && !dropdown.classList.contains('hidden')) {
+    dropdown.classList.add('hidden');
+  }
+}
+
+/**
+ * Triggers HD Profile Modal export for currently opened profile
+ */
+export async function exportCurrentProfileModalHD(): Promise<void> {
+  if (!state.selectedManagerId) return;
+  const manager = state.managers.find(m => m.id === state.selectedManagerId);
+  if (manager) {
+    await exportProfileModalHD(manager);
+  }
+}
+
+/**
+ * Copies HD Profile Modal image directly to clipboard for currently opened profile
+ */
+export async function copyCurrentProfileModalToClipboard(): Promise<void> {
+  if (!state.selectedManagerId) return;
+  const manager = state.managers.find(m => m.id === state.selectedManagerId);
+  if (manager) {
+    await copyProfileModalToClipboard(manager);
+  }
+}
+
+/**
+ * Backward-compatibility alias for exportCurrentProfileModalHD
+ */
+export async function exportCurrentManagerCard(): Promise<void> {
+  await exportCurrentProfileModalHD();
+}
+
+/**
+ * Triggers direct WhatsApp share for currently opened profile
+ */
+export function shareCurrentManagerWhatsApp(): void {
+  if (!state.selectedManagerId) return;
+  const manager = state.managers.find(m => m.id === state.selectedManagerId);
+  if (manager) {
+    shareViaWhatsApp(manager);
+  }
+}
+
+/**
+ * Backward-compatibility alias for copyCurrentProfileModalToClipboard
+ */
+export async function copyCurrentManagerCardToClipboard(): Promise<void> {
+  await copyCurrentProfileModalToClipboard();
+}
+
 
 /**
  * Opens editor modal for adding or modifying a manager
@@ -342,7 +446,7 @@ export function initModalListeners(): void {
     }
   });
 
-  // Click outside listener for tier info popover
+  // Click outside listener for tier info popover and share dropdown menu
   document.addEventListener('click', (e: MouseEvent) => {
     const popover = document.getElementById('tier-info-popover');
     if (popover && !popover.classList.contains('hidden')) {
@@ -351,11 +455,24 @@ export function initModalListeners(): void {
         closeTierInfo();
       }
     }
+
+    const shareDropdown = document.getElementById('share-dropdown-menu');
+    if (shareDropdown && !shareDropdown.classList.contains('hidden')) {
+      const target = e.target as HTMLElement;
+      if (!shareDropdown.contains(target) && !target.closest('#btn-share-dropdown')) {
+        closeShareDropdown();
+      }
+    }
   });
 
   // Global Escape key handler
   window.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
+      const shareDropdown = document.getElementById('share-dropdown-menu');
+      if (shareDropdown && !shareDropdown.classList.contains('hidden')) {
+        closeShareDropdown();
+        return;
+      }
       const tierPopover = document.getElementById('tier-info-popover');
       if (tierPopover && !tierPopover.classList.contains('hidden')) {
         closeTierInfo();

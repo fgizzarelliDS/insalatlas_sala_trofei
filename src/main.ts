@@ -32,9 +32,16 @@ import {
   setMacroMetricMode,
   saveManager,
   deleteCurrentManager,
+  exportCurrentProfileModalHD,
+  copyCurrentProfileModalToClipboard,
+  exportCurrentManagerCard,
+  copyCurrentManagerCardToClipboard,
+  shareCurrentManagerWhatsApp,
+  toggleShareDropdown,
+  closeShareDropdown,
   initModalListeners
 } from '@/modals';
-import { exportGraphicHD } from '@/export';
+import { exportGraphicHD, exportManagerCardById, copyManagerCardById, shareManagerWhatsAppById } from '@/export';
 
 // Global window augmentation for inline HTML event handlers
 declare global {
@@ -58,6 +65,16 @@ declare global {
     setMacroMetricMode: typeof setMacroMetricMode;
     saveManager: typeof saveManager;
     deleteCurrentManager: typeof deleteCurrentManager;
+    exportCurrentProfileModalHD: typeof exportCurrentProfileModalHD;
+    copyCurrentProfileModalToClipboard: typeof copyCurrentProfileModalToClipboard;
+    exportCurrentManagerCard: typeof exportCurrentManagerCard;
+    exportManagerCardById: typeof exportManagerCardById;
+    copyCurrentManagerCardToClipboard: typeof copyCurrentManagerCardToClipboard;
+    copyManagerCardById: typeof copyManagerCardById;
+    shareCurrentManagerWhatsApp: typeof shareCurrentManagerWhatsApp;
+    shareManagerWhatsAppById: typeof shareManagerWhatsAppById;
+    toggleShareDropdown: typeof toggleShareDropdown;
+    closeShareDropdown: typeof closeShareDropdown;
     exportGraphicHD: typeof exportGraphicHD;
     exportBackupJSON: typeof exportBackupJSON;
     importBackupJSON: typeof importBackupJSON;
@@ -268,9 +285,11 @@ export function renderBoard(): void {
         </div>
 
         ${state.isEditMode ? `
-          <button class="w-6 h-6 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500 hover:text-slate-950 flex items-center justify-center transition shrink-0 ml-1">
-            <i class="fa-solid fa-pen text-[10px]"></i>
-          </button>
+          <div class="flex items-center gap-1 shrink-0 ml-1">
+            <button class="w-6 h-6 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500 hover:text-slate-950 flex items-center justify-center transition shrink-0">
+              <i class="fa-solid fa-pen text-[10px]"></i>
+            </button>
+          </div>
         ` : ''}
       </div>
 
@@ -309,42 +328,128 @@ export function renderBoard(): void {
   });
 }
 
-// Bootstrap Sequence
-window.addEventListener('DOMContentLoaded', async () => {
+/**
+ * Looks up a manager by id or name with fuzzy resilience
+ * Handles with or without 'm_' prefix, URL-encoded chars, case insensitivity and name normalization
+ */
+export function findManagerByParam(param: string, managers = state.managers): import('@/types').Manager | undefined {
+  if (!param) return undefined;
+  const clean = decodeURIComponent(param).trim().toLowerCase();
+  const cleanNoPrefix = clean.startsWith('m_') ? clean.slice(2) : clean;
+  const cleanNormalized = clean.replace(/[^a-z0-9]/g, '');
+
+  return managers.find(m => {
+    const idLower = m.id.toLowerCase();
+    const idNoPrefix = idLower.startsWith('m_') ? idLower.slice(2) : idLower;
+    const nameLower = m.name.toLowerCase();
+    const nameNormalized = nameLower.replace(/[^a-z0-9]/g, '');
+
+    return (
+      idLower === clean ||
+      idNoPrefix === cleanNoPrefix ||
+      nameLower === clean ||
+      nameNormalized === cleanNormalized
+    );
+  });
+}
+
+/**
+ * Extracts ?manager= query parameter from search or hash
+ */
+export function getManagerParamFromURL(): string | null {
+  if (typeof window === 'undefined') return null;
+  const searchParams = new URLSearchParams(window.location.search);
+  const fromSearch = searchParams.get('manager');
+  if (fromSearch) return fromSearch;
+
+  if (window.location.hash.includes('manager=')) {
+    const hashQuery = window.location.hash.slice(window.location.hash.indexOf('?'));
+    const hashParams = new URLSearchParams(hashQuery);
+    return hashParams.get('manager');
+  }
+
+  return null;
+}
+
+/**
+ * Application Bootstrap Sequence
+ */
+export async function initApp(): Promise<void> {
   initModalListeners();
   await loadLeagueData();
   applyTitlesToDOM();
   renderBoard();
   updateStatistics();
-});
 
-// Global Window Assignment for inline HTML event handlers
-Object.assign(window, {
-  changeTheme,
-  changeSort,
-  toggleDisplayMode,
-  toggleEditMode,
-  openManagerModal,
-  closeManagerModal,
-  openProfileModal,
-  closeProfileModal,
-  openConcentrationModal,
-  closeConcentrationModal,
-  switchAnalyticsTab,
-  changeTab2Sort,
-  toggleGuide,
-  toggleConcentrationGuide,
-  toggleTierInfo,
-  closeTierInfo,
-  setMacroMetricMode,
-  saveManager,
-  deleteCurrentManager,
-  exportGraphicHD,
-  exportBackupJSON,
-  importBackupJSON,
-  resetDefaultTitles,
-  resetOfficialData,
-  handleTitleBlur,
-  renderBoard,
-  updateStatistics
-});
+  // Deep-linking: auto-open manager profile if ?manager=... in URL
+  const managerParam = getManagerParamFromURL();
+  if (managerParam) {
+    const found = findManagerByParam(managerParam);
+    if (found) {
+      openProfileModal(found.id);
+    }
+  }
+}
+
+// Bootstrap Sequence
+if (typeof window !== 'undefined') {
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', initApp);
+  } else {
+    initApp();
+  }
+
+  // Popstate: handle browser back/forward navigation
+  window.addEventListener('popstate', () => {
+    const p = getManagerParamFromURL();
+    if (p) {
+      const found = findManagerByParam(p);
+      if (found) {
+        openProfileModal(found.id);
+        return;
+      }
+    }
+    closeProfileModal();
+  });
+
+  // Global Window Assignment for inline HTML event handlers
+  Object.assign(window, {
+    changeTheme,
+    changeSort,
+    toggleDisplayMode,
+    toggleEditMode,
+    openManagerModal,
+    closeManagerModal,
+    openProfileModal,
+    closeProfileModal,
+    openConcentrationModal,
+    closeConcentrationModal,
+    switchAnalyticsTab,
+    changeTab2Sort,
+    toggleGuide,
+    toggleConcentrationGuide,
+    toggleTierInfo,
+    closeTierInfo,
+    setMacroMetricMode,
+    saveManager,
+    deleteCurrentManager,
+    exportCurrentProfileModalHD,
+    copyCurrentProfileModalToClipboard,
+    exportCurrentManagerCard,
+    exportManagerCardById,
+    copyCurrentManagerCardToClipboard,
+    copyManagerCardById,
+    shareCurrentManagerWhatsApp,
+    shareManagerWhatsAppById,
+    toggleShareDropdown,
+    closeShareDropdown,
+    exportGraphicHD,
+    exportBackupJSON,
+    importBackupJSON,
+    resetDefaultTitles,
+    resetOfficialData,
+    handleTitleBlur,
+    renderBoard,
+    updateStatistics
+  });
+}

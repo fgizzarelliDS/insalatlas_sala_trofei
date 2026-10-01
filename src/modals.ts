@@ -1215,7 +1215,7 @@ function renderAnalyticsModalBody(): void {
         <div>
           <h2 class="flex items-center gap-2 text-sm sm:text-base font-black tracking-tight" style="color: var(--text-main);">
             <span>Analisi InsalAtlas</span>
-            <img src="favicon-32x32.png" alt="InsalAtlas logo" class="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
+            <img src="favicon-64x64.png" alt="InsalAtlas logo" class="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
           </h2>
           <span class="text-[11px]" style="color: var(--text-muted);">Analisi &amp; Filosofie di Roster</span>
         </div>

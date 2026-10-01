@@ -29,6 +29,7 @@ import {
   toggleConcentrationGuide,
   toggleTierInfo,
   closeTierInfo,
+  setMacroMetricMode,
   saveManager,
   deleteCurrentManager,
   initModalListeners
@@ -54,6 +55,7 @@ declare global {
     toggleConcentrationGuide: typeof toggleConcentrationGuide;
     toggleTierInfo: typeof toggleTierInfo;
     closeTierInfo: typeof closeTierInfo;
+    setMacroMetricMode: typeof setMacroMetricMode;
     saveManager: typeof saveManager;
     deleteCurrentManager: typeof deleteCurrentManager;
     exportGraphicHD: typeof exportGraphicHD;
@@ -334,6 +336,7 @@ Object.assign(window, {
   toggleConcentrationGuide,
   toggleTierInfo,
   closeTierInfo,
+  setMacroMetricMode,
   saveManager,
   deleteCurrentManager,
   exportGraphicHD,

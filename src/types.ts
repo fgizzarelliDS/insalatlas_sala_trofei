@@ -82,6 +82,7 @@ export interface ScoringWeights {
 export type AnalyticsTab = 'macro' | 'clutch' | 'risk';
 export type Tab2SortField = 'name' | 'podiumRate' | 'killerInstinct' | 'clutch';
 export type Tab2SortDirection = 'asc' | 'desc';
+export type MacroMetricMode = 'prestige' | 'raw';
 
 export interface ManagerAnalyticsProfile {
   id: string;
@@ -91,6 +92,9 @@ export interface ManagerAnalyticsProfile {
   trophies: number;
   trophySharePct: number;
   efficiency: number; // Trophies / Years
+  prestigeScore: number; // Weighted SPI score
+  prestigeSharePct: number; // Share of total league prestige
+  prestigeEfficiency: number; // Prestige / Years
   score: number;
   finalsPlayed: number;
   finalsWon: number;
@@ -99,12 +103,18 @@ export interface ManagerAnalyticsProfile {
   podiumRatePct: number; // Podiums / Years * 100
   killerInstinctPct: number; // Gold / Podiums * 100
   dishonors: number; // Spoon + Cartonato
-  disasterMass: number; // max(Spoon, Cartonato) + 0.5 * min(Spoon, Cartonato)
-  tailMass: number; // Gold + Disaster Mass
+  feastMass: number; // Gold * 1.0 + CupGold * 0.5
+  disasterMass: number; // Spoon * 1.0 + Cartonato * 0.75
+  tailMass: number; // FeastMass + DisasterMass
+  totalTailMass: number;
   feastOrFamineRatio: number; // Raw FF
   smoothedFeastOrFamine: number; // Bayesian smoothed FF
-  netTailSkew: number; // (Gold - DisasterMass) / (TailMass + eps) in [-1, +1]
-  netTailSkewLabel: string; // 'Feast-Dominant' | 'Famine-Dominant' | 'Bipolar / Equilibrato'
+  netTailSkew: number; // Regularized NTS with shrinkage prior M=1.5 in [-1, +1]
+  netTailSkewLabel: string; // Polarity label
+  netTailIndex: number; // NTI = smoothedFF * NTS in [-1, +1]
+  polarityLabel: string;
+  polarityColor: string;
+  polarityIcon: string;
   archetypeTag: string;
   archetypeColor: string;
   archetypeIcon: string;
@@ -118,19 +128,26 @@ export interface DishonorShare {
 
 export interface LeagueConcentrationAnalysis {
   totalTrophies: number;
+  totalPrestige: number;
   totalDishonors: number;
   giniTrophies: number;
+  giniPrestige: number;
   giniRating: number;
   cr3Pct: number;
+  cr3PrestigePct: number;
   cr3DishonorPct: number;
   hhi: number;
   hhiDescription: string;
+  hhiPrestige: number;
+  hhiPrestigeDescription: string;
   relativeEntropy: number; // 0 to 1
+  relativeEntropyPrestige: number; // 0 to 1
   leagueAverageFF: number;
   tierTitle: string;
   tierDescription: string;
   tierColor: string;
   profiles: ManagerAnalyticsProfile[];
   top3SilverwareNames: string[];
+  top3PrestigeNames: string[];
   dishonorShares: DishonorShare[];
 }

@@ -1,5 +1,5 @@
 import confetti from 'canvas-confetti';
-import { Manager, AnalyticsTab } from './types';
+import { Manager, AnalyticsTab, Tab2SortField, Tab2SortDirection } from './types';
 import { state } from './state';
 import { verifyAdminPassword } from './config';
 import { renderTrophySVG, renderCoachBanner } from './trophies';
@@ -332,9 +332,25 @@ export function initModalListeners(): void {
     }
   });
 
+  // Click outside listener for tier info popover
+  document.addEventListener('click', (e: MouseEvent) => {
+    const popover = document.getElementById('tier-info-popover');
+    if (popover && !popover.classList.contains('hidden')) {
+      const target = e.target as HTMLElement;
+      if (!popover.contains(target) && !target.closest('#btn-tier-info')) {
+        closeTierInfo();
+      }
+    }
+  });
+
   // Global Escape key handler
   window.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
+      const tierPopover = document.getElementById('tier-info-popover');
+      if (tierPopover && !tierPopover.classList.contains('hidden')) {
+        closeTierInfo();
+        return;
+      }
       if (concentrationModal && !concentrationModal.classList.contains('hidden')) {
         closeConcentrationModal();
       } else if (managerModal && !managerModal.classList.contains('hidden')) {
@@ -347,6 +363,22 @@ export function initModalListeners(): void {
 }
 
 let currentTab: AnalyticsTab = 'macro';
+let tab2SortField: Tab2SortField = 'podiumRate';
+let tab2SortDirection: Tab2SortDirection = 'desc';
+
+/**
+ * Changes active sort field or toggles direction for Tab 2
+ * @param field - Sort field ('name' | 'podiumRate' | 'killerInstinct' | 'clutch')
+ */
+export function changeTab2Sort(field: Tab2SortField): void {
+  if (tab2SortField === field) {
+    tab2SortDirection = tab2SortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    tab2SortField = field;
+    tab2SortDirection = field === 'name' ? 'asc' : 'desc';
+  }
+  renderAnalyticsModalBody();
+}
 
 /**
  * Switches the active sub-tab inside the analytics modal
@@ -355,6 +387,28 @@ let currentTab: AnalyticsTab = 'macro';
 export function switchAnalyticsTab(tab: AnalyticsTab): void {
   currentTab = tab;
   renderAnalyticsModalBody();
+}
+
+/**
+ * Toggles the floating contextual tier info popover in Tab 1
+ * @param e - Optional click event
+ */
+export function toggleTierInfo(e?: Event): void {
+  if (e) e.stopPropagation();
+  const popover = document.getElementById('tier-info-popover');
+  if (popover) {
+    popover.classList.toggle('hidden');
+  }
+}
+
+/**
+ * Closes the floating contextual tier info popover
+ */
+export function closeTierInfo(): void {
+  const popover = document.getElementById('tier-info-popover');
+  if (popover) {
+    popover.classList.add('hidden');
+  }
 }
 
 /**
@@ -418,13 +472,83 @@ function renderAnalyticsModalBody(): void {
   if (currentTab === 'macro') {
     tabContentHTML = `
       <!-- Diagnostic Banner -->
-      <div class="p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4" style="background: rgba(255,255,255,0.02); border-color: var(--table-border);">
-        <div>
+      <div class="p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative" style="background: rgba(255,255,255,0.02); border-color: var(--table-border);">
+        <div class="relative">
           <div class="flex items-center gap-2">
             <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${analysis.tierColor};"></span>
             <span class="text-sm uppercase tracking-widest font-black" style="color: ${analysis.tierColor};">${analysis.tierTitle}</span>
+            <button 
+              type="button" 
+              id="btn-tier-info"
+              onclick="toggleTierInfo(event)" 
+              class="w-5 h-5 rounded-full flex items-center justify-center transition cursor-pointer hover:bg-white/10" 
+              title="Informazioni sul Tier di Lega" 
+              style="color: var(--text-muted);"
+            >
+              <i class="fa-solid fa-circle-info text-xs"></i>
+            </button>
           </div>
           <p class="text-xs sm:text-sm mt-1" style="color: var(--text-main);">${analysis.tierDescription}</p>
+
+          <!-- Floating Tier Info Popover -->
+          <div 
+            id="tier-info-popover" 
+            class="hidden absolute z-30 top-full left-0 mt-2 w-72 sm:w-88 p-3.5 rounded-2xl border shadow-2xl backdrop-blur-md text-xs transition-all duration-200"
+            style="background: var(--modal-bg); border-color: var(--table-border); color: var(--text-main);"
+            onclick="event.stopPropagation()"
+          >
+            <!-- Popover Header -->
+            <div class="flex items-center justify-between pb-2 border-b mb-2" style="border-color: var(--table-border);">
+              <div class="flex items-center gap-1.5 font-bold">
+                <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${analysis.tierColor};"></span>
+                <span class="text-[11px] uppercase tracking-wider font-black" style="color: ${analysis.tierColor};">${analysis.tierTitle}</span>
+              </div>
+              <button type="button" onclick="closeTierInfo()" class="w-5 h-5 rounded-full flex items-center justify-center opacity-60 hover:opacity-100 transition" style="color: var(--text-main);">
+                <i class="fa-solid fa-xmark text-xs"></i>
+              </button>
+            </div>
+
+            <!-- Current League Explanation -->
+            <div class="p-2 rounded-xl mb-2.5" style="background: var(--table-surface); border: 1px solid var(--table-border);">
+              <span class="block text-[9px] uppercase font-bold tracking-wider mb-0.5" style="color: var(--text-muted);">Perché questo Tier?</span>
+              <p class="text-[11px] leading-relaxed">
+                I primi 3 club accentrano il <strong class="text-amber-400 font-mono">${analysis.cr3Pct}%</strong> dei titoli e l'indice antitrust <strong class="text-amber-400 font-mono">HHI (${analysis.hhi})</strong> supera la soglia di moderata concentrazione (&ge; 1800).
+              </p>
+            </div>
+
+            <!-- 4 Tiers Quick Overview -->
+            <span class="block text-[9px] uppercase font-bold tracking-wider mb-1.5" style="color: var(--text-muted);">I 4 Stadi di Competitività</span>
+            <div class="space-y-1.5 text-[10px]">
+              <div class="p-1.5 rounded-lg border flex items-start gap-1.5" style="border-color: var(--table-border); background: rgba(0,0,0,0.02);">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 mt-0.5 shrink-0"></span>
+                <div>
+                  <strong class="text-emerald-400 font-bold">Far West (Parità Assoluta):</strong>
+                  <span class="block" style="color: var(--text-muted);">G &le; 0.40, CR3 &le; 45%, HHI &lt; 1400. Anarchia e massima alternanza.</span>
+                </div>
+              </div>
+              <div class="p-1.5 rounded-lg border flex items-start gap-1.5" style="border-color: var(--table-border); background: rgba(0,0,0,0.02);">
+                <span class="w-2 h-2 rounded-full bg-blue-400 mt-0.5 shrink-0"></span>
+                <div>
+                  <strong class="text-blue-400 font-bold">Competizione Aperta:</strong>
+                  <span class="block" style="color: var(--text-muted);">Equilibrio intermedio con rotazione dei campioni e classe media attiva.</span>
+                </div>
+              </div>
+              <div class="p-1.5 rounded-lg border flex items-start gap-1.5" style="border-color: var(--table-border); background: rgba(0,0,0,0.02);">
+                <span class="w-2 h-2 rounded-full bg-amber-400 mt-0.5 shrink-0"></span>
+                <div>
+                  <strong class="text-amber-400 font-bold">Lega a Tre Velocità:</strong>
+                  <span class="block" style="color: var(--text-muted);">G &gt; 0.55 o CR3 &ge; 58% o HHI &ge; 1800. Oligarchia di 3-4 potenze.</span>
+                </div>
+              </div>
+              <div class="p-1.5 rounded-lg border flex items-start gap-1.5" style="border-color: var(--table-border); background: rgba(0,0,0,0.02);">
+                <span class="w-2 h-2 rounded-full bg-rose-400 mt-0.5 shrink-0"></span>
+                <div>
+                  <strong class="text-rose-400 font-bold">Feudalesimo Assoluto:</strong>
+                  <span class="block" style="color: var(--text-muted);">(G &gt; 0.75 e CR3 &ge; 72%) o HHI &ge; 2500. Monopolio di 1-2 club.</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="flex items-center gap-2 text-right shrink-0 self-end sm:self-center">
           <div class="px-3 py-1.5 rounded-xl border text-center" style="border-color: var(--table-border); background: var(--table-surface);">
@@ -557,41 +681,128 @@ function renderAnalyticsModalBody(): void {
     `;
   }
 
-  // TAB 2: Clutch vs Bottler
+  // TAB 2: Clutch vs Bottler & Podiums
   else if (currentTab === 'clutch') {
-    const clutchSorted = [...analysis.profiles].sort((a, b) => b.conversionRatePct - a.conversionRatePct || b.finalsWon - a.finalsWon || b.finalsPlayed - a.finalsPlayed);
+    const clutchSorted = [...analysis.profiles].sort((a, b) => {
+      let cmp = 0;
+      if (tab2SortField === 'name') {
+        cmp = a.name.localeCompare(b.name);
+      } else if (tab2SortField === 'podiumRate') {
+        cmp = (b.podiumRatePct - a.podiumRatePct) || (b.killerInstinctPct - a.killerInstinctPct) || (b.podiums - a.podiums) || (b.trophies - a.trophies);
+      } else if (tab2SortField === 'killerInstinct') {
+        cmp = (b.killerInstinctPct - a.killerInstinctPct) || (b.gold - a.gold) || (b.podiums - a.podiums);
+      } else if (tab2SortField === 'clutch') {
+        cmp = (b.conversionRatePct - a.conversionRatePct) || (b.finalsWon - a.finalsWon) || (b.finalsPlayed - a.finalsPlayed) || (b.trophies - a.trophies);
+      }
+      return tab2SortDirection === 'desc' ? cmp : -cmp;
+    });
+
+    const sortIcon = (field: Tab2SortField) => {
+      if (tab2SortField !== field) {
+        return '<i class="fa-solid fa-sort opacity-30 text-[9px] ml-1"></i>';
+      }
+      return tab2SortDirection === 'desc'
+        ? '<i class="fa-solid fa-arrow-down-wide-short text-amber-400 text-[10px] ml-1"></i>'
+        : '<i class="fa-solid fa-arrow-up-short-wide text-amber-400 text-[10px] ml-1"></i>';
+    };
 
     tabContentHTML = `
       <div class="p-3.5 rounded-2xl border text-xs" style="background: var(--table-surface); border-color: var(--table-border); color: var(--text-muted);">
-        <p><strong class="font-bold" style="color: var(--text-main);">Indice di Cinismo nelle Finali:</strong> Calcola la percentuale di finali vinte (Scudetti e Coppe di Lega) rispetto al totale delle finali disputate (Ori + Argenti). Premia chi non trema nei momenti decisivi.</p>
+        <p><strong class="font-bold" style="color: var(--text-main);">Cinismo, Podi &amp; Killer Instinct:</strong> Clicca sulle intestazioni delle colonne per ordinare alfabeticamente o per tasso podio, killer instinct e cinismo nelle finali.</p>
       </div>
 
       <div class="border rounded-xl overflow-hidden" style="border-color: var(--table-border);">
-        <div class="px-3 py-2 text-[11px] uppercase font-bold tracking-wider flex justify-between border-b" style="border-color: var(--table-border); background: rgba(0,0,0,0.12); color: var(--text-muted);">
-          <span>Allenatore</span>
-          <div class="flex gap-4 items-center">
-            <span>Finali (V/T)</span>
-            <span class="w-24 text-right">Cinismo (%)</span>
-          </div>
+        <div class="px-3 py-2 text-[11px] uppercase font-bold tracking-wider grid grid-cols-12 gap-1.5 items-center border-b select-none" style="border-color: var(--table-border); background: rgba(0,0,0,0.12); color: var(--text-muted);">
+          <button type="button" onclick="changeTab2Sort('name')" class="col-span-4 sm:col-span-5 flex items-center text-left hover:text-amber-400 transition cursor-pointer font-bold uppercase tracking-wider">
+            <span>Allenatore</span>
+            ${sortIcon('name')}
+          </button>
+          <button type="button" onclick="changeTab2Sort('podiumRate')" class="col-span-3 sm:col-span-2 flex items-center justify-center hover:text-amber-400 transition cursor-pointer font-bold uppercase tracking-wider">
+            <span>Tasso Podio</span>
+            ${sortIcon('podiumRate')}
+          </button>
+          <button type="button" onclick="changeTab2Sort('killerInstinct')" class="col-span-2 sm:col-span-2 flex items-center justify-center hover:text-amber-400 transition cursor-pointer font-bold uppercase tracking-wider">
+            <span>Killer Inst.</span>
+            ${sortIcon('killerInstinct')}
+          </button>
+          <button type="button" onclick="changeTab2Sort('clutch')" class="col-span-3 sm:col-span-3 flex items-center justify-end hover:text-amber-400 transition cursor-pointer font-bold uppercase tracking-wider">
+            <span>Cinismo Finali</span>
+            ${sortIcon('clutch')}
+          </button>
         </div>
         <div class="divide-y max-h-72 overflow-y-auto" style="border-color: var(--table-border);">
-          ${clutchSorted.map(p => `
-            <div class="px-3 py-2.5 flex items-center justify-between text-xs sm:text-sm hover:bg-white/5 transition">
-              <div class="min-w-0">
-                <span class="font-bold block truncate" style="color: var(--text-main);">${p.name}</span>
-                <span class="text-[10px]" style="color: var(--text-muted);">${p.finalsPlayed === 0 ? 'Nessuna finale disputata' : `${p.finalsWon} vinta/e su ${p.finalsPlayed} finali`}</span>
-              </div>
-              <div class="flex items-center gap-4 shrink-0">
-                <span class="font-mono text-xs" style="color: var(--text-muted);">${p.finalsWon}/${p.finalsPlayed}</span>
-                <div class="w-24 text-right">
-                  <span class="font-mono font-black text-xs ${p.finalsPlayed === 0 ? 'opacity-40' : p.conversionRatePct >= 70 ? 'text-emerald-400 font-bold' : p.conversionRatePct <= 35 && p.finalsPlayed >= 2 ? 'text-indigo-400 font-bold' : 'text-slate-300'
-      }">
-                    ${p.finalsPlayed > 0 ? `${p.conversionRatePct.toFixed(0)}%` : '—'}
-                  </span>
+          ${clutchSorted.map((p, idx) => `
+            <div class="px-3 py-2 grid grid-cols-12 gap-1.5 items-center text-xs sm:text-sm hover:bg-white/5 transition">
+              <!-- Allenatore -->
+              <div class="col-span-4 sm:col-span-5 min-w-0 flex items-center gap-1.5">
+                <span class="w-4 text-center font-bold text-[10px] shrink-0 ${idx < 3 ? 'text-amber-400 font-black' : ''}" style="${idx >= 3 ? 'color: var(--text-muted);' : ''}">${idx + 1}</span>
+                <div class="min-w-0">
+                  <span class="font-bold block truncate text-xs sm:text-sm" style="color: var(--text-main);">${p.name}</span>
+                  <span class="text-[10px] block truncate" style="color: var(--text-muted);">${p.years} ann${p.years === 1 ? 'o' : 'i'}</span>
                 </div>
+              </div>
+
+              <!-- Tasso Podio (PR%) -->
+              <div class="col-span-3 sm:col-span-2 text-center">
+                <span class="font-mono font-bold text-xs ${p.podiumRatePct >= 50 ? 'text-amber-400 font-black' : ''}" style="${p.podiumRatePct < 50 ? 'color: var(--text-main);' : ''}">
+                  ${p.podiumRatePct.toFixed(1)}%
+                </span>
+                <span class="block text-[9px] font-mono" style="color: var(--text-muted);">${p.podiums}/${p.years}</span>
+              </div>
+
+              <!-- Killer Instinct (KI%) -->
+              <div class="col-span-2 sm:col-span-2 text-center">
+                <span class="font-mono font-bold text-xs ${p.podiums === 0 ? 'opacity-40' : p.killerInstinctPct >= 60 ? 'text-emerald-400 font-black' : p.killerInstinctPct <= 25 ? 'text-orange-400' : ''}" style="${p.podiums > 0 && p.killerInstinctPct > 25 && p.killerInstinctPct < 60 ? 'color: var(--text-main);' : ''}">
+                  ${p.podiums > 0 ? `${p.killerInstinctPct.toFixed(0)}%` : '—'}
+                </span>
+                <span class="block text-[9px] font-mono" style="color: var(--text-muted);">${p.podiums > 0 ? `${p.gold}/${p.podiums} ${p.gold === 1 ? 'oro' : 'ori'}` : '0 podi'}</span>
+              </div>
+
+              <!-- Cinismo Finali (CR%) -->
+              <div class="col-span-3 sm:col-span-3 text-right">
+                <span class="font-mono font-bold text-xs ${p.finalsPlayed === 0 ? 'opacity-40' : p.conversionRatePct >= 70 ? 'text-emerald-400 font-black' : p.conversionRatePct <= 35 && p.finalsPlayed >= 2 ? 'text-indigo-400 font-bold' : ''}" style="${p.finalsPlayed > 0 && (p.conversionRatePct > 35 || p.finalsPlayed < 2) && p.conversionRatePct < 70 ? 'color: var(--text-main);' : ''}">
+                  ${p.finalsPlayed > 0 ? `${p.conversionRatePct.toFixed(0)}%` : '—'}
+                </span>
+                <span class="block text-[9px] font-mono" style="color: var(--text-muted);">${p.finalsPlayed > 0 ? `${p.finalsWon}/${p.finalsPlayed} v.` : '0 fin.'}</span>
               </div>
             </div>
           `).join('')}
+        </div>
+      </div>
+
+      <!-- Collapsible Educational Info Box for Clutch & Podiums -->
+      <div class="border rounded-2xl overflow-hidden text-xs mt-3" style="border-color: var(--table-border); background: var(--table-surface);">
+        <button type="button" onclick="toggleGuide('clutch-guide')" class="w-full px-4 py-3 flex items-center justify-between font-bold text-left transition hover:bg-white/5" style="color: var(--text-main);">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-question text-amber-400"></i>
+            <span>Guida Matematica a Podi &amp; Cinismo</span>
+          </div>
+          <i id="clutch-guide-chevron" class="fa-solid fa-chevron-down transition-transform duration-200" style="color: var(--text-muted);"></i>
+        </button>
+        <div id="clutch-guide-content" class="px-4 pb-4 pt-1 space-y-3 border-t hidden" style="border-color: var(--table-border); color: var(--text-muted);">
+          <div>
+            <div class="flex items-center justify-between">
+              <strong class="font-semibold" style="color: var(--text-main);">Tasso di Presenza a Podio (PR%):</strong>
+              <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">PR% = (Ori + Argenti + Bronzi) / Anni × 100</code>
+            </div>
+            <p class="mt-0.5">Misura la costanza al vertice nella stagione regolare. Valori ≥ 50% indicano un candidato permanente alle primissime posizioni della classifica.</p>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between">
+              <strong class="font-semibold" style="color: var(--text-main);">Killer Instinct (KI%):</strong>
+              <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">KI% = Scudetti / Podi × 100</code>
+            </div>
+            <p class="mt-0.5">Misura la letalità del podio: la capacità di convertire una stagione da vertice nel trionfo massimo (Scudetto) invece di accontentarsi dei piazzamenti (Argento o Bronzo). Se non ci sono podi, il valore è non definito (—).</p>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between">
+              <strong class="font-semibold" style="color: var(--text-main);">Cinismo nelle Finali (CR%):</strong>
+              <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">CR% = (Scudetti + Coppe Vinte) / Finali Totali × 100</code>
+            </div>
+            <p class="mt-0.5">Rapporto tra finali vinte e disputate (Scudetti e Coppe di Lega, considerando Ori e Argenti). Identifica chi esalta il proprio rendimento negli scontri diretti e chi risente della pressione decisiva.</p>
+          </div>
         </div>
       </div>
     `;
@@ -601,7 +812,7 @@ function renderAnalyticsModalBody(): void {
   else if (currentTab === 'risk') {
     tabContentHTML = `
       <div class="p-2.5 sm:p-3 rounded-xl border text-xs" style="background: var(--table-surface); border-color: var(--table-border); color: var(--text-muted);">
-        <p><strong class="font-bold" style="color: var(--text-main);">Feast-or-Famine &amp; Filosofie di Roster:</strong> Misura la frequenza con cui il mister chiude la stagione agli estremi (1° posto o playout/cucchiaio). Identifica scommesse all-in rispetto a gestioni regolariste.</p>
+        <p><strong class="font-bold" style="color: var(--text-main);">Archetipi &amp; Filosofie di Roster:</strong> Analisi di coda per misurare la volatilità estrema di ciascun mister (Scudetti vs Retrocessioni e Playout) tramite regolarizzazione Bayesiana e Net Tail Skew.</p>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 h-[238px] max-h-[238px] overflow-y-auto pr-1 snap-y snap-mandatory scroll-smooth" style="scrollbar-width: thin; scrollbar-color: var(--table-border) transparent;">
@@ -614,14 +825,18 @@ function renderAnalyticsModalBody(): void {
                 ${p.archetypeTag}
               </span>
             </div>
-            <div class="grid grid-cols-2 gap-2 text-[10px] border-t pt-1.5 mt-1" style="border-color: var(--table-border); color: var(--text-muted);">
+            <div class="grid grid-cols-3 gap-1 text-[10px] border-t pt-1.5 mt-1" style="border-color: var(--table-border); color: var(--text-muted);">
               <div>
-                <span class="block text-[8px] uppercase font-bold opacity-60 leading-none mb-0.5">Feast / Famine</span>
-                <span class="font-mono font-bold text-xs leading-none" style="color: var(--text-main);">${p.feastOrFamineRatio} /anno</span>
+                <span class="block text-[8px] uppercase font-bold opacity-60 leading-none mb-0.5 truncate">FF Levigato</span>
+                <span class="font-mono font-bold text-xs leading-none" style="color: var(--text-main);">${p.smoothedFeastOrFamine.toFixed(2)}</span>
+              </div>
+              <div class="text-center">
+                <span class="block text-[8px] uppercase font-bold opacity-60 leading-none mb-0.5 truncate">Net Skew</span>
+                <span class="font-mono font-bold text-xs leading-none ${p.netTailSkew > 0 ? 'text-emerald-400 font-bold' : p.netTailSkew < 0 ? 'text-rose-400 font-bold' : ''}">${p.netTailSkew > 0 ? '+' : ''}${p.netTailSkew.toFixed(2)}</span>
               </div>
               <div class="text-right">
-                <span class="block text-[8px] uppercase font-bold opacity-60 leading-none mb-0.5">Malus (Cuc.+Cart.)</span>
-                <span class="font-mono font-bold text-xs leading-none ${p.dishonors > 0 ? 'text-rose-400' : ''}">${p.dishonors}</span>
+                <span class="block text-[8px] uppercase font-bold opacity-60 leading-none mb-0.5 truncate">Disonori</span>
+                <span class="font-mono font-bold text-xs leading-none block ${p.dishonors > 0 ? 'text-rose-400' : ''}">${p.dishonors}</span>
               </div>
             </div>
           </div>
@@ -642,14 +857,19 @@ function renderAnalyticsModalBody(): void {
           <!-- Feast-or-Famine Hero Banner -->
           <div class="p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3" style="border-color: var(--table-border); background: rgba(0,0,0,0.03);">
             <div>
-              <span class="block text-[10px] uppercase font-bold tracking-wider" style="color: var(--text-muted);">Indice di Volatilità</span>
-              <strong class="text-xs sm:text-sm font-bold block" style="color: var(--text-main);">Feast-or-Famine Ratio (FF)</strong>
+              <span class="block text-[10px] uppercase font-bold tracking-wider" style="color: var(--text-muted);">Indici di Coda &amp; Volatilità</span>
+              <strong class="text-xs sm:text-sm font-bold block" style="color: var(--text-main);">Feast-or-Famine Levigato (FF̃) &amp; Net Tail Skew (NTS)</strong>
               <p class="text-[11px] mt-0.5 leading-relaxed" style="color: var(--text-muted);">
-                Frequenza annua con cui un mister chiude alle code estreme della classifica (1° posto o retrocessione/malus) rispetto a una navigazione costante a centro classifica.
+                La regolarizzazione Bayesiana stabilizza il tasso annuo di estremi (Scudetti vs Disonori) verso la media di lega (${analysis.leagueAverageFF.toFixed(2)}/anno). Il Net Tail Skew misura se la coda è sbilanciata verso il trionfo (+1.0) o verso il baratro (-1.0).
               </p>
             </div>
-            <div class="shrink-0 self-start sm:self-center px-3 py-1.5 rounded-lg border font-mono text-[11px] font-bold text-center" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">
-              FF = (Scudetti + Cucchiai + Cartonati) / Anni
+            <div class="shrink-0 flex flex-col gap-1.5 self-start sm:self-center font-mono text-[10px] text-center">
+              <div class="px-2.5 py-1 rounded-lg border font-bold" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">
+                FF̃ = (Massa Coda + 2 × FF_lega) / (Anni + 2)
+              </div>
+              <div class="px-2.5 py-1 rounded-lg border font-bold" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">
+                NTS = (Ori - DisasterMass) / (Massa Coda + ε)
+              </div>
             </div>
           </div>
 
@@ -658,38 +878,42 @@ function renderAnalyticsModalBody(): void {
             <button type="button" onclick="toggleGuide('waterfall-rules')" class="w-full px-3 py-2 flex items-center justify-between text-left text-[11px] font-bold transition hover:bg-white/5" style="color: var(--text-main);">
               <div class="flex items-center gap-1.5">
                 <i class="fa-solid fa-layer-group text-amber-400 text-[10px]"></i>
-                <span>Regole di Assegnazione &amp; Priorità (Waterfall)</span>
+                <span>Regole di Assegnazione &amp; Priorità (Waterfall a 9 Livelli)</span>
               </div>
               <i id="waterfall-rules-chevron" class="fa-solid fa-chevron-down transition-transform duration-200 text-[10px]" style="color: var(--text-muted);"></i>
             </button>
             <div id="waterfall-rules-content" class="px-3 pb-3 pt-1 border-t hidden space-y-1.5" style="border-color: var(--table-border); color: var(--text-muted);">
               <p class="text-[11px] leading-relaxed">
-                Se un manager soddisfa più requisiti, il motore assegna l'archetipo che compare prima in questo ordine gerarchico:
+                Se un manager soddisfa più requisiti, il motore assegna l'archetipo che compare prima in questo ordine gerarchico deterministico:
               </p>
               <div class="flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
                 <span class="px-2 py-0.5 rounded border font-semibold" style="border-color: var(--table-border); background: var(--table-surface); color: var(--text-main);">1. Dominatore</span>
                 <span class="opacity-50">&gt;</span>
-                <span class="px-2 py-0.5 rounded border font-semibold" style="border-color: var(--table-border); background: var(--table-surface); color: var(--text-main);">2. Cinico</span>
+                <span class="px-2 py-0.5 rounded border font-semibold" style="border-color: var(--table-border); background: var(--table-surface); color: var(--text-main);">2. Vittima</span>
                 <span class="opacity-50">&gt;</span>
-                <span class="px-2 py-0.5 rounded border font-semibold" style="border-color: var(--table-border); background: var(--table-surface); color: var(--text-main);">3. Eterno 2°</span>
+                <span class="px-2 py-0.5 rounded border font-semibold" style="border-color: var(--table-border); background: var(--table-surface); color: var(--text-main);">3. Cannibale</span>
                 <span class="opacity-50">&gt;</span>
-                <span class="px-2 py-0.5 rounded border font-semibold" style="border-color: var(--table-border); background: var(--table-surface); color: var(--text-main);">4. All-or-Nothing</span>
+                <span class="px-2 py-0.5 rounded border font-semibold" style="border-color: var(--table-border); background: var(--table-surface); color: var(--text-main);">4. Cinico</span>
                 <span class="opacity-50">&gt;</span>
-                <span class="px-2 py-0.5 rounded border font-semibold" style="border-color: var(--table-border); background: var(--table-surface); color: var(--text-main);">5. Vittima</span>
+                <span class="px-2 py-0.5 rounded border font-semibold" style="border-color: var(--table-border); background: var(--table-surface); color: var(--text-main);">5. Grande Piazzato</span>
                 <span class="opacity-50">&gt;</span>
-                <span class="px-2 py-0.5 rounded border font-semibold" style="border-color: var(--table-border); background: var(--table-surface); color: var(--text-main);">6. Grinder</span>
+                <span class="px-2 py-0.5 rounded border font-semibold" style="border-color: var(--table-border); background: var(--table-surface); color: var(--text-main);">6. Eterno 2°</span>
                 <span class="opacity-50">&gt;</span>
-                <span class="px-2 py-0.5 rounded border font-semibold" style="border-color: var(--table-border); background: var(--table-surface); color: var(--text-main);">7. Ufficiale</span>
+                <span class="px-2 py-0.5 rounded border font-semibold" style="border-color: var(--table-border); background: var(--table-surface); color: var(--text-main);">7. All-or-Nothing</span>
+                <span class="opacity-50">&gt;</span>
+                <span class="px-2 py-0.5 rounded border font-semibold" style="border-color: var(--table-border); background: var(--table-surface); color: var(--text-main);">8. Grinder</span>
+                <span class="opacity-50">&gt;</span>
+                <span class="px-2 py-0.5 rounded border font-semibold" style="border-color: var(--table-border); background: var(--table-surface); color: var(--text-main);">9. Ufficiale</span>
               </div>
             </div>
           </div>
 
           <!-- Archetypes Cards Grid (Clean 2-Column Micro-Cards) -->
           <div>
-            <span class="block text-[11px] uppercase font-bold tracking-wider mb-2" style="color: var(--text-main);">Tassonomia degli Archetipi</span>
+            <span class="block text-[11px] uppercase font-bold tracking-wider mb-2" style="color: var(--text-main);">Tassonomia dei 9 Archetipi</span>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               
-              <!-- Dominatore Dinastico -->
+              <!-- 1. Dominatore Dinastico -->
               <div class="p-2.5 sm:p-3 rounded-xl border flex flex-col justify-between" style="border-color: var(--table-border); background: rgba(0,0,0,0.02);">
                 <div>
                   <div class="flex items-center justify-between gap-1.5 mb-1">
@@ -698,7 +922,7 @@ function renderAnalyticsModalBody(): void {
                     </span>
                   </div>
                   <code class="inline-block font-mono text-[9px] px-1.5 py-0.5 rounded my-1 border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">
-                    Titoli ≥ 4 &amp; Efficienza ≥ 0.50 tit/anno
+                    Titoli ≥ 4 &amp; (Efficienza ≥ 0.40 o Scudetti ≥ 2)
                   </code>
                   <p class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
                     Egemone cannibale: accumula vittorie a ritmo insostenibile e impone cicli dittatoriali.
@@ -706,58 +930,7 @@ function renderAnalyticsModalBody(): void {
                 </div>
               </div>
 
-              <!-- Cinico Chirurgico -->
-              <div class="p-2.5 sm:p-3 rounded-xl border flex flex-col justify-between" style="border-color: var(--table-border); background: rgba(0,0,0,0.02);">
-                <div>
-                  <div class="flex items-center justify-between gap-1.5 mb-1">
-                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider" style="background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3);">
-                      <i class="fa-solid fa-crosshairs text-[9px]"></i> Cinico Chirurgico
-                    </span>
-                  </div>
-                  <code class="inline-block font-mono text-[9px] px-1.5 py-0.5 rounded my-1 border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">
-                    Finali ≥ 2 &amp; Conversione ≥ 70%
-                  </code>
-                  <p class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
-                    Freddo e letale nelle partite che contano: trasforma quasi ogni finale scudetto o coppa in trionfo.
-                  </p>
-                </div>
-              </div>
-
-              <!-- Eterno Secondo -->
-              <div class="p-2.5 sm:p-3 rounded-xl border flex flex-col justify-between" style="border-color: var(--table-border); background: rgba(0,0,0,0.02);">
-                <div>
-                  <div class="flex items-center justify-between gap-1.5 mb-1">
-                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider" style="background: rgba(99,102,241,0.15); color: #6366f1; border: 1px solid rgba(99,102,241,0.3);">
-                      <i class="fa-solid fa-medal text-[9px]"></i> Eterno Secondo
-                    </span>
-                  </div>
-                  <code class="inline-block font-mono text-[9px] px-1.5 py-0.5 rounded my-1 border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">
-                    Argenti ≥ 2 &amp; Conversione ≤ 35%
-                  </code>
-                  <p class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
-                    Sindrome di Cúper: costantemente al vertice ma punito dal destino o dalla tensione all'ultimo respiro.
-                  </p>
-                </div>
-              </div>
-
-              <!-- All-or-Nothing -->
-              <div class="p-2.5 sm:p-3 rounded-xl border flex flex-col justify-between" style="border-color: var(--table-border); background: rgba(0,0,0,0.02);">
-                <div>
-                  <div class="flex items-center justify-between gap-1.5 mb-1">
-                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider" style="background: rgba(249,115,22,0.15); color: #f97316; border: 1px solid rgba(249,115,22,0.3);">
-                      <i class="fa-solid fa-dice text-[9px]"></i> All-or-Nothing
-                    </span>
-                  </div>
-                  <code class="inline-block font-mono text-[9px] px-1.5 py-0.5 rounded my-1 border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">
-                    FF ≥ 0.60 &amp; Scudetti ≥ 1 &amp; Malus ≥ 1
-                  </code>
-                  <p class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
-                    Roster spericolato: vive oscillando tra l'estasi dello scudetto e l'onta del cucchiaio o playout.
-                  </p>
-                </div>
-              </div>
-
-              <!-- Vittima Sacrificale -->
+              <!-- 2. Vittima Sacrificale -->
               <div class="p-2.5 sm:p-3 rounded-xl border flex flex-col justify-between" style="border-color: var(--table-border); background: rgba(0,0,0,0.02);">
                 <div>
                   <div class="flex items-center justify-between gap-1.5 mb-1">
@@ -766,15 +939,100 @@ function renderAnalyticsModalBody(): void {
                     </span>
                   </div>
                   <code class="inline-block font-mono text-[9px] px-1.5 py-0.5 rounded my-1 border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">
-                    Disonori (Cuc.+Cart.) ≥ 2 &amp; Titoli = 0
+                    Disonori ≥ 3 oppure (Disonori ≥ 2 &amp; Titoli = 0)
                   </code>
                   <p class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
-                    Abbonato al muro della vergogna: colleziona retrocessioni e malus senza mai aver assaporato l'oro.
+                    Abbonato al muro della vergogna: colleziona retrocessioni e cucchiai senza aver mai assaporato l'oro.
                   </p>
                 </div>
               </div>
 
-              <!-- Grinder Metodico -->
+              <!-- 3. Cannibale del Podio -->
+              <div class="p-2.5 sm:p-3 rounded-xl border flex flex-col justify-between" style="border-color: var(--table-border); background: rgba(0,0,0,0.02);">
+                <div>
+                  <div class="flex items-center justify-between gap-1.5 mb-1">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider" style="background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3);">
+                      <i class="fa-solid fa-trophy text-[9px]"></i> Cannibale del Podio
+                    </span>
+                  </div>
+                  <code class="inline-block font-mono text-[9px] px-1.5 py-0.5 rounded my-1 border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">
+                    Tasso Podio ≥ 50% &amp; KI ≥ 60% (min. 2 Podi)
+                  </code>
+                  <p class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
+                    Sentenza in campionato: frequenta stabilmente il vertice e converte quasi ogni podio in Scudetto.
+                  </p>
+                </div>
+              </div>
+
+              <!-- 4. Cinico Chirurgico -->
+              <div class="p-2.5 sm:p-3 rounded-xl border flex flex-col justify-between" style="border-color: var(--table-border); background: rgba(0,0,0,0.02);">
+                <div>
+                  <div class="flex items-center justify-between gap-1.5 mb-1">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider" style="background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3);">
+                      <i class="fa-solid fa-crosshairs text-[9px]"></i> Cinico Chirurgico
+                    </span>
+                  </div>
+                  <code class="inline-block font-mono text-[9px] px-1.5 py-0.5 rounded my-1 border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">
+                    Finali ≥ 2 &amp; Conversione Finali ≥ 70%
+                  </code>
+                  <p class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
+                    Freddo e letale nelle partite secche: trasforma quasi ogni finale scudetto o coppa in trionfo.
+                  </p>
+                </div>
+              </div>
+
+              <!-- 5. Il Grande Piazzato -->
+              <div class="p-2.5 sm:p-3 rounded-xl border flex flex-col justify-between" style="border-color: var(--table-border); background: rgba(0,0,0,0.02);">
+                <div>
+                  <div class="flex items-center justify-between gap-1.5 mb-1">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider" style="background: rgba(217,119,6,0.15); color: #d97706; border: 1px solid rgba(217,119,6,0.3);">
+                      <i class="fa-solid fa-ranking-star text-[9px]"></i> Il Grande Piazzato
+                    </span>
+                  </div>
+                  <code class="inline-block font-mono text-[9px] px-1.5 py-0.5 rounded my-1 border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">
+                    Podi ≥ 3 &amp; Killer Instinct ≤ 25%
+                  </code>
+                  <p class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
+                    Presenza costante nei quartieri alti, ma condannato a fare da testimone ai trionfi altrui.
+                  </p>
+                </div>
+              </div>
+
+              <!-- 6. Eterno Secondo -->
+              <div class="p-2.5 sm:p-3 rounded-xl border flex flex-col justify-between" style="border-color: var(--table-border); background: rgba(0,0,0,0.02);">
+                <div>
+                  <div class="flex items-center justify-between gap-1.5 mb-1">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider" style="background: rgba(99,102,241,0.15); color: #6366f1; border: 1px solid rgba(99,102,241,0.3);">
+                      <i class="fa-solid fa-medal text-[9px]"></i> Eterno Secondo
+                    </span>
+                  </div>
+                  <code class="inline-block font-mono text-[9px] px-1.5 py-0.5 rounded my-1 border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">
+                    Argenti (Camp.+Coppa) ≥ 2 &amp; Conversione ≤ 35%
+                  </code>
+                  <p class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
+                    Sindrome di Cúper: costantemente all'atto conclusivo ma punito dal destino o dalla tensione.
+                  </p>
+                </div>
+              </div>
+
+              <!-- 7. All-or-Nothing -->
+              <div class="p-2.5 sm:p-3 rounded-xl border flex flex-col justify-between" style="border-color: var(--table-border); background: rgba(0,0,0,0.02);">
+                <div>
+                  <div class="flex items-center justify-between gap-1.5 mb-1">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider" style="background: rgba(249,115,22,0.15); color: #f97316; border: 1px solid rgba(249,115,22,0.3);">
+                      <i class="fa-solid fa-dice text-[9px]"></i> All-or-Nothing
+                    </span>
+                  </div>
+                  <code class="inline-block font-mono text-[9px] px-1.5 py-0.5 rounded my-1 border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">
+                    FF̃ ≥ 0.45 &amp; Titoli ≥ 1 &amp; Disonori ≥ 1
+                  </code>
+                  <p class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
+                    Roster spericolato: vive oscillando tra l'estasi del trionfo e l'onta del cucchiaio o playout.
+                  </p>
+                </div>
+              </div>
+
+              <!-- 8. Grinder Metodico -->
               <div class="p-2.5 sm:p-3 rounded-xl border flex flex-col justify-between" style="border-color: var(--table-border); background: rgba(0,0,0,0.02);">
                 <div>
                   <div class="flex items-center justify-between gap-1.5 mb-1">
@@ -783,10 +1041,27 @@ function renderAnalyticsModalBody(): void {
                     </span>
                   </div>
                   <code class="inline-block font-mono text-[9px] px-1.5 py-0.5 rounded my-1 border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">
-                    FF ≤ 0.25 &amp; Disonori = 0 &amp; Anni ≥ 3
+                    Tasso Podio ≥ 30% &amp; Disonori = 0 &amp; Anni ≥ 3
                   </code>
                   <p class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
                     Gestione solida e pragmatica: evita costantemente i bassifondi e macina piazzamenti regolari.
+                  </p>
+                </div>
+              </div>
+
+              <!-- 9. Manager Ufficiale -->
+              <div class="p-2.5 sm:p-3 rounded-xl border flex flex-col justify-between" style="border-color: var(--table-border); background: rgba(0,0,0,0.02);">
+                <div>
+                  <div class="flex items-center justify-between gap-1.5 mb-1">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider" style="background: rgba(148,163,184,0.15); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3);">
+                      <i class="fa-solid fa-user-tie text-[9px]"></i> Manager Ufficiale
+                    </span>
+                  </div>
+                  <code class="inline-block font-mono text-[9px] px-1.5 py-0.5 rounded my-1 border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">
+                    Profilo standard o storico in consolidamento
+                  </code>
+                  <p class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
+                    Condotta di gara senza eccessi agli estremi, in attesa della stagione della svolta.
                   </p>
                 </div>
               </div>
@@ -829,7 +1104,7 @@ function renderAnalyticsModalBody(): void {
     <!-- Navigation Tabs Bar -->
     <div class="px-5 sm:px-6 pt-3 pb-2 border-b flex items-center gap-2 overflow-x-auto shrink-0" style="border-color: var(--table-border); background: rgba(0,0,0,0.08);">
       ${tabButton('macro', 'Equilibrio & Macro', 'fa-solid fa-scale-balanced')}
-      ${tabButton('clutch', 'Cinismo & Finali', 'fa-solid fa-bullseye')}
+      ${tabButton('clutch', 'Cinismo & Podi', 'fa-solid fa-bullseye')}
       ${tabButton('risk', 'Archetipi', 'fa-solid fa-dice')}
     </div>
 
@@ -867,6 +1142,7 @@ export function openConcentrationModal(): void {
  * Closes concentration modal
  */
 export function closeConcentrationModal(): void {
+  closeTierInfo();
   const modal = document.getElementById('concentration-modal');
   if (modal) {
     modal.classList.add('hidden');

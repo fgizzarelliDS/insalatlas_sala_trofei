@@ -24,8 +24,11 @@ import {
   openConcentrationModal,
   closeConcentrationModal,
   switchAnalyticsTab,
+  changeTab2Sort,
   toggleGuide,
   toggleConcentrationGuide,
+  toggleTierInfo,
+  closeTierInfo,
   saveManager,
   deleteCurrentManager,
   initModalListeners
@@ -46,8 +49,11 @@ declare global {
     openConcentrationModal: typeof openConcentrationModal;
     closeConcentrationModal: typeof closeConcentrationModal;
     switchAnalyticsTab: typeof switchAnalyticsTab;
+    changeTab2Sort: typeof changeTab2Sort;
     toggleGuide: typeof toggleGuide;
     toggleConcentrationGuide: typeof toggleConcentrationGuide;
+    toggleTierInfo: typeof toggleTierInfo;
+    closeTierInfo: typeof closeTierInfo;
     saveManager: typeof saveManager;
     deleteCurrentManager: typeof deleteCurrentManager;
     exportGraphicHD: typeof exportGraphicHD;
@@ -323,8 +329,11 @@ Object.assign(window, {
   openConcentrationModal,
   closeConcentrationModal,
   switchAnalyticsTab,
+  changeTab2Sort,
   toggleGuide,
   toggleConcentrationGuide,
+  toggleTierInfo,
+  closeTierInfo,
   saveManager,
   deleteCurrentManager,
   exportGraphicHD,

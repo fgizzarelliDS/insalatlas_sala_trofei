@@ -80,11 +80,14 @@ export interface ScoringWeights {
 }
 
 export type AnalyticsTab = 'macro' | 'clutch' | 'risk';
+export type Tab2SortField = 'name' | 'podiumRate' | 'killerInstinct' | 'clutch';
+export type Tab2SortDirection = 'asc' | 'desc';
 
 export interface ManagerAnalyticsProfile {
   id: string;
   name: string;
   years: number;
+  gold: number;
   trophies: number;
   trophySharePct: number;
   efficiency: number; // Trophies / Years
@@ -92,8 +95,16 @@ export interface ManagerAnalyticsProfile {
   finalsPlayed: number;
   finalsWon: number;
   conversionRatePct: number; // Finals Won / Finals Played
+  podiums: number; // Gold + Silver + Bronze
+  podiumRatePct: number; // Podiums / Years * 100
+  killerInstinctPct: number; // Gold / Podiums * 100
   dishonors: number; // Spoon + Cartonato
-  feastOrFamineRatio: number; // (Gold + Spoon + Cartonato) / Years
+  disasterMass: number; // max(Spoon, Cartonato) + 0.5 * min(Spoon, Cartonato)
+  tailMass: number; // Gold + Disaster Mass
+  feastOrFamineRatio: number; // Raw FF
+  smoothedFeastOrFamine: number; // Bayesian smoothed FF
+  netTailSkew: number; // (Gold - DisasterMass) / (TailMass + eps) in [-1, +1]
+  netTailSkewLabel: string; // 'Feast-Dominant' | 'Famine-Dominant' | 'Bipolar / Equilibrato'
   archetypeTag: string;
   archetypeColor: string;
   archetypeIcon: string;
@@ -115,6 +126,7 @@ export interface LeagueConcentrationAnalysis {
   hhi: number;
   hhiDescription: string;
   relativeEntropy: number; // 0 to 1
+  leagueAverageFF: number;
   tierTitle: string;
   tierDescription: string;
   tierColor: string;

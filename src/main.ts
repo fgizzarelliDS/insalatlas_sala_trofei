@@ -45,11 +45,13 @@ import {
 import { changeSort, toggleDisplayMode, renderBoard } from '@/components/board/tableBoard';
 import { updateStatistics } from '@/components/board/statsCounter';
 import { findManagerByParam, getManagerParamFromURL } from '@/router';
+import { initPWA, promptPWAInstall } from '@/pwa';
 
-// Re-export router utilities and board controls for unit tests and consumers
+// Re-export router utilities, board controls, and PWA for unit tests and consumers
 export { findManagerByParam, getManagerParamFromURL };
 export { changeSort, toggleDisplayMode, renderBoard };
 export { updateStatistics };
+export { promptPWAInstall };
 
 // Global window augmentation for inline HTML event handlers
 declare global {
@@ -91,6 +93,7 @@ declare global {
     handleTitleBlur: typeof handleTitleBlur;
     renderBoard: typeof renderBoard;
     updateStatistics: typeof updateStatistics;
+    promptPWAInstall: typeof promptPWAInstall;
   }
 }
 
@@ -103,6 +106,7 @@ export async function initApp(): Promise<void> {
   applyTitlesToDOM();
   renderBoard();
   updateStatistics();
+  initPWA();
 
   // Deep-linking: auto-open manager profile if ?manager=... in URL
   const managerParam = getManagerParamFromURL();
@@ -173,6 +177,7 @@ if (typeof window !== 'undefined') {
     resetOfficialData,
     handleTitleBlur,
     renderBoard,
-    updateStatistics
+    updateStatistics,
+    promptPWAInstall
   });
 }

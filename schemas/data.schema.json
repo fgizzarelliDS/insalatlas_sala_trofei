@@ -1,0 +1,115 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "InsalAtlas League Database",
+  "type": "object",
+  "properties": {
+    "leagueData": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/manager"
+      }
+    },
+    "managers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/manager"
+      }
+    },
+    "customTitles": {
+      "type": "object"
+    },
+    "titles": {
+      "type": "object"
+    },
+    "exportedAt": {
+      "type": "string"
+    }
+  },
+  "anyOf": [
+    { "required": ["leagueData"] },
+    { "required": ["managers"] }
+  ],
+  "additionalProperties": true,
+  "definitions": {
+    "manager": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "years",
+        "gold",
+        "silver",
+        "bronze",
+        "spoon",
+        "cup_gold",
+        "cup_silver",
+        "supercup",
+        "mundialito",
+        "cartonato"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "years": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "gold": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "silver": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bronze": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "spoon": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cup_gold": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cup_silver": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "supercup": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mundialito": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cartonato": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "coach_banners": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cartonato_coaches": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

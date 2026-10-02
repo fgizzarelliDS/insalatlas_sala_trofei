@@ -1,0 +1,33 @@
+name: Validate League Data
+
+on:
+  push:
+    paths:
+      - 'public/data.json'
+      - 'schemas/**'
+      - 'scripts/**'
+  pull_request:
+    paths:
+      - 'public/data.json'
+      - 'schemas/**'
+      - 'scripts/**'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate JSON Database
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install JSON Schema Validator
+        run: pip install jsonschema
+
+      - name: Validate League Data
+        run: python scripts/validate.py

@@ -85,7 +85,7 @@ export function renderTrophySVG(type: string): string {
 
 /**
  * Renders HTML badge for a playout / cartonato coach banner
- * @param badgeName - Coach tag string (e.g. 'JURIC', 'MAZZARRI', 'ALLEGRI', '???')
+ * @param badgeName - Coach tag string (e.g. 'JURIC', 'MAZZARRI', 'PIOLI', '???')
  */
 export function renderCoachBanner(badgeName: string): string {
   if (!badgeName) return '';
@@ -100,8 +100,8 @@ export function renderCoachBanner(badgeName: string): string {
   if (b === '???') {
     return `<div class="coach-banner bg-gradient-to-r from-blue-800 to-indigo-950 text-amber-300 border border-blue-400 font-extrabold px-2.5" title="Banner Cartonato: Mister Misterioso (???)"><span>❓</span><span>???</span></div>`;
   }
-  if (b === 'ALLEGRI') {
-    return `<div class="coach-banner bg-gradient-to-r from-zinc-800 to-neutral-950 text-slate-100 border border-zinc-500" title="Banner Cartonato: Max Allegri (Corto Muso)"><span>🐎</span><span>ALLEGRI</span></div>`;
+  if (b === 'PIOLI') {
+    return `<div class="coach-banner bg-gradient-to-r from-zinc-400 to-neutral-950 text-slate-100 border border-zinc-500" title="Banner Cartonato: Stefano Pioli (On Fire)"><span>🔥</span><span>PIOLI</span></div>`;
   }
 
   return `<div class="coach-banner bg-gradient-to-r from-blue-900 to-slate-900 text-blue-200 border border-blue-500/60" title="Banner Cartonato: ${b}"><span>🏷️</span><span>${b}</span></div>`;

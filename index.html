@@ -16,9 +16,18 @@
   <meta name="twitter:card" content="summary_large_image">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png?v=1">
-  <link rel="icon" type="image/png" sizes="64x64" href="favicon-64x64.png?v=1">
-  <link rel="apple-touch-icon" sizes="180x180" href="favicon-64x64.png?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png?v=2">
+  <link rel="icon" type="image/png" sizes="64x64" href="favicon-64x64.png?v=2">
+  <link rel="icon" type="image/png" sizes="192x192" href="favicon-192x192.png?v=2">
+  <link rel="icon" type="image/png" sizes="512x512" href="favicon-512x512.png?v=2">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
+
+  <!-- Web App Manifest & PWA Configuration -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#090d16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="InsalAtlas">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -132,6 +141,14 @@
         <button onclick="exportGraphicHD()"
           class="px-3.5 py-1.5 rounded-lg text-xs font-extrabold bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white shadow-lg transition flex items-center gap-1.5">
           <i class="fa-solid fa-download"></i> Esporta HD
+        </button>
+
+        <!-- PWA Native Install Button (hidden until prompt available) -->
+        <button id="btn-pwa-install" onclick="promptPWAInstall()"
+          class="hidden px-3 py-1.5 rounded-lg text-xs font-bold border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 transition items-center gap-1.5 shadow-sm"
+          title="Installa InsalAtlas come App nativa sullo smartphone o desktop">
+          <i class="fa-solid fa-mobile-screen-button"></i>
+          <span class="hidden sm:inline">Installa App</span>
         </button>
 
       </div>

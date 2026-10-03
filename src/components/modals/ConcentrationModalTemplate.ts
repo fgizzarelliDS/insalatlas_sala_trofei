@@ -38,14 +38,14 @@ export function renderAnalyticsModalDOM(
       <button 
         type="button" 
         onclick="switchAnalyticsTab('${id}')" 
-        class="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm ${isActive ? '' : 'hover:bg-white/5'}"
+        class="flex-1 flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold transition shadow-sm ${isActive ? '' : 'hover:bg-white/5'}"
         style="${isActive
         ? 'background-color: var(--btn-bg); color: var(--btn-text); border: 1px solid var(--btn-border);'
         : 'color: var(--text-muted); background: transparent; border: 1px solid transparent;'
       }"
       >
-        <i class="${icon}"></i>
-        <span>${label}</span>
+        <i class="${icon} text-[10px] sm:text-xs"></i>
+        <span class="truncate">${label}</span>
       </button>
     `;
   };
@@ -221,23 +221,26 @@ export function renderAnalyticsModalDOM(
 
       <!-- Silverware & Efficiency Share Table -->
       <div class="border rounded-xl overflow-hidden" style="border-color: var(--table-border);">
-        <div class="px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider grid grid-cols-[1fr_120px_80px] sm:grid-cols-[1fr_140px_90px] items-center border-b" style="border-color: var(--table-border); background: rgba(0,0,0,0.12); color: var(--text-muted);">
-          <span>Allenatore</span>
-          <span class="text-center">${isPrestige ? 'Punti Prestigio' : 'Trofei'}</span>
-          <span class="text-right">Quota (%)</span>
+        <div class="px-2.5 sm:px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider grid grid-cols-[1fr_82px_64px] sm:grid-cols-[1fr_140px_90px] items-center border-b" style="border-color: var(--table-border); background: rgba(0,0,0,0.12); color: var(--text-muted);">
+          <span class="truncate">Allenatore</span>
+          <span class="text-center">${isPrestige ? '<span class="hidden sm:inline">Punti Prestigio</span><span class="sm:hidden">Prestigio</span>' : 'Trofei'}</span>
+          <span class="text-right"><span class="hidden sm:inline">Quota (%)</span><span class="sm:hidden">Quota</span></span>
         </div>
-        <div class="divide-y max-h-[145px] overflow-y-auto pr-1" style="border-color: var(--table-border); scrollbar-width: thin; scrollbar-color: var(--table-border) transparent;">
+        <div class="divide-y max-h-[145px] overflow-y-auto pr-0.5 sm:pr-1" style="border-color: var(--table-border); scrollbar-width: thin; scrollbar-color: var(--table-border) transparent;">
           ${tableProfiles.map((p, idx) => `
-            <div class="px-3 py-1.5 grid grid-cols-[1fr_120px_80px] sm:grid-cols-[1fr_140px_90px] items-center text-xs sm:text-sm hover:bg-white/5 transition">
-              <div class="flex items-center gap-2 min-w-0 pr-2">
-                <span class="w-4 text-center font-bold text-[11px] shrink-0 ${idx < 3 ? 'text-amber-400 font-black' : ''}" style="${idx >= 3 ? 'color: var(--text-muted);' : ''}">${idx + 1}</span>
+            <div class="px-2.5 sm:px-3 py-1.5 grid grid-cols-[1fr_82px_64px] sm:grid-cols-[1fr_140px_90px] items-center text-xs sm:text-sm hover:bg-white/5 transition">
+              <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 pr-1 sm:pr-2">
+                <span class="w-3.5 sm:w-4 text-center font-bold text-[10px] sm:text-[11px] shrink-0 ${idx < 3 ? 'text-amber-400 font-black' : ''}" style="${idx >= 3 ? 'color: var(--text-muted);' : ''}">${idx + 1}</span>
                 <span class="font-bold truncate" style="color: var(--text-main);">${p.name}</span>
                 <span class="text-[11px] shrink-0 hidden sm:inline" style="color: var(--text-muted);">
                   ${isPrestige ? `(${p.trophies} tit. | ${p.prestigeScore} pt)` : `(${p.trophies} titol${p.trophies === 1 ? 'o' : 'i'})`}
                 </span>
               </div>
-              <span class="font-mono text-xs text-center" style="color: var(--text-muted);">
-                ${isPrestige ? `${p.prestigeEfficiency} pt/anno` : `${p.efficiency} tit/anno`}
+              <span class="font-mono text-[11px] sm:text-xs text-center" style="color: var(--text-muted);">
+                ${isPrestige
+                  ? `<span class="hidden sm:inline">${p.prestigeEfficiency} pt/anno</span><span class="sm:hidden">${p.prestigeEfficiency} pt/a</span>`
+                  : `<span class="hidden sm:inline">${p.efficiency} tit/anno</span><span class="sm:hidden">${p.efficiency} t/a</span>`
+                }
               </span>
               <span class="font-mono font-bold text-xs text-right" style="color: var(--text-main);">
                 ${(isPrestige ? p.prestigeSharePct : p.trophySharePct).toFixed(1)}%
@@ -340,58 +343,61 @@ export function renderAnalyticsModalDOM(
       </div>
 
       <div class="border rounded-xl overflow-hidden" style="border-color: var(--table-border);">
-        <div class="px-3 py-2 text-[11px] uppercase font-bold tracking-wider grid grid-cols-[1fr_95px_88px_95px] sm:grid-cols-[1fr_120px_110px_120px] gap-2 items-center border-b select-none" style="border-color: var(--table-border); background: rgba(0,0,0,0.12); color: var(--text-muted);">
-          <button type="button" onclick="changeTab2Sort('name')" class="flex items-center text-left hover:text-amber-400 transition cursor-pointer font-bold uppercase tracking-wider truncate min-w-0">
-            <span>Allenatore</span>
+        <div class="px-2 sm:px-3 py-2 text-[10px] sm:text-[11px] uppercase font-bold tracking-wider grid grid-cols-[1fr_68px_60px_68px] sm:grid-cols-[1fr_120px_110px_120px] gap-1 sm:gap-2 items-center border-b select-none" style="border-color: var(--table-border); background: rgba(0,0,0,0.12); color: var(--text-muted);">
+          <button type="button" onclick="changeTab2Sort('name')" class="flex items-center text-left hover:text-amber-400 transition cursor-pointer font-bold uppercase tracking-wider min-w-0">
+            <span class="truncate">Allenatore</span>
             ${sortIcon('name')}
           </button>
           <button type="button" onclick="changeTab2Sort('podiumRate')" class="flex items-center justify-center hover:text-amber-400 transition cursor-pointer font-bold uppercase tracking-wider whitespace-nowrap">
-            <span>Tasso Podio</span>
+            <span class="hidden sm:inline">Tasso Podio</span>
+            <span class="sm:hidden">Podio</span>
             ${sortIcon('podiumRate')}
           </button>
           <button type="button" onclick="changeTab2Sort('killerInstinct')" class="flex items-center justify-center hover:text-amber-400 transition cursor-pointer font-bold uppercase tracking-wider whitespace-nowrap">
-            <span>Killer Inst.</span>
+            <span class="hidden sm:inline">Killer Inst.</span>
+            <span class="sm:hidden">Killer</span>
             ${sortIcon('killerInstinct')}
           </button>
           <button type="button" onclick="changeTab2Sort('clutch')" class="flex items-center justify-end hover:text-amber-400 transition cursor-pointer font-bold uppercase tracking-wider whitespace-nowrap">
-            <span>Cinismo Finali</span>
+            <span class="hidden sm:inline">Cinismo Finali</span>
+            <span class="sm:hidden">Cinismo</span>
             ${sortIcon('clutch')}
           </button>
         </div>
-        <div class="divide-y max-h-[195px] overflow-y-auto pr-1" style="border-color: var(--table-border); scrollbar-width: thin; scrollbar-color: var(--table-border) transparent;">
+        <div class="divide-y max-h-[195px] overflow-y-auto pr-0.5 sm:pr-1" style="border-color: var(--table-border); scrollbar-width: thin; scrollbar-color: var(--table-border) transparent;">
           ${clutchSorted.map((p, idx) => `
-            <div class="px-3 py-1.5 grid grid-cols-[1fr_95px_88px_95px] sm:grid-cols-[1fr_120px_110px_120px] gap-2 items-center text-xs sm:text-sm hover:bg-white/5 transition">
+            <div class="px-2 sm:px-3 py-1.5 grid grid-cols-[1fr_68px_60px_68px] sm:grid-cols-[1fr_120px_110px_120px] gap-1 sm:gap-2 items-center text-xs sm:text-sm hover:bg-white/5 transition">
               <!-- Allenatore -->
-              <div class="min-w-0 flex items-center gap-1.5 pr-1">
-                <span class="w-4 text-center font-bold text-[10px] shrink-0 ${idx < 3 ? 'text-amber-400 font-black' : ''}" style="${idx >= 3 ? 'color: var(--text-muted);' : ''}">${idx + 1}</span>
-                <div class="min-w-0">
+              <div class="min-w-0 flex items-center gap-1 sm:gap-1.5 pr-0.5">
+                <span class="w-3.5 sm:w-4 text-center font-bold text-[10px] shrink-0 ${idx < 3 ? 'text-amber-400 font-black' : ''}" style="${idx >= 3 ? 'color: var(--text-muted);' : ''}">${idx + 1}</span>
+                <div class="min-w-0 flex-1">
                   <span class="font-bold block truncate text-xs sm:text-sm" style="color: var(--text-main);">${p.name}</span>
-                  <span class="text-[10px] block truncate" style="color: var(--text-muted);">${p.years} ann${p.years === 1 ? 'o' : 'i'}</span>
+                  <span class="text-[9px] sm:text-[10px] block truncate" style="color: var(--text-muted);">${p.years} ann${p.years === 1 ? 'o' : 'i'}</span>
                 </div>
               </div>
 
               <!-- Tasso Podio (PR%) -->
               <div class="text-center">
-                <span class="font-mono font-bold text-xs ${p.podiumRatePct >= 50 ? 'text-amber-400 font-black' : ''}" style="${p.podiumRatePct < 50 ? 'color: var(--text-main);' : ''}">
+                <span class="font-mono font-bold text-[11px] sm:text-xs ${p.podiumRatePct >= 50 ? 'text-amber-400 font-black' : ''}" style="${p.podiumRatePct < 50 ? 'color: var(--text-main);' : ''}">
                   ${p.podiumRatePct.toFixed(1)}%
                 </span>
-                <span class="block text-[9px] font-mono" style="color: var(--text-muted);">${p.podiums}/${p.years}</span>
+                <span class="block text-[8px] sm:text-[9px] font-mono" style="color: var(--text-muted);">${p.podiums}/${p.years}</span>
               </div>
 
               <!-- Killer Instinct (KI%) -->
               <div class="text-center">
-                <span class="font-mono font-bold text-xs ${p.podiums === 0 ? 'opacity-40' : p.killerInstinctPct >= 60 ? 'text-emerald-400 font-black' : p.killerInstinctPct <= 25 ? 'text-orange-400' : ''}" style="${p.podiums > 0 && p.killerInstinctPct > 25 && p.killerInstinctPct < 60 ? 'color: var(--text-main);' : ''}">
+                <span class="font-mono font-bold text-[11px] sm:text-xs ${p.podiums === 0 ? 'opacity-40' : p.killerInstinctPct >= 60 ? 'text-emerald-400 font-black' : p.killerInstinctPct <= 25 ? 'text-orange-400' : ''}" style="${p.podiums > 0 && p.killerInstinctPct > 25 && p.killerInstinctPct < 60 ? 'color: var(--text-main);' : ''}">
                   ${p.podiums > 0 ? `${p.killerInstinctPct.toFixed(0)}%` : '—'}
                 </span>
-                <span class="block text-[9px] font-mono" style="color: var(--text-muted);">${p.podiums > 0 ? `${p.gold}/${p.podiums} ${p.gold === 1 ? 'oro' : 'ori'}` : '0 podi'}</span>
+                <span class="block text-[8px] sm:text-[9px] font-mono" style="color: var(--text-muted);">${p.podiums > 0 ? `${p.gold}/${p.podiums} ${p.gold === 1 ? 'oro' : 'ori'}` : '0 podi'}</span>
               </div>
 
               <!-- Cinismo Finali (CR%) -->
               <div class="text-right">
-                <span class="font-mono font-bold text-xs ${p.finalsPlayed === 0 ? 'opacity-40' : p.conversionRatePct >= 70 ? 'text-emerald-400 font-black' : p.conversionRatePct <= 35 && p.finalsPlayed >= 2 ? 'text-indigo-400 font-bold' : ''}" style="${p.finalsPlayed > 0 && (p.conversionRatePct > 35 || p.finalsPlayed < 2) && p.conversionRatePct < 70 ? 'color: var(--text-main);' : ''}">
+                <span class="font-mono font-bold text-[11px] sm:text-xs ${p.finalsPlayed === 0 ? 'opacity-40' : p.conversionRatePct >= 70 ? 'text-emerald-400 font-black' : p.conversionRatePct <= 35 && p.finalsPlayed >= 2 ? 'text-indigo-400 font-bold' : ''}" style="${p.finalsPlayed > 0 && (p.conversionRatePct > 35 || p.finalsPlayed < 2) && p.conversionRatePct < 70 ? 'color: var(--text-main);' : ''}">
                   ${p.finalsPlayed > 0 ? `${p.conversionRatePct.toFixed(0)}%` : '—'}
                 </span>
-                <span class="block text-[9px] font-mono" style="color: var(--text-muted);">${p.finalsPlayed > 0 ? `${p.finalsWon}/${p.finalsPlayed} v.` : '0 fin.'}</span>
+                <span class="block text-[8px] sm:text-[9px] font-mono" style="color: var(--text-muted);">${p.finalsPlayed > 0 ? `${p.finalsWon}/${p.finalsPlayed} v.` : '0 fin.'}</span>
               </div>
             </div>
           `).join('')}
@@ -758,7 +764,7 @@ export function renderAnalyticsModalDOM(
 
   container.innerHTML = `
     <!-- Modal Fixed Header -->
-    <div class="px-5 py-3 sm:px-6 sm:py-3.5 border-b flex items-center justify-between shrink-0" style="border-color: var(--table-border);">
+    <div class="px-3.5 py-2.5 sm:px-6 sm:py-3.5 border-b flex items-center justify-between shrink-0" style="border-color: var(--table-border);">
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm shadow-sm" style="background: rgba(255,255,255,0.05); border: 1px solid var(--table-border);">
           <i class="fa-solid fa-chart-pie text-amber-400"></i>
@@ -778,14 +784,14 @@ export function renderAnalyticsModalDOM(
     </div>
 
     <!-- Navigation Tabs Bar -->
-    <div class="px-5 sm:px-6 py-2 border-b flex items-center gap-2 overflow-x-auto shrink-0" style="border-color: var(--table-border); background: rgba(0,0,0,0.08);">
+    <div class="px-3 sm:px-6 py-2 border-b flex items-center gap-1.5 sm:gap-2 overflow-x-auto shrink-0" style="border-color: var(--table-border); background: rgba(0,0,0,0.08);">
       ${tabButton('macro', 'Equilibrio & Macro', 'fa-solid fa-scale-balanced')}
       ${tabButton('clutch', 'Cinismo & Podi', 'fa-solid fa-bullseye')}
       ${tabButton('risk', 'Archetipi', 'fa-solid fa-dice')}
     </div>
 
     <!-- Modal Scrollable Body -->
-    <div class="px-5 py-3 sm:px-6 sm:py-3.5 overflow-y-auto space-y-2.5 flex-1 min-h-0">
+    <div class="px-3 py-2.5 sm:px-6 sm:py-3.5 overflow-y-auto space-y-2.5 flex-1 min-h-0">
       
       <!-- Dynamic Tab Content -->
       ${tabContentHTML}
@@ -793,7 +799,7 @@ export function renderAnalyticsModalDOM(
     </div>
 
     <!-- Modal Fixed Footer -->
-    <div class="px-5 py-2.5 sm:px-6 sm:py-3 border-t flex justify-end shrink-0" style="border-color: var(--table-border);">
+    <div class="px-3.5 py-2 sm:px-6 sm:py-3 border-t flex justify-end shrink-0" style="border-color: var(--table-border);">
       <button type="button" onclick="closeConcentrationModal()" class="px-4 py-1.5 rounded-xl text-xs sm:text-sm font-bold border transition shadow-sm"
         style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);">
         Chiudi

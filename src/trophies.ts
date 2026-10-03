@@ -101,7 +101,7 @@ export function renderCoachBanner(badgeName: string): string {
     return `<div class="coach-banner bg-gradient-to-r from-blue-800 to-indigo-950 text-amber-300 border border-blue-400 font-extrabold px-2.5" title="Banner Cartonato: Mister Misterioso (???)"><span>❓</span><span>???</span></div>`;
   }
   if (b === 'PIOLI') {
-    return `<div class="coach-banner bg-gradient-to-r from-zinc-400 to-neutral-950 text-slate-100 border border-zinc-500" title="Banner Cartonato: Stefano Pioli (On Fire)"><span>🔥</span><span>PIOLI</span></div>`;
+    return `<div class="coach-banner bg-gradient-to-r from-zinc-450 to-neutral-950 text-slate-100 border border-zinc-500" title="Banner Cartonato: Stefano Pioli (On Fire)"><span>🔥</span><span>PIOLI</span></div>`;
   }
 
   return `<div class="coach-banner bg-gradient-to-r from-blue-900 to-slate-900 text-blue-200 border border-blue-500/60" title="Banner Cartonato: ${b}"><span>🏷️</span><span>${b}</span></div>`;

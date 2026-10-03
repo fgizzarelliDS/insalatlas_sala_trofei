@@ -352,7 +352,8 @@
   <!-- MODAL: SCHEDA PROFILO ALLENATORE (SOLA LETTURA) -->
   <div id="manager-profile-modal"
     class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden items-center justify-center p-4">
-    <div id="manager-profile-card" class="border w-full max-w-xl rounded-3xl shadow-2xl p-5 sm:p-6 max-h-[92vh] overflow-y-auto transition-colors"
+    <div id="manager-profile-card"
+      class="border w-full max-w-xl rounded-3xl shadow-2xl p-5 sm:p-6 max-h-[92vh] overflow-y-auto transition-colors"
       style="background-color: var(--modal-bg); border-color: var(--modal-border); color: var(--modal-text);">
 
       <!-- Header Profilo -->
@@ -422,7 +423,8 @@
       </div>
 
       <!-- Footer Buttons: Compact Share Dropdown & Chiudi Scheda -->
-      <div id="profile-modal-footer-actions" class="flex items-center justify-between pt-3 border-t relative" style="border-color: var(--table-border);">
+      <div id="profile-modal-footer-actions" class="flex items-center justify-between pt-3 border-t relative"
+        style="border-color: var(--table-border);">
         <div class="relative">
           <button id="btn-share-dropdown" onclick="toggleShareDropdown(event)"
             class="px-4 py-2 rounded-xl text-xs font-bold border transition shadow-sm flex items-center gap-1.5 opacity-90 hover:opacity-100"
@@ -433,7 +435,8 @@
           </button>
 
           <!-- Dropdown Popover Menu (opens upward) -->
-          <div id="share-dropdown-menu" class="hidden absolute bottom-full left-0 mb-2 w-52 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
+          <div id="share-dropdown-menu"
+            class="hidden absolute bottom-full left-0 mb-2 w-52 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
             style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--modal-text);">
             <button onclick="exportCurrentProfileModalHD(); closeShareDropdown();"
               class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition">
@@ -594,7 +597,7 @@
               <input type="text" id="field-cartonato-badges" placeholder="es. ???, MAZZARRI oppure JURIC"
                 class="w-full p-2 border rounded-lg font-semibold uppercase text-xs"
                 style="background-color: var(--input-bg); border-color: var(--input-border); color: var(--input-text);">
-              <p class="text-[10px] opacity-75 mt-1">Separa con virgola (es. JURIC, ???, MAZZARRI, ALLEGRI)</p>
+              <p class="text-[10px] opacity-75 mt-1">Separa con virgola (es. JURIC, ???, MAZZARRI, PIOLI)</p>
             </div>
           </div>
         </div>
@@ -624,16 +627,16 @@
 
   <!-- Modal: Concentration & Competitive Health -->
   <div id="concentration-modal"
-    class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
-    <div
-      class="w-full max-w-2xl rounded-3xl border shadow-2xl flex flex-col max-h-[92vh] overflow-hidden relative"
+    class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-2 sm:p-4">
+    <div class="w-full max-w-2xl rounded-3xl border shadow-2xl flex flex-col max-h-[92vh] overflow-hidden relative"
       style="background-color: var(--modal-bg); border-color: var(--modal-border); color: var(--modal-text);">
       <div id="concentration-modal-content" class="flex flex-col h-full overflow-hidden"></div>
     </div>
   </div>
 
   <!-- Off-screen buffer for rendering high-res trading cards without viewport jumps -->
-  <div id="card-render-buffer" class="fixed -left-[9999px] top-0 pointer-events-none opacity-0 z-[-1]" aria-hidden="true"></div>
+  <div id="card-render-buffer" class="fixed -left-[9999px] top-0 pointer-events-none opacity-0 z-[-1]"
+    aria-hidden="true"></div>
 
   <!-- TypeScript Vite Entry Point -->
   <script type="module" src="/src/main.ts"></script>

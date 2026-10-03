@@ -64,35 +64,57 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Navigation fallback for SPA/HTML
+  // 2. Network-First for SPA/HTML navigation with offline cache update (bypasses browser HTTP max-age cache)
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(async () => {
-        const cache = await caches.open(CACHE_NAME);
-        const fallback = await cache.match('./index.html') || await cache.match('/');
-        return fallback || Response.error();
-      })
+      fetch(new Request(event.request, { cache: 'reload' }))
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, clone);
+              cache.put('./index.html', clone.clone());
+              cache.put('./', clone.clone());
+            });
+          }
+          return networkResponse;
+        })
+        .catch(async () => {
+          const cache = await caches.open(CACHE_NAME);
+          const fallback =
+            (await cache.match(event.request)) ||
+            (await cache.match('./index.html')) ||
+            (await cache.match('./')) ||
+            (await cache.match('/'));
+          return fallback || Response.error();
+        })
     );
     return;
   }
 
-  // 3. Cache-First for static assets (scripts, styles, images, fonts)
+  // 3. Static Assets:
+  // - Hashed Vite chunks (/assets/*): Cache-First (immutable URLs with content-hash)
+  // - Non-hashed assets (CSS/favicons/images): Stale-While-Revalidate (instant load + auto background update)
   event.respondWith(
     caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
-        // Cache successfully fetched same-origin or CDN resources
-        if (response && response.status === 200 && response.type !== 'opaque') {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return response;
-      }).catch(() => {
-        // Silent catch for broken images/fonts when offline
-        return cached || Response.error();
-      });
+      const isHashedAsset = url.pathname.includes('/assets/');
+      if (cached && isHashedAsset) {
+        return cached;
+      }
+
+      const fetchPromise = fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200 && response.type !== 'opaque') {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return response;
+        })
+        .catch(() => cached || Response.error());
+
+      return cached || fetchPromise;
     })
   );
 });

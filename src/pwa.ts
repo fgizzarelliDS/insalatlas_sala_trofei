@@ -28,11 +28,31 @@ export function initPWA(): void {
 
     // Only activate Service Worker in production / GitHub Pages to keep dev reload instant
     if (!isLocalhost) {
+      // Auto-reload immediately when a new service worker takes control
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
+
+      // Periodically check for updates when returning to the app
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          navigator.serviceWorker.getRegistration().then((reg) => {
+            reg?.update();
+          });
+        }
+      });
+
       window.addEventListener('load', () => {
         navigator.serviceWorker
           .register('./sw.js')
           .then((reg) => {
-            // Check for updates periodically or on reload
+            // Check for updates on initial page load
+            reg.update();
+
             reg.addEventListener('updatefound', () => {
               const installingWorker = reg.installing;
               if (installingWorker) {

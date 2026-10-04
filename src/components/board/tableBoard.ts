@@ -155,9 +155,9 @@ export function renderBoard(): void {
     } else {
       champHTML = `
         <div class="flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base font-extrabold pb-2">
-          ${m.gold ? `<span class="text-amber-400">🥇 ${m.gold}</span>` : ''}
-          ${m.silver ? `<span class="text-slate-300">🥈 ${m.silver}</span>` : ''}
-          ${m.bronze ? `<span class="text-amber-600">🥉 ${m.bronze}</span>` : ''}
+          ${m.gold ? `<span class="inline-flex items-center gap-1 text-amber-400">${renderTrophySVG('gold_cup', 'compact')}<span>${m.gold}</span></span>` : ''}
+          ${m.silver ? `<span class="inline-flex items-center gap-1 text-slate-300">${renderTrophySVG('silver_cup', 'compact')}<span>${m.silver}</span></span>` : ''}
+          ${m.bronze ? `<span class="inline-flex items-center gap-1 text-amber-600">${renderTrophySVG('bronze_cup', 'compact')}<span>${m.bronze}</span></span>` : ''}
         </div>
       `;
     }
@@ -171,7 +171,11 @@ export function renderBoard(): void {
         ? `<div class="flex flex-nowrap items-end justify-center gap-1 pb-0">${items.join('')}</div>`
         : '';
     } else {
-      spoonHTML = m.spoon ? `<span class="text-sm sm:text-base font-extrabold text-amber-600 pb-2 inline-block">🥄 ${m.spoon}</span>` : '';
+      spoonHTML = m.spoon ? `
+        <div class="flex items-center justify-center gap-1 text-sm sm:text-base font-extrabold text-amber-600 pb-2">
+          ${renderTrophySVG('wooden_spoon', 'compact')}<span>${m.spoon}</span>
+        </div>
+      ` : '';
     }
 
     // 3. Coppa di Lega
@@ -186,8 +190,8 @@ export function renderBoard(): void {
     } else {
       cupHTML = `
         <div class="flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base font-extrabold pb-2">
-          ${m.cup_gold ? `<span class="text-amber-400">🏆 ${m.cup_gold}</span>` : ''}
-          ${m.cup_silver ? `<span class="text-slate-300">🥈 ${m.cup_silver}</span>` : ''}
+          ${m.cup_gold ? `<span class="inline-flex items-center gap-1 text-amber-400">${renderTrophySVG('coppa_gold', 'compact')}<span>${m.cup_gold}</span></span>` : ''}
+          ${m.cup_silver ? `<span class="inline-flex items-center gap-1 text-slate-300">${renderTrophySVG('coppa_silver', 'compact')}<span>${m.cup_silver}</span></span>` : ''}
         </div>
       `;
     }
@@ -201,7 +205,11 @@ export function renderBoard(): void {
         ? `<div class="flex flex-nowrap items-end justify-center gap-1 pb-0">${items.join('')}</div>`
         : '';
     } else {
-      superHTML = m.supercup ? `<span class="text-sm sm:text-base font-extrabold text-yellow-400 pb-2 inline-block">⭐ ${m.supercup}</span>` : '';
+      superHTML = m.supercup ? `
+        <div class="flex items-center justify-center gap-1 text-sm sm:text-base font-extrabold text-yellow-400 pb-2">
+          ${renderTrophySVG('supercup', 'compact')}<span>${m.supercup}</span>
+        </div>
+      ` : '';
     }
 
     // 5. Mundialito
@@ -213,7 +221,11 @@ export function renderBoard(): void {
         ? `<div class="flex flex-nowrap items-end justify-center gap-1.5 pb-0">${items.join('')}</div>`
         : '';
     } else {
-      mundialitoHTML = m.mundialito ? `<span class="text-sm sm:text-base font-extrabold text-cyan-400 pb-2 inline-block">🌍 ${m.mundialito}</span>` : '';
+      mundialitoHTML = m.mundialito ? `
+        <div class="flex items-center justify-center gap-1 text-sm sm:text-base font-extrabold text-cyan-400 pb-2">
+          ${renderTrophySVG('mundialito', 'compact')}<span>${m.mundialito}</span>
+        </div>
+      ` : '';
     }
 
     // 6. Cartonato (Playout) - Solo Banner

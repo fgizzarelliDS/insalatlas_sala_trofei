@@ -9,7 +9,9 @@ export interface Manager {
   cup_gold: number;
   cup_silver: number;
   supercup: number;
+  supercup_silver?: number;
   mundialito: number;
+  mundialito_silver?: number;
   cartonato: number;
   coach_banners?: string[];
   cartonato_coaches?: string[];

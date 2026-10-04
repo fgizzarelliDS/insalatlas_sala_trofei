@@ -433,9 +433,9 @@ export function renderAnalyticsModalDOM(
           <div>
             <div class="flex items-center justify-between">
               <strong class="font-semibold" style="color: var(--text-main);">Cinismo nelle Finali (CR%):</strong>
-              <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">CR% = (Scudetti + Coppe Vinte) / Finali Totali × 100</code>
+              <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">CR% = Coppe Vinte / Finali Coppe × 100</code>
             </div>
-            <p class="mt-0.5">Rapporto tra finali vinte e disputate (Scudetti e Coppe di Lega, considerando Ori e Argenti). Identifica chi esalta il proprio rendimento negli scontri diretti e chi risente della pressione decisiva.</p>
+            <p class="mt-0.5">Rapporto di conversione nei trofei a scontro diretto secco (Coppa di Lega e Supercoppa). Misura la freddezza e la letalità quando c'è un trofeo in palio in una finale secca.</p>
           </div>
         </div>
       </div>

@@ -13,7 +13,8 @@
       "supercup": 2,
       "mundialito": 0,
       "cartonato": 0,
-      "cartonato_coaches": []
+      "cartonato_coaches": [],
+      "supercup_silver": 1
     },
     {
       "id": "m_lucchetto",
@@ -28,7 +29,8 @@
       "supercup": 1,
       "mundialito": 1,
       "cartonato": 0,
-      "cartonato_coaches": []
+      "cartonato_coaches": [],
+      "supercup_silver": 0
     },
     {
       "id": "m_alfo",
@@ -43,7 +45,8 @@
       "supercup": 3,
       "mundialito": 2,
       "cartonato": 0,
-      "cartonato_coaches": []
+      "cartonato_coaches": [],
+      "supercup_silver": 1
     },
     {
       "id": "m_makako",
@@ -58,7 +61,8 @@
       "supercup": 0,
       "mundialito": 0,
       "cartonato": 0,
-      "cartonato_coaches": []
+      "cartonato_coaches": [],
+      "supercup_silver": 1
     },
     {
       "id": "m_peterdani",
@@ -73,7 +77,8 @@
       "supercup": 1,
       "mundialito": 0,
       "cartonato": 0,
-      "cartonato_coaches": []
+      "cartonato_coaches": [],
+      "supercup_silver": 2
     },
     {
       "id": "m_valery",
@@ -88,7 +93,8 @@
       "supercup": 0,
       "mundialito": 0,
       "cartonato": 0,
-      "cartonato_coaches": []
+      "cartonato_coaches": [],
+      "supercup_silver": 0
     },
     {
       "id": "m_sebba",
@@ -103,7 +109,8 @@
       "supercup": 0,
       "mundialito": 0,
       "cartonato": 0,
-      "cartonato_coaches": []
+      "cartonato_coaches": [],
+      "supercup_silver": 1
     },
     {
       "id": "m_pippo",
@@ -120,7 +127,8 @@
       "cartonato": 1,
       "cartonato_coaches": [
         "JURIC"
-      ]
+      ],
+      "supercup_silver": 1
     },
     {
       "id": "m_gigicholo",
@@ -138,7 +146,8 @@
       "cartonato_coaches": [
         "???",
         "MAZZARRI"
-      ]
+      ],
+      "supercup_silver": 0
     },
     {
       "id": "m_compagno",
@@ -153,7 +162,8 @@
       "supercup": 0,
       "mundialito": 0,
       "cartonato": 0,
-      "cartonato_coaches": []
+      "cartonato_coaches": [],
+      "supercup_silver": 0
     },
     {
       "id": "m_scurcio",
@@ -168,7 +178,8 @@
       "supercup": 0,
       "mundialito": 0,
       "cartonato": 0,
-      "cartonato_coaches": []
+      "cartonato_coaches": [],
+      "supercup_silver": 0
     },
     {
       "id": "m_avvisatina",
@@ -183,7 +194,8 @@
       "supercup": 0,
       "mundialito": 0,
       "cartonato": 0,
-      "cartonato_coaches": []
+      "cartonato_coaches": [],
+      "supercup_silver": 0
     },
     {
       "id": "m_tazio",
@@ -200,7 +212,8 @@
       "cartonato": 1,
       "cartonato_coaches": [
         "JURIC"
-      ]
+      ],
+      "supercup_silver": 0
     },
     {
       "id": "m_vannicosebbi",
@@ -217,7 +230,8 @@
       "cartonato": 1,
       "cartonato_coaches": [
         "PIOLI"
-      ]
+      ],
+      "supercup_silver": 0
     },
     {
       "id": "m_makakocompagno",
@@ -232,7 +246,8 @@
       "supercup": 0,
       "mundialito": 0,
       "cartonato": 0,
-      "cartonato_coaches": []
+      "cartonato_coaches": [],
+      "supercup_silver": 0
     },
     {
       "id": "m_matteone",
@@ -247,7 +262,8 @@
       "supercup": 0,
       "mundialito": 0,
       "cartonato": 0,
-      "cartonato_coaches": []
+      "cartonato_coaches": [],
+      "supercup_silver": 0
     },
     {
       "id": "m_erboro",
@@ -262,7 +278,8 @@
       "supercup": 0,
       "mundialito": 0,
       "cartonato": 0,
-      "cartonato_coaches": []
+      "cartonato_coaches": [],
+      "supercup_silver": 0
     },
     {
       "id": "m_1790651479571",
@@ -277,7 +294,8 @@
       "supercup": 0,
       "mundialito": 0,
       "cartonato": 0,
-      "cartonato_coaches": []
+      "cartonato_coaches": [],
+      "supercup_silver": 0
     }
   ],
   "customTitles": {

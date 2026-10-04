@@ -114,13 +114,15 @@
         <button onclick="toggleDisplayMode()" id="btn-display-mode"
           class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold border transition flex items-center gap-1.5 shadow-sm"
           style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);">
-          <i class="fa-solid fa-shapes"></i> <span id="display-mode-label"><span class="hidden sm:inline">Mostra </span>Badge Compatti</span>
+          <i class="fa-solid fa-shapes"></i> <span id="display-mode-label"><span class="hidden sm:inline">Mostra
+            </span>Badge Compatti</span>
         </button>
 
         <!-- Edit Data & Titles Button -->
         <button onclick="toggleEditMode()" id="btn-edit-mode"
           class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-500/50 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition flex items-center gap-1.5 shadow">
-          <i class="fa-solid fa-pen-to-square"></i> <span id="edit-mode-label"><span class="hidden sm:inline">Modifica </span>Dati<span class="hidden sm:inline"> &amp; Titoli</span></span>
+          <i class="fa-solid fa-pen-to-square"></i> <span id="edit-mode-label"><span class="hidden sm:inline">Modifica
+            </span>Dati<span class="hidden sm:inline"> &amp; Titoli</span></span>
         </button>
 
         <!-- Add Manager Button -->
@@ -301,15 +303,15 @@
       </div>
 
       <!-- Mobile Scroll Hint Pill -->
-      <div id="scroll-hint-pill"
-        data-html2canvas-ignore="true"
+      <div id="scroll-hint-pill" data-html2canvas-ignore="true"
         class="md:hidden flex items-center justify-between px-3.5 py-2 mb-2.5 rounded-xl border text-xs font-bold shadow-sm transition-all duration-300"
         style="background-color: var(--table-surface); border-color: var(--table-border); color: var(--accent-color);">
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-arrows-left-right text-xs"></i>
           <span>Scorri per vedere i trofei 👉</span>
         </div>
-        <button type="button" onclick="dismissScrollHint()" class="opacity-60 hover:opacity-100 text-base px-1 leading-none font-bold" title="Chiudi avviso">
+        <button type="button" onclick="dismissScrollHint()"
+          class="opacity-60 hover:opacity-100 text-base px-1 leading-none font-bold" title="Chiudi avviso">
           &times;
         </button>
       </div>
@@ -329,9 +331,11 @@
               </div>
               <div id="th-col-2" data-title-key="col2" onblur="handleTitleBlur(this)"
                 class="text-center px-1 sm:px-3 transition text-[11px] sm:text-xs">Campionato</div>
-              <div id="th-col-3" data-title-key="col3" onblur="handleTitleBlur(this)" class="text-center transition text-[11px] sm:text-xs">
+              <div id="th-col-3" data-title-key="col3" onblur="handleTitleBlur(this)"
+                class="text-center transition text-[11px] sm:text-xs">
                 Cucchiaio</div>
-              <div id="th-col-4" data-title-key="col4" onblur="handleTitleBlur(this)" class="text-center transition text-[11px] sm:text-xs">
+              <div id="th-col-4" data-title-key="col4" onblur="handleTitleBlur(this)"
+                class="text-center transition text-[11px] sm:text-xs">
                 Coppa di Lega</div>
               <div id="th-col-5" data-title-key="col5" onblur="handleTitleBlur(this)"
                 class="text-center px-1 transition text-[10px] sm:text-xs tracking-tight sm:tracking-wider truncate">
@@ -529,7 +533,7 @@
           </div>
           <div class="grid grid-cols-3 gap-3">
             <div>
-              <label class="text-amber-400 block mb-1 font-semibold">🥇 1° Posto (Scudetto)</label>
+              <label class="text-amber-400 block mb-1 font-semibold">🥇 1° Posto</label>
               <input type="number" id="field-gold" min="0" value="0"
                 class="w-full p-2 border rounded-lg text-center font-bold text-sm"
                 style="background-color: var(--input-bg); border-color: var(--input-border); color: var(--input-text);">
@@ -556,33 +560,39 @@
             style="color: var(--text-main);">
             <i class="fa-solid fa-award text-amber-400"></i> Coppe di Lega, Cucchiai, Supercoppe &amp; Mundialito
           </div>
-          <div class="grid grid-cols-5 gap-2">
+          <div class="grid grid-cols-3 gap-3">
             <div>
-              <label class="text-amber-500 block mb-1 font-semibold">🥄 Cucchiaio</label>
+              <label class="text-amber-500 block mb-1 font-semibold text-xs sm:text-sm">🥄 Cucchiaio</label>
               <input type="number" id="field-spoon" min="0" value="0"
                 class="w-full p-2 border rounded-lg text-center font-bold text-sm"
                 style="background-color: var(--input-bg); border-color: var(--input-border); color: var(--input-text);">
             </div>
             <div>
-              <label class="text-amber-400 block mb-1 font-semibold">🏆 Coppa 1°</label>
+              <label class="text-amber-400 block mb-1 font-semibold text-xs sm:text-sm">🏆 Coppa 1°</label>
               <input type="number" id="field-cup-gold" min="0" value="0"
                 class="w-full p-2 border rounded-lg text-center font-bold text-sm"
                 style="background-color: var(--input-bg); border-color: var(--input-border); color: var(--input-text);">
             </div>
             <div>
-              <label class="block mb-1 font-semibold opacity-90">🥈 Coppa 2°</label>
+              <label class="block mb-1 font-semibold opacity-90 text-xs sm:text-sm">🥈 Coppa 2°</label>
               <input type="number" id="field-cup-silver" min="0" value="0"
                 class="w-full p-2 border rounded-lg text-center font-bold text-sm"
                 style="background-color: var(--input-bg); border-color: var(--input-border); color: var(--input-text);">
             </div>
             <div>
-              <label class="text-yellow-400 block mb-1 font-semibold">⭐ Superc.</label>
+              <label class="text-yellow-400 block mb-1 font-semibold text-xs sm:text-sm">⭐ Supercoppa</label>
               <input type="number" id="field-supercup" min="0" value="0"
                 class="w-full p-2 border rounded-lg text-center font-bold text-sm"
                 style="background-color: var(--input-bg); border-color: var(--input-border); color: var(--input-text);">
             </div>
             <div>
-              <label class="text-cyan-400 block mb-1 font-semibold">🌍 Mund.</label>
+              <label class="block mb-1 font-semibold opacity-90 text-xs sm:text-sm">🥈 Superc. 2°</label>
+              <input type="number" id="field-supercup-silver" min="0" value="0"
+                class="w-full p-2 border rounded-lg text-center font-bold text-sm"
+                style="background-color: var(--input-bg); border-color: var(--input-border); color: var(--input-text);">
+            </div>
+            <div>
+              <label class="text-cyan-400 block mb-1 font-semibold text-xs sm:text-sm">🌍 Mundialito</label>
               <input type="number" id="field-mundialito" min="0" value="0"
                 class="w-full p-2 border rounded-lg text-center font-bold text-sm"
                 style="background-color: var(--input-bg); border-color: var(--input-border); color: var(--input-text);">

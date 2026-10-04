@@ -188,15 +188,14 @@ describe('analytics.ts - Econometric and Analytical Invariants', () => {
         id: 'clinical',
         name: 'Clinical',
         years: 10,
-        gold: 1,
         cup_gold: 1,
-        silver: 0,
+        supercup: 1,
         cup_silver: 0,
-        bronze: 0,
+        supercup_silver: 0,
         spoon: 0,
         cartonato: 0
       });
-      // Finals won = 2, finals played = 2, conversion = 100%
+      // Cup finals won = 2, finals played = 2, conversion = 100%
       const arch = getManagerArchetype(m);
       expect(arch.tag).toBe('Cinico Chirurgico');
     });
@@ -348,6 +347,41 @@ describe('analytics.ts - Econometric and Analytical Invariants', () => {
       const res = computeLeagueConcentration(managersWithNegativeRatings);
       expect(res.giniRating).toBeGreaterThanOrEqual(0);
       expect(res.giniRating).toBeLessThanOrEqual(1);
+    });
+
+    it('accurately computes pure cup finals conversion rate including Supercoppa for Alfo (6 won / 7 played = 85.7%)', () => {
+      const alfo: Manager = createTestManager({
+        id: 'm_alfo',
+        name: 'Alfo',
+        years: 10,
+        gold: 1,
+        silver: 3,
+        cup_gold: 3,
+        cup_silver: 0,
+        supercup: 3,
+        supercup_silver: 1
+      });
+      // finalsWon = 3 (cup_gold) + 3 (supercup) = 6
+      // finalsPlayed = 6 + 0 (cup_silver) + 1 (supercup_silver) = 7
+      // conversionRatePct = (6 / 7) * 100 = 85.7%
+      const res = computeLeagueConcentration([alfo]);
+      const profile = res.profiles[0];
+      expect(profile.finalsWon).toBe(6);
+      expect(profile.finalsPlayed).toBe(7);
+      expect(profile.conversionRatePct).toBe(85.7);
+    });
+
+    it('handles zero finals played safely with conversionRatePct 0', () => {
+      const m: Manager = createTestManager({
+        id: 'zero',
+        name: 'NoFinals',
+        years: 3
+      });
+      const res = computeLeagueConcentration([m]);
+      const profile = res.profiles[0];
+      expect(profile.finalsWon).toBe(0);
+      expect(profile.finalsPlayed).toBe(0);
+      expect(profile.conversionRatePct).toBe(0);
     });
   });
 });

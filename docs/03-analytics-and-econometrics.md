@@ -7,6 +7,7 @@ Il modulo analitico `src/analytics/` (`econometrics.ts`, `tailRisk.ts`, `archety
 ## 1. Pilastro I: Silverware Prestige Index & Macro-Parità
 
 ### 1.1 Silverware Prestige Index (SPI)
+
 Per evitare che una Supercoppa vinta in gara secca abbia lo stesso peso di uno Scudetto conquistato su 38 giornate, ogni titolo è ponderato per difficoltà strutturale:
 
 | Competizione | Parametro | Peso ($w$) | Ratio Analitica |
@@ -54,6 +55,7 @@ Nei campionati di Fantacalcio ($N = 8 \dots 14$), il solo indice di Gini teorico
 | **#4** | **Competizione Aperta** | ⚽ | 🔵 Blu (`#3b82f6`) | *Fallback predefinito (nessun estremo soddisfatto)* | Alternanza equilibrata e fisiologica: classe media viva e competitiva, rotazione sana tra i vincitori e contesa aperta su ogni fronte. |
 
 > [!NOTE]
+>
 > - **$G_{\text{prestige}}$**: Coefficiente di Gini ponderato per la difficoltà dei titoli conquistati ($[0.0, 1.0]$).
 > - **$CR_3^{\text{prestige}}$**: Quota percentuale di prestigio detenuta dai primi 3 manager della lega ($[0\%, 100\%]$).
 > - **$\text{HHI}_{\text{prestige}}$**: Herfindahl-Hirschman Index sommato sulle quote percentuali di prestigio ($\sum s_i^2$, $[0, 10000]$).
@@ -69,10 +71,16 @@ Nei campionati di Fantacalcio ($N = 8 \dots 14$), il solo indice di Gini teorico
 - **Killer Instinct ($KI_i$)**: Capacità di convertire una presenza sul podio nella conquista dello Scudetto:
   $$KI_i = \left(\frac{\text{Gold}_i}{\text{Gold}_i + \text{Silver}_i + \text{Bronze}_i}\right) \times 100$$
 
-### 2.2 Finals Conversion Rate (Clutch vs. Bottler)
+### 2.2 Finals Conversion Rate (Clutch vs. Bottler nelle Coppe)
 
-Misura la percentuale di successo nelle finali disputate (Scudetti e Coppe di Lega):
-$$\text{Conversion Rate}_i = \left(\frac{\text{Gold}_i + \text{CupGold}_i}{\text{Gold}_i + \text{CupGold}_i + \text{Silver}_i + \text{CupSilver}_i}\right) \times 100$$
+Misura la percentuale di successo nelle **finali secche a eliminazione diretta** (Coppa di Lega e Supercoppa):
+$$\text{Conversion Rate}_i = \left(\frac{\text{CupGold}_i + \text{Supercup}_i}{\text{CupGold}_i + \text{Supercup}_i + \text{CupSilver}_i + \text{SupercupSilver}_i}\right) \times 100$$
+
+> [!NOTE]
+>
+> - **Separazione Ortogonale tra Campionato e Coppe**: Lo Scudetto è governato dal **Killer Instinct ($KI\%$)**, che misura la maratona a tappe del campionato (capacità di convertire i podi in trionfi). Il **Conversion Rate ($CR\%$)** è invece strettamente riservato alle **finali secche da dentro o fuori**: misura la freddezza nei 90 minuti quando c'è una coppa in palio.
+> - **Accesso alla Supercoppa**: Si qualificano alla finale annuale il vincitore dello Scudetto ($\text{Gold}$) e il vincitore della Coppa di Lega ($\text{CupGold}$) di ciascuna stagione (competizione introdotta a partire dalla 4ª edizione della lega). Chi vince conquista la Supercoppa ($\text{Supercup}$), chi viene sconfitto registra una finale persa ($\text{SupercupSilver}$).
+> - **Mundialito**: Verrà integrato nel computo del cinismo non appena sarà formalizzato lo storico completo dei 3 sconfitti in finale delle rispettive edizioni.
 
 ---
 
@@ -127,7 +135,21 @@ A ogni manager viene assegnato un solo archetipo comportamentale primario. La cl
 | **#9** | **Partecipante** | 👔 | ⚪ Grigio Ardesia (`#94a3b8`) | *Fallback predefinito (nessun criterio sopra)* | Profilo neutro di transizione a metà classifica; in attesa di definire la propria traiettoria storica. |
 
 > [!NOTE]
+>
 > - **$P$**: Silverware Prestige Points ($3.0 \cdot \text{Gold} + 1.5 \cdot \text{CupGold} + 0.75 \cdot \text{Supercup} + 0.50 \cdot \text{Mundialito}$).
 > - **$P_{\text{eff}}$**: Prestigio annualizzato ($P / \text{Years}$).
 > - **$\text{Disonori}$**: Somma totale di Cucchiai di Legno (`spoon`) e Cartonati Playout (`cartonato`).
-> - **$\text{Finali}$**: Somma di vittorie e secondi posti $(\text{Gold} + \text{CupGold} + \text{Silver} + \text{CupSilver})$.
+> - **$\text{Finali}$**: Somma di vittorie e secondi posti nelle finali di coppa $(\text{CupGold} + \text{Supercup} + \text{CupSilver} + \text{SupercupSilver})$.
+
+---
+
+## 5. Roadmap & Evoluzioni Future (TODO)
+
+### 5.1 Global Clutch Index ($GCI$)
+
+Per unificare in un unico indicatore sintetico sia la capacità di convertire la maratona di campionato sia la letalità nelle finali secche a eliminazione diretta, è pianificata l'introduzione del **Global Clutch Index ($GCI$)**:
+
+$$GCI_i = w_{\text{league}} \cdot KI_i + w_{\text{cups}} \cdot CR_i$$
+
+- **Pesi del GCI da calibrare in futuro** (es. 50% Campionato e 50% Coppe, oppure sbilanciato a favore del Campionato), con gestione neutra per chi non ha ancora disputato finali di coppa.
+- **Integrazione Storico Mundialito**: Formalizzazione dello storico finale Mundialito (vinti e persi) per completare il set di dati delle coppe della lega.

@@ -38,6 +38,13 @@ def validate_manager(m, index):
         if not isinstance(val, int) or val < 0:
             return f"Manager #{index} ({m['id']}): '{sf}' must be a non-negative integer (found {val})."
 
+    optional_stat_fields = ["supercup_silver", "mundialito_silver"]
+    for osf in optional_stat_fields:
+        if osf in m:
+            val = m.get(osf)
+            if not isinstance(val, int) or val < 0:
+                return f"Manager #{index} ({m['id']}): '{osf}' must be a non-negative integer (found {val})."
+
     for arr_field in ["coach_banners", "cartonato_coaches"]:
         if arr_field in m:
             if not isinstance(m[arr_field], list) or not all(isinstance(x, str) for x in m[arr_field]):

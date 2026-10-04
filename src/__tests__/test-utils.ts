@@ -10,6 +10,7 @@ export function createTestManager(data: Partial<Manager> & { id: string; name: s
     cup_gold: 0,
     cup_silver: 0,
     supercup: 0,
+    supercup_silver: 0,
     mundialito: 0,
     cartonato: 0,
     ...data

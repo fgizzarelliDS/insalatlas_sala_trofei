@@ -19,6 +19,7 @@ export function populateManagerModalForm(m: Manager | null): void {
     (document.getElementById('field-cup-gold') as HTMLInputElement).value = String(m.cup_gold || 0);
     (document.getElementById('field-cup-silver') as HTMLInputElement).value = String(m.cup_silver || 0);
     (document.getElementById('field-supercup') as HTMLInputElement).value = String(m.supercup || 0);
+    (document.getElementById('field-supercup-silver') as HTMLInputElement).value = String(m.supercup_silver || 0);
     (document.getElementById('field-mundialito') as HTMLInputElement).value = String(m.mundialito || 0);
     (document.getElementById('field-cartonato') as HTMLInputElement).value = String(m.cartonato || 0);
 

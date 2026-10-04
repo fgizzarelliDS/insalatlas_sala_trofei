@@ -308,4 +308,14 @@ export function renderBoard(): void {
 
     container.appendChild(row);
   });
+
+  // In edit mode, append a prominent dashed row at the bottom of the table to add a new manager
+  if (state.isEditMode) {
+    const addRow = document.createElement('div');
+    addRow.id = 'albo-add-manager-row';
+    addRow.className = 'w-full my-3 p-3.5 rounded-2xl border-2 border-dashed border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/25 text-amber-300 hover:text-amber-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer transition select-none shadow-sm';
+    addRow.innerHTML = '<i class="fa-solid fa-user-plus text-amber-400 text-sm"></i> <span>+ Aggiungi Nuovo Allenatore alla Lega</span>';
+    addRow.onclick = () => openManagerModal(null);
+    container.appendChild(addRow);
+  }
 }

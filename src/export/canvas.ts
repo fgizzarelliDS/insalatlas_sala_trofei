@@ -197,6 +197,7 @@ export async function exportGraphicHD(): Promise<void> {
 
   // 3. Remove interactive and mobile-only elements
   clone.querySelector('#scroll-hint-pill')?.remove();
+  clone.querySelector('#albo-add-manager-row')?.remove();
   clone.querySelectorAll('button').forEach(btn => btn.remove());
 
   // 4. Force desktop column CSS variables on the clone

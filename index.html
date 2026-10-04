@@ -125,18 +125,12 @@
             </span>Dati<span class="hidden sm:inline"> &amp; Titoli</span></span>
         </button>
 
-        <!-- Add Manager Button -->
-        <button onclick="openManagerModal()"
-          class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white transition flex items-center gap-1.5 shadow">
-          <i class="fa-solid fa-user-plus"></i> <span class="hidden sm:inline">Nuovo </span>Allenatore
-        </button>
-
         <!-- League Health, Parity & Risk Analytics Button -->
         <button type="button" onclick="openConcentrationModal()"
           class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 transition flex items-center gap-1.5 shadow-sm"
           title="Analisi di Parità, Cinismo e Archetipi della Lega">
           <i class="fa-solid fa-chart-pie"></i>
-          <span class="hidden sm:inline">Analisi Lega</span>
+          <span class="inline">Analisi</span>
         </button>
 
         <!-- HD Export Button -->
@@ -174,6 +168,11 @@
         </span>
       </div>
       <div class="flex items-center gap-2 flex-wrap">
+        <!-- PULSANTE AGGIUNGI ALLENATORE -->
+        <button onclick="openManagerModal()"
+          class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition flex items-center gap-1.5 shadow">
+          <i class="fa-solid fa-user-plus"></i> Allenatore
+        </button>
         <!-- PULSANTE CARICA BACKUP JSON -->
         <button onclick="document.getElementById('json-file-input').click()"
           class="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-bold border border-emerald-400/50 transition flex items-center gap-1.5 shadow">

@@ -1,5 +1,6 @@
 import { state } from '@/state';
 import { showToast } from '@/ui';
+import { renderBoard } from '@/components/board/tableBoard';
 
 /**
  * Direct file download via anchor tag (bypasses OS Share Sheet completely)
@@ -157,6 +158,15 @@ export async function exportGraphicHD(): Promise<void> {
   const prevScrollY = window.scrollY;
   window.scrollTo(0, 0);
 
+  const prevDisplayMode = state.displayMode;
+  let modeTemporarilySwitched = false;
+
+  if (prevDisplayMode !== 'multiple') {
+    state.displayMode = 'multiple';
+    renderBoard();
+    modeTemporarilySwitched = true;
+  }
+
   try {
     const html2canvas = (await import('html2canvas')).default;
     const canvas = await html2canvas(wrapper, {
@@ -179,6 +189,10 @@ export async function exportGraphicHD(): Promise<void> {
     console.error(err);
     showToast("Errore durante l'esportazione.", 'error');
   } finally {
+    if (modeTemporarilySwitched) {
+      state.displayMode = prevDisplayMode;
+      renderBoard();
+    }
     window.scrollTo(prevScrollX, prevScrollY);
   }
 }

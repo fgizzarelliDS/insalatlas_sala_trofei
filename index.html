@@ -112,26 +112,26 @@
 
         <!-- Display Mode Toggle -->
         <button onclick="toggleDisplayMode()" id="btn-display-mode"
-          class="px-3 py-1.5 rounded-lg text-xs font-bold border transition flex items-center gap-1.5 shadow-sm"
+          class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold border transition flex items-center gap-1.5 shadow-sm"
           style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);">
-          <i class="fa-solid fa-shapes"></i> <span id="display-mode-label">Mostra Badge Compatti</span>
+          <i class="fa-solid fa-shapes"></i> <span id="display-mode-label"><span class="hidden sm:inline">Mostra </span>Badge Compatti</span>
         </button>
 
         <!-- Edit Data & Titles Button -->
         <button onclick="toggleEditMode()" id="btn-edit-mode"
-          class="px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-500/50 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition flex items-center gap-1.5 shadow">
-          <i class="fa-solid fa-pen-to-square"></i> <span id="edit-mode-label">Modifica Dati &amp; Titoli</span>
+          class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-500/50 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition flex items-center gap-1.5 shadow">
+          <i class="fa-solid fa-pen-to-square"></i> <span id="edit-mode-label"><span class="hidden sm:inline">Modifica </span>Dati<span class="hidden sm:inline"> &amp; Titoli</span></span>
         </button>
 
         <!-- Add Manager Button -->
         <button onclick="openManagerModal()"
-          class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white transition flex items-center gap-1.5 shadow">
-          <i class="fa-solid fa-user-plus"></i> Nuovo Allenatore
+          class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white transition flex items-center gap-1.5 shadow">
+          <i class="fa-solid fa-user-plus"></i> <span class="hidden sm:inline">Nuovo </span>Allenatore
         </button>
 
         <!-- League Health, Parity & Risk Analytics Button -->
         <button type="button" onclick="openConcentrationModal()"
-          class="px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 transition flex items-center gap-1.5 shadow-sm"
+          class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 transition flex items-center gap-1.5 shadow-sm"
           title="Analisi di Parità, Cinismo e Archetipi della Lega">
           <i class="fa-solid fa-chart-pie"></i>
           <span class="hidden sm:inline">Analisi Lega</span>
@@ -139,13 +139,13 @@
 
         <!-- HD Export Button -->
         <button onclick="exportGraphicHD()"
-          class="px-3.5 py-1.5 rounded-lg text-xs font-extrabold bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white shadow-lg transition flex items-center gap-1.5">
-          <i class="fa-solid fa-download"></i> Esporta HD
+          class="px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-extrabold bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white shadow-lg transition flex items-center gap-1.5">
+          <i class="fa-solid fa-download"></i> Esporta<span class="hidden sm:inline"> HD</span>
         </button>
 
         <!-- PWA Native Install Button (hidden until prompt available) -->
         <button id="btn-pwa-install" onclick="promptPWAInstall()"
-          class="hidden px-3 py-1.5 rounded-lg text-xs font-bold border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 transition items-center gap-1.5 shadow-sm"
+          class="hidden px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 transition items-center gap-1.5 shadow-sm"
           title="Installa InsalAtlas come App nativa sullo smartphone o desktop">
           <i class="fa-solid fa-mobile-screen-button"></i>
           <span class="hidden sm:inline">Installa App</span>
@@ -300,31 +300,47 @@
         </div>
       </div>
 
+      <!-- Mobile Scroll Hint Pill -->
+      <div id="scroll-hint-pill"
+        data-html2canvas-ignore="true"
+        class="md:hidden flex items-center justify-between px-3.5 py-2 mb-2.5 rounded-xl border text-xs font-bold shadow-sm transition-all duration-300"
+        style="background-color: var(--table-surface); border-color: var(--table-border); color: var(--accent-color);">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-arrows-left-right text-xs"></i>
+          <span>Scorri per vedere i trofei 👉</span>
+        </div>
+        <button type="button" onclick="dismissScrollHint()" class="opacity-60 hover:opacity-100 text-base px-1 leading-none font-bold" title="Chiudi avviso">
+          &times;
+        </button>
+      </div>
+
       <!-- UNIFIED TABLE CONTAINER -->
       <div class="albo-table-wrap rounded-2xl overflow-hidden border">
-        <div class="overflow-x-auto">
-          <div class="min-w-[1280px]">
+        <div id="table-scroll-container" class="overflow-x-auto">
+          <div class="min-w-[695px] md:min-w-[1280px]">
 
             <!-- Table Header Bar -->
             <div class="albo-grid-row py-3 font-sport font-bold text-xs uppercase tracking-wider items-center"
               style="background-color: var(--header-bg); color: var(--header-text);">
               <div id="th-col-1" data-title-key="col1" onblur="handleTitleBlur(this)"
-                class="sticky left-0 z-20 pl-4 pr-3 transition border-r shadow-[3px_0_6px_-2px_rgba(0,0,0,0.25)]"
+                class="sticky left-0 z-20 px-2 sm:pl-4 sm:pr-3 transition border-r shadow-[3px_0_6px_-2px_rgba(0,0,0,0.25)] text-[11px] sm:text-xs truncate self-stretch flex items-center"
                 style="background-color: var(--header-bg); border-color: rgba(255, 255, 255, 0.15);">
                 Allenatore (Presenze)
               </div>
               <div id="th-col-2" data-title-key="col2" onblur="handleTitleBlur(this)"
-                class="text-center px-3 transition">Campionato</div>
-              <div id="th-col-3" data-title-key="col3" onblur="handleTitleBlur(this)" class="text-center transition">
+                class="text-center px-1 sm:px-3 transition text-[11px] sm:text-xs">Campionato</div>
+              <div id="th-col-3" data-title-key="col3" onblur="handleTitleBlur(this)" class="text-center transition text-[11px] sm:text-xs">
                 Cucchiaio</div>
-              <div id="th-col-4" data-title-key="col4" onblur="handleTitleBlur(this)" class="text-center transition">
+              <div id="th-col-4" data-title-key="col4" onblur="handleTitleBlur(this)" class="text-center transition text-[11px] sm:text-xs">
                 Coppa di Lega</div>
-              <div id="th-col-5" data-title-key="col5" onblur="handleTitleBlur(this)" class="text-center transition">
+              <div id="th-col-5" data-title-key="col5" onblur="handleTitleBlur(this)"
+                class="text-center px-1 transition text-[10px] sm:text-xs tracking-tight sm:tracking-wider truncate">
                 Supercoppa</div>
-              <div id="th-col-6" data-title-key="col6" onblur="handleTitleBlur(this)" class="text-center transition">
+              <div id="th-col-6" data-title-key="col6" onblur="handleTitleBlur(this)"
+                class="text-center px-1 transition text-[10px] sm:text-xs tracking-tight sm:tracking-wider truncate">
                 Mundialito</div>
               <div id="th-col-7" data-title-key="col7" onblur="handleTitleBlur(this)"
-                class="text-right pr-4 transition">Cartonato</div>
+                class="text-right pr-2 sm:pr-4 transition text-[11px] sm:text-xs">Cartonato</div>
             </div>
 
             <!-- Dynamic Table Shelf Rows Target -->

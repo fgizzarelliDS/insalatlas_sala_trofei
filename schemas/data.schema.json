@@ -21,6 +21,9 @@
     "titles": {
       "type": "object"
     },
+    "competitions": {
+      "type": "array"
+    },
     "exportedAt": {
       "type": "string"
     }
@@ -88,7 +91,15 @@
           "type": "integer",
           "minimum": 0
         },
+        "supercup_silver": {
+          "type": "integer",
+          "minimum": 0
+        },
         "mundialito": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mundialito_silver": {
           "type": "integer",
           "minimum": 0
         },
@@ -107,6 +118,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "history": {
+          "type": "array"
         }
       },
       "additionalProperties": false

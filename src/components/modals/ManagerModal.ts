@@ -74,6 +74,7 @@ export function saveManager(e: Event): void {
     cup_gold: parseInt((document.getElementById('field-cup-gold') as HTMLInputElement).value, 10) || 0,
     cup_silver: parseInt((document.getElementById('field-cup-silver') as HTMLInputElement).value, 10) || 0,
     supercup: parseInt((document.getElementById('field-supercup') as HTMLInputElement).value, 10) || 0,
+    supercup_silver: parseInt((document.getElementById('field-supercup-silver') as HTMLInputElement).value, 10) || 0,
     mundialito: parseInt((document.getElementById('field-mundialito') as HTMLInputElement).value, 10) || 0,
     cartonato: parseInt((document.getElementById('field-cartonato') as HTMLInputElement).value, 10) || 0,
     coach_banners: cartonatoCoaches,
@@ -83,7 +84,8 @@ export function saveManager(e: Event): void {
   if (id) {
     const idx = state.managers.findIndex(item => item.id === id);
     if (idx !== -1) {
-      state.managers[idx] = { id, ...payload };
+      const existing = state.managers[idx];
+      state.managers[idx] = { id, ...payload, history: existing.history };
       showToast(`Dati di ${name} salvati!`, 'success');
     }
   } else {

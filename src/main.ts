@@ -42,14 +42,27 @@ import {
   copyManagerCardById,
   shareManagerWhatsAppById
 } from '@/export';
-import { changeSort, toggleDisplayMode, renderBoard } from '@/components/board/tableBoard';
+import {
+  changeSort,
+  toggleDisplayMode,
+  renderBoard,
+  dismissScrollHint,
+  initResponsiveDisplayMode,
+  initScrollHintListener
+} from '@/components/board/tableBoard';
 import { updateStatistics } from '@/components/board/statsCounter';
+import {
+  switchMainViewTab,
+  selectArchiveSeason,
+  renderSeasonsArchive
+} from '@/components/board/seasonsArchive';
 import { findManagerByParam, getManagerParamFromURL } from '@/router';
 import { initPWA, promptPWAInstall } from '@/pwa';
 
-// Re-export router utilities, board controls, and PWA for unit tests and consumers
+// Re-export router utilities, board controls, seasons archive, and PWA for unit tests and consumers
 export { findManagerByParam, getManagerParamFromURL };
-export { changeSort, toggleDisplayMode, renderBoard };
+export { changeSort, toggleDisplayMode, renderBoard, dismissScrollHint };
+export { switchMainViewTab, selectArchiveSeason, renderSeasonsArchive };
 export { updateStatistics };
 export { promptPWAInstall };
 
@@ -94,6 +107,10 @@ declare global {
     renderBoard: typeof renderBoard;
     updateStatistics: typeof updateStatistics;
     promptPWAInstall: typeof promptPWAInstall;
+    dismissScrollHint: typeof dismissScrollHint;
+    switchMainViewTab: typeof switchMainViewTab;
+    selectArchiveSeason: typeof selectArchiveSeason;
+    renderSeasonsArchive: typeof renderSeasonsArchive;
   }
 }
 
@@ -102,10 +119,12 @@ declare global {
  */
 export async function initApp(): Promise<void> {
   initModalListeners();
+  initResponsiveDisplayMode();
   await loadLeagueData();
   applyTitlesToDOM();
   renderBoard();
   updateStatistics();
+  initScrollHintListener();
   initPWA();
 
   // Deep-linking: auto-open manager profile if ?manager=... in URL
@@ -178,6 +197,10 @@ if (typeof window !== 'undefined') {
     handleTitleBlur,
     renderBoard,
     updateStatistics,
-    promptPWAInstall
+    promptPWAInstall,
+    dismissScrollHint,
+    switchMainViewTab,
+    selectArchiveSeason,
+    renderSeasonsArchive
   });
 }

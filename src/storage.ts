@@ -18,8 +18,14 @@ export async function loadLeagueData(): Promise<Manager[]> {
 
       if (json && Array.isArray(json.leagueData)) {
         state.managers = json.leagueData;
+      } else if (json && Array.isArray(json.managers)) {
+        state.managers = json.managers;
       } else if (Array.isArray(json)) {
         state.managers = json as Manager[];
+      }
+
+      if (json && Array.isArray(json.competitions)) {
+        state.competitions = json.competitions;
       }
 
       if (json && json.customTitles && typeof json.customTitles === 'object') {
@@ -95,6 +101,7 @@ export function saveTitles(): void {
 export function exportBackupJSON(): void {
   const backupPayload: LeagueData = {
     leagueData: state.managers,
+    competitions: state.competitions,
     customTitles: state.titles,
     exportedAt: new Date().toISOString()
   };
@@ -123,11 +130,22 @@ export function importBackupJSON(event: Event): void {
       const content = e.target?.result as string;
       const parsed = JSON.parse(content);
 
-      if (parsed && Array.isArray(parsed.leagueData)) {
-        state.managers = parsed.leagueData;
+      const managersList = Array.isArray(parsed?.leagueData)
+        ? parsed.leagueData
+        : Array.isArray(parsed?.managers)
+          ? parsed.managers
+          : Array.isArray(parsed)
+            ? parsed
+            : null;
+
+      if (managersList) {
+        state.managers = managersList as Manager[];
+        if (parsed && Array.isArray(parsed.competitions)) {
+          state.competitions = parsed.competitions;
+        }
         saveData();
 
-        if (parsed.customTitles && typeof parsed.customTitles === 'object') {
+        if (parsed && parsed.customTitles && typeof parsed.customTitles === 'object') {
           state.titles = { ...DEFAULT_TITLES, ...parsed.customTitles };
           saveTitles();
           applyTitlesToDOM();
@@ -136,12 +154,6 @@ export function importBackupJSON(event: Event): void {
         renderBoard();
         updateStatistics();
         showToast('Dati e titoli importati con successo dal file JSON!', 'success');
-      } else if (Array.isArray(parsed)) {
-        state.managers = parsed as Manager[];
-        saveData();
-        renderBoard();
-        updateStatistics();
-        showToast('Dati degli allenatori caricati con successo!', 'success');
       } else {
         throw new Error('Formato dati non riconosciuto');
       }

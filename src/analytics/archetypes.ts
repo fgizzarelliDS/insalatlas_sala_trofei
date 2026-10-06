@@ -37,8 +37,8 @@ export function getManagerArchetype(
   const actualPodiums = podiums !== undefined ? podiums : ((m.gold || 0) + (m.silver || 0) + (m.bronze || 0));
   const actualPodiumRatePct = podiumRatePct !== undefined ? podiumRatePct : (m.years > 0 ? (actualPodiums / m.years) * 100 : 0);
   const actualKillerInstinctPct = killerInstinctPct !== undefined ? killerInstinctPct : (actualPodiums > 0 ? ((m.gold || 0) / actualPodiums) * 100 : 0);
-  const finalsWon = (m.gold || 0) + (m.cup_gold || 0);
-  const actualFinalsPlayed = finalsPlayed !== undefined ? finalsPlayed : (finalsWon + (m.silver || 0) + (m.cup_silver || 0));
+  const finalsWon = (m.cup_gold || 0) + (m.supercup || 0);
+  const actualFinalsPlayed = finalsPlayed !== undefined ? finalsPlayed : (finalsWon + (m.cup_silver || 0) + (m.supercup_silver || 0));
   const actualConversionRatePct = conversionRatePct !== undefined ? conversionRatePct : (actualFinalsPlayed > 0 ? (finalsWon / actualFinalsPlayed) * 100 : 0);
   const actualDishonors = dishonors !== undefined ? dishonors : ((m.spoon || 0) + (m.cartonato || 0));
   const dm = computeDisasterMass(m.spoon || 0, m.cartonato || 0);
@@ -92,7 +92,7 @@ export function getManagerArchetype(
   }
 
   // 6. Eterno Secondo: almeno 2 argenti e conversione finali <= 35%
-  if (((m.silver || 0) + (m.cup_silver || 0)) >= 2 && actualConversionRatePct <= 35) {
+  if (((m.silver || 0) + (m.cup_silver || 0) + (m.supercup_silver || 0)) >= 2 && actualConversionRatePct <= 35) {
     return {
       tag: 'Eterno Secondo',
       color: '#6366f1', // Indigo

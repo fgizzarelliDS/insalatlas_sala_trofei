@@ -76,11 +76,27 @@ export const TROPHY_SVGS: Record<string, TrophySvgMeta> = {
 /**
  * Returns SVG markup string for a specified trophy identifier
  * @param type - Key in TROPHY_SVGS
+ * @param variant - 'default' (full shelf size) or 'compact' (inline badge size ~21px)
+ * @param extraClass - Optional extra CSS classes
  */
-export function renderTrophySVG(type: string): string {
+export function renderTrophySVG(
+  type: string,
+  variant: 'default' | 'compact' = 'default',
+  extraClass = ''
+): string {
   const m = TROPHY_SVGS[type];
   if (!m) return '';
-  return `<svg class="trophy-svg shrink-0" width="${m.w}" height="${m.h}" viewBox="${m.vb}" fill="none" title="${m.t}">${m.content}</svg>`;
+
+  if (variant === 'compact') {
+    const scale = 21 / (m.h || 32);
+    const width = Math.round((m.w || 24) * scale);
+    const height = 21;
+    const cls = `trophy-svg-compact inline-block shrink-0 align-middle ${extraClass}`.trim();
+    return `<svg class="${cls}" width="${width}" height="${height}" viewBox="${m.vb}" fill="none" title="${m.t}">${m.content}</svg>`;
+  }
+
+  const cls = `trophy-svg shrink-0 ${extraClass}`.trim();
+  return `<svg class="${cls}" width="${m.w}" height="${m.h}" viewBox="${m.vb}" fill="none" title="${m.t}">${m.content}</svg>`;
 }
 
 /**

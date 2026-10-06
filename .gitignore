@@ -5,9 +5,15 @@ node_modules/
 dist/
 
 # Local env files
+.env
 .env.local
 .env.*.local
 specs/*
+scripts/insalatlas*.json
+scripts/*.html
+scripts/__pycache__/*
+scripts/extract_thropy.py
+public/assets/trophies/*
 
 # Editor directories and files
 .vscode/

@@ -14,6 +14,23 @@
   --col-cartonato: minmax(220px, 1.2fr);
 }
 
+/* Mobile responsive columns (< 768px) */
+@media (max-width: 767px) {
+  :root {
+    --col-manager: 135px;
+    --col-championship: 115px;
+    --col-spoon: 65px;
+    --col-cup: 85px;
+    --col-supercup: 90px;
+    --col-mundialito: 90px;
+    --col-cartonato: 120px;
+  }
+
+  .table-shelf-row {
+    min-height: 48px;
+  }
+}
+
 .albo-grid-row {
   display: grid;
   grid-template-columns:
@@ -24,6 +41,22 @@
     var(--col-supercup)
     var(--col-mundialito)
     var(--col-cartonato);
+}
+
+/* Mobile Scroll Hint Pill */
+#scroll-hint-pill {
+  animation: pulseGlow 2.5s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.95;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(-1px);
+  }
 }
 
 body {
@@ -64,6 +97,16 @@ body {
 
 .trophy-svg:hover {
   transform: translateY(-2px) scale(1.12);
+}
+
+.trophy-svg-compact {
+  transition: transform 0.15s ease;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
+  vertical-align: middle;
+}
+
+.trophy-svg-compact:hover {
+  transform: scale(1.15);
 }
 
 /* Coach Playout Banners */

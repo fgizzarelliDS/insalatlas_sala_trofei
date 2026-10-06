@@ -56,11 +56,21 @@ export async function renderProfileModalCanvas(card: HTMLElement): Promise<HTMLC
   const naturalWidth = Math.round(cardRect.width) || card.offsetWidth || 576;
   const targetWidth = Math.max(naturalWidth, 540);
 
-  // 2. Remove interactive UI controls (close button, footer action buttons, share dropdown)
+  // 2. Remove interactive UI controls (close button, footer action buttons, share dropdown, tabs, career content)
   clone.querySelector('#profile-modal-close-btn')?.remove();
   clone.querySelector('#profile-modal-footer-actions')?.remove();
   clone.querySelector('#profile-modal-watermark')?.remove();
   clone.querySelector('#share-dropdown-menu')?.remove();
+  clone.querySelector('#profile-modal-tabs')?.remove();
+  clone.querySelector('#profile-tab-career-content')?.remove();
+  clone.querySelectorAll('.competition-drawer').forEach(el => el.remove());
+
+  // Ensure Tab 1 (Bacheca & Palmarès) is always active and visible in exported card
+  const palmaresContent = clone.querySelector('#profile-tab-palmares-content') as HTMLElement | null;
+  if (palmaresContent) {
+    palmaresContent.classList.remove('hidden');
+    palmaresContent.style.display = 'block';
+  }
 
   // 3. Add balanced, elegant closing footer with InsalAtlas • Palmarès Ufficiale (no links/URLs)
   const footer = document.createElement('div');
@@ -89,11 +99,22 @@ export async function renderProfileModalCanvas(card: HTMLElement): Promise<HTMLC
   // 5. Obtain computed background and theme colors
   const computedBg = window.getComputedStyle(card).backgroundColor || '#0f172a';
 
-  // 6. Position clone off-screen at full natural height and exact width with zero clipping
-  clone.style.position = 'fixed';
+  // 6. Build invisible staging container that takes zero space and prevents any layout flash/scroll shift
+  const container = document.createElement('div');
+  container.id = 'profile-export-staging-container';
+  container.style.position = 'fixed';
+  container.style.left = '0';
+  container.style.top = '0';
+  container.style.width = '0';
+  container.style.height = '0';
+  container.style.overflow = 'hidden';
+  container.style.opacity = '0';
+  container.style.pointerEvents = 'none';
+  container.style.zIndex = '-99999';
+
+  clone.style.position = 'absolute';
   clone.style.left = '0';
   clone.style.top = '0';
-  clone.style.zIndex = '-9999';
   clone.style.width = `${targetWidth}px`;
   clone.style.maxWidth = `${targetWidth}px`;
   clone.style.height = 'auto';
@@ -104,7 +125,8 @@ export async function renderProfileModalCanvas(card: HTMLElement): Promise<HTMLC
   clone.style.visibility = 'visible';
   clone.style.opacity = '1';
 
-  document.body.appendChild(clone);
+  container.appendChild(clone);
+  document.body.appendChild(container);
 
   try {
     if (document.fonts && document.fonts.ready) {
@@ -125,41 +147,196 @@ export async function renderProfileModalCanvas(card: HTMLElement): Promise<HTMLC
       width: targetWidth,
       height: fullHeight,
       windowWidth: targetWidth,
-      windowHeight: fullHeight
+      windowHeight: fullHeight,
+      onclone: (_clonedDoc, clonedEl) => {
+        const staging = clonedEl.parentElement;
+        if (staging) {
+          staging.style.position = 'static';
+          staging.style.width = `${targetWidth}px`;
+          staging.style.height = 'auto';
+          staging.style.overflow = 'visible';
+          staging.style.opacity = '1';
+          staging.style.visibility = 'visible';
+        }
+        clonedEl.style.position = 'static';
+        clonedEl.style.opacity = '1';
+        clonedEl.style.visibility = 'visible';
+      }
     });
 
     return canvas;
   } finally {
-    clone.remove();
+    container.remove();
   }
 }
 
+let isExportingHD = false;
+
 /**
- * Renders #palmares-export-wrapper to a high-resolution PNG image and triggers download
+ * Renders #palmares-export-wrapper to a high-resolution PNG image and triggers download.
+ * Uses an off-screen desktop clone (~1380px) inside an isolated zero-sized staging container
+ * to prevent mobile column squishing, sticky header displacement, and momentary visual flash/double page.
  */
 export async function exportGraphicHD(): Promise<void> {
+  if (isExportingHD) {
+    showToast('Esportazione già in corso, attendere...', 'info');
+    return;
+  }
+
   const wrapper = document.getElementById('palmares-export-wrapper');
   if (!wrapper) return;
 
+  isExportingHD = true;
   showToast('Generazione immagine HD in corso...', 'info');
 
   if (document.fonts && document.fonts.ready) {
     await document.fonts.ready;
   }
 
-  let exportBg = '#090d16';
-  if (state.currentTheme === 'gala') exportBg = '#090d16';
-  if (state.currentTheme === 'seriea') exportBg = '#020b1c';
-  if (state.currentTheme === 'gazzetta') exportBg = '#fce7ec';
-  if (state.currentTheme === 'studio') exportBg = '#f1f5f9';
+  // 1. Determine dynamic theme background
+  const computedWrapperBg = window.getComputedStyle(wrapper).backgroundColor;
+  const exportBg = (computedWrapperBg && computedWrapperBg !== 'rgba(0, 0, 0, 0)' && computedWrapperBg !== 'transparent')
+    ? computedWrapperBg
+    : (state.currentTheme === 'gazzetta' ? '#fce7ec' : state.currentTheme === 'studio' ? '#f1f5f9' : state.currentTheme === 'seriea' ? '#020b1c' : '#090d16');
 
-  const prevScrollX = window.scrollX;
-  const prevScrollY = window.scrollY;
-  window.scrollTo(0, 0);
+  // 2. Clone the wrapper for off-screen desktop rendering
+  const clone = wrapper.cloneNode(true) as HTMLElement;
+  clone.id = 'palmares-export-clone';
+
+  const targetWidth = 1380;
+
+  // 3. Remove interactive and mobile-only elements
+  clone.querySelector('#scroll-hint-pill')?.remove();
+  clone.querySelector('#albo-add-manager-row')?.remove();
+  clone.querySelector('#main-view-tabs')?.remove();
+  clone.querySelector('#main-tab-seasons-content')?.remove();
+  clone.querySelectorAll('button').forEach(btn => btn.remove());
+
+  // Ensure Albo tab content is always visible in export
+  const alboContent = clone.querySelector('#main-tab-albo-content') as HTMLElement | null;
+  if (alboContent) {
+    alboContent.classList.remove('hidden');
+    alboContent.style.display = 'block';
+  }
+
+  // Reveal classic subtitle caption on the export clone
+  const captionEl = clone.querySelector('#title-league-caption') as HTMLElement | null;
+  if (captionEl) {
+    captionEl.classList.remove('hidden');
+    captionEl.style.display = 'block';
+  }
+
+  // 4. Force desktop column CSS variables on the clone
+  clone.style.setProperty('--col-manager', '280px');
+  clone.style.setProperty('--col-championship', '270px');
+  clone.style.setProperty('--col-spoon', '90px');
+  clone.style.setProperty('--col-cup', '150px');
+  clone.style.setProperty('--col-supercup', '120px');
+  clone.style.setProperty('--col-mundialito', '120px');
+  clone.style.setProperty('--col-cartonato', '220px');
+
+  // 5. Ensure desktop 5-column layout for top summary cards
+  const summaryGrid = clone.querySelector('.grid.grid-cols-2') as HTMLElement | null;
+  if (summaryGrid) {
+    summaryGrid.style.display = 'grid';
+    summaryGrid.style.gridTemplateColumns = 'repeat(5, minmax(0, 1fr))';
+    summaryGrid.style.gap = '16px';
+  }
+
+  // 6. Ensure table scroll container and inner wrapper expand to full desktop width without scroll/cutoffs
+  const scrollContainer = clone.querySelector('#table-scroll-container') as HTMLElement | null;
+  if (scrollContainer) {
+    scrollContainer.style.overflow = 'visible';
+    scrollContainer.style.overflowX = 'visible';
+    scrollContainer.style.width = '100%';
+  }
+  const innerWrap = scrollContainer?.firstElementChild as HTMLElement | null;
+  if (innerWrap) {
+    innerWrap.style.minWidth = '100%';
+    innerWrap.style.width = '100%';
+    innerWrap.style.overflow = 'visible';
+  }
+
+  // 7. Fix header row: remove sticky, ensure unclipped text and proper padding
+  const headerRow = clone.querySelector('.albo-grid-row') as HTMLElement | null;
+  if (headerRow) {
+    headerRow.style.paddingTop = '12px';
+    headerRow.style.paddingBottom = '12px';
+    headerRow.style.overflow = 'visible';
+  }
+  const th1 = clone.querySelector('#th-col-1') as HTMLElement | null;
+  if (th1) {
+    th1.style.position = 'static';
+    th1.style.overflow = 'visible';
+    th1.style.boxShadow = 'none';
+    th1.style.lineHeight = '1.4';
+    th1.style.paddingTop = '8px';
+    th1.style.paddingBottom = '8px';
+    th1.style.fontSize = '12px';
+    th1.classList.remove('truncate', 'sticky');
+  }
+
+  // 8. Fix shelf rows: remove sticky, unclip manager name and score stats
+  const shelfRows = clone.querySelectorAll('.table-shelf-row');
+  shelfRows.forEach(row => {
+    const rowEl = row as HTMLElement;
+    rowEl.style.minHeight = '56px';
+    rowEl.style.overflow = 'visible';
+
+    const col1 = rowEl.firstElementChild as HTMLElement | null;
+    if (col1) {
+      col1.style.position = 'static';
+      col1.style.overflow = 'visible';
+      col1.style.boxShadow = 'none';
+      col1.style.paddingTop = '8px';
+      col1.style.paddingBottom = '8px';
+      col1.style.paddingLeft = '16px';
+      col1.style.paddingRight = '12px';
+      col1.classList.remove('overflow-hidden', 'sticky');
+
+      col1.querySelectorAll('div').forEach(d => {
+        d.style.overflow = 'visible';
+        d.classList.remove('truncate');
+      });
+    }
+  });
+
+  // 9. Build invisible staging container that takes zero space and prevents any layout flash/scroll shift
+  const container = document.createElement('div');
+  container.id = 'palmares-export-staging-container';
+  container.style.position = 'fixed';
+  container.style.left = '0';
+  container.style.top = '0';
+  container.style.width = '0';
+  container.style.height = '0';
+  container.style.overflow = 'hidden';
+  container.style.opacity = '0';
+  container.style.pointerEvents = 'none';
+  container.style.zIndex = '-99999';
+
+  clone.style.position = 'absolute';
+  clone.style.left = '0';
+  clone.style.top = '0';
+  clone.style.width = `${targetWidth}px`;
+  clone.style.minWidth = `${targetWidth}px`;
+  clone.style.maxWidth = `${targetWidth}px`;
+  clone.style.height = 'auto';
+  clone.style.maxHeight = 'none';
+  clone.style.overflow = 'visible';
+  clone.style.boxShadow = 'none';
+  clone.style.pointerEvents = 'none';
+  clone.style.visibility = 'visible';
+  clone.style.opacity = '1';
+  clone.style.backgroundColor = exportBg;
+
+  container.appendChild(clone);
+  document.body.appendChild(container);
 
   try {
     const html2canvas = (await import('html2canvas')).default;
-    const canvas = await html2canvas(wrapper, {
+    const fullHeight = Math.ceil(clone.scrollHeight || clone.offsetHeight || 1000);
+
+    const canvas = await html2canvas(clone, {
       scale: 2.2,
       useCORS: true,
       allowTaint: true,
@@ -167,7 +344,24 @@ export async function exportGraphicHD(): Promise<void> {
       logging: false,
       scrollX: 0,
       scrollY: 0,
-      windowWidth: Math.max(document.documentElement.scrollWidth, 1380)
+      width: targetWidth,
+      height: fullHeight,
+      windowWidth: targetWidth,
+      windowHeight: fullHeight,
+      onclone: (_clonedDoc, clonedEl) => {
+        const staging = clonedEl.parentElement;
+        if (staging) {
+          staging.style.position = 'static';
+          staging.style.width = `${targetWidth}px`;
+          staging.style.height = 'auto';
+          staging.style.overflow = 'visible';
+          staging.style.opacity = '1';
+          staging.style.visibility = 'visible';
+        }
+        clonedEl.style.position = 'static';
+        clonedEl.style.opacity = '1';
+        clonedEl.style.visibility = 'visible';
+      }
     });
 
     const link = document.createElement('a');
@@ -179,6 +373,7 @@ export async function exportGraphicHD(): Promise<void> {
     console.error(err);
     showToast("Errore durante l'esportazione.", 'error');
   } finally {
-    window.scrollTo(prevScrollX, prevScrollY);
+    container.remove();
+    isExportingHD = false;
   }
 }

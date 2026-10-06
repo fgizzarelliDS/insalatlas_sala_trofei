@@ -61,8 +61,8 @@ export function computeLeagueConcentration(managers: Manager[]): LeagueConcentra
     const podiums = (m.gold || 0) + (m.silver || 0) + (m.bronze || 0);
     const podiumRatePct = m.years > 0 ? parseFloat(((podiums / m.years) * 100).toFixed(1)) : 0;
     const killerInstinctPct = podiums > 0 ? parseFloat((((m.gold || 0) / podiums) * 100).toFixed(1)) : 0;
-    const finalsWon = (m.gold || 0) + (m.cup_gold || 0);
-    const finalsPlayed = (m.gold || 0) + (m.cup_gold || 0) + (m.silver || 0) + (m.cup_silver || 0);
+    const finalsWon = (m.cup_gold || 0) + (m.supercup || 0);
+    const finalsPlayed = finalsWon + (m.cup_silver || 0) + (m.supercup_silver || 0);
     const conversionRatePct = finalsPlayed > 0 ? parseFloat(((finalsWon / finalsPlayed) * 100).toFixed(1)) : 0;
     const dishonors = (m.spoon || 0) + (m.cartonato || 0); // Spoon (Last Place) + Cartonato (Playout)
     const feastMass = computeFeastMass(m.gold || 0, m.cup_gold || 0);

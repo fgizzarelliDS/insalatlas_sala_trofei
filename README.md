@@ -7,7 +7,6 @@
 
 > Albo d'oro interattivo, analisi econometrica di competitività e schede manager per la lega Fantacalcio InsalAtlas.
 
-
 ---
 
 ## Panoramica

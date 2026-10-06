@@ -51,12 +51,18 @@ import {
   initScrollHintListener
 } from '@/components/board/tableBoard';
 import { updateStatistics } from '@/components/board/statsCounter';
+import {
+  switchMainViewTab,
+  selectArchiveSeason,
+  renderSeasonsArchive
+} from '@/components/board/seasonsArchive';
 import { findManagerByParam, getManagerParamFromURL } from '@/router';
 import { initPWA, promptPWAInstall } from '@/pwa';
 
-// Re-export router utilities, board controls, and PWA for unit tests and consumers
+// Re-export router utilities, board controls, seasons archive, and PWA for unit tests and consumers
 export { findManagerByParam, getManagerParamFromURL };
 export { changeSort, toggleDisplayMode, renderBoard, dismissScrollHint };
+export { switchMainViewTab, selectArchiveSeason, renderSeasonsArchive };
 export { updateStatistics };
 export { promptPWAInstall };
 
@@ -102,6 +108,9 @@ declare global {
     updateStatistics: typeof updateStatistics;
     promptPWAInstall: typeof promptPWAInstall;
     dismissScrollHint: typeof dismissScrollHint;
+    switchMainViewTab: typeof switchMainViewTab;
+    selectArchiveSeason: typeof selectArchiveSeason;
+    renderSeasonsArchive: typeof renderSeasonsArchive;
   }
 }
 
@@ -189,6 +198,9 @@ if (typeof window !== 'undefined') {
     renderBoard,
     updateStatistics,
     promptPWAInstall,
-    dismissScrollHint
+    dismissScrollHint,
+    switchMainViewTab,
+    selectArchiveSeason,
+    renderSeasonsArchive
   });
 }

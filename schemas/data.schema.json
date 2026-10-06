@@ -21,6 +21,9 @@
     "titles": {
       "type": "object"
     },
+    "competitions": {
+      "type": "array"
+    },
     "exportedAt": {
       "type": "string"
     }
@@ -115,6 +118,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "history": {
+          "type": "array"
         }
       },
       "additionalProperties": false

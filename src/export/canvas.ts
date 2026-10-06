@@ -56,11 +56,21 @@ export async function renderProfileModalCanvas(card: HTMLElement): Promise<HTMLC
   const naturalWidth = Math.round(cardRect.width) || card.offsetWidth || 576;
   const targetWidth = Math.max(naturalWidth, 540);
 
-  // 2. Remove interactive UI controls (close button, footer action buttons, share dropdown)
+  // 2. Remove interactive UI controls (close button, footer action buttons, share dropdown, tabs, career content)
   clone.querySelector('#profile-modal-close-btn')?.remove();
   clone.querySelector('#profile-modal-footer-actions')?.remove();
   clone.querySelector('#profile-modal-watermark')?.remove();
   clone.querySelector('#share-dropdown-menu')?.remove();
+  clone.querySelector('#profile-modal-tabs')?.remove();
+  clone.querySelector('#profile-tab-career-content')?.remove();
+  clone.querySelectorAll('.competition-drawer').forEach(el => el.remove());
+
+  // Ensure Tab 1 (Bacheca & Palmarès) is always active and visible in exported card
+  const palmaresContent = clone.querySelector('#profile-tab-palmares-content') as HTMLElement | null;
+  if (palmaresContent) {
+    palmaresContent.classList.remove('hidden');
+    palmaresContent.style.display = 'block';
+  }
 
   // 3. Add balanced, elegant closing footer with InsalAtlas • Palmarès Ufficiale (no links/URLs)
   const footer = document.createElement('div');
@@ -198,7 +208,23 @@ export async function exportGraphicHD(): Promise<void> {
   // 3. Remove interactive and mobile-only elements
   clone.querySelector('#scroll-hint-pill')?.remove();
   clone.querySelector('#albo-add-manager-row')?.remove();
+  clone.querySelector('#main-view-tabs')?.remove();
+  clone.querySelector('#main-tab-seasons-content')?.remove();
   clone.querySelectorAll('button').forEach(btn => btn.remove());
+
+  // Ensure Albo tab content is always visible in export
+  const alboContent = clone.querySelector('#main-tab-albo-content') as HTMLElement | null;
+  if (alboContent) {
+    alboContent.classList.remove('hidden');
+    alboContent.style.display = 'block';
+  }
+
+  // Reveal classic subtitle caption on the export clone
+  const captionEl = clone.querySelector('#title-league-caption') as HTMLElement | null;
+  if (captionEl) {
+    captionEl.classList.remove('hidden');
+    captionEl.style.display = 'block';
+  }
 
   // 4. Force desktop column CSS variables on the clone
   clone.style.setProperty('--col-manager', '280px');

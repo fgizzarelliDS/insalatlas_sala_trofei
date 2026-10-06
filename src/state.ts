@@ -5,6 +5,7 @@ const isMobileDevice = typeof window !== 'undefined' && window.matchMedia && win
 
 export const state: AppState = {
   managers: [],
+  competitions: [],
   currentTheme: 'gazzetta',
   currentSort: 'trophies_desc',
   displayMode: isMobileDevice ? 'compact' : 'multiple',

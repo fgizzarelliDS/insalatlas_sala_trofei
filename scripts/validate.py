@@ -50,6 +50,17 @@ def validate_manager(m, index):
             if not isinstance(m[arr_field], list) or not all(isinstance(x, str) for x in m[arr_field]):
                 return f"Manager #{index} ({m['id']}): '{arr_field}' must be a list of strings."
 
+    if "history" in m:
+        if not isinstance(m["history"], list):
+            return f"Manager #{index} ({m['id']}): 'history' must be a list."
+        for s_idx, s in enumerate(m["history"]):
+            if not isinstance(s, dict):
+                return f"Manager #{index} ({m['id']}): History entry #{s_idx} must be an object."
+            if "season" not in s or not isinstance(s["season"], str):
+                return f"Manager #{index} ({m['id']}): History entry #{s_idx} missing 'season' string."
+            if "achievements" in s and not isinstance(s["achievements"], list):
+                return f"Manager #{index} ({m['id']}): History entry #{s_idx} 'achievements' must be a list."
+
     return None
 
 def main():
@@ -107,6 +118,17 @@ def main():
             print(f"[!] VALIDATION ERROR: Duplicate manager ID '{m_id}' found at index {idx}.")
             sys.exit(1)
         ids.add(m_id)
+
+    if isinstance(data, dict) and "competitions" in data:
+        comps = data["competitions"]
+        if not isinstance(comps, list):
+            print("[!] VALIDATION ERROR: 'competitions' must be a list.")
+            sys.exit(1)
+        print(f"[*] Found {len(comps)} competitions in archive.")
+        for c_idx, c in enumerate(comps):
+            if not isinstance(c, dict) or "id" not in c or "name" not in c or "season" not in c or "ranking" not in c:
+                print(f"[!] VALIDATION ERROR: Competition #{c_idx} missing required fields (id, name, season, ranking).")
+                sys.exit(1)
 
     # If jsonschema library is available, run full draft-07 validation as well
     try:

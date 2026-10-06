@@ -1,3 +1,51 @@
+export type AchievementBadge =
+  | 'gold'
+  | 'silver'
+  | 'bronze'
+  | 'cup_gold'
+  | 'cup_silver'
+  | 'supercup'
+  | 'supercup_silver'
+  | 'mundialito'
+  | 'mundialito_silver'
+  | 'spoon'
+  | 'cartonato';
+
+export interface Achievement {
+  title: string;
+  category: 'Campionato' | 'Coppa' | 'Supercoppa' | 'Mundialito' | 'Perdenti' | string;
+  badge: AchievementBadge;
+  icon: string;
+  competitionId?: number | null;
+}
+
+export interface SeasonRecord {
+  season: string;
+  team: string | null;
+  rank: number | null;
+  points: number | null;
+  competitionId?: number | null;
+  achievements: Achievement[];
+}
+
+export interface CompetitionRankingItem {
+  rank: number;
+  teamName: string;
+  coach: string;
+  managerId?: string;
+  points: number | null;
+  logo?: string;
+}
+
+export interface CompetitionRecord {
+  id: number;
+  name: string;
+  season: string;
+  category: string;
+  trophyImage?: string;
+  ranking: CompetitionRankingItem[];
+}
+
 export interface Manager {
   id: string;
   name: string;
@@ -15,6 +63,7 @@ export interface Manager {
   cartonato: number;
   coach_banners?: string[];
   cartonato_coaches?: string[];
+  history?: SeasonRecord[];
 }
 
 export interface TitlesConfig {
@@ -38,6 +87,7 @@ export interface LeagueData {
   leagueData?: Manager[];
   titles?: TitlesConfig;
   customTitles?: TitlesConfig;
+  competitions?: CompetitionRecord[];
   exportedAt?: string;
 }
 
@@ -61,6 +111,7 @@ export type DisplayMode = 'multiple' | 'compact';
 
 export interface AppState {
   managers: Manager[];
+  competitions: CompetitionRecord[];
   currentTheme: ThemeKey;
   currentSort: SortMode;
   displayMode: DisplayMode;

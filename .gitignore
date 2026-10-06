@@ -5,9 +5,14 @@ node_modules/
 dist/
 
 # Local env files
+.env
 .env.local
 .env.*.local
 specs/*
+scripts/*.json
+scripts/*.html
+scripts/__pycache__/*
+public/assets/trophy/*
 
 # Editor directories and files
 .vscode/

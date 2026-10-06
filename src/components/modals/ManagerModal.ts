@@ -84,7 +84,8 @@ export function saveManager(e: Event): void {
   if (id) {
     const idx = state.managers.findIndex(item => item.id === id);
     if (idx !== -1) {
-      state.managers[idx] = { id, ...payload };
+      const existing = state.managers[idx];
+      state.managers[idx] = { id, ...payload, history: existing.history };
       showToast(`Dati di ${name} salvati!`, 'success');
     }
   } else {

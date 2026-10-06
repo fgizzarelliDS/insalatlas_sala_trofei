@@ -1,0 +1,122 @@
+{
+  "Apex United FC": {
+    "id": "apex_united",
+    "coach": "Placeholder #1",
+    "era": "Stile Geometrico",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Cdefs%3E%20%3ClinearGradient%20id%3D%22apex-bg%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23042f2e%22/%3E%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230f172a%22/%3E%20%3C/linearGradient%3E%20%3ClinearGradient%20id%3D%22apex-teal%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%232dd4bf%22/%3E%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230d9488%22/%3E%20%3C/linearGradient%3E%20%3C/defs%3E%20%3Cpolygon%20points%3D%22100%2C15%20180%2C50%20160%2C165%20100%2C190%2040%2C165%2020%2C50%22%20fill%3D%22url%28%23apex-bg%29%22%20stroke%3D%22url%28%23apex-teal%29%22%20stroke-width%3D%225%22/%3E%20%3C%21--%20Twin%20Geometric%20Peaks%20--%3E%20%3Cpolygon%20points%3D%22100%2C55%20145%2C130%2055%2C130%22%20fill%3D%22url%28%23apex-teal%29%22/%3E%20%3Cpolygon%20points%3D%22100%2C55%20100%2C130%2055%2C130%22%20fill%3D%22%2314b8a6%22/%3E%20%3Cpolygon%20points%3D%22100%2C85%20130%2C135%2070%2C135%22%20fill%3D%22%23f0fdfa%22/%3E%20%3C%21--%20Top%20Apex%20Star%20--%3E%20%3Cpolygon%20points%3D%22100%2C34%20103%2C42%20111%2C42%20105%2C47%20107%2C55%20100%2C50%2093%2C55%2095%2C47%2089%2C42%2097%2C42%22%20fill%3D%22%232dd4bf%22/%3E%20%3C/svg%3E"
+  },
+  "Royal Vanguard SC": {
+    "id": "royal_vanguard",
+    "coach": "Placeholder #2",
+    "era": "Araldico Classico",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Cdefs%3E%20%3ClinearGradient%20id%3D%22rv-bg%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%220%25%22%20y2%3D%22100%25%22%3E%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%233b0764%22/%3E%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231e1b4b%22/%3E%20%3C/linearGradient%3E%20%3ClinearGradient%20id%3D%22rv-gold%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23fef08a%22/%3E%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23d97706%22/%3E%20%3C/linearGradient%3E%20%3C/defs%3E%20%3Cpath%20d%3D%22M40%2025%20L160%2025%20L160%20110%20C160%20160%20100%20188%20100%20188%20C100%20188%2040%20160%2040%20110%20Z%22%20fill%3D%22url%28%23rv-bg%29%22%20stroke%3D%22url%28%23rv-gold%29%22%20stroke-width%3D%226%22/%3E%20%3C%21--%20Rampant%20Lion%20Silhouette%20--%3E%20%3Cpath%20d%3D%22M100%2055%20C108%2055%20115%2062%20112%2070%20C110%2075%20118%2078%20122%2084%20C116%2086%20112%2083%20108%2088%20C106%2095%20116%20102%20114%20112%20C110%20112%20108%20106%20104%20108%20C100%20115%20106%20122%2098%20128%20C94%20122%2096%20115%2092%20110%20C86%20115%2088%20125%2082%20128%20C80%20118%2084%20108%2088%20100%20C84%2096%2078%2098%2075%2092%20C80%2088%2086%2090%2089%2084%20C85%2078%2092%2068%20100%2055%20Z%22%20fill%3D%22url%28%23rv-gold%29%22/%3E%20%3C/svg%3E"
+  },
+  "Phoenix Rising FC": {
+    "id": "phoenix_rising",
+    "coach": "Placeholder #3",
+    "era": "Mascotte & Fiamme",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Cdefs%3E%20%3ClinearGradient%20id%3D%22phx-grad%22%20x1%3D%220%25%22%20y1%3D%22100%25%22%20x2%3D%220%25%22%20y2%3D%220%25%22%3E%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23450a0a%22/%3E%20%3Cstop%20offset%3D%2260%25%22%20stop-color%3D%22%23991b1b%22/%3E%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23ea580c%22/%3E%20%3C/linearGradient%3E%20%3C/defs%3E%20%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2286%22%20fill%3D%22url%28%23phx-grad%29%22%20stroke%3D%22%23facc15%22%20stroke-width%3D%225%22/%3E%20%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2276%22%20fill%3D%22none%22%20stroke%3D%22%23f97316%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%226%203%22/%3E%20%3C%21--%20Rising%20Wing%20Flames%20--%3E%20%3Cpath%20d%3D%22M100%2045%20C115%2065%20145%2065%20155%2095%20C140%2092%20130%20102%20125%20115%20C120%2095%20105%2085%20100%2070%20C95%2085%2080%2095%2075%20115%20C70%20102%2060%2092%2045%2095%20C55%2065%2085%2065%20100%2045%20Z%22%20fill%3D%22%23facc15%22/%3E%20%3Cpath%20d%3D%22M100%2068%20C110%2082%20125%2085%20130%20105%20C120%20105%20112%20112%20110%20125%20C105%20110%2098%20102%20100%2068%20Z%22%20fill%3D%22%23ffffff%22/%3E%20%3C/svg%3E"
+  },
+  "Ironclad Athletic": {
+    "id": "ironclad_athletic",
+    "coach": "Placeholder #4",
+    "era": "Industrial & Forge",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3C%21--%20Heavy%20Hexagonal%20Plating%20--%3E%20%3Cpolygon%20points%3D%22100%2C18%20175%2C58%20175%2C142%20100%2C182%2025%2C142%2025%2C58%22%20fill%3D%22%230f172a%22%20stroke%3D%22%2306b6d4%22%20stroke-width%3D%226%22/%3E%20%3Cpolygon%20points%3D%22100%2C32%20160%2C66%20160%2C134%20100%2C168%2040%2C134%2040%2C66%22%20fill%3D%22%231e293b%22%20stroke%3D%22%23334155%22%20stroke-width%3D%223%22/%3E%20%3C%21--%20Crossed%20Anvil%20/%20Hammers%20Motif%20--%3E%20%3Cpath%20d%3D%22M65%2075%20L135%20125%20M135%2075%20L65%20125%22%20stroke%3D%22%2306b6d4%22%20stroke-width%3D%226%22%20stroke-linecap%3D%22round%22/%3E%20%3Crect%20x%3D%2285%22%20y%3D%2270%22%20width%3D%2230%22%20height%3D%2220%22%20rx%3D%223%22%20fill%3D%22%23f1f5f9%22/%3E%20%3Crect%20x%3D%2280%22%20y%3D%2290%22%20width%3D%2240%22%20height%3D%2215%22%20rx%3D%222%22%20fill%3D%22%2306b6d4%22/%3E%20%3C/svg%3E"
+  },
+  "Starlight Rovers": {
+    "id": "starlight_rovers",
+    "coach": "Placeholder #5",
+    "era": "Cosmic & Astral",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Cdefs%3E%20%3ClinearGradient%20id%3D%22star-grad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231e1b4b%22/%3E%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23020617%22/%3E%20%3C/linearGradient%3E%20%3C/defs%3E%20%3Cpolygon%20points%3D%22100%2C15%20178%2C70%20150%2C165%20100%2C188%2050%2C165%2022%2C70%22%20fill%3D%22url%28%23star-grad%29%22%20stroke%3D%22%23818cf8%22%20stroke-width%3D%225%22/%3E%20%3C%21--%208-Point%20Compass%20Star%20--%3E%20%3Cpolygon%20points%3D%22100%2C45%20108%2C78%20140%2C85%20108%2C92%20100%2C125%2092%2C92%2060%2C85%2092%2C78%22%20fill%3D%22%23ffffff%22/%3E%20%3Cpolygon%20points%3D%22100%2C55%20106%2C80%20130%2C85%20106%2C90%20100%2C115%2094%2C90%2070%2C85%2094%2C80%22%20fill%3D%22%236366f1%22/%3E%20%3Ccircle%20cx%3D%22100%22%20cy%3D%2285%22%20r%3D%224%22%20fill%3D%22%23ffffff%22/%3E%20%3C/svg%3E"
+  },
+  "Aegis Sentinel FC": {
+    "id": "aegis_sentinel",
+    "coach": "Placeholder #6",
+    "era": "Spartan & Shield",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3C%21--%20Round%20Spartan%20Hoplon%20Shield%20--%3E%20%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2286%22%20fill%3D%22%23064e3b%22%20stroke%3D%22%23d97706%22%20stroke-width%3D%227%22/%3E%20%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2274%22%20fill%3D%22%23022c22%22%20stroke%3D%22%23fef3c7%22%20stroke-width%3D%222%22/%3E%20%3C%21--%20Spartan%20Helmet%20Visor%20%26%20Crest%20--%3E%20%3Cpath%20d%3D%22M100%2045%20C115%2045%20125%2055%20125%2075%20L125%20110%20L112%20110%20L112%2090%20L88%2090%20L88%20110%20L75%20110%20L75%2075%20C75%2055%2085%2045%20100%2045%20Z%22%20fill%3D%22%23d97706%22/%3E%20%3C%21--%20Eye%20slits%20--%3E%20%3Cpolygon%20points%3D%2285%2C80%2095%2C85%2085%2C87%22%20fill%3D%22%23022c22%22/%3E%20%3Cpolygon%20points%3D%22115%2C80%20105%2C85%20115%2C87%22%20fill%3D%22%23022c22%22/%3E%20%3C/svg%3E"
+  },
+  "Titan Wolves SC": {
+    "id": "titan_wolves",
+    "coach": "Placeholder #7",
+    "era": "Predatori Artici",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Cpolygon%20points%3D%22100%2C15%20180%2C55%20160%2C165%20100%2C190%2040%2C165%2020%2C55%22%20fill%3D%22%230f172a%22%20stroke%3D%22%2338bdf8%22%20stroke-width%3D%225%22/%3E%20%3C%21--%20Faceted%20Wolf%20Profile%20--%3E%20%3Cpolygon%20points%3D%22100%2C50%20120%2C65%20115%2C85%20140%2C90%20125%2C115%20100%2C135%2085%2C110%2092%2C85%2080%2C65%22%20fill%3D%22%2338bdf8%22/%3E%20%3Cpolygon%20points%3D%22100%2C50%20115%2C85%20100%2C135%2085%2C110%2092%2C85%22%20fill%3D%22%230284c7%22/%3E%20%3Cpolygon%20points%3D%22110%2C82%20120%2C85%20115%2C90%22%20fill%3D%22%23ffffff%22/%3E%20%3C/svg%3E"
+  },
+  "Golden Griffin FC": {
+    "id": "golden_griffin",
+    "coach": "Placeholder #8",
+    "era": "Creature Mitologiche",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2286%22%20fill%3D%22%23172554%22%20stroke%3D%22%23eab308%22%20stroke-width%3D%226%22/%3E%20%3C%21--%20Griffin%20Wing%20%26%20Beak%20Profile%20--%3E%20%3Cpath%20d%3D%22M70%20115%20C75%2090%2095%2065%20125%2060%20C110%2075%20115%2085%20130%2090%20C120%2095%20115%20102%20118%20115%20C108%20110%2095%20112%2085%20120%20Z%22%20fill%3D%22%23eab308%22/%3E%20%3Cpath%20d%3D%22M125%2060%20C138%2068%20140%2082%20130%2090%20Z%22%20fill%3D%22%23facc15%22/%3E%20%3Ccircle%20cx%3D%22110%22%20cy%3D%2278%22%20r%3D%223.5%22%20fill%3D%22%23ffffff%22/%3E%20%3C/svg%3E"
+  },
+  "Obsidian FC": {
+    "id": "obsidian_fc",
+    "coach": "Placeholder #9",
+    "era": "Monochrome Facet",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Cpolygon%20points%3D%22100%2C15%20175%2C60%20175%2C140%20100%2C185%2025%2C140%2025%2C60%22%20fill%3D%22%2309090b%22%20stroke%3D%22%2371717a%22%20stroke-width%3D%225%22/%3E%20%3C%21--%203D%20Faceted%20Diamond%20Cut%20--%3E%20%3Cpolygon%20points%3D%22100%2C45%20140%2C75%20100%2C125%2060%2C75%22%20fill%3D%22%2327272a%22/%3E%20%3Cpolygon%20points%3D%22100%2C45%20100%2C125%2060%2C75%22%20fill%3D%22%233f3f46%22/%3E%20%3Cpolygon%20points%3D%22100%2C45%20140%2C75%20100%2C85%22%20fill%3D%22%23a1a1aa%22/%3E%20%3Cpolygon%20points%3D%22100%2C45%2060%2C75%20100%2C85%22%20fill%3D%22%23d4d4d8%22/%3E%20%3C/svg%3E"
+  },
+  "Crown Point Wanderers": {
+    "id": "crown_point",
+    "coach": "Placeholder #10",
+    "era": "Monarchico",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Cpath%20d%3D%22M40%2030%20L160%2030%20L160%20110%20C160%20160%20100%20188%20100%20188%20C100%20188%2040%20160%2040%20110%20Z%22%20fill%3D%22%2314532d%22%20stroke%3D%22%23ca8a04%22%20stroke-width%3D%226%22/%3E%20%3C%21--%20Coronet%20Crest%20with%20Jewels%20--%3E%20%3Cpath%20d%3D%22M60%20100%20L70%2070%20L90%2085%20L100%2065%20L110%2085%20L130%2070%20L140%20100%20Z%22%20fill%3D%22%23eab308%22/%3E%20%3Ccircle%20cx%3D%2270%22%20cy%3D%2267%22%20r%3D%223%22%20fill%3D%22%23fef9c3%22/%3E%20%3Ccircle%20cx%3D%22100%22%20cy%3D%2262%22%20r%3D%223.5%22%20fill%3D%22%23fef9c3%22/%3E%20%3Ccircle%20cx%3D%22130%22%20cy%3D%2267%22%20r%3D%223%22%20fill%3D%22%23fef9c3%22/%3E%20%3Crect%20x%3D%2265%22%20y%3D%22103%22%20width%3D%2270%22%20height%3D%228%22%20rx%3D%222%22%20fill%3D%22%23ca8a04%22/%3E%20%3C/svg%3E"
+  },
+  "Valiant Knights SC": {
+    "id": "valiant_knights",
+    "coach": "Placeholder #11",
+    "era": "Medievale",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Cpolygon%20points%3D%22100%2C16%20175%2C45%20155%2C160%20100%2C188%2045%2C160%2025%2C45%22%20fill%3D%22%23881337%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%225%22/%3E%20%3C%21--%20Closed%20Jousting%20Helm%20--%3E%20%3Cpath%20d%3D%22M78%2070%20C78%2050%20122%2050%20122%2070%20L122%20105%20C122%20118%20100%20125%20100%20125%20C100%20125%2078%20118%2078%20105%20Z%22%20fill%3D%22%23e2e8f0%22/%3E%20%3Cpath%20d%3D%22M85%2075%20L115%2075%20L112%2085%20L88%2085%20Z%22%20fill%3D%22%230f172a%22/%3E%20%3Cline%20x1%3D%22100%22%20y1%3D%2288%22%20x2%3D%22100%22%20y2%3D%22115%22%20stroke%3D%22%230f172a%22%20stroke-width%3D%223%22/%3E%20%3C/svg%3E"
+  },
+  "Kraken Maritime FC": {
+    "id": "kraken_maritime",
+    "coach": "Placeholder #12",
+    "era": "Mistero Oceanico",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2286%22%20fill%3D%22%23042f2e%22%20stroke%3D%22%2314b8a6%22%20stroke-width%3D%226%22/%3E%20%3C%21--%20Tentacles%20Curving%20Upward%20--%3E%20%3Cpath%20d%3D%22M60%20125%20C55%2090%2075%2075%2080%2060%20C85%2075%2075%2090%2085%20125%20Z%22%20fill%3D%22%2314b8a6%22/%3E%20%3Cpath%20d%3D%22M140%20125%20C145%2090%20125%2075%20120%2060%20C115%2075%20125%2090%20115%20125%20Z%22%20fill%3D%22%2314b8a6%22/%3E%20%3Cpath%20d%3D%22M100%20125%20C92%2095%20108%2080%20100%2055%20C108%2080%20108%2095%20100%20125%20Z%22%20fill%3D%22%232dd4bf%22/%3E%20%3C%21--%20Eye%20slit%20--%3E%20%3Cellipse%20cx%3D%22100%22%20cy%3D%2285%22%20rx%3D%228%22%20ry%3D%224%22%20fill%3D%22%23ffffff%22/%3E%20%3Ccircle%20cx%3D%22100%22%20cy%3D%2285%22%20r%3D%222.5%22%20fill%3D%22%23042f2e%22/%3E%20%3C/svg%3E"
+  },
+  "Volt Dynamo SC": {
+    "id": "volt_dynamo",
+    "coach": "Placeholder #13",
+    "era": "High Voltage",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Cpolygon%20points%3D%22100%2C15%20180%2C60%20155%2C165%20100%2C190%2045%2C165%2020%2C60%22%20fill%3D%22%2318181b%22%20stroke%3D%22%23eab308%22%20stroke-width%3D%226%22/%3E%20%3C%21--%20Double%20Lightning%20Bolt%20--%3E%20%3Cpolygon%20points%3D%22115%2C40%2070%2C105%20102%2C105%2085%2C155%20135%2C92%20102%2C92%22%20fill%3D%22%23facc15%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22/%3E%20%3C/svg%3E"
+  },
+  "Falconcrest Athletic": {
+    "id": "falconcrest_athletic",
+    "coach": "Placeholder #14",
+    "era": "Rapaci & Velocità",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Cpath%20d%3D%22M40%2025%20L160%2025%20L160%20110%20C160%20160%20100%20188%20100%20188%20C100%20188%2040%20160%2040%20110%20Z%22%20fill%3D%22%234c0519%22%20stroke%3D%22%23fde047%22%20stroke-width%3D%225%22/%3E%20%3C%21--%20Diving%20Falcon%20Silhouette%20--%3E%20%3Cpath%20d%3D%22M65%2065%20C85%2065%20110%2075%20130%2095%20C115%20100%20105%2095%2095%20102%20C85%20110%2080%20125%2075%20135%20C75%20115%2070%2095%2065%2065%20Z%22%20fill%3D%22%23dc2626%22/%3E%20%3Cpolygon%20points%3D%22130%2C95%20145%2C102%20128%2C106%22%20fill%3D%22%23fde047%22/%3E%20%3Ccircle%20cx%3D%22108%22%20cy%3D%2285%22%20r%3D%224%22%20fill%3D%22%23ffffff%22/%3E%20%3Ccircle%20cx%3D%22109%22%20cy%3D%2285%22%20r%3D%222%22%20fill%3D%22%23000000%22/%3E%20%3C/svg%3E"
+  },
+  "Solaris SC": {
+    "id": "solaris_sc",
+    "coach": "Placeholder #15",
+    "era": "Solare & Energia",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2286%22%20fill%3D%22%231e1b4b%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%226%22/%3E%20%3C%21--%20Radial%20Rays%20--%3E%20%3Cline%20x1%3D%22148%22%20y1%3D%22100%22%20x2%3D%22170%22%20y2%3D%22100%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22/%3E%20%3Cline%20x1%3D%22141.56921938165306%22%20y1%3D%22124%22%20x2%3D%22160.62177826491072%22%20y2%3D%22135%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22/%3E%20%3Cline%20x1%3D%22124%22%20y1%3D%22141.56921938165306%22%20x2%3D%22135%22%20y2%3D%22160.6217782649107%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22/%3E%20%3Cline%20x1%3D%22100%22%20y1%3D%22148%22%20x2%3D%22100%22%20y2%3D%22170%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22/%3E%20%3Cline%20x1%3D%2276.00000000000001%22%20y1%3D%22141.56921938165306%22%20x2%3D%2265.00000000000001%22%20y2%3D%22160.62177826491072%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22/%3E%20%3Cline%20x1%3D%2258.430780618346944%22%20y1%3D%22124%22%20x2%3D%2239.37822173508929%22%20y2%3D%22135%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22/%3E%20%3Cline%20x1%3D%2252%22%20y1%3D%22100%22%20x2%3D%2230%22%20y2%3D%22100.00000000000001%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22/%3E%20%3Cline%20x1%3D%2258.430780618346944%22%20y1%3D%2276%22%20x2%3D%2239.3782217350893%22%20y2%3D%2265%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22/%3E%20%3Cline%20x1%3D%2275.99999999999997%22%20y1%3D%2258.43078061834696%22%20x2%3D%2264.99999999999997%22%20y2%3D%2239.37822173508931%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22/%3E%20%3Cline%20x1%3D%2299.99999999999999%22%20y1%3D%2252%22%20x2%3D%2299.99999999999999%22%20y2%3D%2230%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22/%3E%20%3Cline%20x1%3D%22124%22%20y1%3D%2258.430780618346944%22%20x2%3D%22135%22%20y2%3D%2239.3782217350893%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22/%3E%20%3Cline%20x1%3D%22141.56921938165306%22%20y1%3D%2275.99999999999997%22%20x2%3D%22160.6217782649107%22%20y2%3D%2264.99999999999997%22%20stroke%3D%22%23f59e0b%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22/%3E%20%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2238%22%20fill%3D%22%23f43f5e%22/%3E%20%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2226%22%20fill%3D%22%23fef08a%22/%3E%20%3C/svg%3E"
+  },
+  "Northgate Rovers": {
+    "id": "northgate_rovers",
+    "coach": "Placeholder #16",
+    "era": "Fortezza & Mura",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Cpolygon%20points%3D%22100%2C16%20175%2C50%20160%2C165%20100%2C188%2040%2C165%2025%2C50%22%20fill%3D%22%231e3a8a%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%225%22/%3E%20%3C%21--%20Stone%20Castle%20Battlement%20--%3E%20%3Cpath%20d%3D%22M65%20125%20L65%2075%20L78%2075%20L78%2085%20L90%2085%20L90%2075%20L110%2075%20L110%2085%20L122%2085%20L122%2075%20L135%2075%20L135%20125%20Z%22%20fill%3D%22%2394a3b8%22/%3E%20%3C%21--%20Archway%20Gate%20--%3E%20%3Cpath%20d%3D%22M88%20125%20L88%20102%20C88%2095%20112%2095%20112%20102%20L112%20125%20Z%22%20fill%3D%22%230f172a%22/%3E%20%3C/svg%3E"
+  },
+  "Cobra Strike FC": {
+    "id": "cobra_strike",
+    "coach": "Placeholder #17",
+    "era": "Rettili & Attacco",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Cpolygon%20points%3D%22100%2C15%20180%2C65%20150%2C160%20100%2C190%2050%2C160%2020%2C65%22%20fill%3D%22%230a0a0a%22%20stroke%3D%22%2310b981%22%20stroke-width%3D%225%22/%3E%20%3C%21--%20Flared%20Cobra%20Hood%20--%3E%20%3Cpath%20d%3D%22M100%2048%20C130%2055%20145%2080%20135%20110%20C125%2095%20115%20100%20100%20128%20C85%20100%2075%2095%2065%20110%20C55%2080%2070%2055%20100%2048%20Z%22%20fill%3D%22%2310b981%22/%3E%20%3C%21--%20Hood%20Marks%20/%20Fangs%20--%3E%20%3Cellipse%20cx%3D%2285%22%20cy%3D%2280%22%20rx%3D%226%22%20ry%3D%2210%22%20fill%3D%22%23a3e635%22/%3E%20%3Cellipse%20cx%3D%22115%22%20cy%3D%2280%22%20rx%3D%226%22%20ry%3D%2210%22%20fill%3D%22%23a3e635%22/%3E%20%3Cpolygon%20points%3D%2294%2C105%20100%2C118%20106%2C105%22%20fill%3D%22%23ffffff%22/%3E%20%3C/svg%3E"
+  },
+  "Celestial Horizon FC": {
+    "id": "celestial_horizon",
+    "coach": "Placeholder #18",
+    "era": "Astro & Luna",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2286%22%20fill%3D%22%232e1065%22%20stroke%3D%22%23a855f7%22%20stroke-width%3D%225%22/%3E%20%3C%21--%20Crescent%20Moon%20--%3E%20%3Cpath%20d%3D%22M115%2050%20C80%2050%2065%2075%2065%20100%20C65%20125%2080%20150%20115%20150%20C95%20138%2088%20120%2088%20100%20C88%2080%2095%2062%20115%2050%20Z%22%20fill%3D%22%23f1f5f9%22/%3E%20%3C%21--%20Orbital%20Ring%20--%3E%20%3Cellipse%20cx%3D%22100%22%20cy%3D%22100%22%20rx%3D%2265%22%20ry%3D%2222%22%20fill%3D%22none%22%20stroke%3D%22%23a855f7%22%20stroke-width%3D%224%22%20transform%3D%22rotate%28-25%20100%20100%29%22/%3E%20%3Ccircle%20cx%3D%22130%22%20cy%3D%2285%22%20r%3D%225%22%20fill%3D%22%23facc15%22/%3E%20%3C/svg%3E"
+  },
+  "Wildcat City FC": {
+    "id": "wildcat_city",
+    "coach": "Placeholder #19",
+    "era": "Felini & Grinta",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Cpath%20d%3D%22M40%2025%20L160%2025%20L160%20110%20C160%20160%20100%20188%20100%20188%20C100%20188%2040%20160%2040%20110%20Z%22%20fill%3D%22%23111827%22%20stroke%3D%22%23f97316%22%20stroke-width%3D%225%22/%3E%20%3C%21--%20Cat%20Ears%20%26%20Face%20Silhouette%20--%3E%20%3Cpolygon%20points%3D%2270%2C55%2085%2C90%2060%2C80%22%20fill%3D%22%23f97316%22/%3E%20%3Cpolygon%20points%3D%22130%2C55%20115%2C90%20140%2C80%22%20fill%3D%22%23f97316%22/%3E%20%3Cpath%20d%3D%22M80%2085%20Q100%20120%20120%2085%20Q100%2095%2080%2085%20Z%22%20fill%3D%22%23fcd34d%22/%3E%20%3C%21--%20Slash%20Marks%20--%3E%20%3Cline%20x1%3D%2275%22%20y1%3D%22125%22%20x2%3D%2285%22%20y2%3D%22105%22%20stroke%3D%22%23f97316%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22/%3E%20%3Cline%20x1%3D%2295%22%20y1%3D%22130%22%20x2%3D%22105%22%20y2%3D%22110%22%20stroke%3D%22%23f97316%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22/%3E%20%3Cline%20x1%3D%22115%22%20y1%3D%22125%22%20x2%3D%22125%22%20y2%3D%22105%22%20stroke%3D%22%23f97316%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22/%3E%20%3C/svg%3E"
+  },
+  "Anchor Bay Athletic": {
+    "id": "anchor_bay",
+    "coach": "Placeholder #20",
+    "era": "Nautico Classico",
+    "svgDataUri": "data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2286%22%20fill%3D%22%23082f49%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%226%22/%3E%20%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2276%22%20fill%3D%22none%22%20stroke%3D%22%2338bdf8%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%224%203%22/%3E%20%3C%21--%20Nautical%20Anchor%20--%3E%20%3Ccircle%20cx%3D%22100%22%20cy%3D%2255%22%20r%3D%229%22%20fill%3D%22none%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%224%22/%3E%20%3Cline%20x1%3D%22100%22%20y1%3D%2264%22%20x2%3D%22100%22%20y2%3D%22128%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%226%22/%3E%20%3Cline%20x1%3D%2275%22%20y1%3D%2280%22%20x2%3D%22125%22%20y2%3D%2280%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22/%3E%20%3Cpath%20d%3D%22M65%20105%20C65%20130%20135%20130%20135%20105%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%226%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22/%3E%20%3C/svg%3E"
+  }
+}

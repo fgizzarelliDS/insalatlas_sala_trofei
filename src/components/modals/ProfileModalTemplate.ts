@@ -3,6 +3,7 @@ import { state } from '@/state';
 import { formatScore } from '@/score';
 import { renderTrophySVG, renderCoachBanner } from '@/trophies';
 import { getManagerArchetype, computeTailRiskProfile } from '@/analytics';
+import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
 
 /**
  * Updates DOM elements for vital stats, badges, and trophy shelf inside the profile modal
@@ -501,9 +502,9 @@ export function populateHistoricalTeams(m: Manager): void {
     chip.className =
       'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold border shadow-sm transition-colors bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700';
 
-    const logoHtml = team.logo
-      ? `<img src="${team.logo}" alt="${team.name}" class="w-4 h-4 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-600 shadow-sm" onerror="this.outerHTML='<i class=\\\'fa-solid fa-shield text-[10px] text-amber-500 dark:text-amber-400\\\'></i>'">`
-      : `<i class="fa-solid fa-shield text-[10px] text-amber-500 dark:text-amber-400"></i>`;
+    const resolvedLogo = resolveTeamLogo(team.name, team.logo);
+    const fallbackCrest = getTeamFallbackCrest(team.name);
+    const logoHtml = `<img src="${resolvedLogo}" alt="${team.name}" class="w-4 h-4 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-600 shadow-sm" onerror="this.onerror=null; this.src='${fallbackCrest}'">`;
 
     const seasonsHtml = team.formattedSeasons
       ? `<span class="opacity-60 text-[10px] font-normal tracking-tight">• ${team.formattedSeasons}</span>`

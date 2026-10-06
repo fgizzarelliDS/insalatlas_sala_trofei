@@ -1,4 +1,4 @@
-const CACHE_NAME = 'insalatlas-v1.0.0';
+const CACHE_NAME = 'insalatlas-v__APP_VERSION__';
 const STATIC_ASSETS = [
   './',
   './index.html',

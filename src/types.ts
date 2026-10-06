@@ -42,7 +42,6 @@ export interface CompetitionRecord {
   name: string;
   season: string;
   category: string;
-  trophyImage?: string;
   ranking: CompetitionRankingItem[];
 }
 

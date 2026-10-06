@@ -1599,7 +1599,6 @@
       "name": "Coppa dei perdenti 25-26",
       "season": "2025/26",
       "category": "Perdenti",
-      "trophyImage": "assets/trophies/Trophy6.png",
       "ranking": [
         {
           "rank": 1,
@@ -1615,7 +1614,7 @@
           "coach": "Paiden",
           "managerId": "m_pippo",
           "points": 0.0,
-          "logo": "assets/teams/no_logo24.png"
+          "logo": "assets/crests/anchor_bay.svg"
         }
       ]
     },
@@ -1624,7 +1623,6 @@
       "name": "Mundialito 2025-2026",
       "season": "2025/26",
       "category": "Mundialito",
-      "trophyImage": "assets/trophies/Trophy4.png",
       "ranking": [
         {
           "rank": 1,
@@ -1649,7 +1647,6 @@
       "name": "Supercup InsalAtlas 25-26",
       "season": "2025/26",
       "category": "Supercoppa",
-      "trophyImage": "assets/trophies/Trophy7.png",
       "ranking": [
         {
           "rank": 1,
@@ -1674,7 +1671,6 @@
       "name": "Coppa InsalAtlas 25-26",
       "season": "2025/26",
       "category": "Coppa",
-      "trophyImage": "assets/trophies/Trophy2.png",
       "ranking": [
         {
           "rank": 1,
@@ -1690,7 +1686,7 @@
           "coach": "Juliet-91",
           "managerId": "m_avvisatina",
           "points": 0.0,
-          "logo": "assets/teams/no_logo7.png"
+          "logo": "assets/crests/golden_griffin.svg"
         }
       ]
     },
@@ -1699,7 +1695,6 @@
       "name": "Serie Atlas 2025-2026",
       "season": "2025/26",
       "category": "Campionato",
-      "trophyImage": "assets/trophies/Trophy3.png",
       "ranking": [
         {
           "rank": 1,
@@ -1731,7 +1726,7 @@
           "coach": "Juliet-91",
           "managerId": "m_avvisatina",
           "points": 52.0,
-          "logo": "assets/teams/no_logo7.png"
+          "logo": "assets/crests/golden_griffin.svg"
         },
         {
           "rank": 5,
@@ -1795,7 +1790,7 @@
           "coach": "Paiden",
           "managerId": "m_pippo",
           "points": 24.0,
-          "logo": "assets/teams/no_logo24.png"
+          "logo": "assets/crests/anchor_bay.svg"
         }
       ]
     },
@@ -1804,7 +1799,6 @@
       "name": "Supercoppa InsalAtlas 202",
       "season": "2024/25",
       "category": "Supercoppa",
-      "trophyImage": "assets/trophies/Trophy2.png",
       "ranking": [
         {
           "rank": 1,
@@ -1820,7 +1814,7 @@
           "coach": "Dr cholo",
           "managerId": "m_gigicholo",
           "points": 0.0,
-          "logo": "assets/teams/no_logo21.png"
+          "logo": "assets/crests/titan_wolves.svg"
         }
       ]
     },
@@ -1829,7 +1823,6 @@
       "name": "Finale Mundialito InsalAt",
       "season": "2024/25",
       "category": "Mundialito",
-      "trophyImage": "assets/trophies/Trophy5.png",
       "ranking": [
         {
           "rank": 1,
@@ -1845,7 +1838,7 @@
           "coach": "vannico",
           "managerId": "m_vannico",
           "points": 0.0,
-          "logo": "assets/teams/no_logo12.png"
+          "logo": "assets/crests/volt_dynamo.svg"
         }
       ]
     },
@@ -1854,7 +1847,6 @@
       "name": "Coppa InsalAtlas 2024-202",
       "season": "2024/25",
       "category": "Coppa",
-      "trophyImage": "assets/trophies/Trophy3.png",
       "ranking": [
         {
           "rank": 1,
@@ -1862,7 +1854,7 @@
           "coach": "Dr cholo",
           "managerId": "m_gigicholo",
           "points": 0.0,
-          "logo": "assets/teams/no_logo21.png"
+          "logo": "assets/crests/titan_wolves.svg"
         },
         {
           "rank": 2,
@@ -1879,7 +1871,6 @@
       "name": "Serie Atlas 2024-2025",
       "season": "2024/25",
       "category": "Campionato",
-      "trophyImage": "assets/trophies/Trophy8.png",
       "ranking": [
         {
           "rank": 1,
@@ -1895,7 +1886,7 @@
           "coach": "Dr cholo",
           "managerId": "m_gigicholo",
           "points": 57.0,
-          "logo": "assets/teams/no_logo21.png"
+          "logo": "assets/crests/titan_wolves.svg"
         },
         {
           "rank": 3,
@@ -1927,7 +1918,7 @@
           "coach": "vannico",
           "managerId": "m_vannico",
           "points": 50.0,
-          "logo": "assets/teams/no_logo12.png"
+          "logo": "assets/crests/volt_dynamo.svg"
         },
         {
           "rank": 7,
@@ -1935,7 +1926,7 @@
           "coach": "Juliet-91",
           "managerId": "m_avvisatina",
           "points": 45.0,
-          "logo": "assets/teams/no_logo11.png"
+          "logo": "assets/crests/golden_griffin.svg"
         },
         {
           "rank": 8,
@@ -1951,7 +1942,7 @@
           "coach": "Paiden",
           "managerId": "m_pippo",
           "points": 37.0,
-          "logo": "assets/teams/no_logo27.png"
+          "logo": "assets/crests/anchor_bay.svg"
         },
         {
           "rank": 10,
@@ -1959,7 +1950,7 @@
           "coach": "Sebbadavid",
           "managerId": "m_sebba",
           "points": 35.0,
-          "logo": "assets/teams/no_logo1.png"
+          "logo": "assets/crests/cobra_strike.svg"
         },
         {
           "rank": 11,
@@ -1967,7 +1958,7 @@
           "coach": "BartaliATLAS",
           "managerId": "m_compagno",
           "points": 30.0,
-          "logo": "assets/teams/no_logo2.png"
+          "logo": "assets/crests/starlight_rovers.svg"
         },
         {
           "rank": 12,
@@ -1975,7 +1966,7 @@
           "coach": "tazio13",
           "managerId": "m_tazio",
           "points": 23.0,
-          "logo": "assets/teams/no_logo8.png"
+          "logo": "assets/crests/solaris_sc.svg"
         }
       ]
     },
@@ -1984,7 +1975,6 @@
       "name": "Supercoppa InsalAtlas 202",
       "season": "2023/24",
       "category": "Supercoppa",
-      "trophyImage": "assets/trophies/Trophy1.png",
       "ranking": [
         {
           "rank": 1,
@@ -1992,7 +1982,7 @@
           "coach": "alfius91",
           "managerId": "m_alfo",
           "points": 0.0,
-          "logo": "assets/teams/2545500_09859431.png"
+          "logo": "assets/crests/phoenix_rising.svg"
         },
         {
           "rank": 2,
@@ -2000,7 +1990,7 @@
           "coach": "Sebbadavid",
           "managerId": "m_sebba",
           "points": 0.0,
-          "logo": "assets/teams/no_logo3.png"
+          "logo": "assets/crests/cobra_strike.svg"
         }
       ]
     },
@@ -2009,7 +1999,6 @@
       "name": "Coppa InsalAtlas 2023-202",
       "season": "2023/24",
       "category": "Coppa",
-      "trophyImage": "assets/trophies/Trophy6.png",
       "ranking": [
         {
           "rank": 1,
@@ -2017,7 +2006,7 @@
           "coach": "alfius91",
           "managerId": "m_alfo",
           "points": 0.0,
-          "logo": "assets/teams/2545500_09859431.png"
+          "logo": "assets/crests/phoenix_rising.svg"
         },
         {
           "rank": 2,
@@ -2025,7 +2014,7 @@
           "coach": "valeriodam",
           "managerId": "m_valery",
           "points": 0.0,
-          "logo": "assets/teams/2543640_09957284.png"
+          "logo": "assets/crests/royal_vanguard.svg"
         }
       ]
     },
@@ -2034,7 +2023,6 @@
       "name": "Serie Atlas 2023-2024",
       "season": "2023/24",
       "category": "Campionato",
-      "trophyImage": "assets/trophies/Trophy4.png",
       "ranking": [
         {
           "rank": 1,
@@ -2042,7 +2030,7 @@
           "coach": "Sebbadavid",
           "managerId": "m_sebba",
           "points": 56.0,
-          "logo": "assets/teams/no_logo3.png"
+          "logo": "assets/crests/cobra_strike.svg"
         },
         {
           "rank": 2,
@@ -2058,7 +2046,7 @@
           "coach": "tazio13",
           "managerId": "m_tazio",
           "points": 51.0,
-          "logo": "assets/teams/no_logo13.png"
+          "logo": "assets/crests/solaris_sc.svg"
         },
         {
           "rank": 4,
@@ -2066,7 +2054,7 @@
           "coach": "valeriodam",
           "managerId": "m_valery",
           "points": 51.0,
-          "logo": "assets/teams/2543640_09957284.png"
+          "logo": "assets/crests/royal_vanguard.svg"
         },
         {
           "rank": 5,
@@ -2074,7 +2062,7 @@
           "coach": "Juliet-91",
           "managerId": "m_avvisatina",
           "points": 49.0,
-          "logo": "assets/teams/no_logo16.png"
+          "logo": "assets/crests/golden_griffin.svg"
         },
         {
           "rank": 6,
@@ -2082,7 +2070,7 @@
           "coach": "alfius91",
           "managerId": "m_alfo",
           "points": 48.0,
-          "logo": "assets/teams/2545500_09859431.png"
+          "logo": "assets/crests/phoenix_rising.svg"
         },
         {
           "rank": 7,
@@ -2106,7 +2094,7 @@
           "coach": "BartaliATLAS",
           "managerId": "m_compagno",
           "points": 41.0,
-          "logo": "assets/teams/no_logo14.png"
+          "logo": "assets/crests/starlight_rovers.svg"
         },
         {
           "rank": 10,
@@ -2114,7 +2102,7 @@
           "coach": "Lucchetto",
           "managerId": "m_lucchetto",
           "points": 37.0,
-          "logo": "assets/teams/2549374_03368999.png"
+          "logo": "assets/crests/wildcat_city.svg"
         },
         {
           "rank": 11,
@@ -2122,7 +2110,7 @@
           "coach": "Paiden",
           "managerId": "m_pippo",
           "points": 36.0,
-          "logo": "assets/teams/no_logo6.png"
+          "logo": "assets/crests/anchor_bay.svg"
         },
         {
           "rank": 12,
@@ -2139,7 +2127,6 @@
       "name": "Supercoppa InsalAtlas 202",
       "season": "2022/23",
       "category": "Supercoppa",
-      "trophyImage": "assets/trophies/Trophy5.png",
       "ranking": [
         {
           "rank": 1,
@@ -2147,7 +2134,7 @@
           "coach": "alfius91",
           "managerId": "m_alfo",
           "points": 0.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/phoenix_rising.svg"
         },
         {
           "rank": 2,
@@ -2164,7 +2151,6 @@
       "name": "Coppa InsalAtlas 2022-202",
       "season": "2022/23",
       "category": "Coppa",
-      "trophyImage": "assets/trophies/Trophy8.png",
       "ranking": [
         {
           "rank": 1,
@@ -2172,7 +2158,7 @@
           "coach": "alfius91",
           "managerId": "m_alfo",
           "points": 0.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/phoenix_rising.svg"
         },
         {
           "rank": 2,
@@ -2180,7 +2166,7 @@
           "coach": "Dr cholo",
           "managerId": "m_gigicholo",
           "points": 0.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/titan_wolves.svg"
         }
       ]
     },
@@ -2189,7 +2175,6 @@
       "name": "Serie Atlas 2022-2023",
       "season": "2022/23",
       "category": "Campionato",
-      "trophyImage": "assets/trophies/Trophy4.png",
       "ranking": [
         {
           "rank": 1,
@@ -2205,7 +2190,7 @@
           "coach": "alfius91",
           "managerId": "m_alfo",
           "points": 55.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/phoenix_rising.svg"
         },
         {
           "rank": 3,
@@ -2221,7 +2206,7 @@
           "coach": "tazio13",
           "managerId": "m_tazio",
           "points": 49.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/solaris_sc.svg"
         },
         {
           "rank": 5,
@@ -2237,7 +2222,7 @@
           "coach": "Lucchetto",
           "managerId": "m_lucchetto",
           "points": 43.0,
-          "logo": "assets/teams/2549374_03865183.png"
+          "logo": "assets/crests/volt_dynamo.svg"
         },
         {
           "rank": 7,
@@ -2245,7 +2230,7 @@
           "coach": "Dr cholo",
           "managerId": "m_gigicholo",
           "points": 41.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/titan_wolves.svg"
         },
         {
           "rank": 8,
@@ -2253,7 +2238,7 @@
           "coach": "miles92",
           "managerId": "m_makako",
           "points": 40.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/falconcrest_athletic.svg"
         },
         {
           "rank": 9,
@@ -2277,7 +2262,7 @@
           "coach": "Juliet-91",
           "managerId": "m_avvisatina",
           "points": 36.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/golden_griffin.svg"
         },
         {
           "rank": 12,
@@ -2285,7 +2270,7 @@
           "coach": "Paiden",
           "managerId": "m_pippo",
           "points": 35.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/anchor_bay.svg"
         }
       ]
     },
@@ -2294,7 +2279,6 @@
       "name": "Supercoppa InsalAtlas 202",
       "season": "2021/22",
       "category": "Supercoppa",
-      "trophyImage": "assets/trophies/Trophy3.png",
       "ranking": [
         {
           "rank": 1,
@@ -2319,7 +2303,6 @@
       "name": "Coppa InsalAtlas 2021-202",
       "season": "2021/22",
       "category": "Coppa",
-      "trophyImage": "assets/trophies/Trophy5.png",
       "ranking": [
         {
           "rank": 1,
@@ -2344,7 +2327,6 @@
       "name": "SerieAtlas 2021-2022",
       "season": "2021/22",
       "category": "Campionato",
-      "trophyImage": "assets/trophies/Trophy2.png",
       "ranking": [
         {
           "rank": 1,
@@ -2360,7 +2342,7 @@
           "coach": "alfius91",
           "managerId": "m_alfo",
           "points": 58.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/phoenix_rising.svg"
         },
         {
           "rank": 3,
@@ -2432,7 +2414,7 @@
           "coach": "tazio13",
           "managerId": "m_tazio",
           "points": 31.0,
-          "logo": "assets/teams/no_logo5.png"
+          "logo": "assets/crests/solaris_sc.svg"
         },
         {
           "rank": 12,
@@ -2440,7 +2422,7 @@
           "coach": "miles92",
           "managerId": "m_makako",
           "points": 24.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/falconcrest_athletic.svg"
         }
       ]
     },
@@ -2449,7 +2431,6 @@
       "name": "SerieAtlas",
       "season": "2020/21",
       "category": "Campionato",
-      "trophyImage": "assets/trophies/Trophy8.png",
       "ranking": [
         {
           "rank": 1,
@@ -2457,7 +2438,7 @@
           "coach": "vannico",
           "managerId": "m_vannico",
           "points": null,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/anchor_bay.svg"
         },
         {
           "rank": 2,
@@ -2465,7 +2446,7 @@
           "coach": "miles92",
           "managerId": "m_makako",
           "points": null,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/falconcrest_athletic.svg"
         },
         {
           "rank": 3,
@@ -2473,7 +2454,7 @@
           "coach": "cursimone",
           "managerId": "m_scurcio",
           "points": null,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/wildcat_city.svg"
         }
       ]
     },
@@ -2482,7 +2463,6 @@
       "name": "SerieAtlas",
       "season": "2019/20",
       "category": "Campionato",
-      "trophyImage": "assets/trophies/Trophy3.png",
       "ranking": [
         {
           "rank": 1,
@@ -2506,7 +2486,7 @@
           "coach": "Juliet-91",
           "managerId": "m_avvisatina",
           "points": 57.0,
-          "logo": "assets/teams/2550954_06152126.png"
+          "logo": "assets/crests/golden_griffin.svg"
         },
         {
           "rank": 4,
@@ -2514,7 +2494,7 @@
           "coach": "petrubik88",
           "managerId": "m_peterdani",
           "points": 52.0,
-          "logo": "assets/teams/4862674_003928542.png"
+          "logo": "assets/crests/anchor_bay.svg"
         },
         {
           "rank": 5,
@@ -2538,7 +2518,7 @@
           "coach": "cursimone",
           "managerId": "m_scurcio",
           "points": 46.0,
-          "logo": "assets/teams/2544594_04668615.png"
+          "logo": "assets/crests/cobra_strike.svg"
         },
         {
           "rank": 8,
@@ -2546,7 +2526,7 @@
           "coach": "Sebbadavid",
           "managerId": "m_sebba",
           "points": 45.0,
-          "logo": "assets/teams/no_logo18.png"
+          "logo": "assets/crests/golden_griffin.svg"
         },
         {
           "rank": 9,
@@ -2554,7 +2534,7 @@
           "coach": "Lucchetto",
           "managerId": "m_lucchetto",
           "points": 40.0,
-          "logo": "assets/teams/2549374_002306259.png"
+          "logo": "assets/crests/aegis_sentinel.svg"
         },
         {
           "rank": 10,
@@ -2562,7 +2542,7 @@
           "coach": "SorFra",
           "managerId": "m_erboro",
           "points": 35.0,
-          "logo": "assets/teams/no_logo20.png"
+          "logo": "assets/crests/solaris_sc.svg"
         }
       ]
     },
@@ -2571,7 +2551,6 @@
       "name": "Coppa InsalAtlas",
       "season": "2019/20",
       "category": "Coppa",
-      "trophyImage": "assets/trophies/Trophy3.png",
       "ranking": [
         {
           "rank": 1,
@@ -2587,7 +2566,7 @@
           "coach": "cursimone",
           "managerId": "m_scurcio",
           "points": 0.0,
-          "logo": "assets/teams/2544594_04668615.png"
+          "logo": "assets/crests/cobra_strike.svg"
         }
       ]
     },
@@ -2596,7 +2575,6 @@
       "name": "SerieAtlas",
       "season": "2018/19",
       "category": "Campionato",
-      "trophyImage": "assets/trophies/Trophy3.png",
       "ranking": [
         {
           "rank": 1,
@@ -2604,7 +2582,7 @@
           "coach": "Lucchetto",
           "managerId": "m_lucchetto",
           "points": 63.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/starlight_rovers.svg"
         },
         {
           "rank": 2,
@@ -2612,7 +2590,7 @@
           "coach": "alfius91",
           "managerId": "m_alfo",
           "points": 54.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/crown_point.svg"
         },
         {
           "rank": 3,
@@ -2620,7 +2598,7 @@
           "coach": "Sebbadavid",
           "managerId": "m_sebba",
           "points": 53.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/celestial_horizon.svg"
         }
       ]
     },
@@ -2629,7 +2607,6 @@
       "name": "SerieAtlas",
       "season": "2017/18",
       "category": "Campionato",
-      "trophyImage": "assets/trophies/Trophy4.png",
       "ranking": [
         {
           "rank": 1,
@@ -2637,7 +2614,7 @@
           "coach": "miles92",
           "managerId": "m_makako",
           "points": 67.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/falconcrest_athletic.svg"
         },
         {
           "rank": 2,
@@ -2645,7 +2622,7 @@
           "coach": "Lucchetto",
           "managerId": "m_lucchetto",
           "points": 57.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/starlight_rovers.svg"
         },
         {
           "rank": 3,
@@ -2653,7 +2630,7 @@
           "coach": "alfius91",
           "managerId": "m_alfo",
           "points": 55.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/crown_point.svg"
         }
       ]
     },
@@ -2662,7 +2639,6 @@
       "name": "SerieAtlas",
       "season": "2016/17",
       "category": "Campionato",
-      "trophyImage": "assets/trophies/Trophy4.png",
       "ranking": [
         {
           "rank": 1,
@@ -2678,7 +2654,7 @@
           "coach": "miles92",
           "managerId": "m_makako",
           "points": 57.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/titan_wolves.svg"
         },
         {
           "rank": 3,
@@ -2686,7 +2662,7 @@
           "coach": "alfius91",
           "managerId": "m_alfo",
           "points": 51.0,
-          "logo": "assets/teams/no_logo.png"
+          "logo": "assets/crests/crown_point.svg"
         }
       ]
     }

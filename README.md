@@ -1,7 +1,8 @@
 # InsalAtlas • Sala Trofei & Analytics Hub
 
 [![Deploy to GitHub Pages](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/deploy.yml/badge.svg)](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/deploy.yml)
-[![Validate League Data](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/validate-data.yml/badge.svg)](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/validate-data.yml)
+[![Continuous Integration](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/ci.yml/badge.svg)](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/ci.yml)
+[![Version: 1.1.0](https://img.shields.io/badge/version-1.1.0-emerald.svg)](package.json)
 [![TypeScript Strict](https://img.shields.io/badge/TypeScript-5.x_Strict-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -13,8 +14,12 @@
 
 **InsalAtlas Sala Trofei** evolve il classico albo d'oro statico in un hub storico e di analisi per leghe Fantacalcio.
 
-L'applicazione offre un'interfaccia interattiva per desktop e mobile, integrando la generazione ad alta risoluzione (HD) di schede manager condivisibili e un motore di analisi competitiva basato su teoria economica e modellazione del rischio.
+L'applicazione offre un'interfaccia interattiva per desktop e mobile:
 
+- **Albo d'Oro Storico Decennale**: Bacheca trofei consolidata, rating storico e schede manager ad alta risoluzione (HD) condivisibili.
+- **Archivio Stagioni & Classifiche**: Consultazione cronologica delle singole annate con classifiche ufficiali e finaliste delle coppe.
+- **Vector Crest**: Catalogo di 20 ( `public/assets/crests/` ) stemmi vettoriali ad alta definizione per rappresentare ogni squadra priva di logo personalizzato.
+- **Econometria & Rischio**: Motore di analisi competitiva basato su teoria economica e modellazione del rischio.
 - **Live Application**: [fgizzarellids.github.io/insalatlas_sala_trofei](https://fgizzarellids.github.io/insalatlas_sala_trofei/)
 - **Database Ufficiale**: `public/data.json`
 
@@ -32,7 +37,7 @@ Struttura a **7 colonne native** (`.albo-grid-row`), il motore di theming basato
 
 ### 2. [Funzionalità & Esperienza Utente](docs/02-features-and-ui.md)
 
-Guida ai moduli applicativi: tabella interattiva con ordinamento multi-criterio, rendering off-screen in HD tramite `html2canvas`, copia istantanea negli appunti, condivisione formattata su WhatsApp e modalità di modifica protetta.
+Guida ai moduli applicativi: albo d'oro interattivo con ordinamento multi-criterio, archivio cronologico delle stagioni e coppe con tabelle mobile-optimized, motore di fallback per stemmi vettoriali (`src/crests.ts`), rendering off-screen in HD tramite `html2canvas`, copia istantanea negli appunti, condivisione formattata su WhatsApp e modalità di modifica protetta.
 
 ### 3. [Econometria, Cinismo & Modelli di Rischio](docs/03-analytics-and-econometrics.md)
 

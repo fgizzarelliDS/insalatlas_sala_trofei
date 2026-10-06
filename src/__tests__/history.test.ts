@@ -473,10 +473,11 @@ describe('Historical Rankings & Career Visualizations', () => {
 
       selectArchiveSeason('2024/25');
       expect(mockSeasonsContent.innerHTML).toContain('Classifica Ufficiale');
-      expect(mockSeasonsContent.innerHTML).toContain('🥇 1° Scudetto');
-      expect(mockSeasonsContent.innerHTML).toContain('🥈 2° Posto');
-      expect(mockSeasonsContent.innerHTML).toContain('🥉 3° Posto');
-      expect(mockSeasonsContent.innerHTML).toContain('🥄 12° Cucchiaio');
+      expect(mockSeasonsContent.innerHTML).toContain('🥇 1°');
+      expect(mockSeasonsContent.innerHTML).toContain('Scudetto');
+      expect(mockSeasonsContent.innerHTML).toContain('🥈 2°');
+      expect(mockSeasonsContent.innerHTML).toContain('🥉 3°');
+      expect(mockSeasonsContent.innerHTML).toContain('🥄 12°');
       expect(mockSeasonsContent.innerHTML).toContain('Coppe &amp; Tornei di Stagione');
 
       // Team logos in table

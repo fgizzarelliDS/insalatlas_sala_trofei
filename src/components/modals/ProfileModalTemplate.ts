@@ -493,7 +493,7 @@ export function populateHistoricalTeams(m: Manager): void {
 
   card.classList.remove('hidden');
   if (countEl) {
-    countEl.textContent = `${teams.length} ${teams.length === 1 ? 'denominazione' : 'denominazioni'}`;
+    countEl.textContent = `${teams.length} ${teams.length === 1 ? 'Nome Storico' : 'Nomi Storici'}`;
   }
 
   listEl.innerHTML = '';

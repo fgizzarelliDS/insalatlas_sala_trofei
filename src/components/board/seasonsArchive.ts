@@ -143,24 +143,44 @@ export function renderSeasonsArchive(): void {
   let championshipHtml = '';
   if (championship && championship.ranking && championship.ranking.length > 0) {
     let rowsHtml = '';
-    const lastRank = Math.max(...championship.ranking.map(r => r.rank));
+    const numericRanks = championship.ranking
+      .map(r => r.rank)
+      .filter((rk): rk is number => typeof rk === 'number' && rk > 0);
+    const lastRank = numericRanks.length > 0 ? Math.max(...numericRanks) : 0;
+    const isSpoonCompetition = lastRank >= 8;
 
-    championship.ranking.forEach(r => {
-      let rankLabel = `#${r.rank}`;
-      let rankBadgeClass = 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
+    const sortedRanking = [...championship.ranking].sort((a, b) => {
+      const getWeight = (r: typeof a) => {
+        if (typeof r.rank === 'number' && r.rank > 0) {
+          if (isSpoonCompetition && r.rank === lastRank) return 999999;
+          return r.rank;
+        }
+        return 500000;
+      };
+      return getWeight(a) - getWeight(b);
+    });
 
-      if (r.rank === 1) {
-        rankLabel = '🥇 1°<span class="hidden sm:inline"> Scudetto</span>';
-        rankBadgeClass = 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-500/25 dark:text-amber-300 dark:border-amber-500/40 font-black';
-      } else if (r.rank === 2) {
-        rankLabel = '🥈 2°<span class="hidden sm:inline"> Posto</span>';
-        rankBadgeClass = 'bg-slate-200 text-slate-800 border-slate-300 dark:bg-slate-700/60 dark:text-slate-200 dark:border-slate-600 font-bold';
-      } else if (r.rank === 3) {
-        rankLabel = '🥉 3°<span class="hidden sm:inline"> Posto</span>';
-        rankBadgeClass = 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-700/25 dark:text-amber-400 dark:border-amber-700/40 font-bold';
-      } else if (r.rank === lastRank && lastRank >= 8) {
-        rankLabel = `🥄 ${r.rank}°<span class="hidden sm:inline"> Cucchiaio</span>`;
-        rankBadgeClass = 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/40 font-bold';
+    sortedRanking.forEach(r => {
+      let rankLabel = 'N/D';
+      let rankBadgeClass = 'bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-700/50';
+
+      if (typeof r.rank === 'number' && r.rank > 0) {
+        rankLabel = `#${r.rank}`;
+        rankBadgeClass = 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
+
+        if (r.rank === 1) {
+          rankLabel = '🥇 1°<span class="hidden sm:inline"> Scudetto</span>';
+          rankBadgeClass = 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-500/25 dark:text-amber-300 dark:border-amber-500/40 font-black';
+        } else if (r.rank === 2) {
+          rankLabel = '🥈 2°<span class="hidden sm:inline"> Posto</span>';
+          rankBadgeClass = 'bg-slate-200 text-slate-800 border-slate-300 dark:bg-slate-700/60 dark:text-slate-200 dark:border-slate-600 font-bold';
+        } else if (r.rank === 3) {
+          rankLabel = '🥉 3°<span class="hidden sm:inline"> Posto</span>';
+          rankBadgeClass = 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-700/25 dark:text-amber-400 dark:border-amber-700/40 font-bold';
+        } else if (r.rank === lastRank && lastRank >= 8) {
+          rankLabel = `🥄 ${r.rank}°<span class="hidden sm:inline"> Cucchiaio</span>`;
+          rankBadgeClass = 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/40 font-bold';
+        }
       }
 
       // Canonical manager name
@@ -168,7 +188,7 @@ export function renderSeasonsArchive(): void {
       const managerName = mgr ? mgr.name : (r.coach || 'Sconosciuto');
 
       // Sanitized points
-      const hasValidPoints = typeof r.points === 'number' && r.points > 0 && currentSelectedSeason !== '2020/21';
+      const hasValidPoints = typeof r.points === 'number' && r.points > 0;
       const ptsStr = hasValidPoints ? `${r.points} pt` : '-';
 
       const clickHandler = r.managerId ? `onclick="openProfileModal('${r.managerId}')"` : '';

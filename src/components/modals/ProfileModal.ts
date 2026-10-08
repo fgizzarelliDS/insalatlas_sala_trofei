@@ -181,28 +181,52 @@ export function toggleCompetitionDrawer(competitionId: number, season?: string):
   }
 
   let rows = '';
-  comp.ranking.forEach(r => {
+  const numericRanks = comp.ranking
+    .map(r => r.rank)
+    .filter((rk): rk is number => typeof rk === 'number' && rk > 0);
+  const lastRank = numericRanks.length > 0 ? Math.max(...numericRanks) : 0;
+  const isSpoonCompetition = lastRank >= 8;
+
+  const sortedRanking = [...comp.ranking].sort((a, b) => {
+    const getWeight = (r: typeof a) => {
+      if (typeof r.rank === 'number' && r.rank > 0) {
+        if (isSpoonCompetition && r.rank === lastRank) return 999999;
+        return r.rank;
+      }
+      return 500000;
+    };
+    return getWeight(a) - getWeight(b);
+  });
+
+  sortedRanking.forEach(r => {
     const isCurrentManager = state.selectedManagerId && r.managerId === state.selectedManagerId;
     const highlightClass = isCurrentManager
       ? 'bg-amber-500/15 border-l-2 border-amber-400 font-bold'
       : 'opacity-90 hover:bg-white/5';
 
-    let rankLabel = `#${r.rank}`;
-    if (r.rank === 1) rankLabel = '🥇 1°';
-    else if (r.rank === 2) rankLabel = '🥈 2°';
-    else if (r.rank === 3) rankLabel = '🥉 3°';
+    let rankLabel = 'N/D';
+    if (typeof r.rank === 'number' && r.rank > 0) {
+      if (r.rank === 1) rankLabel = '🥇 1°';
+      else if (r.rank === 2) rankLabel = '🥈 2°';
+      else if (r.rank === 3) rankLabel = '🥉 3°';
+      else if (isSpoonCompetition && r.rank === lastRank) {
+        rankLabel = `<span class="text-amber-700 dark:text-amber-400 font-bold whitespace-nowrap">🥄 ${r.rank}°</span>`;
+      } else {
+        rankLabel = `#${r.rank}`;
+      }
+    }
 
     // Canonical manager name as in the main table
     const mgr = state.managers?.find(m => m.id === r.managerId);
     const managerName = mgr ? mgr.name : (r.coach || 'Sconosciuto');
 
-    // Points display (sanitize 2020/21 unrecorded points or cups)
-    const hasValidPoints = typeof r.points === 'number' && r.points > 0 && comp.season !== '2020/21';
+    // Points display (sanitize unrecorded points or cups)
+    const hasValidPoints = typeof r.points === 'number' && r.points > 0;
     const ptsStr = hasValidPoints ? `${r.points} pt` : '-';
 
     rows += `
       <tr class="border-b last:border-b-0 transition-colors ${highlightClass}" style="border-color: var(--table-border);">
-        <td class="py-2 px-2 text-center align-middle font-bold text-xs whitespace-nowrap w-12">
+        <td class="py-2 px-2 text-center align-middle font-bold text-xs whitespace-nowrap w-14">
           ${rankLabel}
         </td>
         <td class="py-2 px-2 text-left align-middle">
@@ -237,7 +261,7 @@ export function toggleCompetitionDrawer(competitionId: number, season?: string):
       <table class="w-full text-left border-collapse">
         <thead>
           <tr class="border-b text-[10px] uppercase font-bold tracking-wider opacity-80" style="border-color: var(--table-border); color: var(--text-muted);">
-            <th class="py-1.5 px-2 text-center w-12">#</th>
+            <th class="py-1.5 px-2 text-center w-14">#</th>
             <th class="py-1.5 px-2 text-left">Squadra / Allenatore</th>
             <th class="py-1.5 px-2 text-right w-16">Punti</th>
           </tr>

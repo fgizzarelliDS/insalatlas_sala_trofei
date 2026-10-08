@@ -205,8 +205,8 @@ export function renderRankTrajectorySparkline(history: SeasonRecord[]): string {
   });
 
   const width = 500;
-  const height = 120;
-  const padding = { top: 22, right: 30, bottom: 25, left: 34 };
+  const height = 130;
+  const padding = { top: 22, right: 30, bottom: 34, left: 34 };
   const innerW = width - padding.left - padding.right;
   const innerH = height - padding.top - padding.bottom;
 
@@ -222,6 +222,22 @@ export function renderRankTrajectorySparkline(history: SeasonRecord[]): string {
     return padding.left + (index / (total - 1)) * innerW;
   };
 
+  // Helper to dynamically retrieve participant team count for a season from the database
+  const getSeasonTeamCount = (season: string): number => {
+    const comp = state.competitions?.find(
+      c => c.season === season && (c.category === 'Campionato' || (c.name && c.name.toLowerCase().includes('serie')))
+    );
+    if (comp?.ranking && comp.ranking.length > 0) {
+      return comp.ranking.length;
+    }
+    const fromManagers = state.managers?.filter(m => m.history?.some(h => h.season === season)).length;
+    if (fromManagers && fromManagers > 0) {
+      return fromManagers;
+    }
+    const record = history.find(h => h.season === season);
+    return typeof record?.rank === 'number' ? Math.max(record.rank, 8) : 12;
+  };
+
   // Neutral mid-level Y position for unranked/unrecorded seasons (e.g. 2020/21 or missing seasons)
   const yND = getY(6.5);
 
@@ -235,7 +251,8 @@ export function renderRankTrajectorySparkline(history: SeasonRecord[]): string {
       rank: isRanked ? (record!.rank as number) : null,
       isRanked,
       team: record?.team || '',
-      score: record?.points
+      score: record?.points,
+      teamCount: getSeasonTeamCount(season)
     };
   });
 
@@ -260,14 +277,13 @@ export function renderRankTrajectorySparkline(history: SeasonRecord[]): string {
     const seasonShort = p.season.replace(/^20/, '');
 
     if (!p.isRanked) {
-      const tooltip = p.team
-        ? `${p.season}: Classifica N/D (${p.team})`
-        : `${p.season}: Classifica N/D (Non disputata / Dati non disponibili)`;
+      const tooltip = `${p.season}: Classifica N/D su ${p.teamCount} squadre (${p.team || 'Partecipante'})`;
       nodesSvg += `
       <g class="cursor-pointer">
         <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5.5" fill="var(--modal-bg)" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="2,2" />
         <title>${tooltip}</title>
-        <text x="${p.x.toFixed(1)}" y="${height - 6}" font-size="9" font-weight="bold" fill="currentColor" opacity="0.65" text-anchor="middle">${seasonShort}</text>
+        <text x="${p.x.toFixed(1)}" y="${height - 14}" font-size="9" font-weight="bold" fill="currentColor" opacity="0.75" text-anchor="middle">${seasonShort}</text>
+        <text x="${p.x.toFixed(1)}" y="${height - 4}" font-size="7.5" font-weight="semibold" fill="currentColor" opacity="0.45" text-anchor="middle">${p.teamCount} sq</text>
         <text x="${p.x.toFixed(1)}" y="${(p.y - 8).toFixed(1)}" font-size="8" font-weight="extrabold" fill="#94a3b8" text-anchor="middle">N/D</text>
       </g>
     `;
@@ -297,12 +313,13 @@ export function renderRankTrajectorySparkline(history: SeasonRecord[]): string {
       r = 5;
     }
 
-    const scoreText = (typeof p.score === 'number' && p.score > 0 && p.season !== '2020/21') ? ` - ${p.score} pt` : '';
+    const scoreText = (typeof p.score === 'number' && p.score > 0) ? ` - ${p.score} pt` : '';
     nodesSvg += `
       <g class="cursor-pointer">
         <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r}" fill="${nodeColor}" stroke="${strokeColor}" stroke-width="1.5" />
-        <title>${p.season}: #${p.rank} (${p.team})${scoreText}</title>
-        <text x="${p.x.toFixed(1)}" y="${height - 6}" font-size="9" font-weight="bold" fill="currentColor" opacity="0.65" text-anchor="middle">${seasonShort}</text>
+        <title>${p.season}: #${p.rank} su ${p.teamCount} squadre (${p.team})${scoreText}</title>
+        <text x="${p.x.toFixed(1)}" y="${height - 14}" font-size="9" font-weight="bold" fill="currentColor" opacity="0.75" text-anchor="middle">${seasonShort}</text>
+        <text x="${p.x.toFixed(1)}" y="${height - 4}" font-size="7.5" font-weight="semibold" fill="currentColor" opacity="0.45" text-anchor="middle">${p.teamCount} sq</text>
         <text x="${p.x.toFixed(1)}" y="${(p.y - 8).toFixed(1)}" font-size="9" font-weight="extrabold" fill="${nodeColor}" text-anchor="middle">${label}</text>
       </g>
     `;
@@ -581,7 +598,7 @@ export function populateCareerTimeline(m: Manager): void {
       // League placement chip
       let rankBadge = '';
       if (typeof s.rank === 'number' && s.rank > 0) {
-        const hasValidPoints = typeof s.points === 'number' && s.points > 0 && s.season !== '2020/21';
+        const hasValidPoints = typeof s.points === 'number' && s.points > 0;
         const ptsLabel = hasValidPoints ? ` • ${s.points} pt` : '';
         if (s.rank === 1) {
           rankBadge = `<span class="px-2 py-0.5 rounded-lg text-xs font-black bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-500/25 dark:text-amber-300 dark:border-amber-500/40 shadow-sm">🥇 1° Posto${ptsLabel}</span>`;
@@ -593,7 +610,7 @@ export function populateCareerTimeline(m: Manager): void {
           rankBadge = `<span class="px-2 py-0.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 shadow-sm">#${s.rank}${ptsLabel}</span>`;
         }
       } else {
-        rankBadge = `<span class="px-2 py-0.5 rounded-lg text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-300 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-700/50">Partecipante (Dato non archiviato)</span>`;
+        rankBadge = `<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-300 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700/60 shadow-sm">Partecipante • N/D</span>`;
       }
 
       // Drawer button if competitionId exists

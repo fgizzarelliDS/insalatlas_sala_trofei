@@ -29,7 +29,7 @@ export interface SeasonRecord {
 }
 
 export interface CompetitionRankingItem {
-  rank: number;
+  rank: number | null;
   teamName: string;
   coach: string;
   managerId?: string;

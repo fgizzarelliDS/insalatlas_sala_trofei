@@ -13,6 +13,8 @@ scripts/insalatlas*.json
 scripts/*.html
 scripts/__pycache__/*
 scripts/extract_thropy.py
+scripts/archive/teams/*
+scripts/archive/
 public/assets/trophies/*
 
 # Editor directories and files

@@ -122,6 +122,32 @@ describe('Historical Rankings & Career Visualizations', () => {
       expect(svg).toContain('fill="#ef4444"');
     });
 
+    it('colors last place as wooden spoon (#ef4444) for 8, 10, and 12-team seasons, while non-last ranks remain blue', () => {
+      // Scurcio profile: 18/19 was 10th on 10 sq (spoon), 25/26 was 10th on 12 sq (safe)
+      const scurcioHistory: SeasonRecord[] = [
+        { season: '2016/17', team: 'Selfic FC', rank: 6, points: 40, achievements: [] },
+        {
+          season: '2018/19',
+          team: 'Selfic FC',
+          rank: 10,
+          points: 34,
+          achievements: [{ title: 'Cucchiaio di Legno', category: 'Campionato', badge: 'spoon', icon: '🥄' }]
+        },
+        { season: '2025/26', team: 'TorLupara FC', rank: 10, points: 37, achievements: [] }
+      ];
+
+      const svg = renderRankTrajectorySparkline(scurcioHistory);
+      // In 18/19 (10 sq), rank 10 is last place -> Cucchiaio di Legno
+      expect(svg).toContain('2018/19: #10 su 10 squadre (Selfic FC) (Cucchiaio di Legno 🥄)');
+      expect(svg).toContain('fill="#ef4444"');
+
+      // In 25/26 (12 sq), rank 10 is not last place -> regular blue
+      expect(svg).toContain('2025/26: #10 su 12 squadre (TorLupara FC)');
+      expect(svg).not.toContain('2025/26: #10 su 12 squadre (TorLupara FC) (Cucchiaio di Legno 🥄)');
+      expect(svg).toContain('fill="#3b82f6"');
+    });
+
+
     it('renders hollow N/D circle and dashed line for unranked seasons such as 2020/21', () => {
       const history: SeasonRecord[] = [
         { season: '2021/22', team: 'Team A', rank: 3, points: 55, achievements: [] },

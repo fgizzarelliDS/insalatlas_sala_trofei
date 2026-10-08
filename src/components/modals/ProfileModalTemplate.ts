@@ -238,12 +238,32 @@ export function renderRankTrajectorySparkline(history: SeasonRecord[]): string {
     return typeof record?.rank === 'number' ? Math.max(record.rank, 8) : 12;
   };
 
+  // Helper to dynamically retrieve the last rank of a championship season
+  const getSeasonLastRank = (season: string, fallbackCount: number): number => {
+    const comp = state.competitions?.find(
+      c => c.season === season && (c.category === 'Campionato' || (c.name && c.name.toLowerCase().includes('serie')))
+    );
+    if (comp?.ranking && comp.ranking.length > 0) {
+      const numericRanks = comp.ranking
+        .map(r => r.rank)
+        .filter((rk): rk is number => typeof rk === 'number' && rk > 0);
+      if (numericRanks.length > 0) {
+        return Math.max(...numericRanks);
+      }
+    }
+    return fallbackCount;
+  };
+
   // Neutral mid-level Y position for unranked/unrecorded seasons (e.g. 2020/21 or missing seasons)
   const yND = getY(6.5);
 
   const points = allSeasons.map((season, idx) => {
     const record = historyMap.get(season);
     const isRanked = typeof record?.rank === 'number' && (record.rank as number) > 0;
+    const teamCount = getSeasonTeamCount(season);
+    const lastRank = getSeasonLastRank(season, teamCount);
+    const hasSpoon = Boolean(record?.achievements?.some(a => a.badge === 'spoon'));
+    const isLastPlace = isRanked && (hasSpoon || ((record!.rank as number) > 3 && (record!.rank as number) >= lastRank));
     return {
       x: getX(idx, allSeasons.length),
       y: isRanked ? getY(record!.rank as number) : yND,
@@ -252,7 +272,8 @@ export function renderRankTrajectorySparkline(history: SeasonRecord[]): string {
       isRanked,
       team: record?.team || '',
       score: record?.points,
-      teamCount: getSeasonTeamCount(season)
+      teamCount,
+      isLastPlace
     };
   });
 
@@ -307,17 +328,19 @@ export function renderRankTrajectorySparkline(history: SeasonRecord[]): string {
       nodeColor = '#b45309';
       strokeColor = '#78350f';
       r = 5;
-    } else if (p.rank! >= 11) {
+    } else if (p.isLastPlace) {
       nodeColor = '#ef4444';
       strokeColor = '#991b1b';
-      r = 5;
+      r = 5.5;
     }
 
     const scoreText = (typeof p.score === 'number' && p.score > 0) ? ` - ${p.score} pt` : '';
+    const spoonSuffix = p.isLastPlace ? ' (Cucchiaio di Legno 🥄)' : '';
+    const tooltip = `${p.season}: #${p.rank} su ${p.teamCount} squadre (${p.team})${spoonSuffix}${scoreText}`;
     nodesSvg += `
       <g class="cursor-pointer">
         <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r}" fill="${nodeColor}" stroke="${strokeColor}" stroke-width="1.5" />
-        <title>${p.season}: #${p.rank} su ${p.teamCount} squadre (${p.team})${scoreText}</title>
+        <title>${tooltip}</title>
         <text x="${p.x.toFixed(1)}" y="${height - 14}" font-size="9" font-weight="bold" fill="currentColor" opacity="0.75" text-anchor="middle">${seasonShort}</text>
         <text x="${p.x.toFixed(1)}" y="${height - 4}" font-size="7.5" font-weight="semibold" fill="currentColor" opacity="0.45" text-anchor="middle">${p.teamCount} sq</text>
         <text x="${p.x.toFixed(1)}" y="${(p.y - 8).toFixed(1)}" font-size="9" font-weight="extrabold" fill="${nodeColor}" text-anchor="middle">${label}</text>

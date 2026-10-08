@@ -1,0 +1,141 @@
+{
+  "season": "2019/20",
+  "competitions": [
+    {
+      "id": 147887,
+      "name": "SerieAtlas 2019-2020",
+      "season": "2019/20",
+      "category": "Campionato",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "A S CorradiAndRosati Team",
+          "coach": "vannico",
+          "managerId": "m_vannico",
+          "points": 61.0,
+          "logo": "assets/teams/2546265_0794433.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "Compagni di Merende",
+          "coach": "BartaliATLAS & miles92",
+          "managerId": "m_makakocompagno",
+          "points": 58.0,
+          "logo": "assets/teams/3688308_07671596.png"
+        },
+        {
+          "rank": 3,
+          "teamName": "LoTUS FC",
+          "coach": "Juliet-91",
+          "managerId": "m_avvisatina",
+          "points": 57.0,
+          "logo": "assets/crests/golden_griffin.svg"
+        },
+        {
+          "rank": 4,
+          "teamName": "Sarviette FC",
+          "coach": "petrubik88",
+          "managerId": "m_peterdani",
+          "points": 52.0,
+          "logo": "assets/crests/anchor_bay.svg"
+        },
+        {
+          "rank": 5,
+          "teamName": "Scalo San Paolo",
+          "coach": "valeriodam",
+          "managerId": "m_valery",
+          "points": 47.0,
+          "logo": "assets/teams/2543640_001971507.png"
+        },
+        {
+          "rank": 6,
+          "teamName": "Nef Team",
+          "coach": "alfius91",
+          "managerId": "m_alfo",
+          "points": 46.0,
+          "logo": "assets/teams/2545500_01720724.png"
+        },
+        {
+          "rank": 7,
+          "teamName": "Selfic FC",
+          "coach": "cursimone",
+          "managerId": "m_scurcio",
+          "points": 46.0,
+          "logo": "assets/crests/cobra_strike.svg"
+        },
+        {
+          "rank": 8,
+          "teamName": "Las Propinas",
+          "coach": "Sebbadavid",
+          "managerId": "m_sebba",
+          "points": 45.0,
+          "logo": "assets/crests/golden_griffin.svg"
+        },
+        {
+          "rank": 9,
+          "teamName": "Team Culo",
+          "coach": "Lucchetto",
+          "managerId": "m_lucchetto",
+          "points": 40.0,
+          "logo": "assets/crests/aegis_sentinel.svg"
+        },
+        {
+          "rank": 10,
+          "teamName": "LangusTeam",
+          "coach": "SorFra",
+          "managerId": "m_erboro",
+          "points": 35.0,
+          "logo": "assets/crests/solaris_sc.svg"
+        }
+      ]
+    },
+    {
+      "id": 147886,
+      "name": "Coppa InsalAtlas 2019-2020",
+      "season": "2019/20",
+      "category": "Coppa",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "Nef Team",
+          "coach": "alfius91",
+          "managerId": "m_alfo",
+          "points": 0.0,
+          "logo": "assets/teams/2545500_01720724.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "Selfic FC",
+          "coach": "cursimone",
+          "managerId": "m_scurcio",
+          "points": 0.0,
+          "logo": "assets/crests/cobra_strike.svg"
+        }
+      ]
+    },
+    {
+      "id": 147880,
+      "name": "Supercoppa InsalAtlas 2019-2020",
+      "season": "2019/20",
+      "category": "Supercoppa",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "A S CorradiAndRosati Team",
+          "coach": "vannico",
+          "managerId": "m_vannico",
+          "points": 0.0,
+          "logo": "assets/teams/2546265_0794433.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "Nef Team",
+          "coach": "alfius91",
+          "managerId": "m_alfo",
+          "points": 0.0,
+          "logo": "assets/teams/2545500_01720724.png"
+        }
+      ]
+    }
+  ]
+}

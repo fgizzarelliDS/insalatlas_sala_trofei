@@ -1,0 +1,173 @@
+{
+  "season": "2021/22",
+  "competitions": [
+    {
+      "id": 147889,
+      "name": "SerieAtlas 2021-2022",
+      "season": "2021/22",
+      "category": "Campionato",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "Sarviette FC",
+          "coach": "petrubik88",
+          "managerId": "m_peterdani",
+          "points": 62.0,
+          "logo": "assets/teams/4862674_04418724.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "Steven Bradbury FC",
+          "coach": "alfius91",
+          "managerId": "m_alfo",
+          "points": 58.0,
+          "logo": "assets/crests/phoenix_rising.svg"
+        },
+        {
+          "rank": 3,
+          "teamName": "Scalo San Genesio",
+          "coach": "valeriodam",
+          "managerId": "m_valery",
+          "points": 56.0,
+          "logo": "assets/teams/2543640_0898895.png"
+        },
+        {
+          "rank": 4,
+          "teamName": "Selfic FC",
+          "coach": "cursimone",
+          "managerId": "m_scurcio",
+          "points": 52.0,
+          "logo": "assets/teams/2544594_0479919.png"
+        },
+        {
+          "rank": 5,
+          "teamName": "Partizan Peroni",
+          "coach": "Paiden",
+          "managerId": "m_pippo",
+          "points": 50.0,
+          "logo": "assets/teams/3674613_03220327.png"
+        },
+        {
+          "rank": 6,
+          "teamName": "CarloMonte FC",
+          "coach": "Dr cholo",
+          "managerId": "m_gigicholo",
+          "points": 47.0,
+          "logo": "assets/teams/6150431_07926867.png"
+        },
+        {
+          "rank": 7,
+          "teamName": "Compagni di Merende",
+          "coach": "BartaliATLAS",
+          "managerId": "m_compagno",
+          "points": 47.0,
+          "logo": "assets/teams/3688308_04004758.png"
+        },
+        {
+          "rank": 8,
+          "teamName": "AS Trazeneca",
+          "coach": "Lucchetto",
+          "managerId": "m_lucchetto",
+          "points": 46.0,
+          "logo": "assets/teams/2549374_07854869.png"
+        },
+        {
+          "rank": 9,
+          "teamName": "LoTUS FC",
+          "coach": "Juliet-91",
+          "managerId": "m_avvisatina",
+          "points": 38.0,
+          "logo": "assets/teams/2550954_06796651.png"
+        },
+        {
+          "rank": 10,
+          "teamName": "A S CorradiAndBosuTeam",
+          "coach": "vannico & sebbadavid",
+          "managerId": "m_vannicosebbi",
+          "points": 38.0,
+          "logo": "assets/teams/2546265_08833085.png"
+        },
+        {
+          "rank": 11,
+          "teamName": "Kiwi Football Club",
+          "coach": "tazio13",
+          "managerId": "m_tazio",
+          "points": 31.0,
+          "logo": "assets/crests/solaris_sc.svg"
+        },
+        {
+          "rank": 12,
+          "teamName": "Makako Antwerpen",
+          "coach": "miles92",
+          "managerId": "m_makako",
+          "points": 24.0,
+          "logo": "assets/crests/falconcrest_athletic.svg"
+        }
+      ]
+    },
+    {
+      "id": 147891,
+      "name": "Coppa InsalAtlas 2021-2022",
+      "season": "2021/22",
+      "category": "Coppa",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "Partizan Peroni",
+          "coach": "Paiden",
+          "managerId": "m_pippo",
+          "points": 0.0,
+          "logo": "assets/teams/3674613_03220327.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "Scalo San Genesio",
+          "coach": "valeriodam",
+          "managerId": "m_valery",
+          "points": 0.0,
+          "logo": "assets/teams/2543640_0898895.png"
+        }
+      ]
+    },
+    {
+      "id": 778209,
+      "name": "Supercoppa InsalAtlas 2021-2022",
+      "season": "2021/22",
+      "category": "Supercoppa",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "SarvietteFC",
+          "coach": "petrubik88",
+          "managerId": "m_peterdani",
+          "points": 0.0,
+          "logo": "assets/teams/4862674_04418724.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "PartizanPeroni",
+          "coach": "Paiden",
+          "managerId": "m_pippo",
+          "points": 0.0,
+          "logo": "assets/teams/3674613_03220327.png"
+        }
+      ]
+    },
+    {
+      "id": 147877,
+      "name": "Coppa dei Perdenti 2021-2022",
+      "season": "2021/22",
+      "category": "Perdenti",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "AS CorradiAndBosu / Arcore",
+          "coach": "vannico & sebbadavid",
+          "managerId": "m_vannicosebbi",
+          "points": 0.0,
+          "logo": "assets/crests/royal_vanguard.svg"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+[
+  {
+    "id": "m_vannico",
+    "name": "Vannico",
+    "cartonato_coaches": []
+  },
+  {
+    "id": "m_lucchetto",
+    "name": "Lucchetto",
+    "cartonato_coaches": []
+  },
+  {
+    "id": "m_alfo",
+    "name": "Alfo",
+    "cartonato_coaches": []
+  },
+  {
+    "id": "m_peterdani",
+    "name": "Peter&Dani",
+    "cartonato_coaches": []
+  },
+  {
+    "id": "m_makako",
+    "name": "Makako",
+    "cartonato_coaches": [],
+    "years": 7
+  },
+  {
+    "id": "m_valery",
+    "name": "Valery",
+    "cartonato_coaches": []
+  },
+  {
+    "id": "m_sebba",
+    "name": "Sebba",
+    "cartonato_coaches": []
+  },
+  {
+    "id": "m_gigicholo",
+    "name": "Gigi&Dr.Cholo",
+    "cartonato_coaches": [
+      "???",
+      "MAZZARRI"
+    ]
+  },
+  {
+    "id": "m_pippo",
+    "name": "Pippo",
+    "cartonato_coaches": [
+      "JURIC"
+    ]
+  },
+  {
+    "id": "m_compagno",
+    "name": "Compagno",
+    "cartonato_coaches": []
+  },
+  {
+    "id": "m_scurcio",
+    "name": "Scurcio",
+    "cartonato_coaches": []
+  },
+  {
+    "id": "m_avvisatina",
+    "name": "Avvisatina",
+    "cartonato_coaches": []
+  },
+  {
+    "id": "m_tazio",
+    "name": "Tazio",
+    "cartonato_coaches": [
+      "JURIC"
+    ]
+  },
+  {
+    "id": "m_1790651479571",
+    "name": "Gizza&Gustacito",
+    "cartonato_coaches": []
+  },
+  {
+    "id": "m_vannicosebbi",
+    "name": "Vannico&Sebbi",
+    "cartonato_coaches": [
+      "VENTURA"
+    ]
+  },
+  {
+    "id": "m_makakocompagno",
+    "name": "Makako&Compagno",
+    "cartonato_coaches": [],
+    "years": 2,
+    "additional_history": [
+      {
+        "season": "2020/21",
+        "team": "Compagni di Merende",
+        "rank": null,
+        "points": null,
+        "competitionId": 147888,
+        "achievements": []
+      }
+    ]
+  },
+  {
+    "id": "m_matteone",
+    "name": "Matteone",
+    "cartonato_coaches": []
+  },
+  {
+    "id": "m_erboro",
+    "name": "ErBoro",
+    "cartonato_coaches": []
+  }
+]

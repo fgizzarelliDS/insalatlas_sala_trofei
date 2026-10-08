@@ -16,6 +16,7 @@ scripts/extract_thropy.py
 scripts/archive/teams/*
 scripts/archive/
 public/assets/trophies/*
+data/*.jpeg
 
 # Editor directories and files
 .vscode/

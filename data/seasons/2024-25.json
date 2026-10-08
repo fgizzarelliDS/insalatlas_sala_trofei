@@ -1,0 +1,197 @@
+{
+  "season": "2024/25",
+  "competitions": [
+    {
+      "id": 147898,
+      "name": "Serie Atlas 2024-2025",
+      "season": "2024/25",
+      "category": "Campionato",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "Olympic Lasagna",
+          "coach": "Lucchetto",
+          "managerId": "m_lucchetto",
+          "points": 58.0,
+          "logo": "assets/teams/2549374_01800333.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "CarloMonte FC",
+          "coach": "Dr cholo",
+          "managerId": "m_gigicholo",
+          "points": 57.0,
+          "logo": "assets/crests/titan_wolves.svg"
+        },
+        {
+          "rank": 3,
+          "teamName": "Scalo San Genesio",
+          "coach": "valeriodam",
+          "managerId": "m_valery",
+          "points": 57.0,
+          "logo": "assets/teams/2543640_06031755.png"
+        },
+        {
+          "rank": 4,
+          "teamName": "TorLupara FC",
+          "coach": "cursimone",
+          "managerId": "m_scurcio",
+          "points": 52.0,
+          "logo": "assets/teams/2544594_07535332.png"
+        },
+        {
+          "rank": 5,
+          "teamName": "Sarviette FC",
+          "coach": "petrubik88",
+          "managerId": "m_peterdani",
+          "points": 51.0,
+          "logo": "assets/teams/4862674_03546324.png"
+        },
+        {
+          "rank": 6,
+          "teamName": "A S CorradiAndBosuTeam",
+          "coach": "vannico",
+          "managerId": "m_vannico",
+          "points": 50.0,
+          "logo": "assets/crests/volt_dynamo.svg"
+        },
+        {
+          "rank": 7,
+          "teamName": "LoTUS FC",
+          "coach": "Juliet-91",
+          "managerId": "m_avvisatina",
+          "points": 45.0,
+          "logo": "assets/crests/golden_griffin.svg"
+        },
+        {
+          "rank": 8,
+          "teamName": "Steven Bradbury FC",
+          "coach": "alfius91",
+          "managerId": "m_alfo",
+          "points": 42.0,
+          "logo": "assets/teams/2545500_01293495.png"
+        },
+        {
+          "rank": 9,
+          "teamName": "Partizan Peroni",
+          "coach": "Paiden",
+          "managerId": "m_pippo",
+          "points": 37.0,
+          "logo": "assets/crests/anchor_bay.svg"
+        },
+        {
+          "rank": 10,
+          "teamName": "Arcore 1936",
+          "coach": "Sebbadavid",
+          "managerId": "m_sebba",
+          "points": 35.0,
+          "logo": "assets/crests/cobra_strike.svg"
+        },
+        {
+          "rank": 11,
+          "teamName": "Compagni di Merende",
+          "coach": "BartaliATLAS",
+          "managerId": "m_compagno",
+          "points": 30.0,
+          "logo": "assets/crests/starlight_rovers.svg"
+        },
+        {
+          "rank": 12,
+          "teamName": "Kiwi Football Club",
+          "coach": "tazio13",
+          "managerId": "m_tazio",
+          "points": 23.0,
+          "logo": "assets/crests/solaris_sc.svg"
+        }
+      ]
+    },
+    {
+      "id": 147900,
+      "name": "Coppa InsalAtlas 2024-2025",
+      "season": "2024/25",
+      "category": "Coppa",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "CarloMonte FC",
+          "coach": "Dr cholo",
+          "managerId": "m_gigicholo",
+          "points": 0.0,
+          "logo": "assets/crests/titan_wolves.svg"
+        },
+        {
+          "rank": 2,
+          "teamName": "Olympic Lasagna",
+          "coach": "Lucchetto",
+          "managerId": "m_lucchetto",
+          "points": 0.0,
+          "logo": "assets/teams/2549374_01800333.png"
+        }
+      ]
+    },
+    {
+      "id": 778206,
+      "name": "Supercoppa InsalAtlas 2024-2025",
+      "season": "2024/25",
+      "category": "Supercoppa",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "OlympicLasagna",
+          "coach": "Lucchetto",
+          "managerId": "m_lucchetto",
+          "points": 0.0,
+          "logo": "assets/teams/2549374_01800333.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "CarloMonteFC",
+          "coach": "Dr cholo",
+          "managerId": "m_gigicholo",
+          "points": 0.0,
+          "logo": "assets/crests/titan_wolves.svg"
+        }
+      ]
+    },
+    {
+      "id": 778205,
+      "name": "Finale Mundialito InsalAtlas 2024-2025",
+      "season": "2024/25",
+      "category": "Mundialito",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "StevenBradburyFC",
+          "coach": "alfius91",
+          "managerId": "m_alfo",
+          "points": 0.0,
+          "logo": "assets/teams/2545500_01293495.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "ASCorradiAndBosuTeam",
+          "coach": "vannico",
+          "managerId": "m_vannico",
+          "points": 0.0,
+          "logo": "assets/crests/volt_dynamo.svg"
+        }
+      ]
+    },
+    {
+      "id": 147874,
+      "name": "Coppa dei Perdenti 2024-2025",
+      "season": "2024/25",
+      "category": "Perdenti",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "Kiwi Football Club",
+          "coach": "tazio13",
+          "managerId": "m_tazio",
+          "points": 0.0,
+          "logo": "assets/teams/7823986_09569971.png"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "season": "2018/19",
+  "competitions": [
+    {
+      "id": 147885,
+      "name": "SerieAtlas 2018-2019",
+      "season": "2018/19",
+      "category": "Campionato",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "All Scars Roma3",
+          "coach": "Lucchetto",
+          "managerId": "m_lucchetto",
+          "points": 59.0,
+          "logo": "assets/crests/starlight_rovers.svg"
+        },
+        {
+          "rank": 2,
+          "teamName": "Nef Team",
+          "coach": "alfius91",
+          "managerId": "m_alfo",
+          "points": 53.0,
+          "logo": "assets/crests/crown_point.svg"
+        },
+        {
+          "rank": 3,
+          "teamName": "Oscuri Fotoni",
+          "coach": "Sebbadavid",
+          "managerId": "m_sebba",
+          "points": 52.0,
+          "logo": "assets/crests/celestial_horizon.svg"
+        },
+        {
+          "rank": 4,
+          "teamName": "Scalo San Paolo",
+          "coach": "valeriodam",
+          "managerId": "m_valery",
+          "points": 49.0,
+          "logo": "assets/teams/2543640_001971507.png"
+        },
+        {
+          "rank": 5,
+          "teamName": "Makako Antwerpen",
+          "coach": "miles92",
+          "managerId": "m_makako",
+          "points": 44.0,
+          "logo": "assets/crests/falconcrest_athletic.svg"
+        },
+        {
+          "rank": 6,
+          "teamName": "Compagni di Merende",
+          "coach": "BartaliATLAS",
+          "managerId": "m_compagno",
+          "points": 42.0,
+          "logo": "assets/crests/starlight_rovers.svg"
+        },
+        {
+          "rank": 7,
+          "teamName": "LoTUS FC",
+          "coach": "Juliet-91",
+          "managerId": "m_avvisatina",
+          "points": 42.0,
+          "logo": "assets/crests/celestial_horizon.svg"
+        },
+        {
+          "rank": 8,
+          "teamName": "A S CorradiAndRosati Team",
+          "coach": "vannico",
+          "managerId": "m_vannico",
+          "points": 42.0,
+          "logo": "assets/teams/2546265_0794433.png"
+        },
+        {
+          "rank": 9,
+          "teamName": "Partizan Peroni",
+          "coach": "Paiden",
+          "managerId": "m_pippo",
+          "points": 40.0,
+          "logo": "assets/crests/anchor_bay.svg"
+        },
+        {
+          "rank": 10,
+          "teamName": "Selfic FC",
+          "coach": "cursimone",
+          "managerId": "m_scurcio",
+          "points": 39.0,
+          "logo": "assets/crests/wildcat_city.svg"
+        }
+      ]
+    },
+    {
+      "id": 147882,
+      "name": "Coppa InsalAtlas 2018-2019",
+      "season": "2018/19",
+      "category": "Coppa",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "Makako Antwerpen",
+          "coach": "miles92",
+          "managerId": "m_makako",
+          "points": 0.0,
+          "logo": "assets/crests/falconcrest_athletic.svg"
+        },
+        {
+          "rank": 2,
+          "teamName": "All Scars Roma3",
+          "coach": "Lucchetto",
+          "managerId": "m_lucchetto",
+          "points": 0.0,
+          "logo": "assets/crests/starlight_rovers.svg"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "season": "2016/17",
+  "competitions": [
+    {
+      "id": 147883,
+      "name": "SerieAtlas 2016-2017",
+      "season": "2016/17",
+      "category": "Campionato",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "Scalo Barcellona",
+          "coach": "valeriodam",
+          "managerId": "m_valery",
+          "points": 57.0,
+          "logo": "assets/teams/2543640_001971507.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "Makako United",
+          "coach": "miles92",
+          "managerId": "m_makako",
+          "points": 57.0,
+          "logo": "assets/crests/titan_wolves.svg"
+        },
+        {
+          "rank": 3,
+          "teamName": "FC Salsa Barbecue",
+          "coach": "alfius91",
+          "managerId": "m_alfo",
+          "points": 51.0,
+          "logo": "assets/teams/2545500_01720724.png"
+        },
+        {
+          "rank": 4,
+          "teamName": "Monojetters",
+          "coach": "sebbadavid",
+          "managerId": "m_sebba",
+          "points": 50.0,
+          "logo": "assets/crests/celestial_horizon.svg"
+        },
+        {
+          "rank": 5,
+          "teamName": "Roma1 Praetorians",
+          "coach": "Matteone",
+          "managerId": "m_matteone",
+          "points": 49.0,
+          "logo": "assets/crests/wildcat_city.svg"
+        },
+        {
+          "rank": 6,
+          "teamName": "ATLAS Outsider F.C.",
+          "coach": "cursimone",
+          "managerId": "m_scurcio",
+          "points": 47.0,
+          "logo": "assets/crests/apex_united.svg"
+        },
+        {
+          "rank": 7,
+          "teamName": "A S CorradiandRosati Team",
+          "coach": "vannico",
+          "managerId": "m_vannico",
+          "points": 44.0,
+          "logo": "assets/teams/2546265_0794433.png"
+        },
+        {
+          "rank": 8,
+          "teamName": "NCS Team",
+          "coach": "Juliet-91",
+          "managerId": "m_avvisatina",
+          "points": 36.0,
+          "logo": "assets/crests/celestial_horizon.svg"
+        }
+      ]
+    }
+  ]
+}

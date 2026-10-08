@@ -1,0 +1,205 @@
+{
+  "season": "2025/26",
+  "competitions": [
+    {
+      "id": 778165,
+      "name": "Serie Atlas 2025-2026",
+      "season": "2025/26",
+      "category": "Campionato",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "StevenBradburyFC",
+          "coach": "alfius91",
+          "managerId": "m_alfo",
+          "points": 62.0,
+          "logo": "assets/teams/2545500_09340839.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "SarvietteFC",
+          "coach": "petrubik88 & Vittu",
+          "managerId": "m_peterdani",
+          "points": 57.0,
+          "logo": "assets/teams/4862674_07729756.png"
+        },
+        {
+          "rank": 3,
+          "teamName": "LevrieridAbruzzo",
+          "coach": "Gizza & Gustacito",
+          "managerId": "m_1790651479571",
+          "points": 53.0,
+          "logo": "assets/teams/16496754_03423498.png"
+        },
+        {
+          "rank": 4,
+          "teamName": "LoTUSFC",
+          "coach": "Juliet-91",
+          "managerId": "m_avvisatina",
+          "points": 52.0,
+          "logo": "assets/crests/golden_griffin.svg"
+        },
+        {
+          "rank": 5,
+          "teamName": "ScaloSanGenesio",
+          "coach": "valeriodam",
+          "managerId": "m_valery",
+          "points": 46.0,
+          "logo": "assets/teams/2543640_02914103.png"
+        },
+        {
+          "rank": 6,
+          "teamName": "Arcore1936",
+          "coach": "sebbadavid & bisio.pietro",
+          "managerId": "m_sebba",
+          "points": 45.0,
+          "logo": "assets/teams/2545541_04342571.png"
+        },
+        {
+          "rank": 7,
+          "teamName": "CazzatoridelloIonio",
+          "coach": "Lucchetto",
+          "managerId": "m_lucchetto",
+          "points": 44.0,
+          "logo": "assets/teams/2549374_02197708.png"
+        },
+        {
+          "rank": 8,
+          "teamName": "KiwiFootballClub",
+          "coach": "tazio13",
+          "managerId": "m_tazio",
+          "points": 44.0,
+          "logo": "assets/teams/7823986_09569971.png"
+        },
+        {
+          "rank": 9,
+          "teamName": "ASCorradiAndBosuTeam",
+          "coach": "vannico",
+          "managerId": "m_vannico",
+          "points": 40.0,
+          "logo": "assets/teams/2546265_07646962.png"
+        },
+        {
+          "rank": 10,
+          "teamName": "TorLuparaFC",
+          "coach": "cursimone",
+          "managerId": "m_scurcio",
+          "points": 37.0,
+          "logo": "assets/teams/2544594_06212278.png"
+        },
+        {
+          "rank": 11,
+          "teamName": "CarloMonteFC",
+          "coach": "Dr cholo & Justino",
+          "managerId": "m_gigicholo",
+          "points": 35.0,
+          "logo": "assets/teams/6150431_02386417.png"
+        },
+        {
+          "rank": 12,
+          "teamName": "PartizanPeroni",
+          "coach": "Paiden",
+          "managerId": "m_pippo",
+          "points": 24.0,
+          "logo": "assets/crests/anchor_bay.svg"
+        }
+      ]
+    },
+    {
+      "id": 778171,
+      "name": "Coppa InsalAtlas 25-26",
+      "season": "2025/26",
+      "category": "Coppa",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "SarvietteFC",
+          "coach": "petrubik88 & Vittu",
+          "managerId": "m_peterdani",
+          "points": 0.0,
+          "logo": "assets/teams/4862674_07729756.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "LoTUSFC",
+          "coach": "Juliet-91",
+          "managerId": "m_avvisatina",
+          "points": 0.0,
+          "logo": "assets/crests/golden_griffin.svg"
+        }
+      ]
+    },
+    {
+      "id": 778183,
+      "name": "Supercup InsalAtlas 25-26",
+      "season": "2025/26",
+      "category": "Supercoppa",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "StevenBradburyFC",
+          "coach": "alfius91",
+          "managerId": "m_alfo",
+          "points": 0.0,
+          "logo": "assets/teams/2545500_09340839.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "SarvietteFC",
+          "coach": "petrubik88 & Vittu",
+          "managerId": "m_peterdani",
+          "points": 0.0,
+          "logo": "assets/teams/4862674_07729756.png"
+        }
+      ]
+    },
+    {
+      "id": 778190,
+      "name": "Mundialito 2025-2026",
+      "season": "2025/26",
+      "category": "Mundialito",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "CazzatoridelloIonio",
+          "coach": "Lucchetto",
+          "managerId": "m_lucchetto",
+          "points": 0.0,
+          "logo": "assets/teams/2549374_02197708.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "Arcore1936",
+          "coach": "sebbadavid & bisio.pietro",
+          "managerId": "m_sebba",
+          "points": 0.0,
+          "logo": "assets/teams/2545541_04342571.png"
+        }
+      ]
+    },
+    {
+      "id": 778199,
+      "name": "Coppa dei perdenti 25-26",
+      "season": "2025/26",
+      "category": "Perdenti",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "CarloMonteFC",
+          "coach": "Dr cholo & Justino",
+          "managerId": "m_gigicholo",
+          "points": 0.0,
+          "logo": "assets/teams/6150431_02386417.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "PartizanPeroni",
+          "coach": "Paiden",
+          "managerId": "m_pippo",
+          "points": 0.0,
+          "logo": "assets/crests/anchor_bay.svg"
+        }
+      ]
+    }
+  ]
+}

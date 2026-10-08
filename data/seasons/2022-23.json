@@ -1,0 +1,173 @@
+{
+  "season": "2022/23",
+  "competitions": [
+    {
+      "id": 147892,
+      "name": "Serie Atlas 2022-2023",
+      "season": "2022/23",
+      "category": "Campionato",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "A S CorradiAndBosuTeam",
+          "coach": "vannico",
+          "managerId": "m_vannico",
+          "points": 56.0,
+          "logo": "assets/teams/2546265_08154666.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "Steven Bradbury FC",
+          "coach": "alfius91",
+          "managerId": "m_alfo",
+          "points": 55.0,
+          "logo": "assets/crests/phoenix_rising.svg"
+        },
+        {
+          "rank": 3,
+          "teamName": "TorLupara FC",
+          "coach": "cursimone",
+          "managerId": "m_scurcio",
+          "points": 50.0,
+          "logo": "assets/teams/2544594_02546745.png"
+        },
+        {
+          "rank": 4,
+          "teamName": "Kiwi Football Club",
+          "coach": "tazio13",
+          "managerId": "m_tazio",
+          "points": 49.0,
+          "logo": "assets/crests/solaris_sc.svg"
+        },
+        {
+          "rank": 5,
+          "teamName": "Scalo San Genesio",
+          "coach": "valeriodam",
+          "managerId": "m_valery",
+          "points": 44.0,
+          "logo": "assets/teams/2543640_06907749.png"
+        },
+        {
+          "rank": 6,
+          "teamName": "AS Surda",
+          "coach": "Lucchetto",
+          "managerId": "m_lucchetto",
+          "points": 43.0,
+          "logo": "assets/crests/volt_dynamo.svg"
+        },
+        {
+          "rank": 7,
+          "teamName": "CarloMonte FC",
+          "coach": "Dr cholo",
+          "managerId": "m_gigicholo",
+          "points": 41.0,
+          "logo": "assets/crests/titan_wolves.svg"
+        },
+        {
+          "rank": 8,
+          "teamName": "Makako Antwerpen",
+          "coach": "miles92",
+          "managerId": "m_makako",
+          "points": 40.0,
+          "logo": "assets/crests/falconcrest_athletic.svg"
+        },
+        {
+          "rank": 9,
+          "teamName": "Sarviette FC",
+          "coach": "petrubik88",
+          "managerId": "m_peterdani",
+          "points": 39.0,
+          "logo": "assets/teams/4862674_02056812.png"
+        },
+        {
+          "rank": 10,
+          "teamName": "Sebba Tower United",
+          "coach": "Sebbadavid",
+          "managerId": "m_sebba",
+          "points": 38.0,
+          "logo": "assets/teams/2545541_04374826.png"
+        },
+        {
+          "rank": 11,
+          "teamName": "LoTUS FC",
+          "coach": "Juliet-91",
+          "managerId": "m_avvisatina",
+          "points": 36.0,
+          "logo": "assets/crests/golden_griffin.svg"
+        },
+        {
+          "rank": 12,
+          "teamName": "Partizan Peroni",
+          "coach": "Paiden",
+          "managerId": "m_pippo",
+          "points": 35.0,
+          "logo": "assets/crests/anchor_bay.svg"
+        }
+      ]
+    },
+    {
+      "id": 147893,
+      "name": "Coppa InsalAtlas 2022-2023",
+      "season": "2022/23",
+      "category": "Coppa",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "Steven Bradbury FC",
+          "coach": "alfius91",
+          "managerId": "m_alfo",
+          "points": 0.0,
+          "logo": "assets/crests/phoenix_rising.svg"
+        },
+        {
+          "rank": 2,
+          "teamName": "CarloMonte FC",
+          "coach": "Dr cholo",
+          "managerId": "m_gigicholo",
+          "points": 0.0,
+          "logo": "assets/crests/titan_wolves.svg"
+        }
+      ]
+    },
+    {
+      "id": 778213,
+      "name": "Supercoppa InsalAtlas 2022-2023",
+      "season": "2022/23",
+      "category": "Supercoppa",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "StevenBradburyFC",
+          "coach": "alfius91",
+          "managerId": "m_alfo",
+          "points": 0.0,
+          "logo": "assets/crests/phoenix_rising.svg"
+        },
+        {
+          "rank": 2,
+          "teamName": "ASCorradiAndBosuTeam",
+          "coach": "vannico",
+          "managerId": "m_vannico",
+          "points": 0.0,
+          "logo": "assets/teams/2546265_08154666.png"
+        }
+      ]
+    },
+    {
+      "id": 147876,
+      "name": "Coppa dei Perdenti 2022-2023",
+      "season": "2022/23",
+      "category": "Perdenti",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "Partizan Peroni",
+          "coach": "Paiden",
+          "managerId": "m_pippo",
+          "points": 0.0,
+          "logo": "assets/crests/anchor_bay.svg"
+        }
+      ]
+    }
+  ]
+}

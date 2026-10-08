@@ -1,0 +1,157 @@
+{
+  "season": "2020/21",
+  "competitions": [
+    {
+      "id": 147888,
+      "name": "SerieAtlas 2020-2021",
+      "season": "2020/21",
+      "category": "Campionato",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "AS CorradiAndRosatiTeam",
+          "coach": "vannico",
+          "managerId": "m_vannico",
+          "points": 58.0,
+          "logo": "assets/crests/anchor_bay.svg"
+        },
+        {
+          "rank": 2,
+          "teamName": "Makako Antwerpen",
+          "coach": "miles92",
+          "managerId": "m_makako",
+          "points": 55.0,
+          "logo": "assets/crests/falconcrest_athletic.svg"
+        },
+        {
+          "rank": 3,
+          "teamName": "Selfic FC",
+          "coach": "cursimone",
+          "managerId": "m_scurcio",
+          "points": 50.0,
+          "logo": "assets/crests/wildcat_city.svg"
+        },
+        {
+          "rank": 4,
+          "teamName": "Scalo San Genesio",
+          "coach": "valeriodam",
+          "managerId": "m_valery",
+          "points": 49.0,
+          "logo": "assets/crests/falconcrest_athletic.svg"
+        },
+        {
+          "rank": 5,
+          "teamName": "CarloMonte FC",
+          "coach": "Dr cholo",
+          "managerId": "m_gigicholo",
+          "points": 46.0,
+          "logo": "assets/teams/6150431_02386417.png"
+        },
+        {
+          "rank": 6,
+          "teamName": "Olympique Similfellow",
+          "coach": "Lucchetto",
+          "managerId": "m_lucchetto",
+          "points": 46.0,
+          "logo": "assets/teams/2549374_01800333.png"
+        },
+        {
+          "rank": 7,
+          "teamName": "Steven Bradbury FC",
+          "coach": "alfius91",
+          "managerId": "m_alfo",
+          "points": 43.0,
+          "logo": "assets/teams/2545500_01720724.png"
+        },
+        {
+          "rank": 8,
+          "teamName": "LoTUS FC",
+          "coach": "Juliet-91",
+          "managerId": "m_avvisatina",
+          "points": 41.0,
+          "logo": "assets/crests/celestial_horizon.svg"
+        },
+        {
+          "rank": 12,
+          "teamName": "Partizan Peroni",
+          "coach": "Paiden",
+          "managerId": "m_pippo",
+          "points": null,
+          "logo": "assets/crests/anchor_bay.svg"
+        },
+        {
+          "rank": null,
+          "teamName": "Sarviette FC",
+          "coach": "petrubik88",
+          "managerId": "m_peterdani",
+          "points": null,
+          "logo": "assets/teams/4862674_02056812.png"
+        },
+        {
+          "rank": null,
+          "teamName": "Merseyside Blue",
+          "coach": "sebbadavid",
+          "managerId": "m_sebba",
+          "points": null,
+          "logo": "assets/crests/anchor_bay.svg"
+        },
+        {
+          "rank": null,
+          "teamName": "Compagni di Merende",
+          "coach": "BartaliATLAS",
+          "managerId": "m_compagno",
+          "points": null,
+          "logo": "assets/crests/volt_dynamo.svg"
+        }
+      ]
+    },
+    {
+      "id": 147881,
+      "name": "Coppa InsalAtlas 2020-2021",
+      "season": "2020/21",
+      "category": "Coppa",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "Sarviette FC",
+          "coach": "petrubik88",
+          "managerId": "m_peterdani",
+          "points": 0.0,
+          "logo": "assets/teams/4862674_02056812.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "CarloMonte FC",
+          "coach": "Dr cholo",
+          "managerId": "m_gigicholo",
+          "points": 0.0,
+          "logo": "assets/teams/6150431_02386417.png"
+        }
+      ]
+    },
+    {
+      "id": 147879,
+      "name": "Supercoppa InsalAtlas 2020-2021",
+      "season": "2020/21",
+      "category": "Supercoppa",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "AS CorradiAndRosatiTeam",
+          "coach": "vannico",
+          "managerId": "m_vannico",
+          "points": 0.0,
+          "logo": "assets/crests/anchor_bay.svg"
+        },
+        {
+          "rank": 2,
+          "teamName": "Sarviette FC",
+          "coach": "petrubik88",
+          "managerId": "m_peterdani",
+          "points": 0.0,
+          "logo": "assets/teams/4862674_02056812.png"
+        }
+      ]
+    }
+  ]
+}

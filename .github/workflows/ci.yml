@@ -35,6 +35,9 @@ jobs:
       - name: Install JSON Schema Validator
         run: pip install jsonschema
 
+      - name: Build Unified Data from Modular Sources
+        run: python scripts/build_data.py
+
       - name: Validate League Data
         run: python scripts/validate.py
 

@@ -1,0 +1,77 @@
+{
+  "season": "2017/18",
+  "competitions": [
+    {
+      "id": 147884,
+      "name": "SerieAtlas 2017-2018",
+      "season": "2017/18",
+      "category": "Campionato",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "Makako Antwerpen",
+          "coach": "miles92",
+          "managerId": "m_makako",
+          "points": 67.0,
+          "logo": "assets/crests/falconcrest_athletic.svg"
+        },
+        {
+          "rank": 2,
+          "teamName": "FC FantAtlas",
+          "coach": "Lucchetto",
+          "managerId": "m_lucchetto",
+          "points": 57.0,
+          "logo": "assets/crests/starlight_rovers.svg"
+        },
+        {
+          "rank": 3,
+          "teamName": "Fc Salsa Barbecue",
+          "coach": "alfius91",
+          "managerId": "m_alfo",
+          "points": 55.0,
+          "logo": "assets/teams/2545500_01720724.png"
+        },
+        {
+          "rank": 4,
+          "teamName": "Fribuco Dec Ulo",
+          "coach": "cursimone",
+          "managerId": "m_scurcio",
+          "points": 52.0,
+          "logo": "assets/crests/wildcat_city.svg"
+        },
+        {
+          "rank": 5,
+          "teamName": "LoTUS FC",
+          "coach": "Juliet-91",
+          "managerId": "m_avvisatina",
+          "points": 46.0,
+          "logo": "assets/crests/celestial_horizon.svg"
+        },
+        {
+          "rank": 6,
+          "teamName": "Orbetello Scalo",
+          "coach": "valeriodam",
+          "managerId": "m_valery",
+          "points": 45.0,
+          "logo": "assets/teams/2543640_001971507.png"
+        },
+        {
+          "rank": 7,
+          "teamName": "Leptonjetters",
+          "coach": "sebbadavid",
+          "managerId": "m_sebba",
+          "points": 44.0,
+          "logo": "assets/crests/celestial_horizon.svg"
+        },
+        {
+          "rank": 8,
+          "teamName": "A S CorradiandRosati team",
+          "coach": "vannico",
+          "managerId": "m_vannico",
+          "points": 26.0,
+          "logo": "assets/teams/2546265_0794433.png"
+        }
+      ]
+    }
+  ]
+}

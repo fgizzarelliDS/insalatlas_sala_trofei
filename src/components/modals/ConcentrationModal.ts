@@ -1,16 +1,42 @@
-import type { AnalyticsTab, Tab2SortField, Tab2SortDirection, MacroMetricMode } from '@/types';
+import type {
+  AnalyticsTab,
+  Tab2SortField,
+  Tab2SortDirection,
+  MacroMetricMode,
+  ChronologySubView,
+  ChronologySortField,
+  SeasonSortField,
+  ManagerFilterMode
+} from '@/types';
 import { renderAnalyticsModalDOM } from './ConcentrationModalTemplate';
 
 let currentTab: AnalyticsTab = 'macro';
 let tab2SortField: Tab2SortField = 'podiumRate';
 let tab2SortDirection: Tab2SortDirection = 'desc';
 let currentMacroMetricMode: MacroMetricMode = 'prestige';
+let currentChronologySubView: ChronologySubView = 'managers';
+let managerFilterMode: ManagerFilterMode = 'all';
+let chronologySortField: ChronologySortField = 'avg_rank';
+let chronologySortDirection: 'asc' | 'desc' = 'asc';
+let seasonSortField: SeasonSortField = 'season';
+let seasonSortDirection: 'asc' | 'desc' = 'desc';
 
 /**
  * Triggers re-rendering of the analytics modal internal content
  */
 function renderAnalyticsModalBody(): void {
-  renderAnalyticsModalDOM(currentTab, currentMacroMetricMode, tab2SortField, tab2SortDirection);
+  renderAnalyticsModalDOM(
+    currentTab,
+    currentMacroMetricMode,
+    tab2SortField,
+    tab2SortDirection,
+    currentChronologySubView,
+    chronologySortField,
+    chronologySortDirection,
+    seasonSortField,
+    seasonSortDirection,
+    managerFilterMode
+  );
 }
 
 /**
@@ -38,11 +64,69 @@ export function changeTab2Sort(field: Tab2SortField): void {
 
 /**
  * Switches the active sub-tab inside the analytics modal
- * @param tab - Target tab ('macro' | 'clutch' | 'risk')
+ * @param tab - Target tab ('macro' | 'clutch' | 'risk' | 'chronology')
  */
 export function switchAnalyticsTab(tab: AnalyticsTab): void {
   currentTab = tab;
   renderAnalyticsModalBody();
+}
+
+/**
+ * Switches between 'managers' and 'seasons' sub-views in Tab 4 (Chronology)
+ */
+export function switchChronologyView(subView: ChronologySubView): void {
+  currentChronologySubView = subView;
+  renderAnalyticsModalBody();
+}
+
+/**
+ * Sets active manager filter mode in Tab 4 ('all' | 'veterans' | 'active')
+ */
+export function setManagerFilter(mode: ManagerFilterMode): void {
+  managerFilterMode = mode;
+  renderAnalyticsModalBody();
+}
+
+/**
+ * Changes active sort field or toggles direction for Tab 4 Managers
+ */
+export function toggleChronologySort(field: ChronologySortField): void {
+  if (chronologySortField === field) {
+    chronologySortDirection = chronologySortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    chronologySortField = field;
+    chronologySortDirection =
+      field === 'avg_rank' || field === 'oscillation' || field === 'name' ? 'asc' : 'desc';
+  }
+  renderAnalyticsModalBody();
+}
+
+/**
+ * Alias for toggleChronologySort
+ */
+export function changeChronologySort(field: ChronologySortField): void {
+  toggleChronologySort(field);
+}
+
+/**
+ * Changes active sort field or toggles direction for Tab 4 Seasons
+ */
+export function toggleSeasonSort(field: SeasonSortField): void {
+  if (seasonSortField === field) {
+    seasonSortDirection = seasonSortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    seasonSortField = field;
+    seasonSortDirection =
+      field === 'step_gap' || field === 'total_gap' || field === 'podium_gap' || field === 'spoon_gap' ? 'asc' : 'desc';
+  }
+  renderAnalyticsModalBody();
+}
+
+/**
+ * Alias for toggleSeasonSort
+ */
+export function changeSeasonSort(field: SeasonSortField): void {
+  toggleSeasonSort(field);
 }
 
 /**
@@ -69,7 +153,7 @@ export function closeTierInfo(): void {
 
 /**
  * Toggles an educational guide accordion inside the concentration modal
- * @param guideId - Identifier prefix for the guide ('macro-guide' | 'risk-guide' | 'clutch-guide' | 'waterfall-rules')
+ * @param guideId - Identifier prefix for the guide ('macro-guide' | 'risk-guide' | 'clutch-guide' | 'waterfall-rules' | 'chronology-manager-guide' | 'chronology-season-guide')
  */
 export function toggleGuide(guideId: string): void {
   const guideContent = document.getElementById(`${guideId}-content`);

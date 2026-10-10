@@ -131,10 +131,97 @@ export interface ScoringWeights {
   cartonato: number;
 }
 
-export type AnalyticsTab = 'macro' | 'clutch' | 'risk';
+export type AnalyticsTab = 'macro' | 'clutch' | 'risk' | 'chronology';
 export type Tab2SortField = 'name' | 'podiumRate' | 'killerInstinct' | 'clutch';
 export type Tab2SortDirection = 'asc' | 'desc';
 export type MacroMetricMode = 'prestige' | 'raw';
+
+export type ChronologySubView = 'managers' | 'seasons';
+export type ManagerFilterMode = 'all' | 'veterans' | 'active';
+
+export type ChronologySortField =
+  | 'avg_rank'
+  | 'baricenter'
+  | 'name'
+  | 'seasons'
+  | 'oscillation'
+  | 'podiums'
+  | 'spoons'
+  | 'merit';
+
+export type SeasonSortField =
+  | 'season'
+  | 'step_gap'
+  | 'compactness'
+  | 'total_gap'
+  | 'podium_gap'
+  | 'spoon_gap';
+
+export type VolatilityCategory = 'metronomo' | 'regolare' | 'altalenante';
+
+export interface ManagerTierDistribution {
+  podiumCount: number; // Tier 4: Vertice / Podio (1°-3°)
+  highCount: number; // Tier 3: Alta Classifica
+  midCount: number; // Tier 2: Metà Classifica
+  riskCount: number; // Tier 1: Rischio Cucchiaio (ultimi 2 posti)
+  podiumPct: number;
+  highPct: number;
+  midPct: number;
+  riskPct: number;
+  baricenterScore: number; // 1.0 to 4.0
+  baricenterLabel: string;
+  baricenterColor: string;
+}
+
+export interface ManagerTrajectoryMetrics {
+  id: string;
+  name: string;
+  seasonsPlayed: number;
+  avgRank: number; // Real average rank (e.g. 3.8)
+  stdDevRank: number; // Typical rank oscillation (e.g. 1.4)
+  avgMeritPct: number; // 0% to 100%
+  stdDevMeritPct: number;
+  cvPct: number; // Coefficient of variation %
+  volatilityCategory: VolatilityCategory;
+  volatilityLabel: string;
+  volatilityIcon: string;
+  volatilityColor: string;
+  bestRank: number | null;
+  worstRank: number | null;
+  totalPodiums: number; // Gold + Silver + Bronze in league
+  totalSpoons: number; // Last place finishes
+  maxPodiumStreak: number;
+  maxSafetyStreak: number;
+  currentPodiumStreak: number;
+  currentSafetyStreak: number;
+  isActive: boolean; // Participates in latest season (2025/26)
+  tierDistribution: ManagerTierDistribution;
+}
+
+export interface SeasonParityMetrics {
+  season: string;
+  competitionId: number;
+  competitionName: string;
+  teamCount: number;
+  hasPointsData: boolean;
+  meanPts: number | null;
+  stdDevPts: number | null;
+  compactnessScore: number | null; // 0 to 100
+  totalGap: number | null; // Champ pts - Spoon pts (e.g. 18.0)
+  stepGap: number | null; // Gap per position step = totalGap / (teamCount - 1)
+  podiumGap: number | null; // S1 - S3
+  spoonGap: number | null; // S(N-1) - SN
+  championName: string;
+  championTeam: string;
+  championPts: number | null;
+  spoonName: string;
+  spoonTeam: string;
+  spoonPts: number | null;
+  podiumBadge: string;
+  podiumBadgeColor: string;
+  spoonBadge: string;
+  spoonBadgeColor: string;
+}
 
 export interface ManagerAnalyticsProfile {
   id: string;

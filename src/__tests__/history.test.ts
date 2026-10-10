@@ -468,23 +468,30 @@ describe('Historical Rankings & Career Visualizations', () => {
       expect(vannicosebbi?.history[0].rank).toBe(10);
     });
 
-    it('ensures Makako&Compagno holds the 2019/20 silver medal with no duplication in Compagno alone', () => {
+    it('ensures Makako&Compagno holds the 2019/20 silver medal with no duplication in Compagno alone, and 2020/21 is separate', () => {
       const makakocompagno = dataJson.leagueData.find((m: { id: string }) => m.id === 'm_makakocompagno');
       const compagno = dataJson.leagueData.find((m: { id: string }) => m.id === 'm_compagno');
+      const makako = dataJson.leagueData.find((m: { id: string }) => m.id === 'm_makako');
 
-      expect(makakocompagno?.years).toBe(2);
+      expect(makakocompagno?.years).toBe(1);
       expect(makakocompagno?.silver).toBe(1);
       const h1920 = makakocompagno?.history.find((h: { season: string }) => h.season === '2019/20');
       expect(h1920?.rank).toBe(2);
+      expect(makakocompagno?.history.map((h: { season: string }) => h.season)).not.toContain('2020/21');
 
       expect(compagno?.silver).toBe(0);
       expect(compagno?.history.map((h: { season: string }) => h.season)).not.toContain('2019/20');
-      // Compagno has 5 seasons including 2018/19
+      // Compagno has 5 seasons including 2018/19 and 2020/21
       expect(compagno?.years).toBe(5);
+      expect(compagno?.history.map((h: { season: string }) => h.season)).toContain('2020/21');
       const c1819 = compagno?.history.find((h: { season: string }) => h.season === '2018/19');
       expect(c1819).toBeDefined();
       expect(c1819?.rank).toBe(6);
       expect(c1819?.points).toBe(42.0);
+
+      // Makako has 6 seasons including 2020/21
+      expect(makako?.years).toBe(6);
+      expect(makako?.history.map((h: { season: string }) => h.season)).toContain('2020/21');
     });
 
     it('ensures Pippo has 7 seasons including 2018/19 Partizan Peroni', () => {

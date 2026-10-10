@@ -22,8 +22,7 @@
   {
     "id": "m_makako",
     "name": "Makako",
-    "cartonato_coaches": [],
-    "years": 7
+    "cartonato_coaches": []
   },
   {
     "id": "m_valery",
@@ -87,18 +86,7 @@
   {
     "id": "m_makakocompagno",
     "name": "Makako&Compagno",
-    "cartonato_coaches": [],
-    "years": 2,
-    "additional_history": [
-      {
-        "season": "2020/21",
-        "team": "Compagni di Merende",
-        "rank": null,
-        "points": null,
-        "competitionId": 147888,
-        "achievements": []
-      }
-    ]
+    "cartonato_coaches": []
   },
   {
     "id": "m_matteone",

@@ -1,6 +1,6 @@
 import { state } from '@/state';
 import { calculateManagerScore } from '@/score';
-import { populateProfileModalDOM } from './ProfileModalTemplate';
+import { populateProfileModalDOM } from './profile';
 import {
   shareViaWhatsApp,
   exportProfileModalHD,

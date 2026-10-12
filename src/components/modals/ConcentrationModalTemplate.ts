@@ -51,20 +51,23 @@ export function renderAnalyticsModalDOM(
     : [...analysis.profiles].sort((a, b) => b.trophies - a.trophies || b.efficiency - a.efficiency);
 
   // Sub-tab Navigation button generator
-  const tabButton = (id: AnalyticsTab, label: string, icon: string) => {
+  const tabButton = (id: AnalyticsTab, label: string, mobileLabel: string, icon: string) => {
     const isActive = currentTab === id;
     return `
       <button 
         type="button" 
         onclick="switchAnalyticsTab('${id}')" 
-        class="flex-1 flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold transition shadow-sm ${isActive ? '' : 'hover:bg-white/5'}"
+        class="flex-1 flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-3 py-1.5 rounded-xl text-[10px] sm:text-xs font-bold transition shadow-sm whitespace-nowrap ${isActive ? '' : 'hover:bg-white/5'}"
         style="${isActive
         ? 'background-color: var(--btn-bg); color: var(--btn-text); border: 1px solid var(--btn-border);'
         : 'color: var(--text-muted); background: transparent; border: 1px solid transparent;'
       }"
       >
-        <i class="${icon} text-[10px] sm:text-xs"></i>
-        <span class="truncate">${label}</span>
+        <i class="${icon} text-[9px] sm:text-xs shrink-0"></i>
+        <span>
+          <span class="sm:hidden">${mobileLabel}</span>
+          <span class="hidden sm:inline">${label}</span>
+        </span>
       </button>
     `;
   };
@@ -1310,11 +1313,11 @@ export function renderAnalyticsModalDOM(
     </div>
 
     <!-- Navigation Tabs Bar -->
-    <div class="px-3 sm:px-6 py-2 border-b flex items-center gap-1.5 sm:gap-2 overflow-x-auto shrink-0" style="border-color: var(--table-border); background: rgba(0,0,0,0.08);">
-      ${tabButton('macro', 'Equilibrio & Macro', 'fa-solid fa-scale-balanced')}
-      ${tabButton('clutch', 'Cinismo & Podi', 'fa-solid fa-bullseye')}
-      ${tabButton('risk', 'Archetipi', 'fa-solid fa-dice')}
-      ${tabButton('chronology', 'Dinamica Storica', 'fa-solid fa-timeline')}
+    <div class="px-2 sm:px-6 py-2 border-b grid grid-cols-4 sm:flex items-center gap-1 sm:gap-2 shrink-0" style="border-color: var(--table-border); background: rgba(0,0,0,0.08);">
+      ${tabButton('macro', 'Equilibrio & Macro', 'Equilibrio', 'fa-solid fa-scale-balanced')}
+      ${tabButton('clutch', 'Cinismo & Podi', 'Cinismo', 'fa-solid fa-bullseye')}
+      ${tabButton('risk', 'Archetipi', 'Archetipi', 'fa-solid fa-dice')}
+      ${tabButton('chronology', 'Dinamica Storica', 'Storico', 'fa-solid fa-timeline')}
     </div>
 
     <!-- Modal Scrollable Body -->

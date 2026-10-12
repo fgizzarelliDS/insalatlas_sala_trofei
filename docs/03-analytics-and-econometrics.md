@@ -143,9 +143,101 @@ A ogni manager viene assegnato un solo archetipo comportamentale primario. La cl
 
 ---
 
-## 5. Roadmap & Evoluzioni Future (TODO)
+## 5. Pilastro IV: Dinamica & Trend Storico Decennale
 
-### 5.1 Global Clutch Index ($GCI$)
+Il modulo `src/analytics/chronology.ts` sfrutta la cronologia completa delle classifiche e dei punteggi archiviati in `data/seasons/*.json`, articolandosi in due prospettive complementari progettate per la massima leggibilità fantacalcistica e arricchite da modelli di normalizzazione multiformato (campionati a 8, 10 e 12 squadre):
+
+### 5.1 Prospettiva Manager (Rendimento Reale, Fasce Dinamiche & Baricentro Storico)
+
+- **Piazzamento Medio Reale ($\overline{R}_i$)**:
+  Media aritmetica dei piazzamenti effettivi conquistati in campionato sulle stagioni disputate ($S_i$):
+  $$\overline{R}_i = \frac{1}{S_i} \sum_{t=1}^{S_i} R_{i,t}$$
+  Espresso direttamente in posizioni reali (es. `4.0° posto medio`).
+- **Normalizzazione Dinamica a 4 Fasce di Rendimento**:
+  Dato che la lega è passata da 8 squadre (2016–2018), a 10 squadre (2018–2020), fino a 12 squadre (2020–2026), un piazzamento assoluto (es. 4° o 8° posto) ha un peso e una densità competitiva profondamente diversi a seconda del formato. Ogni piazzamento stagionale viene categorizzato in 4 fasce proporzionali con peso cardinale decrescente:
+
+  | Fascia di Rendimento | Peso ($w$) | Colore UI | 8 Squadre (2016-18) | 10 Squadre (2018-20) | 12 Squadre (2020-26) |
+  | :--- | :---: | :---: | :---: | :---: | :---: |
+  | 🥇 **Vertice / Podio** | $4$ | 🟡 Oro (`#eab308`) | 1° – 3° (3 sq) | 1° – 3° (3 sq) | 1° – 3° (3 sq) |
+  | ⭐ **Alta Classifica** | $3$ | 🟢 Smeraldo (`#10b981`) | 4° (1 sq) | 4° – 5° (2 sq) | 4° – 6° (3 sq) |
+  | ⚖️ **Metà Classifica** | $2$ | 🔵 Blu (`#3b82f6`) | 5° – 6° (2 sq) | 6° – 8° (3 sq) | 7° – 10° (4 sq) |
+  | 🥄 **Zona Rischio Cucchiaio** | $1$ | 🔴 Rosso (`#ef4444`) | 7° – 8° (2 sq) | 9° – 10° (2 sq) | 11° – 12° (2 sq) |
+
+- **Baricentro Storico ($B_i \in [1.0, 4.0]$)**:
+  Sintetizza l'allocazione media del mister lungo l'intera carriera attraverso la media ponderata delle fasce occupate:
+  $$B_i = \frac{4 \cdot N_{\text{vertice}, i} + 3 \cdot N_{\text{alta}, i} + 2 \cdot N_{\text{metà}, i} + 1 \cdot N_{\text{rischio}, i}}{S_i}$$
+  - **Élite Vertice ($B_i \ge 3.5$)**: Costantemente sul podio o ai vertici assoluti.
+  - **Alta Classifica ($2.8 \le B_i < 3.5$)**: Frequente presenza nelle posizioni nobili e rarissime cadute.
+  - **Metà Classifica ($2.0 \le B_i < 2.8$)**: Presenza prevalente nella pancia del gruppo.
+  - **Zona Rischio ($B_i < 2.0$)**: Frequente esposizione alla lotta retrocessione/cucchiaio.
+  Nella tabella manager, il baricentro è visualizzato tramite badge dedicato e una **mini-barra segmentata a 4 colori** con tooltip interattivo che riporta i conteggi e le percentuali esatte per fascia.
+- **Percentile di Merito Stagionale ($PM_{i,t} \in [0\%, 100\%]$)**:
+  Indicatore continuo ausiliario:
+  $$PM_{i,t} = \left(\frac{N_t - R_{i,t}}{N_t - 1}\right) \times 100\%$$
+- **Stabilità & Oscillazione Tipica ($\sigma_{R,i}$)**:
+  Deviazione standard dei piazzamenti in posizioni nette, che misura quanto un mister oscilla tipicamente da un'annata all'altra:
+  $$\sigma_{R,i} = \sqrt{\frac{1}{S_i} \sum_{t=1}^{S_i} (R_{i,t} - \overline{R}_i)^2}$$
+  - **Metronomo (⏱️ $\sigma_R < 2.0$ pos.)**: Iper-stabilità statistica, costantemente nelle stesse posizioni ($\pm < 2$ posti).
+  - **Equilibrato (⚖️ $2.0 \le \sigma_R \le 3.5$ pos.)**: Fisiologica e sana alternanza tra buone annate e metà classifica.
+  - **Montagna Russa (🎢 $\sigma_R > 3.5$ pos.)**: Rendimento polarizzato tra picchi da scudetto e crolli improvvisi.
+  - **Esordiente (🌱 $S_i < 3$)**: Minimo 3 stagioni disputate con oscillazione non definita.
+- **Gloria & Baratro**:
+  - **Podi Totali (🏆)**: Piazzamenti in top-3 (1°, 2°, 3°).
+  - **Cucchiai Totali (🥄)**: Ultimi posti in classifica di campionato.
+- **Filtri di Visualizzazione**:
+  - *Tutti*: intero albo della lega (18 manager).
+  - *Veterani*: manager con $\ge 3$ stagioni giocate (13 manager).
+  - *Attivi in corso*: manager partecipanti alla stagione corrente 2025/26 (12 manager).
+
+### 5.2 Evoluzione Stagioni (Parità, Gradino Medio & Record di Compattezza)
+
+- **Gradino Medio di Classifica ($\Delta_{\text{gradino}, t}$)**:
+  Misura la densità competitiva dividendo la forbice complessiva di punti tra il 1° e l'ultimo per il numero di intervalli di classifica ($N_t - 1$):
+  $$\Delta_{\text{gradino}, t} = \frac{\text{Pts}_{1°, t} - \text{Pts}_{\text{ultimo}, t}}{N_t - 1} \quad [\text{pt / posizione}]$$
+  Questo parametro normalizza la forbice totale rendendo confrontabili campionati a 8 squadre (7 gradini), 10 squadre (9 gradini) e 12 squadre (11 gradini): un gradino più basso indica che ogni singola posizione di classifica è stata contesa punto su punto.
+- **Indice di Compattezza di Lega ($IC_t \in [0, 100]$)**:
+  Normalizza il gradino medio rispetto agli estremi storici registrati nel decennio ($\Delta_{\text{gradino}, \min} = 1.91 \dots \Delta_{\text{gradino}, \max} = 5.86$ pt/pos):
+  $$IC_t = \text{round}\left(100 - \frac{\Delta_{\text{gradino}, t} - \Delta_{\text{gradino}, \min}}{\Delta_{\text{gradino}, \max} - \Delta_{\text{gradino}, \min}} \times 100\right)$$
+  - **Record Storico Assoluto**: La stagione **2022/23** (12 squadre) detiene il primato storico con soli **1.91 pt/gradino** ($IC = 100$, forbice di 21 pt spalmata su 11 salti), superando il campionato 2018/19 a 10 squadre (2.22 pt/gradino).
+- **Lotta Podio ($\Delta_{\text{podio}, t}$)**:
+  Scarto in punti tra il 1° e il 3° classificato ($S_{1,t} - S_{3,t}$).
+  - $\le 4 \text{ pt}$: *Volata a Tre 🏁*
+  - $5 \dots 9 \text{ pt}$: *Corsa Aperta ⚔️*
+  - $\ge 10 \text{ pt}$: *Podio Sgranato 🚀*
+- **Fuga dal Cucchiaio ($\Delta_{\text{cucchiaio}, t}$)**:
+  Scarto in punti tra il penultimo e l'ultimo classificato ($S_{N-1,t} - S_{N,t}$).
+  - $\le 2 \text{ pt}$: *Playout Thriller ⚡*
+  - $3 \dots 7 \text{ pt}$: *Lotta Salvezza 🛡️*
+  - $\ge 8 \text{ pt}$: *Crollo Isolato 📉*
+- **Tolleranza Storica (2020/21)**:
+  Per le annate prive di punteggi completi archiviati (2020/21), l'interfaccia visualizza con badge esplicito `⚠️ Punti non archiviati` l'assenza del dato numerico senza generare anomalie visive o alterare il range degli altri campionati, preservando l'integrità dei verdetti ufficiali (Campione AS CorradiAndRosatiTeam e Cucchiaio Partizan Peroni).
+
+### 5.3 Sistema Unificato dei Badge Allenatore (`src/analytics/badges.ts`)
+
+Per garantire assoluta coerenza visiva e concettuale tra la **Scheda Profilo** (`ProfileModal`) e la **Trading Card** collezionabile (`cardTemplate`), tutti i riconoscimenti comportamentali e onorari sono centralizzati in una **singola sorgente di verità**:
+
+1. **Badge Analitici Strutturati** (sempre presenti in apertura di bacheca):
+   - **`Profilo: <Archetipo>`**: determinato dal waterfall a 9 priorità comportamentali.
+   - **`Rischio: <Polarità NTI>`**: polarità asimmetrica di coda (*Cannibale Assoluto*, *Attaccante Efficace*, *Neutro / Bilanciato*, *Vulnerabile*, *Bersaglio Mobile*).
+   - **`Stabilità: <Categoria>`**: dispersione posizionale $\sigma_R$ con minimo 3 stagioni giocate:
+     - ⏱️ `Stabilità: Metronomo di Lega` ($\sigma_R < 2.0$, Verde Smeraldo `#10b981`)
+     - ⚖️ `Stabilità: Equilibrato` ($2.0 \le \sigma_R \le 3.5$, Blu Zaffiro `#3b82f6`)
+     - 🎢 `Stabilità: Montagna Russa` ($\sigma_R > 3.5$, Ambra `#f59e0b`)
+     - 🌱 `Stabilità: Esordiente` ($N < 3$ stagioni, Ardesia `#94a3b8`)
+2. **Badge Onorari & di Merito Storico** (sblocco progressivo in base al palmarès):
+   - 🛡️ **Veterano della Lega**: $\ge 6$ stagioni disputate.
+   - 👑 **Re dei Titoli**: $\ge 4$ titoli major vinti.
+   - ⭐ **Campione Seriale**: $\ge 2$ scudetti di campionato vinti.
+   - 🌟 **Double Winner**: almeno 1 Scudetto e almeno 1 Coppa InsalAtlas vinti.
+   - 🏆 **Re delle Coppe**: $\ge 3$ trofei tra Coppe e Supercoppe.
+   - ☠️ **Incubo Playout**: $\ge 2$ cartonati/retrocessioni da playout subiti.
+   - 🥄 **Collezionista Cucchiai**: $\ge 2$ cucchiai di legno (ultimi posti in campionato).
+
+---
+
+## 6. Roadmap & Evoluzioni Future (TODO)
+
+### 6.1 Global Clutch Index ($GCI$)
 
 Per unificare in un unico indicatore sintetico sia la capacità di convertire la maratona di campionato sia la letalità nelle finali secche a eliminazione diretta, è pianificata l'introduzione del **Global Clutch Index ($GCI$)**:
 

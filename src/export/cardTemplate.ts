@@ -1,71 +1,13 @@
 import type { Manager, TradingCardBadge } from '@/types';
 import { calculateManagerScore, formatScore } from '@/score';
 import { renderTrophySVG, renderCoachBanner } from '@/trophies';
-import { getManagerArchetype, computeTailRiskProfile } from '@/analytics';
+import { computeManagerBadges } from '@/analytics';
 
 /**
  * Computes dynamic merit and behavioral badges for a manager's trading card
  */
 export function computeTradingCardBadges(manager: Manager): TradingCardBadge[] {
-  const badges: TradingCardBadge[] = [];
-
-  const totalMajor = (manager.gold || 0) + (manager.cup_gold || 0) + (manager.supercup || 0) + (manager.mundialito || 0);
-  const efficiency = manager.years > 0 ? parseFloat((totalMajor / manager.years).toFixed(2)) : 0;
-
-  // 1. Behavioral Archetype
-  const arch = getManagerArchetype(manager, totalMajor, efficiency);
-  badges.push({
-    label: `Profilo: ${arch.tag}`,
-    icon: arch.icon,
-    customStyle: `background: ${arch.color}25; color: ${arch.color}; border: 1px solid ${arch.color}60;`
-  });
-
-  // 2. Net Tail Risk (NTI) Polarity
-  const risk = computeTailRiskProfile(manager);
-  badges.push({
-    label: `Rischio: ${risk.label}`,
-    icon: risk.icon,
-    customStyle: `background: ${risk.color}25; color: ${risk.color}; border: 1px solid ${risk.color}60;`
-  });
-
-  // 3. Historical Merit Badges
-  if (manager.years >= 6) {
-    badges.push({
-      label: 'Veterano della Lega',
-      icon: 'fa-shield-halved',
-      color: 'bg-indigo-900/60 text-indigo-300 border-indigo-700/60'
-    });
-  }
-  if (totalMajor >= 4) {
-    badges.push({
-      label: 'Re dei Titoli',
-      icon: 'fa-crown',
-      color: 'bg-amber-900/60 text-amber-300 border-amber-600/60'
-    });
-  }
-  if ((manager.gold || 0) >= 1 && (manager.cup_gold || 0) >= 1) {
-    badges.push({
-      label: 'Double Winner',
-      icon: 'fa-star',
-      color: 'bg-yellow-900/60 text-yellow-300 border-yellow-600/60'
-    });
-  }
-  if ((manager.cartonato || 0) >= 2) {
-    badges.push({
-      label: 'Incubo Playout',
-      icon: 'fa-skull-crossbones',
-      color: 'bg-rose-950/70 text-rose-300 border-rose-700/60'
-    });
-  }
-  if ((manager.spoon || 0) >= 2) {
-    badges.push({
-      label: 'Collezionista Cucchiai',
-      icon: 'fa-utensils',
-      color: 'bg-amber-950/80 text-amber-500 border-amber-800/60'
-    });
-  }
-
-  return badges;
+  return computeManagerBadges(manager);
 }
 
 /**

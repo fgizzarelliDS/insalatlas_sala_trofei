@@ -1,3 +1,5 @@
 export * from './tailRisk';
 export * from './archetypes';
 export * from './econometrics';
+export * from './chronology';
+export * from './badges';

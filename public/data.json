@@ -658,7 +658,7 @@
     {
       "id": "m_makako",
       "name": "Makako",
-      "years": 7,
+      "years": 6,
       "gold": 1,
       "silver": 2,
       "bronze": 0,
@@ -1768,7 +1768,7 @@
     {
       "id": "m_makakocompagno",
       "name": "Makako&Compagno",
-      "years": 2,
+      "years": 1,
       "gold": 0,
       "silver": 1,
       "bronze": 0,
@@ -1783,14 +1783,6 @@
       "coach_banners": [],
       "cartonato_coaches": [],
       "history": [
-        {
-          "season": "2020/21",
-          "team": "Compagni di Merende",
-          "rank": null,
-          "points": null,
-          "competitionId": 147888,
-          "achievements": []
-        },
         {
           "season": "2019/20",
           "team": "Compagni di Merende",

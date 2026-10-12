@@ -2,7 +2,7 @@ import type { Manager, TradingCardBadge, SeasonRecord } from '@/types';
 import { state } from '@/state';
 import { formatScore } from '@/score';
 import { renderTrophySVG, renderCoachBanner } from '@/trophies';
-import { getManagerArchetype, computeTailRiskProfile } from '@/analytics';
+import { computeManagerBadges } from '@/analytics';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
 
 /**
@@ -22,73 +22,11 @@ export function populateProfileModalDOM(m: Manager, score: number, totalMajor: n
   if (rateEl) rateEl.textContent = `${successRate}%`;
   if (totalEl) totalEl.textContent = String(totalMajor);
 
-  // 2. Honorary Badges
+  // 2. Honorary and Behavioral Badges
   const badgesContainer = document.getElementById('profile-badges-container');
   if (badgesContainer) {
     badgesContainer.innerHTML = '';
-    const badges: TradingCardBadge[] = [];
-
-    // Behavioral Archetype Badge from Analytics
-    const efficiency = m.years > 0 ? parseFloat((totalMajor / m.years).toFixed(2)) : 0;
-    const arch = getManagerArchetype(m, totalMajor, efficiency);
-    badges.push({
-      label: `Profilo: ${arch.tag}`,
-      icon: arch.icon,
-      color: '',
-      customStyle: `background: ${arch.color}25; color: ${arch.color}; border: 1px solid ${arch.color}50;`
-    });
-
-    // Net Tail Risk (NTI) Behavioral Badge
-    const risk = computeTailRiskProfile(m);
-    badges.push({
-      label: `Rischio: ${risk.label}`,
-      icon: risk.icon,
-      color: '',
-      customStyle: `background: ${risk.color}25; color: ${risk.color}; border: 1px solid ${risk.color}50;`
-    });
-
-    if (m.years >= 8) {
-      badges.push({
-        label: 'Veterano della Lega',
-        icon: 'fa-shield-halved',
-        color: 'bg-indigo-900/60 text-indigo-300 border-indigo-700/60'
-      });
-    }
-    if (totalMajor >= 4) {
-      badges.push({
-        label: 'Re dei Titoli',
-        icon: 'fa-crown',
-        color: 'bg-amber-900/60 text-amber-300 border-amber-600/60'
-      });
-    }
-    if ((m.gold || 0) >= 2) {
-      badges.push({
-        label: 'Campione Seriale',
-        icon: 'fa-star',
-        color: 'bg-yellow-900/60 text-yellow-300 border-yellow-600/60'
-      });
-    }
-    if ((m.cup_gold || 0) + (m.supercup || 0) >= 3) {
-      badges.push({
-        label: 'Re delle Coppe',
-        icon: 'fa-trophy',
-        color: 'bg-blue-900/60 text-blue-300 border-blue-600/60'
-      });
-    }
-    if ((m.cartonato || 0) > 0) {
-      badges.push({
-        label: 'Incubo Playout',
-        icon: 'fa-skull-crossbones',
-        color: 'bg-rose-950/70 text-rose-300 border-rose-700/60'
-      });
-    }
-    if ((m.spoon || 0) >= 2) {
-      badges.push({
-        label: 'Collezionista di Cucchiai',
-        icon: 'fa-utensils',
-        color: 'bg-amber-950/80 text-amber-500 border-amber-800/60'
-      });
-    }
+    const badges: TradingCardBadge[] = computeManagerBadges(m);
 
     if (badges.length === 0) {
       badgesContainer.innerHTML =

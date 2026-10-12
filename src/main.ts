@@ -19,6 +19,12 @@ import {
   openConcentrationModal,
   closeConcentrationModal,
   switchAnalyticsTab,
+  switchChronologyView,
+  setManagerFilter,
+  toggleChronologySort,
+  toggleSeasonSort,
+  changeChronologySort,
+  changeSeasonSort,
   changeTab2Sort,
   toggleGuide,
   toggleConcentrationGuide,
@@ -80,6 +86,12 @@ declare global {
     openConcentrationModal: typeof openConcentrationModal;
     closeConcentrationModal: typeof closeConcentrationModal;
     switchAnalyticsTab: typeof switchAnalyticsTab;
+    switchChronologyView: typeof switchChronologyView;
+    setManagerFilter: typeof setManagerFilter;
+    toggleChronologySort: typeof toggleChronologySort;
+    toggleSeasonSort: typeof toggleSeasonSort;
+    changeChronologySort: typeof changeChronologySort;
+    changeSeasonSort: typeof changeSeasonSort;
     changeTab2Sort: typeof changeTab2Sort;
     toggleGuide: typeof toggleGuide;
     toggleConcentrationGuide: typeof toggleConcentrationGuide;
@@ -171,6 +183,12 @@ if (typeof window !== 'undefined') {
     openConcentrationModal,
     closeConcentrationModal,
     switchAnalyticsTab,
+    switchChronologyView,
+    setManagerFilter,
+    toggleChronologySort,
+    toggleSeasonSort,
+    changeChronologySort,
+    changeSeasonSort,
     changeTab2Sort,
     toggleGuide,
     toggleConcentrationGuide,

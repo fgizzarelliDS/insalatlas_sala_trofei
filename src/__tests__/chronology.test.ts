@@ -126,9 +126,31 @@ describe('Chronology Analytics Module', () => {
         ]
       };
 
+      const balancedManager: Manager = {
+        id: 'm_balanced',
+        name: 'The Balanced',
+        years: 4,
+        gold: 0,
+        silver: 1,
+        bronze: 1,
+        spoon: 0,
+        cup_gold: 0,
+        cup_silver: 0,
+        supercup: 0,
+        mundialito: 0,
+        cartonato: 0,
+        history: [
+          { season: '2021/22', team: 'B', rank: 2, points: 60, achievements: [] },
+          { season: '2022/23', team: 'B', rank: 6, points: 45, achievements: [] },
+          { season: '2023/24', team: 'B', rank: 3, points: 55, achievements: [] },
+          { season: '2024/25', team: 'B', rank: 7, points: 40, achievements: [] }
+        ]
+      };
+
       const metrics = computeManagerTrajectoryMetrics([
         rockManager,
         rollercoasterManager,
+        balancedManager,
         rookieManager
       ]);
 
@@ -136,6 +158,12 @@ describe('Chronology Analytics Module', () => {
       expect(rock.volatilityCategory).toBe('metronomo');
       expect(rock.volatilityLabel).toBe('Metronomo');
       expect(rock.stdDevRank).toBeLessThan(2.0);
+
+      const bal = metrics.find(m => m.id === 'm_balanced')!;
+      expect(bal.volatilityCategory).toBe('equilibrato');
+      expect(bal.volatilityLabel).toBe('Equilibrato');
+      expect(bal.stdDevRank).toBeGreaterThanOrEqual(2.0);
+      expect(bal.stdDevRank).toBeLessThanOrEqual(3.5);
 
       const roller = metrics.find(m => m.id === 'm_roller')!;
       expect(roller.volatilityCategory).toBe('altalenante');

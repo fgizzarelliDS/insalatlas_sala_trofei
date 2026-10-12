@@ -157,7 +157,7 @@ export type SeasonSortField =
   | 'podium_gap'
   | 'spoon_gap';
 
-export type VolatilityCategory = 'metronomo' | 'regolare' | 'altalenante' | 'esordiente';
+export type VolatilityCategory = 'metronomo' | 'equilibrato' | 'altalenante' | 'esordiente';
 
 export interface StabilityProfile {
   category: VolatilityCategory;
@@ -181,6 +181,7 @@ export interface ManagerTierDistribution {
   baricenterScore: number; // 1.0 to 4.0
   baricenterLabel: string;
   baricenterColor: string;
+  baricenterIcon: string;
 }
 
 export interface ManagerTrajectoryMetrics {

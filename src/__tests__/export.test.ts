@@ -56,6 +56,20 @@ describe('export.ts - Trading Card Logic and Formatting', () => {
       });
       const rollerBadges = computeTradingCardBadges(roller);
       expect(rollerBadges.some(b => b.label === 'Stabilità: Montagna Russa')).toBe(true);
+
+      const balanced = createTestManager({
+        id: 'bal',
+        name: 'Balanced',
+        years: 4,
+        history: [
+          { season: '2021/22', team: 'B', rank: 2, points: 60, achievements: [] },
+          { season: '2022/23', team: 'B', rank: 6, points: 45, achievements: [] },
+          { season: '2023/24', team: 'B', rank: 3, points: 55, achievements: [] },
+          { season: '2024/25', team: 'B', rank: 7, points: 40, achievements: [] }
+        ]
+      });
+      const balBadges = computeTradingCardBadges(balanced);
+      expect(balBadges.some(b => b.label === 'Stabilità: Equilibrato')).toBe(true);
     });
 
     it('assigns Campione Seriale for 2+ gold and Re delle Coppe for 3+ cup/supercup', () => {

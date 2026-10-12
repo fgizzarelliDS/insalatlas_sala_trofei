@@ -177,9 +177,9 @@ Il modulo `src/analytics/chronology.ts` sfrutta la cronologia completa delle cla
 - **Stabilità & Oscillazione Tipica ($\sigma_{R,i}$)**:
   Deviazione standard dei piazzamenti in posizioni nette, che misura quanto un mister oscilla tipicamente da un'annata all'altra:
   $$\sigma_{R,i} = \sqrt{\frac{1}{S_i} \sum_{t=1}^{S_i} (R_{i,t} - \overline{R}_i)^2}$$
-  - **Metronomo (⏱️ $\sigma_R < 2.0$ pos.)**: Stabilità granitica, costantemente nelle stesse posizioni.
-  - **Regolare (⚖️ $2.0 \le \sigma_R \le 3.5$ pos.)**: Fisiologica e sana alternanza tra buone annate e metà classifica.
-  - **Altalenante (🎢 $\sigma_R > 3.5$ pos.)**: Rendimento polarizzato tra picchi da scudetto e crolli improvvisi.
+  - **Metronomo (⏱️ $\sigma_R < 2.0$ pos.)**: Iper-stabilità statistica, costantemente nelle stesse posizioni ($\pm < 2$ posti).
+  - **Equilibrato (⚖️ $2.0 \le \sigma_R \le 3.5$ pos.)**: Fisiologica e sana alternanza tra buone annate e metà classifica.
+  - **Montagna Russa (🎢 $\sigma_R > 3.5$ pos.)**: Rendimento polarizzato tra picchi da scudetto e crolli improvvisi.
   - **Esordiente (🌱 $S_i < 3$)**: Minimo 3 stagioni disputate con oscillazione non definita.
 - **Gloria & Baratro**:
   - **Podi Totali (🏆)**: Piazzamenti in top-3 (1°, 2°, 3°).
@@ -221,7 +221,7 @@ Per garantire assoluta coerenza visiva e concettuale tra la **Scheda Profilo** (
    - **`Rischio: <Polarità NTI>`**: polarità asimmetrica di coda (*Cannibale Assoluto*, *Attaccante Efficace*, *Neutro / Bilanciato*, *Vulnerabile*, *Bersaglio Mobile*).
    - **`Stabilità: <Categoria>`**: dispersione posizionale $\sigma_R$ con minimo 3 stagioni giocate:
      - ⏱️ `Stabilità: Metronomo di Lega` ($\sigma_R < 2.0$, Verde Smeraldo `#10b981`)
-     - ⚖️ `Stabilità: Rendimento Costante` ($2.0 \le \sigma_R \le 3.5$, Blu Zaffiro `#3b82f6`)
+     - ⚖️ `Stabilità: Equilibrato` ($2.0 \le \sigma_R \le 3.5$, Blu Zaffiro `#3b82f6`)
      - 🎢 `Stabilità: Montagna Russa` ($\sigma_R > 3.5$, Ambra `#f59e0b`)
      - 🌱 `Stabilità: Esordiente` ($N < 3$ stagioni, Ardesia `#94a3b8`)
 2. **Badge Onorari & di Merito Storico** (sblocco progressivo in base al palmarès):

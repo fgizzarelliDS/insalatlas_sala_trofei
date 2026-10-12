@@ -103,8 +103,8 @@ export function computeManagerTrajectoryMetrics(
     let avgMeritPct = 0;
     let stdDevMeritPct = 0;
     let cvPct = 0;
-    let volatilityCategory: VolatilityCategory = 'regolare';
-    let volatilityLabel = 'Regolare';
+    let volatilityCategory: VolatilityCategory = 'equilibrato';
+    let volatilityLabel = 'Equilibrato';
     let volatilityIcon = '⚖️';
     let volatilityColor = '#3b82f6';
 
@@ -129,8 +129,8 @@ export function computeManagerTrajectoryMetrics(
           volatilityIcon = '⏱️';
           volatilityColor = '#10b981';
         } else if (stdDevRank <= 3.5) {
-          volatilityCategory = 'regolare';
-          volatilityLabel = 'Regolare';
+          volatilityCategory = 'equilibrato';
+          volatilityLabel = 'Equilibrato';
           volatilityIcon = '⚖️';
           volatilityColor = '#3b82f6';
         } else {
@@ -159,6 +159,7 @@ export function computeManagerTrajectoryMetrics(
     let baricenterScore = 2.0;
     let baricenterLabel = 'Metà Classifica';
     let baricenterColor = '#3b82f6';
+    let baricenterIcon = '⚖️';
 
     if (seasonsPlayed > 0) {
       podiumPct = Math.round((podiumCount / seasonsPlayed) * 100);
@@ -172,15 +173,19 @@ export function computeManagerTrajectoryMetrics(
       if (baricenterScore >= 3.5) {
         baricenterLabel = 'Élite Vertice';
         baricenterColor = '#eab308';
+        baricenterIcon = '🥇';
       } else if (baricenterScore >= 2.8) {
         baricenterLabel = 'Alta Classifica';
         baricenterColor = '#10b981';
+        baricenterIcon = '⭐';
       } else if (baricenterScore >= 2.0) {
         baricenterLabel = 'Metà Classifica';
         baricenterColor = '#3b82f6';
+        baricenterIcon = '⚖️';
       } else {
         baricenterLabel = 'Zona Rischio';
         baricenterColor = '#ef4444';
+        baricenterIcon = '🥄';
       }
     }
 
@@ -195,7 +200,8 @@ export function computeManagerTrajectoryMetrics(
       riskPct,
       baricenterScore,
       baricenterLabel,
-      baricenterColor
+      baricenterColor,
+      baricenterIcon
     };
 
     // Compute max streaks

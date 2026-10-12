@@ -8,7 +8,7 @@ import { computeTailRiskProfile } from './tailRisk';
  * - < 3 seasons: Esordiente (Rookie)
  * - >= 3 seasons:
  *   - sigma_R < 2.0: Metronomo di Lega
- *   - 2.0 <= sigma_R <= 3.5: Rendimento Costante
+ *   - 2.0 <= sigma_R <= 3.5: Equilibrato
  *   - sigma_R > 3.5: Montagna Russa
  */
 export function computeStabilityProfile(manager: Manager): StabilityProfile {
@@ -47,9 +47,9 @@ export function computeStabilityProfile(manager: Manager): StabilityProfile {
     };
   } else if (stdDevRank <= 3.5) {
     return {
-      category: 'regolare',
-      label: 'Rendimento Costante',
-      badgeLabel: 'Stabilità: Rendimento Costante',
+      category: 'equilibrato',
+      label: 'Equilibrato',
+      badgeLabel: 'Stabilità: Equilibrato',
       stdDevRank,
       icon: 'fa-scale-balanced',
       emoji: '⚖️',

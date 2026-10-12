@@ -257,9 +257,9 @@ export function renderAnalyticsModalDOM(
               </div>
               <span class="font-mono text-[11px] sm:text-xs text-center" style="color: var(--text-muted);">
                 ${isPrestige
-                  ? `<span class="hidden sm:inline">${p.prestigeEfficiency} pt/anno</span><span class="sm:hidden">${p.prestigeEfficiency} pt/a</span>`
-                  : `<span class="hidden sm:inline">${p.efficiency} tit/anno</span><span class="sm:hidden">${p.efficiency} t/a</span>`
-                }
+            ? `<span class="hidden sm:inline">${p.prestigeEfficiency} pt/anno</span><span class="sm:hidden">${p.prestigeEfficiency} pt/a</span>`
+            : `<span class="hidden sm:inline">${p.efficiency} tit/anno</span><span class="sm:hidden">${p.efficiency} t/a</span>`
+          }
               </span>
               <span class="font-mono font-bold text-xs text-right" style="color: var(--text-main);">
                 ${(isPrestige ? p.prestigeSharePct : p.trophySharePct).toFixed(1)}%
@@ -873,8 +873,8 @@ export function renderAnalyticsModalDOM(
           onclick="switchChronologyView('managers')" 
           class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm"
           style="${currentChronologySubView === 'managers'
-            ? 'background-color: var(--btn-bg); color: var(--btn-text); border: 1px solid var(--btn-border);'
-            : 'color: var(--text-muted); background: transparent; border: 1px solid transparent;'}"
+        ? 'background-color: var(--btn-bg); color: var(--btn-text); border: 1px solid var(--btn-border);'
+        : 'color: var(--text-muted); background: transparent; border: 1px solid transparent;'}"
         >
           <i class="fa-solid fa-user-astronaut text-[11px]"></i>
           <span>Prospettiva Manager</span>
@@ -884,8 +884,8 @@ export function renderAnalyticsModalDOM(
           onclick="switchChronologyView('seasons')" 
           class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm"
           style="${currentChronologySubView === 'seasons'
-            ? 'background-color: var(--btn-bg); color: var(--btn-text); border: 1px solid var(--btn-border);'
-            : 'color: var(--text-muted); background: transparent; border: 1px solid transparent;'}"
+        ? 'background-color: var(--btn-bg); color: var(--btn-text); border: 1px solid var(--btn-border);'
+        : 'color: var(--text-muted); background: transparent; border: 1px solid transparent;'}"
         >
           <i class="fa-solid fa-calendar-days text-[11px]"></i>
           <span>Evoluzione Stagioni</span>
@@ -907,25 +907,25 @@ export function renderAnalyticsModalDOM(
         managerRowsHTML += `
           <tr class="border-b transition hover:bg-white/[0.02]" style="border-color: var(--table-border);">
             <td class="py-2 px-2 text-center text-xs font-bold" style="color: var(--text-muted);">${medal}</td>
-            <td class="py-2 px-2">
+            <td class="py-2 px-2 min-w-[110px] sm:min-w-[125px]">
               <div class="flex items-center gap-1.5">
                 <span class="font-bold text-xs block leading-tight" style="color: var(--text-main);">${m.name}</span>
                 ${m.isActive ? '<span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-sm" title="Attivo nella stagione 2025/26"></span>' : ''}
               </div>
               <span class="text-[10px] font-normal" style="color: var(--text-muted);">${m.seasonsPlayed} ${m.seasonsPlayed === 1 ? 'stagione' : 'stagioni'}</span>
             </td>
-            <td class="py-2 px-2 min-w-[145px]">
-              <div class="flex items-baseline justify-between mb-0.5">
-                <span class="text-xs sm:text-sm font-black font-mono" style="color: var(--text-main);">
-                  ${m.avgRank.toFixed(1)}° <span class="text-[10px] font-normal opacity-70">medio</span>
+            <td class="py-2 px-2 min-w-[170px] sm:min-w-[185px]">
+              <div class="flex items-baseline justify-between mb-1">
+                <span class="text-xs sm:text-sm font-black font-mono whitespace-nowrap" style="color: var(--text-main);">
+                  ${m.avgRank.toFixed(1)}° <span class="text-[10px] font-normal opacity-90">medio</span>
                 </span>
-                <span class="text-[10px] font-mono font-bold" style="color: ${m.tierDistribution.baricenterColor};">
-                  ${m.tierDistribution.baricenterScore.toFixed(1)} <span class="text-[9px] font-normal opacity-70">/ 4</span>
+                <span class="text-[9px] font-mono whitespace-nowrap" style="color: var(--text-muted);">
+                  Best #${m.bestRank || '—'} / Worst #${m.worstRank || '—'}
                 </span>
               </div>
               
-              <!-- 4-Color Segmented Mini Bar -->
-              <div class="w-full h-1.5 rounded-full overflow-hidden flex bg-white/10" 
+              <!-- 4-Color Segmented Mini Bar (8px height) -->
+              <div class="w-full h-2 rounded-full overflow-hidden flex bg-white/10 shadow-inner" 
                    title="🥇 Vertice (Podio): ${m.tierDistribution.podiumCount} st. (${m.tierDistribution.podiumPct}%) | ⭐ Alta Classifica: ${m.tierDistribution.highCount} st. (${m.tierDistribution.highPct}%) | ⚖️ Metà Classifica: ${m.tierDistribution.midCount} st. (${m.tierDistribution.midPct}%) | 🥄 Rischio Cucchiaio: ${m.tierDistribution.riskCount} st. (${m.tierDistribution.riskPct}%)">
                 ${m.tierDistribution.podiumPct > 0 ? `<div style="width: ${m.tierDistribution.podiumPct}%; background-color: #eab308;" class="h-full"></div>` : ''}
                 ${m.tierDistribution.highPct > 0 ? `<div style="width: ${m.tierDistribution.highPct}%; background-color: #10b981;" class="h-full"></div>` : ''}
@@ -933,13 +933,17 @@ export function renderAnalyticsModalDOM(
                 ${m.tierDistribution.riskPct > 0 ? `<div style="width: ${m.tierDistribution.riskPct}%; background-color: #ef4444;" class="h-full"></div>` : ''}
               </div>
               
-              <div class="flex items-center justify-between text-[9px] opacity-70 mt-0.5 font-mono">
-                <span style="color: ${m.tierDistribution.baricenterColor}; font-weight: 600;">${m.tierDistribution.baricenterLabel}</span>
-                <span style="color: var(--text-muted);">Best #${m.bestRank || '—'} / #${m.worstRank || '—'}</span>
+              <!-- Centered Prominent Fascia Pill Badge (single row) -->
+              <div class="flex justify-center mt-1">
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-sm tracking-tight whitespace-nowrap" 
+                      style="border-color: ${m.tierDistribution.baricenterColor}40; background-color: ${m.tierDistribution.baricenterColor}15; color: ${m.tierDistribution.baricenterColor};">
+                  <span>${m.tierDistribution.baricenterIcon || '🎯'}</span>
+                  <span>${m.tierDistribution.baricenterLabel} · ${m.tierDistribution.baricenterScore.toFixed(1)}/4</span>
+                </span>
               </div>
             </td>
-            <td class="py-2 px-2 text-center">
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border shadow-sm" style="border-color: ${m.volatilityColor}40; background-color: ${m.volatilityColor}15; color: ${m.volatilityColor};">
+            <td class="py-2 px-2 text-center min-w-[115px]">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border shadow-sm whitespace-nowrap" style="border-color: ${m.volatilityColor}40; background-color: ${m.volatilityColor}15; color: ${m.volatilityColor};">
                 <span>${m.volatilityIcon}</span>
                 <span>${m.volatilityLabel}</span>
               </span>
@@ -947,7 +951,7 @@ export function renderAnalyticsModalDOM(
                 ${m.seasonsPlayed > 1 ? `±${m.stdDevRank.toFixed(1)} pos.` : '—'}
               </span>
             </td>
-            <td class="py-2 px-2 text-center">
+            <td class="py-2 px-2 text-center min-w-[110px]">
               <div class="flex items-center justify-center gap-2 text-xs font-mono font-bold">
                 <span class="inline-flex items-center gap-1 ${m.totalPodiums > 0 ? 'text-amber-400 font-black' : 'opacity-30'}" title="${m.totalPodiums} podi conquistati">
                   🏆 ${m.totalPodiums}
@@ -958,9 +962,6 @@ export function renderAnalyticsModalDOM(
                 </span>
               </div>
               <span class="block text-[9px] opacity-60 mt-0.5 font-mono text-center">Rec. podi: ${m.maxPodiumStreak} st.</span>
-            </td>
-            <td class="py-2 px-2 text-center text-xs font-mono font-bold" style="color: var(--text-main);">
-              ${m.seasonsPlayed}
             </td>
           </tr>
         `;
@@ -1044,34 +1045,28 @@ export function renderAnalyticsModalDOM(
               <thead class="sticky top-0 z-10 border-b text-[10px] uppercase tracking-wider font-bold select-none backdrop-blur-md" style="border-color: var(--table-border); background: var(--table-surface); color: var(--text-muted);">
                 <tr>
                   <th class="py-2.5 px-2 text-center w-8">#</th>
-                  <th class="py-2.5 px-2">
+                  <th class="py-2.5 px-2 min-w-[110px] sm:min-w-[125px]">
                     <button type="button" onclick="toggleChronologySort('name')" class="flex items-center text-left hover:text-amber-400 transition cursor-pointer font-bold uppercase tracking-wider">
                       <span>Manager</span>
                       ${chronoSortIcon('name')}
                     </button>
                   </th>
-                  <th class="py-2.5 px-2">
+                  <th class="py-2.5 px-2 min-w-[170px] sm:min-w-[185px]">
                     <button type="button" onclick="toggleChronologySort('avg_rank')" class="flex items-center text-left hover:text-amber-400 transition cursor-pointer font-bold uppercase tracking-wider">
                       <span>Piazzamento &amp; Fasce</span>
                       ${chronoSortIcon('avg_rank')}
                     </button>
                   </th>
-                  <th class="py-2.5 px-2 text-center">
+                  <th class="py-2.5 px-2 text-center min-w-[115px]">
                     <button type="button" onclick="toggleChronologySort('oscillation')" class="flex items-center justify-center hover:text-amber-400 transition cursor-pointer font-bold uppercase tracking-wider mx-auto">
                       <span>Stabilità</span>
                       ${chronoSortIcon('oscillation')}
                     </button>
                   </th>
-                  <th class="py-2.5 px-2 text-center">
+                  <th class="py-2.5 px-2 text-center min-w-[110px]">
                     <button type="button" onclick="toggleChronologySort('podiums')" class="flex items-center justify-center hover:text-amber-400 transition cursor-pointer font-bold uppercase tracking-wider mx-auto">
                       <span>Podi &amp; Cucchiai</span>
                       ${chronoSortIcon('podiums')}
-                    </button>
-                  </th>
-                  <th class="py-2.5 px-2 text-center">
-                    <button type="button" onclick="toggleChronologySort('seasons')" class="flex items-center justify-center hover:text-amber-400 transition cursor-pointer font-bold uppercase tracking-wider mx-auto">
-                      <span>Stagioni</span>
-                      ${chronoSortIcon('seasons')}
                     </button>
                   </th>
                 </tr>
@@ -1088,7 +1083,7 @@ export function renderAnalyticsModalDOM(
           <button type="button" onclick="toggleGuide('chronology-manager-guide')" class="w-full px-3 py-2 flex items-center justify-between text-left text-[11px] font-bold transition hover:bg-white/5" style="color: var(--text-main);">
             <div class="flex items-center gap-1.5">
               <i class="fa-solid fa-graduation-cap text-amber-400 text-[10px]"></i>
-              <span>Guida: 4 Fasce Dinamiche, Baricentro Storico &amp; Normalizzazione Multi-Formato</span>
+              <span>Guida: Fasce Dinamiche, Baricentro, Stabilità &amp; Normalizzazione Multi-Formato</span>
             </div>
             <i id="chronology-manager-guide-chevron" class="fa-solid fa-chevron-down transition-transform duration-200 text-[10px]" style="color: var(--text-muted);"></i>
           </button>
@@ -1102,6 +1097,13 @@ export function renderAnalyticsModalDOM(
             </p>
             <p class="text-[11px] leading-relaxed">
               <strong>Baricentro Storico (da 1.0 a 4.0):</strong> Media ponderata del tempo trascorso nelle fasce: &ge; 3.5 <em>Élite Vertice</em>, 2.8–3.4 <em>Alta Classifica</em>, 2.0–2.7 <em>Metà Classifica</em>, &lt; 2.0 <em>Zona Rischio</em>. La mini-barra segmentata a 4 colori illustra visivamente la distribuzione storica.
+            </p>
+            <p class="text-[11px] leading-relaxed">
+              <strong>Stabilità &amp; Oscillazione Tipica (&sigma;<sub>R</sub>):</strong> Misura la dispersione delle posizioni finali occupate in carriera (&sigma;<sub>R</sub>, deviazione standard del rank con min. 3 stagioni):
+              <br>• <strong style="color: #10b981;">⏱️ Metronomo (&sigma;<sub>R</sub> &lt; 2.0 pos):</strong> Iper-stabilità statistica. Il mister naviga costantemente nello stesso fazzoletto di posizioni (es. Valery con &sigma;<sub>R</sub> = 1.34).
+              <br>• <strong style="color: #3b82f6;">⚖️ Equilibrato (2.0 &le; &sigma;<sub>R</sub> &le; 3.5 pos):</strong> La fisiologica alternanza competitiva della lega. Normale variabilità tra annate di vertice e campionati di transizione, senza tracolli estremi.
+              <br>• <strong style="color: #f59e0b;">🎢 Montagna Russa (&sigma;<sub>R</sub> &gt; 3.5 pos):</strong> Elevata polarizzazione. Alternanza estrema tra lotta scudetto e rischio cucchiaio (es. Makako con &sigma;<sub>R</sub> = 3.92, Tazio con &sigma;<sub>R</sub> = 3.61).
+              <br>• <strong style="color: #94a3b8;">🌱 Esordiente (&lt; 3 stagioni):</strong> Meno di 3 campionati disputati; campione statistico non consolidato per stimare l'oscillazione tipica.
             </p>
           </div>
         </div>
@@ -1129,11 +1131,11 @@ export function renderAnalyticsModalDOM(
             </td>
             <td class="py-2 px-2 min-w-[130px]">
               ${s.hasPointsData && s.stepGap !== null
-                ? `
+            ? `
                   <span class="font-mono text-xs font-black block" style="color: var(--text-main);">Δ ${s.stepGap.toFixed(2)} pt/pos</span>
                   <span class="text-[9px] block mt-0.5" style="color: var(--text-muted);">Forbice tot. Δ ${s.totalGap?.toFixed(1)} pt (${s.teamCount} sq)</span>
                 `
-                : `
+            : `
                   <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-400/90 italic">
                     <i class="fa-solid fa-triangle-exclamation text-[10px]"></i> Punti non archiviati
                   </span>
@@ -1141,7 +1143,7 @@ export function renderAnalyticsModalDOM(
             </td>
             <td class="py-2 px-2 min-w-[120px]">
               ${s.hasPointsData && s.compactnessScore !== null
-                ? `
+            ? `
                   <div class="flex items-center justify-between text-xs font-mono font-bold mb-1">
                     <span style="color: var(--text-main);">${compactLabel}</span>
                     <span class="text-[10px] opacity-70 font-normal">${stdDevLabel}</span>
@@ -1150,7 +1152,7 @@ export function renderAnalyticsModalDOM(
                     <div class="h-full rounded-full transition-all duration-300" style="width: ${compactBar}%; background-color: ${s.compactnessScore >= 65 ? '#10b981' : s.compactnessScore >= 40 ? '#3b82f6' : '#f59e0b'};"></div>
                   </div>
                 `
-                : `
+            : `
                   <span class="text-[10px] opacity-40 font-mono">Dato parziale</span>
                 `}
             </td>

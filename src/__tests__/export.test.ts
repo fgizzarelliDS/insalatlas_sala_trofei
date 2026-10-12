@@ -18,13 +18,59 @@ describe('export.ts - Trading Card Logic and Formatting', () => {
   });
 
   describe('computeTradingCardBadges', () => {
-    it('always includes Archetype and Risk Profile badges', () => {
+    it('always includes Archetype, Risk Profile, and Stability badges', () => {
       const m = createTestManager({ id: '1', name: 'Standard', years: 2 });
       const badges = computeTradingCardBadges(m);
 
-      expect(badges.length).toBeGreaterThanOrEqual(2);
+      expect(badges.length).toBeGreaterThanOrEqual(3);
       expect(badges.some(b => b.label.startsWith('Profilo:'))).toBe(true);
       expect(badges.some(b => b.label.startsWith('Rischio:'))).toBe(true);
+      expect(badges.some(b => b.label.startsWith('Stabilità:'))).toBe(true);
+      expect(badges.some(b => b.label === 'Stabilità: Esordiente')).toBe(true);
+    });
+
+    it('assigns correct stability badges based on rank oscillation for 3+ years', () => {
+      const metronome = createTestManager({
+        id: 'metro',
+        name: 'Metronome',
+        years: 4,
+        history: [
+          { season: '2021/22', team: 'A', rank: 4, points: 50, achievements: [] },
+          { season: '2022/23', team: 'A', rank: 5, points: 48, achievements: [] },
+          { season: '2023/24', team: 'A', rank: 4, points: 52, achievements: [] },
+          { season: '2024/25', team: 'A', rank: 5, points: 49, achievements: [] }
+        ]
+      });
+      const metroBadges = computeTradingCardBadges(metronome);
+      expect(metroBadges.some(b => b.label === 'Stabilità: Metronomo di Lega')).toBe(true);
+
+      const roller = createTestManager({
+        id: 'roll',
+        name: 'Roller',
+        years: 3,
+        history: [
+          { season: '2022/23', team: 'B', rank: 1, points: 65, achievements: [] },
+          { season: '2023/24', team: 'B', rank: 12, points: 20, achievements: [] },
+          { season: '2024/25', team: 'B', rank: 1, points: 64, achievements: [] }
+        ]
+      });
+      const rollerBadges = computeTradingCardBadges(roller);
+      expect(rollerBadges.some(b => b.label === 'Stabilità: Montagna Russa')).toBe(true);
+    });
+
+    it('assigns Campione Seriale for 2+ gold and Re delle Coppe for 3+ cup/supercup', () => {
+      const m = createTestManager({
+        id: 'multi',
+        name: 'MultiChampion',
+        years: 5,
+        gold: 2,
+        cup_gold: 2,
+        supercup: 1
+      });
+      const badges = computeTradingCardBadges(m);
+
+      expect(badges.some(b => b.label === 'Campione Seriale')).toBe(true);
+      expect(badges.some(b => b.label === 'Re delle Coppe')).toBe(true);
     });
 
     it('assigns Veterano della Lega for managers with 6+ years', () => {

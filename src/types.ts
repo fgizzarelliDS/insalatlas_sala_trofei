@@ -157,7 +157,17 @@ export type SeasonSortField =
   | 'podium_gap'
   | 'spoon_gap';
 
-export type VolatilityCategory = 'metronomo' | 'regolare' | 'altalenante';
+export type VolatilityCategory = 'metronomo' | 'regolare' | 'altalenante' | 'esordiente';
+
+export interface StabilityProfile {
+  category: VolatilityCategory;
+  label: string;
+  badgeLabel: string;
+  stdDevRank: number;
+  icon: string;
+  emoji: string;
+  color: string;
+}
 
 export interface ManagerTierDistribution {
   podiumCount: number; // Tier 4: Vertice / Podio (1°-3°)

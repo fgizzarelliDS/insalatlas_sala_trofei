@@ -180,7 +180,7 @@ Il modulo `src/analytics/chronology.ts` sfrutta la cronologia completa delle cla
   - **Metronomo (⏱️ $\sigma_R < 2.0$ pos.)**: Stabilità granitica, costantemente nelle stesse posizioni.
   - **Regolare (⚖️ $2.0 \le \sigma_R \le 3.5$ pos.)**: Fisiologica e sana alternanza tra buone annate e metà classifica.
   - **Altalenante (🎢 $\sigma_R > 3.5$ pos.)**: Rendimento polarizzato tra picchi da scudetto e crolli improvvisi.
-  - **Esordiente (🌱 $S_i = 1$)**: Singola partecipazione con oscillazione non definita.
+  - **Esordiente (🌱 $S_i < 3$)**: Minimo 3 stagioni disputate con oscillazione non definita.
 - **Gloria & Baratro**:
   - **Podi Totali (🏆)**: Piazzamenti in top-3 (1°, 2°, 3°).
   - **Cucchiai Totali (🥄)**: Ultimi posti in classifica di campionato.
@@ -211,6 +211,27 @@ Il modulo `src/analytics/chronology.ts` sfrutta la cronologia completa delle cla
   - $\ge 8 \text{ pt}$: *Crollo Isolato 📉*
 - **Tolleranza Storica (2020/21)**:
   Per le annate prive di punteggi completi archiviati (2020/21), l'interfaccia visualizza con badge esplicito `⚠️ Punti non archiviati` l'assenza del dato numerico senza generare anomalie visive o alterare il range degli altri campionati, preservando l'integrità dei verdetti ufficiali (Campione AS CorradiAndRosatiTeam e Cucchiaio Partizan Peroni).
+
+### 5.3 Sistema Unificato dei Badge Allenatore (`src/analytics/badges.ts`)
+
+Per garantire assoluta coerenza visiva e concettuale tra la **Scheda Profilo** (`ProfileModal`) e la **Trading Card** collezionabile (`cardTemplate`), tutti i riconoscimenti comportamentali e onorari sono centralizzati in una **singola sorgente di verità**:
+
+1. **Badge Analitici Strutturati** (sempre presenti in apertura di bacheca):
+   - **`Profilo: <Archetipo>`**: determinato dal waterfall a 9 priorità comportamentali.
+   - **`Rischio: <Polarità NTI>`**: polarità asimmetrica di coda (*Cannibale Assoluto*, *Attaccante Efficace*, *Neutro / Bilanciato*, *Vulnerabile*, *Bersaglio Mobile*).
+   - **`Stabilità: <Categoria>`**: dispersione posizionale $\sigma_R$ con minimo 3 stagioni giocate:
+     - ⏱️ `Stabilità: Metronomo di Lega` ($\sigma_R < 2.0$, Verde Smeraldo `#10b981`)
+     - ⚖️ `Stabilità: Rendimento Costante` ($2.0 \le \sigma_R \le 3.5$, Blu Zaffiro `#3b82f6`)
+     - 🎢 `Stabilità: Montagna Russa` ($\sigma_R > 3.5$, Ambra `#f59e0b`)
+     - 🌱 `Stabilità: Esordiente` ($N < 3$ stagioni, Ardesia `#94a3b8`)
+2. **Badge Onorari & di Merito Storico** (sblocco progressivo in base al palmarès):
+   - 🛡️ **Veterano della Lega**: $\ge 6$ stagioni disputate.
+   - 👑 **Re dei Titoli**: $\ge 4$ titoli major vinti.
+   - ⭐ **Campione Seriale**: $\ge 2$ scudetti di campionato vinti.
+   - 🌟 **Double Winner**: almeno 1 Scudetto e almeno 1 Coppa InsalAtlas vinti.
+   - 🏆 **Re delle Coppe**: $\ge 3$ trofei tra Coppe e Supercoppe.
+   - ☠️ **Incubo Playout**: $\ge 2$ cartonati/retrocessioni da playout subiti.
+   - 🥄 **Collezionista Cucchiai**: $\ge 2$ cucchiai di legno (ultimi posti in campionato).
 
 ---
 

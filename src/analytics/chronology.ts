@@ -112,7 +112,7 @@ export function computeManagerTrajectoryMetrics(
       avgRank = ranksList.reduce((acc, v) => acc + v, 0) / seasonsPlayed;
       avgMeritPct = meritList.reduce((acc, v) => acc + v, 0) / seasonsPlayed;
 
-      if (seasonsPlayed > 1) {
+      if (seasonsPlayed >= 3) {
         const rankVariance =
           ranksList.reduce((acc, v) => acc + Math.pow(v - avgRank, 2), 0) / seasonsPlayed;
         stdDevRank = Math.sqrt(rankVariance);
@@ -140,12 +140,12 @@ export function computeManagerTrajectoryMetrics(
           volatilityColor = '#f59e0b';
         }
       } else {
-        // Only 1 season played
+        // < 3 seasons played
         stdDevRank = 0;
         stdDevMeritPct = 0;
         cvPct = 0;
-        volatilityCategory = 'regolare';
-        volatilityLabel = 'Esordiente (1 st.)';
+        volatilityCategory = 'esordiente';
+        volatilityLabel = 'Esordiente';
         volatilityIcon = '🌱';
         volatilityColor = '#94a3b8';
       }

@@ -65,7 +65,7 @@ describe('Chronology Analytics Module', () => {
       expect(res.tierDistribution.baricenterLabel).toBe('Metà Classifica');
     });
 
-    it('assigns Metronomo for low rank oscillation (<2.0), Altalenante for high oscillation (>3.5), and Esordiente for 1 season', () => {
+    it('assigns Metronomo for low rank oscillation (<2.0), Altalenante for high oscillation (>3.5), and Esordiente for <= 3 seasons', () => {
       const rockManager: Manager = {
         id: 'm_rock',
         name: 'The Rock',
@@ -91,7 +91,7 @@ describe('Chronology Analytics Module', () => {
       const rollercoasterManager: Manager = {
         id: 'm_roller',
         name: 'The Rollercoaster',
-        years: 2,
+        years: 3,
         gold: 1,
         silver: 0,
         bronze: 0,
@@ -103,7 +103,8 @@ describe('Chronology Analytics Module', () => {
         cartonato: 0,
         history: [
           { season: '2022/23', team: 'C', rank: 1, points: 65, achievements: [] }, // 1st place
-          { season: '2023/24', team: 'C', rank: 12, points: 20, achievements: [] } // 12th place (diff = 11, oscillation = 5.5)
+          { season: '2023/24', team: 'C', rank: 12, points: 20, achievements: [] }, // 12th place
+          { season: '2024/25', team: 'C', rank: 1, points: 64, achievements: [] } // 1st place
         ]
       };
 
@@ -142,6 +143,7 @@ describe('Chronology Analytics Module', () => {
       expect(roller.stdDevRank).toBeGreaterThan(3.5);
 
       const rookie = metrics.find(m => m.id === 'm_rookie')!;
+      expect(rookie.volatilityCategory).toBe('esordiente');
       expect(rookie.volatilityLabel).toContain('Esordiente');
       expect(rookie.stdDevRank).toBe(0);
       expect(rookie.isActive).toBe(true);

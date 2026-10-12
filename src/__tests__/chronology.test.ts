@@ -3,7 +3,7 @@ import {
   computeManagerTrajectoryMetrics,
   computeSeasonalParityMetrics
 } from '@/analytics/chronology';
-import { renderAnalyticsModalDOM } from '@/components/modals/ConcentrationModalTemplate';
+import { renderAnalyticsModalDOM } from '@/components/modals/analytics';
 import { state } from '@/state';
 import type { Manager, CompetitionRecord } from '@/types';
 

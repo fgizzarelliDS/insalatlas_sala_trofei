@@ -1058,7 +1058,7 @@
           "achievements": [
             {
               "title": "Vincitore Playout (Cartonato)",
-              "category": "Perdenti",
+              "category": "Playout",
               "badge": "cartonato",
               "icon": "📦",
               "competitionId": 778199
@@ -1111,9 +1111,9 @@
             },
             {
               "title": "Vincitore Playout (Cartonato)",
-              "category": "Perdenti",
+              "category": "Playout",
               "badge": "cartonato",
-              "icon": "🏷️",
+              "icon": "📦",
               "competitionId": 147875
             }
           ]
@@ -1230,9 +1230,9 @@
             },
             {
               "title": "Vincitore Playout (Cartonato)",
-              "category": "Perdenti",
+              "category": "Playout",
               "badge": "cartonato",
-              "icon": "🏷️",
+              "icon": "📦",
               "competitionId": 147876
             }
           ]
@@ -1648,9 +1648,9 @@
             },
             {
               "title": "Vincitore Playout (Cartonato)",
-              "category": "Perdenti",
+              "category": "Playout",
               "badge": "cartonato",
-              "icon": "🏷️",
+              "icon": "📦",
               "competitionId": 147874
             }
           ]
@@ -1758,7 +1758,7 @@
               "title": "Vincitore Playout (Cartonato)",
               "category": "Playout",
               "badge": "cartonato",
-              "icon": "BANNER",
+              "icon": "📦",
               "competitionId": 147877
             }
           ]

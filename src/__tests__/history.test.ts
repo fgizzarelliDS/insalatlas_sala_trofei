@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import type { SeasonRecord, CompetitionRecord, Manager } from '@/types';
 import { state } from '@/state';
-import { renderRankTrajectorySparkline } from '@/components/modals/ProfileModalTemplate';
+import { renderRankTrajectorySparkline } from '@/components/modals/profile';
 import { toggleCompetitionDrawer } from '@/components/modals/ProfileModal';
 import dataJson from '../../public/data.json';
 
@@ -320,7 +320,7 @@ describe('Historical Rankings & Career Visualizations', () => {
 
   describe('Historical Team Names (getDistinctTeamNames)', () => {
     it('extracts and deduplicates team names prioritizing spaced versions', async () => {
-      const { getDistinctTeamNames } = await import('@/components/modals/ProfileModalTemplate');
+      const { getDistinctTeamNames } = await import('@/components/modals/profile');
       const mockManager = {
         id: 'm_alfo',
         name: 'Alfo',
@@ -729,7 +729,7 @@ describe('Historical Rankings & Career Visualizations', () => {
 
   describe('Historical Team Details and Seasons Formatting', () => {
     it('formats contiguous and non-contiguous season ranges correctly', async () => {
-      const { formatSeasonsList } = await import('@/components/modals/ProfileModalTemplate');
+      const { formatSeasonsList } = await import('@/components/modals/profile');
 
       expect(formatSeasonsList(['2021/22', '2022/23', '2023/24', '2024/25', '2025/26'])).toBe('21/22–25/26');
       expect(formatSeasonsList(['2018/19', '2019/20'])).toBe('18/19–19/20');
@@ -739,7 +739,7 @@ describe('Historical Rankings & Career Visualizations', () => {
     });
 
     it('extracts distinct teams with logos and formatted season intervals', async () => {
-      const { getHistoricalTeamDetails } = await import('@/components/modals/ProfileModalTemplate');
+      const { getHistoricalTeamDetails } = await import('@/components/modals/profile');
       state.competitions = dataJson.competitions as unknown as CompetitionRecord[];
       state.managers = dataJson.leagueData as unknown as Manager[];
 

@@ -11,7 +11,8 @@ dist/
 specs/*
 scripts/insalatlas*.json
 scripts/*.html
-scripts/__pycache__/*
+**/__pycache__/
+*.pyc
 scripts/extract_thropy.py
 scripts/archive/teams/*
 scripts/archive/

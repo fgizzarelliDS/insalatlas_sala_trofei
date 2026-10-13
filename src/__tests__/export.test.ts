@@ -18,15 +18,36 @@ describe('export.ts - Trading Card Logic and Formatting', () => {
   });
 
   describe('computeTradingCardBadges', () => {
-    it('always includes Archetype, Risk Profile, and Stability badges', () => {
+    it('always includes Archetype, Risk Profile, Stability, and Freddezza badges', () => {
       const m = createTestManager({ id: '1', name: 'Standard', years: 2 });
       const badges = computeTradingCardBadges(m);
 
-      expect(badges.length).toBeGreaterThanOrEqual(3);
+      expect(badges.length).toBeGreaterThanOrEqual(4);
       expect(badges.some(b => b.label.startsWith('Profilo:'))).toBe(true);
       expect(badges.some(b => b.label.startsWith('Rischio:'))).toBe(true);
       expect(badges.some(b => b.label.startsWith('Stabilità:'))).toBe(true);
       expect(badges.some(b => b.label === 'Stabilità: Esordiente')).toBe(true);
+      expect(badges.some(b => b.label.startsWith('Freddezza:'))).toBe(true);
+    });
+
+    it('assigns rookie neutrality for 0 completed years and accurate clutch tier for veterans', () => {
+      const rookie = createTestManager({ id: 'rookie', name: 'Rookie', years: 0 });
+      const rookieBadges = computeTradingCardBadges(rookie);
+      expect(rookieBadges.some(b => b.label === 'Freddezza: Debuttante')).toBe(true);
+
+      const cinico = createTestManager({
+        id: 'cinico',
+        name: 'Cinico Mgr',
+        years: 9,
+        gold: 3,
+        silver: 1,
+        bronze: 0,
+        cup_gold: 2,
+        cup_silver: 1
+      });
+      const cinicoBadges = computeTradingCardBadges(cinico);
+      expect(cinicoBadges.some(b => b.label === 'Freddezza: Cinico')).toBe(true);
+      expect(cinicoBadges.some(b => b.icon === '🏹')).toBe(true);
     });
 
     it('assigns correct stability badges based on rank oscillation for 3+ years', () => {
@@ -187,6 +208,7 @@ describe('export.ts - Trading Card Logic and Formatting', () => {
       expect(text).toContain('4 Stagioni');
       expect(text).toContain('Rating Storico:');
       expect(text).toContain('Profilo:');
+      expect(text).toContain('*Freddezza:*');
       expect(text).toContain('🥇 1 Scudetto');
       expect(text).toContain('https://fgizzarellids.github.io/insalatlas_sala_trofei/?manager=m_alfo');
     });

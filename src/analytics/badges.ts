@@ -1,6 +1,7 @@
 import type { Manager, TradingCardBadge, StabilityProfile } from '@/types';
 import { getManagerArchetype } from './archetypes';
 import { computeTailRiskProfile } from './tailRisk';
+import { computeGlobalClutchIndex, getClutchTier } from './econometrics';
 
 /**
  * Computes stability category, oscillation metrics, and badge metadata for a manager.
@@ -106,7 +107,25 @@ export function computeManagerBadges(manager: Manager): TradingCardBadge[] {
     customStyle: `background: ${stability.color}25; color: ${stability.color}; border: 1px solid ${stability.color}60;`
   });
 
-  // 4. Harmonized Honorary & Merit Badges
+  // 4. Global Clutch Index (GCI) & Cold-Bloodedness
+  const completedYears = (manager.history && manager.history.length > 0)
+    ? manager.history.filter(h => !h.in_progress && (h as any).status !== 'in_progress').length
+    : (manager.years || 0);
+  const podiums = (manager.gold || 0) + (manager.silver || 0) + (manager.bronze || 0);
+  const finalsWon = (manager.cup_gold || 0) + (manager.supercup || 0);
+  const finalsPlayed = finalsWon + (manager.cup_silver || 0) + (manager.supercup_silver || 0);
+  const gci = computeGlobalClutchIndex(manager.gold || 0, podiums, finalsWon, finalsPlayed, completedYears);
+  const clutch = getClutchTier(gci, completedYears);
+
+  const clutchBadgeLabel = `Freddezza: ${clutch.label}`;
+
+  badges.push({
+    label: clutchBadgeLabel,
+    icon: clutch.icon,
+    customStyle: `background: ${clutch.color}25; color: ${clutch.color}; border: 1px solid ${clutch.color}60;`
+  });
+
+  // 5. Harmonized Honorary & Merit Badges
   if (manager.years >= 6) {
     badges.push({
       label: 'Veterano della Lega',

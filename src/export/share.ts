@@ -2,7 +2,7 @@ import type { Manager } from '@/types';
 import { state } from '@/state';
 import { showToast } from '@/ui';
 import { calculateManagerScore, formatScore } from '@/score';
-import { getManagerArchetype } from '@/analytics';
+import { getManagerArchetype, computeGlobalClutchIndex, getClutchTier } from '@/analytics';
 import { renderProfileModalCanvas, downloadBlob, copyBlobToClipboard } from './canvas';
 
 /**
@@ -13,6 +13,16 @@ export function buildWhatsAppShareText(manager: Manager, customBaseUrl?: string)
   const totalMajor = (manager.gold || 0) + (manager.cup_gold || 0) + (manager.supercup || 0) + (manager.mundialito || 0);
   const efficiency = manager.years > 0 ? parseFloat((totalMajor / manager.years).toFixed(2)) : 0;
   const arch = getManagerArchetype(manager, totalMajor, efficiency);
+
+  const completedYears = manager.history && manager.history.length > 0
+    ? manager.history.filter(h => !h.in_progress && (h as any).status !== 'in_progress').length
+    : (manager.years || 0);
+  const podiums = (manager.gold || 0) + (manager.silver || 0) + (manager.bronze || 0);
+  const finalsWon = (manager.cup_gold || 0) + (manager.supercup || 0);
+  const finalsPlayed = finalsWon + (manager.cup_silver || 0) + (manager.supercup_silver || 0);
+  const gci = computeGlobalClutchIndex(manager.gold || 0, podiums, finalsWon, finalsPlayed, completedYears);
+  const clutch = getClutchTier(gci, completedYears);
+  const clutchLine = `${clutch.icon} *Freddezza:* ${clutch.label}`;
 
   const trophiesList: string[] = [];
   if (manager.gold) trophiesList.push(`🥇 ${manager.gold} ${manager.gold === 1 ? 'Scudetto' : 'Scudetti'}`);
@@ -37,7 +47,7 @@ export function buildWhatsAppShareText(manager: Manager, customBaseUrl?: string)
 
   const shareUrl = `${baseUrl}?manager=${encodeURIComponent(manager.id)}`;
 
-  return `🏆 *InsalAtlas • Scheda Palmarès*\n👤 *${manager.name.toUpperCase()}* (${manager.years} ${manager.years === 1 ? 'Stagione' : 'Stagioni'})\n⭐ *Rating Storico:* ${formatScore(score)} PT\n🏅 *Profilo:* ${arch.tag}\n\n📊 *Bacheca:* ${trophiesStr}\n\n👉 Guarda la scheda e i trofei completi:\n${shareUrl}`;
+  return `🏆 *InsalAtlas • Scheda Palmarès*\n👤 *${manager.name.toUpperCase()}* (${manager.years} ${manager.years === 1 ? 'Stagione' : 'Stagioni'})\n⭐ *Rating Storico:* ${formatScore(score)} PT\n🏅 *Profilo:* ${arch.tag}\n${clutchLine}\n\n📊 *Bacheca:* ${trophiesStr}\n\n👉 Guarda la scheda e i trofei completi:\n${shareUrl}`;
 }
 
 /**

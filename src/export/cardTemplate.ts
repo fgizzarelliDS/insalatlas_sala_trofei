@@ -44,7 +44,10 @@ export function buildTradingCardHTML(manager: Manager): string {
   const badgesMarkup = badges.map(b => {
     const styleAttr = b.customStyle ? `style="${b.customStyle}"` : '';
     const classAttr = b.color ? b.color : 'bg-white/10 border-white/20 text-slate-200';
-    return `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11px] font-bold border ${classAttr}" ${styleAttr}><i class="fa-solid ${b.icon}"></i> ${b.label}</span>`;
+    const iconMarkup = b.icon && b.icon.startsWith('fa-')
+      ? `<i class="fa-solid ${b.icon}"></i>`
+      : `<span class="inline-block text-[11px] leading-none">${b.icon || ''}</span>`;
+    return `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11px] font-bold border ${classAttr}" ${styleAttr}>${iconMarkup} ${b.label}</span>`;
   }).join('');
 
   return `

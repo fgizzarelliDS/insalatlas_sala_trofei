@@ -34,7 +34,10 @@ export function populatePalmaresDOM(m: Manager, score: number, totalMajor: numbe
         const el = document.createElement('span');
         el.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold border ${b.color || ''}`;
         if (b.customStyle) el.style.cssText = b.customStyle;
-        el.innerHTML = `<i class="fa-solid ${b.icon}"></i> ${b.label}`;
+        const iconHtml = b.icon && b.icon.startsWith('fa-')
+          ? `<i class="fa-solid ${b.icon}"></i>`
+          : `<span class="inline-block text-[11px] leading-none">${b.icon || ''}</span>`;
+        el.innerHTML = `${iconHtml} ${b.label}`;
         badgesContainer.appendChild(el);
       });
     }

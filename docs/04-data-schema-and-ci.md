@@ -44,27 +44,51 @@ Ogni oggetto manager contiene:
 - `supercup`, `mundialito`: Titoli in Supercoppa e Mundialito ($\ge 0$).
 - `spoon`, `cartonato`: Riconoscimenti di coda ($\ge 0$).
 - `coach_banners` / `cartonato_coaches`: Array opzionale di stringhe per i banner personalizzati.
+- `history`: Cronologia delle singole stagioni disputate dal fantallenatore:
+  - `season`: Anno sportivo (formato `YYYY/YY`, es. `2024/25`).
+  - `team`: Nome della squadra schierata.
+  - `rank`: Posizione finale in campionato (o `null`).
+  - `points`: Punteggio complessivo regular season (o `null`).
+  - `in_progress`: Flag booleano opzionale (`true` per campionati attualmente in corso).
+  - `achievements`: Riconoscimenti e badge conseguiti nell'annata.
 
 ### Struttura Record Competizioni (`competitions`)
 
 L'archivio storico delle singole edizioni e tornei (`CompetitionRecord`) comprende:
 
-- `id`: Identificativo univoco della competizione (es. `2024_25_championship`).
-- `name`: Nome esteso della manifestazione (es. `Campionato`, `Coppa di Lega`).
+- `id`: Identificativo numerico o univoco della competizione (es. `863632`).
+- `name`: Nome esteso della manifestazione (es. `Serie Atlas 2024-2025`, `Coppa InsalAtlas`).
 - `season`: Stagione calcistica di riferimento (formato `YYYY/YY`, es. `2024/25`).
-- `category`: Tipologia competizione (`championship` | `cup` | `supercup` | `other`).
+- `category`: Tipologia competizione (`Campionato` | `Coppa` | `Supercoppa` | `Mundialito` | `Perdenti`).
+- `in_progress`: Flag booleano (`true` se il torneo è ancora in svolgimento).
+- `status`: Stato del torneo (`'in_progress'` | `'completed'`).
 - `ranking`: Array ordinato dei partecipanti con piazzamento:
   - `rank`: Posizione finale (intero $\ge 1$).
-  - `team`: Nome della squadra utilizzata nella specifica annata.
-  - `manager`: Nome del fantallenatore associato.
-  - `points`: Punteggio complessivo o punti classifica (opzionale).
-  - `secondaryRank`: Punteggio o discriminante secondaria (opzionale).
+  - `teamName`: Nome della squadra utilizzata nella specifica annata.
+  - `coach`: Nome del fantallenatore / banner.
+  - `managerId`: Identificativo del manager corrispondente in `leagueData`.
+  - `points`: Punteggio complessivo o punti classifica.
+  - `logo`: Percorso allo stemma personalizzato del club (opzionale).
 
 ---
 
-## 2. Validatore Locale Python (`scripts/validate.py`)
+## 2. Pipeline Dati & Validazione Locale Python
 
-Uno script indipendente a zero dipendenze consente la verifica dell'integrità dei dati direttamente da terminale o tramite npm:
+Il progetto include due strumenti Python autonomi a zero dipendenze per l'elaborazione e la verifica:
+
+### 2.1 Compilatore Database (`scripts/build_data.py`)
+
+Compila ed esporta il database unificato direttamente in `public/data.json`, integrato nei lifecycle hook di npm (`pretest`, `prebuild`):
+
+```bash
+# Esecuzione manuale da terminale o npm
+npm run build:data
+# oppure: python scripts/build_data.py
+```
+
+### 2.2 Validatore Locale (`scripts/validate.py`)
+
+Verifica l'integrità strutturale del database JSON:
 
 ```bash
 # Esecuzione tramite script npm

@@ -66,8 +66,8 @@ Nei campionati di Fantacalcio ($N = 8 \dots 14$), il solo indice di Gini teorico
 
 ### 2.1 Presenza a Podio ($PR$) & Killer Instinct ($KI$)
 
-- **Podium Rate ($PR_i$)**: Frequenza di posizionamento sul podio campionato (1°, 2°, 3° posto):
-  $$PR_i = \left(\frac{\text{Gold}_i + \text{Silver}_i + \text{Bronze}_i}{\text{Years}_i}\right) \times 100$$
+- **Podium Rate ($PR_i$)**: Frequenza di posizionamento sul podio campionato (1°, 2°, 3° posto) calcolata sul numero di campionati effettivamente conclusi ($\text{CompletedYears}_i$):
+  $$PR_i = \left(\frac{\text{Gold}_i + \text{Silver}_i + \text{Bronze}_i}{\text{CompletedYears}_i}\right) \times 100$$
 - **Killer Instinct ($KI_i$)**: Capacità di convertire una presenza sul podio nella conquista dello Scudetto:
   $$KI_i = \left(\frac{\text{Gold}_i}{\text{Gold}_i + \text{Silver}_i + \text{Bronze}_i}\right) \times 100$$
 
@@ -95,8 +95,8 @@ $$\text{TotalTailMass}_i = \text{FeastMass}_i + \text{DisasterMass}_i$$
 
 ### 3.2 Feast-or-Famine con Shrinkage Bayesiano ($\widetilde{FF}$)
 
-Per evitare distorsioni da piccolo campione su manager con poche stagioni all'attivo, il rapporto include un prior empirico di lega ($K = 2.0$, $\bar{FF} = 0.30$):
-$$\widetilde{FF}_i = \frac{\text{TotalTailMass}_i + (K \cdot \bar{FF})}{\text{Years}_i + K}$$
+Per evitare distorsioni da piccolo campione su manager con poche stagioni all'attivo, il rapporto include un prior empirico di lega ($K = 2.0$, $\bar{FF} = 0.30$) normalizzato sulle stagioni concluse ($\text{CompletedYears}_i$):
+$$\widetilde{FF}_i = \frac{\text{TotalTailMass}_i + (K \cdot \bar{FF})}{\text{CompletedYears}_i + K}$$
 
 ### 3.3 Net Tail Skew ($NTS$) Regolarizzato
 
@@ -235,9 +235,60 @@ Per garantire assoluta coerenza visiva e concettuale tra la **Scheda Profilo** (
 
 ---
 
-## 6. Roadmap & Evoluzioni Future (TODO)
+## 6. Trattamento Metodologico delle Stagioni In Corso & Manager Debuttanti
 
-### 6.1 Global Clutch Index ($GCI$)
+Per preservare l'integrità scientifica dell'analisi ed evitare distorsioni nei profili di rendimento, il motore analitico applica criteri rigorosi di neutralizzazione e isolamento delle annate attive:
+
+### 6.1 Principio di Neutralità delle Annate Attive
+
+1. **Assenza di Verdetti Prematuri**:
+   - Qualsiasi competizione o record con flag `in_progress: true` o `status: 'in_progress'` rappresenta uno stato parziale transitorio.
+   - I piazzamenti temporanei registrati durante lo svolgimento della stagione (es. 1° posto o ultimo posto provvisorio) sono **rigorosamente esclusi** dal conteggio di podi storici, cucchiai di legno, serie consecutive (*podium streaks*, *safety streaks*), fasce di rendimento e percentili di merito.
+2. **Esclusione dalla Parità Stagionale**:
+   - Le competizioni attive vengono filtrate ed escluse dalla tabella di *Evoluzione Stagioni* (`computeSeasonalParityMetrics`), prevenendo il calcolo di gradini medi a zero punti o compattezze fittizie (100/100).
+
+### 6.2 Denominatore di Efficienza Basato sulle Stagioni Concluse ($\text{CompletedYears}_i$)
+
+Per evitare di penalizzare i fantallenatori veterani (ai quali un'annata in corso aggiungerebbe 1 anno al denominatore prima che qualsiasi trofeo possa essere matematicamente assegnato), tutti i tassi di rendimento annualizzati adottano come divisore il totale dei soli campionati storicamente conclusi:
+
+$$\text{Trophy Efficiency}_i = \frac{\text{Trophies}_i}{\text{CompletedYears}_i}$$
+
+$$\text{Prestige Efficiency}_i = \frac{\text{Prestige Points}_i}{\text{CompletedYears}_i}$$
+
+$$PR_i = \left(\frac{\text{Podiums}_i}{\text{CompletedYears}_i}\right) \times 100$$
+
+$$\widetilde{FF}_i = \frac{\text{TotalTailMass}_i + (K \cdot \bar{FF})}{\text{CompletedYears}_i + K}$$
+
+Se un manager ha $\text{CompletedYears}_i = 0$, tutti i tassi di efficienza e frequenza podio assumono convenzionalmente valore $0.0$, azzerando il rischio di divisioni per zero (`NaN`).
+
+### 6.3 Gestione Asintotica dei Manager Debuttanti (Rookie)
+
+I partecipanti iscritti alla lega la cui unica esperienza corrisponde alla stagione attualmente in corso (es. `m_zatte`, con $\text{CompletedYears} = 0$) ricevono un trattamento analitico neutrale:
+
+- **Badge Stagioni**: visualizzati come `0 (debuttante)` sia nella tabella di traiettoria che nella scheda cinismo.
+- **Piazzamento Medio & Fascia**: piazzamento medio non calcolato (`—`), stato `In corso` e badge di fascia/baricentro neutrale `Debuttante` (icona 🌱, colore `#94a3b8`, punteggio $0.0$).
+- **Volatilità**: categorizzazione predefinita come `Debuttante` con oscillazione non definita (`—`).
+- **Ordinamento Conservativo**: nei filtri per piazzamento medio e baricentro, i debuttanti vengono posizionati convenzionalmente a fondo graduatoria, evitando che il valore scalare nullo ($0.0$) li collochi artificiosamente davanti a vincitori storici con piazzamento medio reale ($1.0°, 2.0°$).
+
+### 6.4 Dinamica Matematica dell'Indice di Gini all'Ingresso di Nuovi Manager
+
+Quando la lega registra un debuttante e il database si espande da $N = 19$ a $N = 20$ partecipanti, l'indice di Gini sui trofei accumulati riflette una dinamica macro-economica naturale:
+
+$$G_{\text{trophies}}: 0.73 \to 0.74 \quad (+0.01)$$
+
+$$G_{\text{prestige}}: 0.69 \to 0.71 \quad (+0.02)$$
+
+$$G_{\text{rating}}: 0.48 \to 0.48 \quad (\text{stabile})$$
+
+> [!NOTE]
+>
+> In teoria economica, l'aggiunta di un agente a dotazione patrimoniale iniziale nulla a fronte di uno stock totale di ricchezza (trofei storici) invariato aumenta fisiologicamente l'indice di concentrazione complessivo ($N$ al denominatore aumenta mentre la quota del nuovo entrante è $0\%$). Tale oscillazione non denota una maggiore egemonia dei vertici, ma rappresenta il normale costo statistico dell'espansione della lega prima che il nuovo membro possa competere per i primi titoli ufficiali.
+
+---
+
+## 7. Roadmap & Evoluzioni Future (TODO)
+
+### 7.1 Global Clutch Index ($GCI$)
 
 Per unificare in un unico indicatore sintetico sia la capacità di convertire la maratona di campionato sia la letalità nelle finali secche a eliminazione diretta, è pianificata l'introduzione del **Global Clutch Index ($GCI$)**:
 

@@ -2,11 +2,11 @@
 
 [![Deploy to GitHub Pages](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/deploy.yml/badge.svg)](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/deploy.yml)
 [![Continuous Integration](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/ci.yml/badge.svg)](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/ci.yml)
-[![Version: 1.1.0](https://img.shields.io/badge/version-1.1.0-emerald.svg)](package.json)
+[![Version: 1.3.0](https://img.shields.io/badge/version-1.3.0-emerald.svg)](package.json)
 [![TypeScript Strict](https://img.shields.io/badge/TypeScript-5.x_Strict-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> Albo d'oro interattivo, analisi econometrica di competitività e schede manager per la lega Fantacalcio InsalAtlas.
+> Albo d'oro interattivo, analisi econometrica di competitività, dinamica storica e schede manager per la lega Fantacalcio InsalAtlas.
 
 ---
 
@@ -18,7 +18,9 @@ L'applicazione offre un'interfaccia interattiva per desktop e mobile:
 
 - **Albo d'Oro Storico Decennale**: Bacheca trofei consolidata, rating storico e schede manager ad alta risoluzione (HD) condivisibili.
 - **Archivio Stagioni & Classifiche**: Consultazione cronologica delle singole annate con classifiche ufficiali e finaliste delle coppe.
-- **Vector Crest**: Catalogo di 20 ( `public/assets/crests/` ) stemmi vettoriali ad alta definizione per rappresentare ogni squadra priva di logo personalizzato.
+- **Dinamica Storica & Cronologia (Tab 4)**: Analisi longitudinale delle carriere (piazzamento medio storico, fasce di rendimento a 4 livelli, baricentro e oscillazione) ed evoluzione dell'equilibrio competitivo stagionale (compattezza, step gap e verdetti chiave).
+- **Gestione Stagioni In Corso & Debuttanti**: Isolamento delle annate attive dalle valutazioni consolidate di carriera per non penalizzare l'efficienza dei veterani e gestione asintotica dei debuttanti.
+- **Vector Crest**: Catalogo di stemmi vettoriali ad alta definizione (`public/assets/crests/`) per rappresentare ogni squadra priva di logo personalizzato.
 - **Econometria & Rischio**: Motore di analisi competitiva basato su teoria economica e modellazione del rischio.
 - **Live Application**: [fgizzarellids.github.io/insalatlas_sala_trofei](https://fgizzarellids.github.io/insalatlas_sala_trofei/)
 - **Database Ufficiale**: `public/data.json`
@@ -37,7 +39,7 @@ Struttura a **7 colonne native** (`.albo-grid-row`), il motore di theming basato
 
 ### 2. [Funzionalità & Esperienza Utente](docs/02-features-and-ui.md)
 
-Guida ai moduli applicativi: albo d'oro interattivo con ordinamento multi-criterio, archivio cronologico delle stagioni e coppe con tabelle mobile-optimized, motore di fallback per stemmi vettoriali (`src/crests.ts`), rendering off-screen in HD tramite `html2canvas`, copia istantanea negli appunti, condivisione formattata su WhatsApp e modalità di modifica protetta.
+Guida ai moduli applicativi: albo d'oro interattivo con ordinamento multi-criterio, archivio cronologico delle stagioni e coppe, dinamica storica a doppia prospettiva (Manager vs. Stagioni), motore di fallback per stemmi vettoriali (`src/crests.ts`), rendering off-screen in HD tramite `html2canvas`, copia istantanea negli appunti, condivisione WhatsApp e modalità modifica.
 
 ### 3. [Econometria, Cinismo & Modelli di Rischio](docs/03-analytics-and-econometrics.md)
 
@@ -48,10 +50,11 @@ Approfondimento matematico del modulo analitico:
 - **Cinismo & Podi**: Frequenza podio ($PR$), Killer Instinct ($KI$) e Finals Conversion Rate.
 - **Modellazione di Coda (Tail Risk)**: Feast-or-Famine Bayesiano ($\widetilde{FF}$), Net Tail Skew ($NTS$) e indice unificato Net Tail Index ($NTI$).
 - **Tassonomia degli Archetipi**: Waterfall deterministico per la classificazione comportamentale dei manager.
+- **Dinamica Storica, Stagioni In Corso & Debuttanti**: Metriche di baricentro, oscillazione posizioni ($\sigma_{\text{rank}}$), parità stagionale e neutralizzazione delle annate non concluse.
 
 ### 4. [Data Schema & Validazione CI/CD](docs/04-data-schema-and-ci.md)
 
-Specifiche del contratto dati `public/data.json`, validazione CI/CD tramite `scripts/validate.py` e GitHub Actions.
+Specifiche del contratto dati `public/data.json`, pipeline di compilazione (`scripts/build_data.py`), validazione CI/CD (`scripts/validate.py`) e GitHub Actions.
 
 ---
 
@@ -65,9 +68,9 @@ cd insalatlas_sala_trofei
 # 2. Installa le dipendenze
 npm install
 
-# 3. Valida l'integrità del database JSON
-npm run validate:data
-# oppure: python scripts/validate.py
+# 3. Compila e valida il database JSON
+npm run build:data     # compila da sorgenti raw a public/data.json
+npm run validate:data  # valida la conformità allo schema JSON
 
 # 4. Esegui la suite di test unitari
 npm run test
@@ -79,6 +82,6 @@ npm run dev
 npm run type-check
 npm run build
 
-# oppure per preview in locale
+# oppure per preview del bundle di produzione in locale
 npm run preview --host
 ```

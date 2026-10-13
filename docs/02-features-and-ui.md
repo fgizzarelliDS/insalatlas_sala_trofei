@@ -42,7 +42,30 @@ Il componente `src/components/board/seasonsArchive.ts` gestisce la consultazione
 
 ---
 
-## 3. Motore Stemmi Squadra & Fallback Vettoriale (`src/crests.ts`)
+## 3. Hub Analitico & Dinamica Storica (Modale a 4 Tab)
+
+L'hub econometrico e longitudinale (`src/components/modals/analytics/index.ts`) fornisce una suite completa di metriche competitive avanzate articolata su 4 sezioni:
+
+- **Tab 1: Equilibrio & Macro**: Indici di Gini bivariati ($G_{\text{prestige}}$, $G_{\text{rating}}$), concentrazione $CR_3$, Herfindahl-Hirschman Index ($\text{HHI}$) ed entropia relativa ($H_{\text{rel}}$) con diagnosi qualitativa a 4 scenari.
+- **Tab 2: Cinismo & Podi**: Frequenza podio ($PR\%$), Killer Instinct su scudetti vinti ($KI\%$) e conversione nelle finali secche di coppa ($CR\%$).
+- **Tab 3: Archetipi Comportamentali**: Modello di coda (Feast-or-Famine bayesiano $\widetilde{FF}$, Net Tail Skew $NTS$ e Net Tail Index $NTI$) con classificazione deterministica a 9 archetipi.
+- **Tab 4: Dinamica Storica & Cronologia**:
+  - **Prospettiva Manager**:
+    - *Piazzamento Medio Ponderato*: media dei piazzamenti finali sulle sole stagioni concluse, corredata da Best e Worst finish storici.
+    - *Mini-Bar a 4 Fasce*: segmentazione visiva del tempo trascorso tra Vertice (🥇 1°-3°), Alta Classifica (⭐ Europa), Metà Classifica (⚖️) e Rischio Playout/Cucchiaio (🥄).
+    - *Baricentro Storico*: punteggio sintetico da $1.0$ a $4.0$ con badge narrativo (*Élite Vertice*, *Alta Classifica*, *Metà Classifica*, *Zona Rischio*).
+    - *Indice di Oscillazione (Volatilità)*: deviazione standard delle posizioni ($\sigma_{\text{rank}}$) per distinguere *Metronomi* ($\sigma < 2.0$), profili *Equilibrati* ($\sigma \le 3.5$), *Altalenanti* ($\sigma > 3.5$) ed *Esordienti*.
+    - *Podi, Cucchiai & Serie Record*: conteggio podi, cucchiai di legno e strisce record consecutive di podio e salvezza.
+    - *Filtri Contestuali*: selettore rapido tra **Tutti**, **Veterani (≥ 3 st.)** e **Attivi** (evidenziati con pallino verde di partecipazione alla stagione in corso).
+    - *Supporto Debuttanti*: i manager con sola partecipazione attiva in corso vengono mostrati come `0 (debuttante)`, ricevono piazzamento medio neutrale (`—`) e badge `Debuttante`, posizionandosi in fondo alla graduatoria di piazzamento medio.
+  - **Evoluzione Stagioni**:
+    - Tabella storica di comparazione dell'equilibrio competitivo annuale: step gap (gradino medio pt/posizione), indice di compattezza normalizzato (0–100), forbice totale 1°-ultimo, volata podio (1°-3°) e playout thriller (penultimo-ultimo).
+    - Verdetti stagionali con associazione nominale dei fantallenatori reali (non username tecnici).
+    - *Esclusione Automatica Stagioni In Corso*: le competizioni con `in_progress: true` vengono filtrate per evitare anomalie con punteggi a zero e compattezza artificiale.
+
+---
+
+## 4. Motore Stemmi Squadra & Fallback Vettoriale (`src/crests.ts`)
 
 Il sistema assegna a ogni club uno stemma visivo distintivo senza ricorrere a segnaposto generici e senza dipendere da server esterni:
 
@@ -56,7 +79,7 @@ Il sistema assegna a ogni club uno stemma visivo distintivo senza ricorrere a se
 
 ---
 
-## 4. Scheda Manager & Pipeline di Esportazione HD
+## 5. Scheda Manager & Pipeline di Esportazione HD
 
 Dalla modale di profilo di ogni fantallenatore (`src/components/modals/ProfileModal.ts` & `ProfileModalTemplate.ts`) è possibile consultare i dettagli completi di carriera:
 
@@ -77,7 +100,7 @@ Per garantire un rendering perfetto senza flickering visivo o troncamenti dovuti
 
 ---
 
-## 5. Condivisione Social & Banter WhatsApp
+## 6. Condivisione Social & Banter WhatsApp
 
 L'applicazione integra un generatore di messaggi di condivisione (`src/export/share.ts`):
 
@@ -86,7 +109,7 @@ L'applicazione integra un generatore di messaggi di condivisione (`src/export/sh
 
 ---
 
-## 6. Modalità Modifica & Inline Editing
+## 7. Modalità Modifica & Inline Editing
 
 - Accesso protetto da password verificata via **SHA-256 Web Crypto API** (`src/config.ts`).
 - Modifica contestuale in-place di tutti i titoli e intestazioni di colonna (`data-title-key`).
@@ -95,7 +118,7 @@ L'applicazione integra un generatore di messaggi di condivisione (`src/export/sh
 
 ---
 
-## 7. Progressive Web App (PWA) & Offline Layer
+## 8. Progressive Web App (PWA) & Offline Layer
 
 L'applicazione include il supporto PWA per l'installazione nativa su desktop e dispositivi mobili Android e iOS:
 
@@ -104,7 +127,7 @@ L'applicazione include il supporto PWA per l'installazione nativa su desktop e d
   - Colori di sistema coerenti (`background_color: "#0f172a"`, `theme_color: "#0f172a"`).
   - Icone ad alta risoluzione con padding circolare safe-zone (`purpose: "any maskable"` a 512×512 e 192×192) per evitare ritagli antiestetici nei launcher di sistema.
 - **Single Source of Truth per la Versione del Cache**:
-  - La versione dell'applicazione (v1.1.0) è definita centralmente in `package.json`.
+  - La versione dell'applicazione (v1.3.0) è definita centralmente in `package.json`.
   - Il plugin personalizzato di build Vite inietta la versione nel Service Worker (`CACHE_NAME = 'insalatlas-v' + version`) e nel footer dell'applicazione.
   - Al rilascio di un aggiornamento, il Service Worker invalida automaticamente le cache obsolete e garantisce l'attivazione immediata delle nuove risorse.
 - **Strategie di Caching**:

@@ -1,0 +1,164 @@
+{
+  "season": "2026/27",
+  "in_progress": true,
+  "competitions": [
+    {
+      "id": 863632,
+      "name": "Serie Atlas (Fase 1)",
+      "season": "2026/27",
+      "category": "Campionato",
+      "in_progress": true,
+      "status": "in_progress",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "Scalo San Genesio",
+          "coach": "valeriodam",
+          "managerId": "m_valery",
+          "points": 0.0,
+          "logo": "assets/teams/2543640_02914103.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "TorLupara FC",
+          "coach": "cursimone",
+          "managerId": "m_scurcio",
+          "points": 0.0,
+          "logo": "assets/teams/2544594_04501676.png"
+        },
+        {
+          "rank": 3,
+          "teamName": "Steven Bradbury FC",
+          "coach": "alfius91",
+          "managerId": "m_alfo",
+          "points": 0.0,
+          "logo": "assets/teams/2545500_09340839.png"
+        },
+        {
+          "rank": 4,
+          "teamName": "Arcore 1936",
+          "coach": "sebbadavid",
+          "managerId": "m_sebba",
+          "points": 0.0,
+          "logo": "assets/teams/2545541_03768647.png"
+        },
+        {
+          "rank": 5,
+          "teamName": "A S CorradiAndBosuTeam",
+          "coach": "vannico",
+          "managerId": "m_vannico",
+          "points": 0.0,
+          "logo": "assets/teams/2546265_07646962.png"
+        },
+        {
+          "rank": 6,
+          "teamName": "Posto INFNito FC",
+          "coach": "Lucchetto",
+          "managerId": "m_lucchetto",
+          "points": 0.0,
+          "logo": "assets/teams/2549374_08789113.png"
+        },
+        {
+          "rank": 7,
+          "teamName": "LoTUS FC",
+          "coach": "Juliet-91",
+          "managerId": "m_avvisatina",
+          "points": 0.0,
+          "logo": "assets/crests/golden_griffin.svg"
+        },
+        {
+          "rank": 8,
+          "teamName": "Partizan Peroni",
+          "coach": "Paiden",
+          "managerId": "m_pippo",
+          "points": 0.0,
+          "logo": "assets/crests/anchor_bay.svg"
+        },
+        {
+          "rank": 9,
+          "teamName": "Sarviette FC",
+          "coach": "petrubik88",
+          "managerId": "m_peterdani",
+          "points": 0.0,
+          "logo": "assets/teams/4862674_07729756.png"
+        },
+        {
+          "rank": 10,
+          "teamName": "CarloMonte FC",
+          "coach": "Dr cholo",
+          "managerId": "m_gigicholo",
+          "points": 0.0,
+          "logo": "assets/teams/6150431_02386417.png"
+        },
+        {
+          "rank": 11,
+          "teamName": "Kiwi Football Club",
+          "coach": "tazio13",
+          "managerId": "m_tazio",
+          "points": 0.0,
+          "logo": "assets/teams/7823986_09569971.png"
+        },
+        {
+          "rank": 12,
+          "teamName": "Levrieri d Abruzzo",
+          "coach": "Gizza",
+          "managerId": "m_gizzagustacito",
+          "points": 0.0,
+          "logo": "assets/teams/16496754_03423498.png"
+        },
+        {
+          "rank": 13,
+          "teamName": "AS Qualo",
+          "coach": "Zatte",
+          "managerId": "m_zatte",
+          "points": 0.0,
+          "logo": "assets/teams/20613187_04209253.png"
+        },
+        {
+          "rank": 14,
+          "teamName": "LEONE MAKAKO CORPORATION",
+          "coach": "Leone",
+          "managerId": "m_makakoleone",
+          "points": 0.0,
+          "logo": "assets/teams/20614631_002972323.png"
+        }
+      ]
+    },
+    {
+      "id": 864215,
+      "name": "Coppa InsalAtlas",
+      "season": "2026/27",
+      "category": "Coppa",
+      "in_progress": true,
+      "status": "in_progress",
+      "ranking": []
+    },
+    {
+      "id": 864501,
+      "name": "Supercoppa InsalAtlas",
+      "season": "2026/27",
+      "category": "Supercoppa",
+      "in_progress": true,
+      "status": "in_progress",
+      "ranking": []
+    },
+    {
+      "id": 864403,
+      "name": "Mundialito",
+      "season": "2026/27",
+      "category": "Mundialito",
+      "in_progress": true,
+      "status": "in_progress",
+      "ranking": []
+    },
+    {
+      "id": 864502,
+      "name": "Coppa dei Perdenti",
+      "season": "2026/27",
+      "category": "Perdenti",
+      "in_progress": true,
+      "status": "in_progress",
+      "ranking": []
+    }
+  ]
+}

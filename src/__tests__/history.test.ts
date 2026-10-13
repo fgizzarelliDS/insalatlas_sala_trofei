@@ -358,7 +358,7 @@ describe('Historical Rankings & Career Visualizations', () => {
       expect(dataJson.leagueData.length).toBeGreaterThanOrEqual(18);
 
       expect(Array.isArray(dataJson.competitions)).toBe(true);
-      expect(dataJson.competitions.length).toBe(33);
+      expect(dataJson.competitions.length).toBe(38);
     });
 
     it('ensures all managers have 100% consistency between top-level trophies and history achievements', () => {
@@ -387,14 +387,14 @@ describe('Historical Rankings & Career Visualizations', () => {
       });
     });
 
-    it('ensures Alfo has strictly 3 Coppe di Lega, 1 Scudetto, 3 Supercoppe, and 10 seasons including 2020/21', () => {
+    it('ensures Alfo has strictly 3 Coppe di Lega, 1 Scudetto, 3 Supercoppe, and 11 seasons including 2020/21 and 2026/27 (in progress)', () => {
       const alfo = dataJson.leagueData.find((m: { id: string }) => m.id === 'm_alfo');
       expect(alfo).toBeDefined();
       expect(alfo?.cup_gold).toBe(3);
       expect(alfo?.gold).toBe(1);
       expect(alfo?.supercup).toBe(3);
       expect(alfo?.mundialito).toBe(2);
-      expect(alfo?.years).toBe(10);
+      expect(alfo?.years).toBe(11);
 
       // Verify season 2020/21 is present in history
       const season2021 = alfo?.history.find((s: { season: string }) => s.season === '2020/21');
@@ -402,7 +402,14 @@ describe('Historical Rankings & Career Visualizations', () => {
       expect(season2021?.competitionId).toBe(147888);
       expect(season2021?.rank).toBe(7);
       expect(season2021?.points).toBe(43.0);
-      expect(alfo?.history.length).toBe(10);
+
+      // Verify season 2026/27 is present in progress with no premature trophies
+      const season2627 = alfo?.history.find((s: { season: string }) => s.season === '2026/27');
+      expect(season2627).toBeDefined();
+      expect(season2627?.in_progress).toBe(true);
+      expect(season2627?.achievements).toEqual([]);
+
+      expect(alfo?.history.length).toBe(11);
     });
 
     it('ensures other veteran managers active across 2020/21 also have the season present', () => {
@@ -447,18 +454,18 @@ describe('Historical Rankings & Career Visualizations', () => {
       expect(avvisatina1617?.points).toBe(36.0);
     });
 
-    it('ensures Vannico and Sebba have 9 single seasons, with 2021/22 attributed to Vannico&Sebbi', () => {
+    it('ensures Vannico and Sebba have 10 single seasons (including 2026/27 in progress), with 2021/22 attributed to Vannico&Sebbi', () => {
       const vannico = dataJson.leagueData.find((m: { id: string }) => m.id === 'm_vannico');
       const sebba = dataJson.leagueData.find((m: { id: string }) => m.id === 'm_sebba');
       const vannicosebbi = dataJson.leagueData.find((m: { id: string }) => m.id === 'm_vannicosebbi');
 
-      expect(vannico?.years).toBe(9);
-      expect(vannico?.history.length).toBe(9);
+      expect(vannico?.years).toBe(10);
+      expect(vannico?.history.length).toBe(10);
       expect(vannico?.history.map((h: { season: string }) => h.season)).toContain('2016/17');
       expect(vannico?.history.map((h: { season: string }) => h.season)).not.toContain('2021/22');
 
-      expect(sebba?.years).toBe(9);
-      expect(sebba?.history.length).toBe(9);
+      expect(sebba?.years).toBe(10);
+      expect(sebba?.history.length).toBe(10);
       expect(sebba?.history.map((h: { season: string }) => h.season)).toContain('2016/17');
       expect(sebba?.history.map((h: { season: string }) => h.season)).not.toContain('2021/22');
 
@@ -494,10 +501,10 @@ describe('Historical Rankings & Career Visualizations', () => {
       expect(makako?.history.map((h: { season: string }) => h.season)).toContain('2020/21');
     });
 
-    it('ensures Pippo has 7 seasons including 2018/19 Partizan Peroni', () => {
+    it('ensures Pippo has 8 seasons including 2018/19 Partizan Peroni and 2026/27 in progress', () => {
       const pippo = dataJson.leagueData.find((m: { id: string }) => m.id === 'm_pippo');
-      expect(pippo?.years).toBe(7);
-      expect(pippo?.history.length).toBe(7);
+      expect(pippo?.years).toBe(8);
+      expect(pippo?.history.length).toBe(8);
       const p1819 = pippo?.history.find((h: { season: string }) => h.season === '2018/19');
       expect(p1819).toBeDefined();
       expect(p1819?.rank).toBe(9);
@@ -725,6 +732,21 @@ describe('Historical Rankings & Career Visualizations', () => {
       expect(mockSeasonsContent.innerHTML).toContain('Compagni di Merende');
       expect(mockSeasonsContent.innerHTML).toContain('Partizan Peroni');
     });
+
+    it('renders season 2026/27 with in-progress championship and placeholder cups', async () => {
+      const { selectArchiveSeason } = await import('@/components/board/seasonsArchive');
+      state.competitions = dataJson.competitions as unknown as CompetitionRecord[];
+      state.managers = dataJson.leagueData as unknown as Manager[];
+
+      selectArchiveSeason('2026/27');
+      expect(mockSeasonsContent.innerHTML).toContain('Serie Atlas (Fase 1)');
+      expect(mockSeasonsContent.innerHTML).toContain('Coppe &amp; Tornei di Stagione');
+      expect(mockSeasonsContent.innerHTML).toContain('Coppa InsalAtlas');
+      expect(mockSeasonsContent.innerHTML).toContain('Supercoppa InsalAtlas');
+      expect(mockSeasonsContent.innerHTML).toContain('Mundialito');
+      expect(mockSeasonsContent.innerHTML).toContain('Coppa dei Perdenti');
+      expect(mockSeasonsContent.innerHTML).toContain('Verdetti finali in definizione');
+    });
   });
 
   describe('Historical Team Details and Seasons Formatting', () => {
@@ -751,8 +773,47 @@ describe('Historical Rankings & Career Visualizations', () => {
 
       const stevenBradbury = teams.find(t => t.name.includes('Steven'));
       expect(stevenBradbury).toBeDefined();
-      expect(stevenBradbury!.formattedSeasons).toContain('20/21–25/26');
+      expect(stevenBradbury!.formattedSeasons).toContain('20/21–26/27');
       expect(stevenBradbury!.logo).toContain('assets/teams/');
+    });
+  });
+
+  describe('Header Statistics Counters', () => {
+    it('calculates total seasons, in-progress count, and trophy counts correctly', async () => {
+      const { updateStatistics } = await import('@/components/board/statsCounter');
+      state.competitions = dataJson.competitions as unknown as CompetitionRecord[];
+      state.managers = dataJson.leagueData as unknown as Manager[];
+
+      const elements: Record<string, { textContent: string }> = {
+        'stat-total-seasons': { textContent: '' },
+        'stat-seasons-detail': { textContent: '' },
+        'stat-total-scudetti': { textContent: '' },
+        'stat-total-cups': { textContent: '' },
+        'stat-total-mundialito': { textContent: '' },
+        'stat-total-spoons': { textContent: '' },
+        'stat-total-cartonati': { textContent: '' }
+      };
+
+      const originalDoc = (globalThis as unknown as { document?: unknown }).document;
+      (globalThis as unknown as { document?: unknown }).document = {
+        getElementById(id: string) {
+          return elements[id] || null;
+        }
+      };
+
+      try {
+        updateStatistics();
+
+        expect(elements['stat-total-seasons'].textContent).toBe('11');
+        expect(elements['stat-seasons-detail'].textContent).toBe('(10 + 1 in corso)');
+        expect(elements['stat-total-scudetti'].textContent).toBe('10');
+        expect(elements['stat-total-cups'].textContent).toBe('15');
+        expect(elements['stat-total-mundialito'].textContent).toBe('3');
+        expect(elements['stat-total-spoons'].textContent).toBe('10');
+        expect(elements['stat-total-cartonati'].textContent).toBe('5');
+      } finally {
+        (globalThis as unknown as { document?: unknown }).document = originalDoc;
+      }
     });
   });
 });

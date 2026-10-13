@@ -3,6 +3,103 @@ import { calculateManagerScore } from '@/score';
 import { computeDisasterMass, computeFeastMass, computeSmoothedFF, computeNetTailSkew, getNTIPolarity } from './tailRisk';
 import { PRESTIGE_WEIGHTS, getManagerArchetype } from './archetypes';
 
+export interface ClutchTierInfo {
+  tier: string;
+  label: string;
+  icon: string;
+  color: string;
+}
+
+/**
+ * Computes Bayesian smoothed killer instinct (KI_bayes) with shrinkage prior K=1.0 and expected mean 0.33.
+ */
+export function computeSmoothedKillerInstinct(gold: number, podiums: number, k: number = 1.0, priorKi: number = 0.33): number {
+  return (gold + k * priorKi) / (podiums + k);
+}
+
+/**
+ * Computes Bayesian smoothed cup finals conversion rate (CR_bayes) with shrinkage prior K=1.0 and expected mean 0.50.
+ */
+export function computeSmoothedConversionRate(finalsWon: number, finalsPlayed: number, k: number = 1.0, priorCr: number = 0.50): number {
+  return (finalsWon + k * priorCr) / (finalsPlayed + k);
+}
+
+/**
+ * Computes Global Clutch Index (GCI):
+ * 70% Bayesian smoothed Killer Instinct + 30% Bayesian smoothed Cup Conversion Rate.
+ * For rookies with completedYears === 0, returns 0.0.
+ */
+export function computeGlobalClutchIndex(
+  gold: number,
+  podiums: number,
+  finalsWon: number,
+  finalsPlayed: number,
+  completedYears: number,
+  k: number = 1.0,
+  priorKi: number = 0.33,
+  priorCr: number = 0.50,
+  weightLeague: number = 0.70,
+  weightCups: number = 0.30
+): number {
+  if (completedYears === 0) return 0.0;
+  const smoothedKi = computeSmoothedKillerInstinct(gold, podiums, k, priorKi);
+  const smoothedCr = computeSmoothedConversionRate(finalsWon, finalsPlayed, k, priorCr);
+  const rawGci = (weightLeague * smoothedKi + weightCups * smoothedCr) * 100;
+  return parseFloat(rawGci.toFixed(1));
+}
+
+/**
+ * Categorizes a manager into clutch tiers based on GCI and completed seasons.
+ */
+export function getClutchTier(gci: number, completedYears: number): ClutchTierInfo {
+  if (completedYears === 0) {
+    return {
+      tier: 'Debuttante',
+      label: 'Debuttante',
+      icon: '🌱',
+      color: '#94a3b8'
+    };
+  }
+  if (gci >= 70.0) {
+    return {
+      tier: 'Glaciale',
+      label: 'Glaciale',
+      icon: '❄️',
+      color: '#0ea5e9'
+    };
+  }
+  if (gci >= 55.0) {
+    return {
+      tier: 'Cinico',
+      label: 'Cinico',
+      icon: '🏹',
+      color: '#34d399'
+    };
+  }
+  if (gci >= 45.0) {
+    return {
+      tier: 'Equilibrato',
+      label: 'Equilibrato',
+      icon: '⚖️',
+      color: '#06b6d4'
+    };
+  }
+  if (gci >= 25.0) {
+    return {
+      tier: 'Incerto',
+      label: 'Incerto',
+      icon: '😶‍🌫️',
+      color: '#f59e0b'
+    };
+  }
+  return {
+    tier: 'Choker',
+    label: 'Choker',
+    icon: '🥶',
+    color: '#ef4444'
+  };
+}
+
 /**
  * Computes multi-dimensional league concentration, clutch indices, and risk profiles.
  */
@@ -72,14 +169,22 @@ export function computeLeagueConcentration(managers: Manager[]): LeagueConcentra
     const finalsWon = (m.cup_gold || 0) + (m.supercup || 0);
     const finalsPlayed = finalsWon + (m.cup_silver || 0) + (m.supercup_silver || 0);
     const conversionRatePct = finalsPlayed > 0 ? parseFloat(((finalsWon / finalsPlayed) * 100).toFixed(1)) : 0;
+    const globalClutchIndex = computeGlobalClutchIndex(
+      m.gold || 0,
+      podiums,
+      finalsWon,
+      finalsPlayed,
+      completedYears
+    );
+    const clutchTierInfo = getClutchTier(globalClutchIndex, completedYears);
     const dishonors = (m.spoon || 0) + (m.cartonato || 0); // Spoon (Last Place) + Cartonato (Playout)
     const feastMass = computeFeastMass(m.gold || 0, m.cup_gold || 0);
     const disasterMass = computeDisasterMass(m.spoon || 0, m.cartonato || 0);
     const totalTailMass = feastMass + disasterMass;
     const tailMass = totalTailMass;
     const feastOrFamineRatio = completedYears > 0 ? parseFloat((totalTailMass / completedYears).toFixed(2)) : 0;
-    const smoothedFeastOrFamine = computeSmoothedFF(totalTailMass, completedYears, 2.0, leagueAverageFF);
-    const netTailSkew = computeNetTailSkew(feastMass, disasterMass, 1.5);
+    const smoothedFeastOrFamine = computeSmoothedFF(totalTailMass, completedYears, 1.0, leagueAverageFF);
+    const netTailSkew = computeNetTailSkew(feastMass, disasterMass, 1.0);
     const netTailIndex = parseFloat((smoothedFeastOrFamine * netTailSkew).toFixed(2));
     const polarity = getNTIPolarity(netTailIndex);
     const score = calculateManagerScore(m);
@@ -116,6 +221,11 @@ export function computeLeagueConcentration(managers: Manager[]): LeagueConcentra
       finalsWon,
       finalsPlayed,
       conversionRatePct,
+      globalClutchIndex,
+      clutchTier: clutchTierInfo.tier,
+      clutchLabel: clutchTierInfo.label,
+      clutchIcon: clutchTierInfo.icon,
+      clutchColor: clutchTierInfo.color,
       dishonors,
       feastMass,
       disasterMass,

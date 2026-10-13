@@ -11,7 +11,7 @@ import type {
 import { renderAnalyticsModalDOM } from './analytics';
 
 let currentTab: AnalyticsTab = 'macro';
-let tab2SortField: Tab2SortField = 'podiumRate';
+let tab2SortField: Tab2SortField = 'gci';
 let tab2SortDirection: Tab2SortDirection = 'desc';
 let currentMacroMetricMode: MacroMetricMode = 'prestige';
 let currentChronologySubView: ChronologySubView = 'managers';

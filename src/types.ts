@@ -135,7 +135,7 @@ export interface ScoringWeights {
 }
 
 export type AnalyticsTab = 'macro' | 'clutch' | 'risk' | 'chronology';
-export type Tab2SortField = 'name' | 'podiumRate' | 'killerInstinct' | 'clutch';
+export type Tab2SortField = 'name' | 'podiumRate' | 'killerInstinct' | 'clutch' | 'gci';
 export type Tab2SortDirection = 'asc' | 'desc';
 export type MacroMetricMode = 'prestige' | 'raw';
 
@@ -256,6 +256,11 @@ export interface ManagerAnalyticsProfile {
   podiums: number; // Gold + Silver + Bronze
   podiumRatePct: number; // Podiums / Years * 100
   killerInstinctPct: number; // Gold / Podiums * 100
+  globalClutchIndex: number; // GCI (70% League KI + 30% Cups CR with Bayesian shrinkage)
+  clutchTier: string; // 'Glaciale' | 'Cinico' | 'Equilibrato' | 'Incerto' | 'Choker' | 'Debuttante'
+  clutchLabel: string;
+  clutchIcon: string;
+  clutchColor: string;
   dishonors: number; // Spoon + Cartonato
   feastMass: number; // Gold * 1.0 + CupGold * 0.5
   disasterMass: number; // Spoon * 1.0 + Cartonato * 0.75

@@ -7,7 +7,11 @@ import {
   getNTIPolarity,
   computeTailRiskProfile,
   getManagerArchetype,
-  computeLeagueConcentration
+  computeLeagueConcentration,
+  computeSmoothedKillerInstinct,
+  computeSmoothedConversionRate,
+  computeGlobalClutchIndex,
+  getClutchTier
 } from '@/analytics';
 import { Manager } from '@/types';
 import { createTestManager } from './test-utils';
@@ -31,19 +35,19 @@ describe('analytics.ts - Econometric and Analytical Invariants', () => {
 
   describe('Empirical Bayes Smoothed Feast-or-Famine', () => {
     it('shrinks small-sample estimates towards the prior', () => {
-      // 1 year, 0 tail mass: (0 + 2 * 0.3) / (1 + 2) = 0.6 / 3 = 0.20
-      const smoothedSmall = computeSmoothedFF(0, 1, 2.0, 0.30);
-      expect(smoothedSmall).toBe(0.20);
+      // 1 year, 0 tail mass: (0 + 1.0 * 0.3) / (1 + 1) = 0.3 / 2 = 0.15
+      const smoothedSmall = computeSmoothedFF(0, 1, 1.0, 0.30);
+      expect(smoothedSmall).toBe(0.15);
 
-      // 10 years, 0 tail mass: (0 + 0.6) / 12 = 0.05
-      const smoothedLarge = computeSmoothedFF(0, 10, 2.0, 0.30);
-      expect(smoothedLarge).toBe(0.05);
+      // 10 years, 0 tail mass: (0 + 0.3) / 11 = 0.027... -> 0.03
+      const smoothedLarge = computeSmoothedFF(0, 10, 1.0, 0.30);
+      expect(smoothedLarge).toBe(0.03);
     });
 
     it('converges to empirical sample rate when sample size is large', () => {
-      // 20 years, 10 tail mass: (10 + 0.6) / 22 = 0.4818... -> 0.48
-      const smoothed = computeSmoothedFF(10, 20, 2.0, 0.30);
-      expect(smoothed).toBe(0.48);
+      // 20 years, 10 tail mass: (10 + 0.3) / 21 = 0.4904... -> 0.49
+      const smoothed = computeSmoothedFF(10, 20, 1.0, 0.30);
+      expect(smoothed).toBe(0.49);
     });
   });
 
@@ -52,17 +56,17 @@ describe('analytics.ts - Econometric and Analytical Invariants', () => {
       expect(computeNetTailSkew(0, 0)).toBe(0);
     });
 
-    it('bounds skew smoothly with prior M=1.5 on small samples', () => {
-      // Feast 1, Disaster 0: (1 - 0) / (1 + 1.5) = 1 / 2.5 = 0.40
-      expect(computeNetTailSkew(1, 0, 1.5)).toBe(0.40);
+    it('bounds skew smoothly with prior M=1.0 on small samples', () => {
+      // Feast 1, Disaster 0: (1 - 0) / (1 + 1.0) = 1 / 2.0 = 0.50
+      expect(computeNetTailSkew(1, 0, 1.0)).toBe(0.50);
 
-      // Feast 0, Disaster 1: (0 - 1) / (1 + 1.5) = -1 / 2.5 = -0.40
-      expect(computeNetTailSkew(0, 1, 1.5)).toBe(-0.40);
+      // Feast 0, Disaster 1: (0 - 1) / (1 + 1.0) = -1 / 2.0 = -0.50
+      expect(computeNetTailSkew(0, 1, 1.0)).toBe(-0.50);
     });
 
     it('approaches +1 and -1 when tail events dominate heavily', () => {
-      // Feast 20, Disaster 0: (20) / (20 + 1.5) = 20 / 21.5 = 0.93
-      expect(computeNetTailSkew(20, 0, 1.5)).toBe(0.93);
+      // Feast 20, Disaster 0: (20) / (20 + 1.0) = 20 / 21.0 = 0.95
+      expect(computeNetTailSkew(20, 0, 1.0)).toBe(0.95);
     });
   });
 
@@ -119,9 +123,9 @@ describe('analytics.ts - Econometric and Analytical Invariants', () => {
       expect(profile.disasterMass).toBe(0);
       expect(profile.totalTailMass).toBe(3.5);
       expect(profile.rawFF).toBe(0.88); // 3.5 / 4 = 0.875 -> 0.88
-      expect(profile.smoothedFF).toBe(0.68); // (3.5 + 0.6) / 6 = 4.1 / 6 = 0.68
-      expect(profile.nts).toBe(0.70); // 3.5 / (3.5 + 1.5) = 3.5 / 5 = 0.70
-      expect(profile.nti).toBe(0.48); // 0.68 * 0.70 = 0.476 -> 0.48
+      expect(profile.smoothedFF).toBe(0.76); // (3.5 + 0.3) / 5 = 3.8 / 5 = 0.76
+      expect(profile.nts).toBe(0.78); // 3.5 / (3.5 + 1.0) = 3.5 / 4.5 = 0.78
+      expect(profile.nti).toBe(0.59); // 0.76 * 0.78 = 0.5928 -> 0.59
       expect(profile.label).toBe('Cannibale Assoluto');
     });
   });
@@ -451,7 +455,116 @@ describe('analytics.ts - Econometric and Analytical Invariants', () => {
       expect(profile.prestigeEfficiency).toBe(0);
       expect(profile.podiumRatePct).toBe(0);
       expect(profile.trophies).toBe(0);
+      expect(profile.globalClutchIndex).toBe(0);
+      expect(profile.clutchTier).toBe('Debuttante');
+      expect(profile.clutchIcon).toBe('🌱');
+    });
+  });
+
+  describe('Global Clutch Index (GCI)', () => {
+    it('computes Bayesian smoothed Killer Instinct with K=1.0 and prior 0.33', () => {
+      // 0 gold, 0 podiums: (0 + 1 * 0.33) / (0 + 1) = 0.33
+      expect(computeSmoothedKillerInstinct(0, 0)).toBeCloseTo(0.33, 4);
+
+      // 7 gold, 11 podiums: (7 + 0.33) / 12 = 7.33 / 12 = 0.61083...
+      expect(computeSmoothedKillerInstinct(7, 11)).toBeCloseTo(0.61083, 4);
+
+      // 0 gold, 4 podiums (choker podiums): (0 + 0.33) / 5 = 0.066
+      expect(computeSmoothedKillerInstinct(0, 4)).toBeCloseTo(0.066, 3);
+    });
+
+    it('computes Bayesian smoothed Conversion Rate with K=1.0 and prior 0.50', () => {
+      // 0 won, 0 played: (0 + 1 * 0.50) / 1 = 0.50
+      expect(computeSmoothedConversionRate(0, 0)).toBeCloseTo(0.50, 4);
+
+      // 3 won, 4 played: (3 + 0.50) / 5 = 3.5 / 5 = 0.70
+      expect(computeSmoothedConversionRate(3, 4)).toBeCloseTo(0.70, 4);
+
+      // 0 won, 3 played: (0 + 0.50) / 4 = 0.125
+      expect(computeSmoothedConversionRate(0, 3)).toBeCloseTo(0.125, 4);
+    });
+
+    it('computes Global Clutch Index combining 70% League and 30% Cups with K=1.0', () => {
+      // Vannico stats in UI table: 3 gold, 4 podiums, 2 finals won, 3 finals played, 9 completed years
+      // KI_bayes = 3.33 / 5 = 0.666
+      // CR_bayes = 2.50 / 4 = 0.625
+      // GCI = (0.70 * 0.666 + 0.30 * 0.625) * 100 = (0.4662 + 0.1875) * 100 = 65.37 -> 65.4%
+      const gciVannico = computeGlobalClutchIndex(3, 4, 2, 3, 9);
+      expect(gciVannico).toBe(65.4);
+
+      // Rookie with 0 completed years -> must be strictly 0.0
+      const gciRookie = computeGlobalClutchIndex(0, 0, 0, 0, 0);
+      expect(gciRookie).toBe(0.0);
+    });
+
+    it('correctly maps GCI and completed years to clutch tiers', () => {
+      expect(getClutchTier(0.0, 0)).toEqual({
+        tier: 'Debuttante',
+        label: 'Debuttante',
+        icon: '🌱',
+        color: '#94a3b8'
+      });
+
+      expect(getClutchTier(72.0, 10)).toEqual({
+        tier: 'Glaciale',
+        label: 'Glaciale',
+        icon: '❄️',
+        color: '#0ea5e9'
+      });
+
+      expect(getClutchTier(61.2, 10)).toEqual({
+        tier: 'Cinico',
+        label: 'Cinico',
+        icon: '🏹',
+        color: '#34d399'
+      });
+
+      expect(getClutchTier(49.3, 10)).toEqual({
+        tier: 'Equilibrato',
+        label: 'Equilibrato',
+        icon: '⚖️',
+        color: '#06b6d4'
+      });
+
+      expect(getClutchTier(30.0, 10)).toEqual({
+        tier: 'Incerto',
+        label: 'Incerto',
+        icon: '😶‍🌫️',
+        color: '#f59e0b'
+      });
+
+      expect(getClutchTier(21.7, 10)).toEqual({
+        tier: 'Choker',
+        label: 'Choker',
+        icon: '🥶',
+        color: '#ef4444'
+      });
+    });
+
+    it('integrates GCI fields into computeLeagueConcentration profiles', () => {
+      const veteran = createTestManager({
+        id: 'm_top',
+        name: 'TopClutch',
+        years: 10,
+        gold: 7,
+        silver: 3,
+        bronze: 1, // 11 podiums
+        cup_gold: 3,
+        cup_silver: 1 // 4 finals played, 3 won
+      });
+
+      const res = computeLeagueConcentration([veteran]);
+      const p = res.profiles[0];
+      // KI_bayes = (7 + 0.33) / 12 = 0.610833
+      // CR_bayes = (3 + 0.50) / 5 = 0.70
+      // GCI = (0.70 * 0.610833 + 0.30 * 0.70) * 100 = 63.8%
+      expect(p.globalClutchIndex).toBe(63.8);
+      expect(p.clutchTier).toBe('Cinico');
+      expect(p.clutchLabel).toBe('Cinico');
+      expect(p.clutchIcon).toBe('🏹');
+      expect(p.clutchColor).toBe('#34d399');
     });
   });
 });
+
 

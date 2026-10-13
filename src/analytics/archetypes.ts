@@ -44,7 +44,7 @@ export function getManagerArchetype(
   const dm = computeDisasterMass(m.spoon || 0, m.cartonato || 0);
   const fm = computeFeastMass(m.gold || 0, m.cup_gold || 0);
   const tm = fm + dm;
-  const actualSmoothedFF = smoothedFF !== undefined ? smoothedFF : computeSmoothedFF(tm, m.years, 2.0, 0.30);
+  const actualSmoothedFF = smoothedFF !== undefined ? smoothedFF : computeSmoothedFF(tm, m.years, 1.0, 0.30);
 
   // 1. Dominatore Dinastico: (Prestige >= 10 e (Prestige Efficiency >= 0.50 o Efficienza >= 0.40)) OPPURE (Scudetti >= 2 e Prestige >= 7.00)
   if ((actualPrestige >= 10 && (actualPrestigeEfficiency >= 0.50 || actualEfficiency >= 0.40)) || ((m.gold || 0) >= 2 && actualPrestige >= 7.00)) {

@@ -95,12 +95,12 @@ $$\text{TotalTailMass}_i = \text{FeastMass}_i + \text{DisasterMass}_i$$
 
 ### 3.2 Feast-or-Famine con Shrinkage Bayesiano ($\widetilde{FF}$)
 
-Per evitare distorsioni da piccolo campione su manager con poche stagioni all'attivo, il rapporto include un prior empirico di lega ($K = 2.0$, $\bar{FF} = 0.30$) normalizzato sulle stagioni concluse ($\text{CompletedYears}_i$):
+Per evitare distorsioni da piccolo campione su manager con poche stagioni all'attivo, il rapporto include un prior empirico di lega ($K = 1.0$, $\bar{FF} = 0.30$) normalizzato sulle stagioni concluse ($\text{CompletedYears}_i$):
 $$\widetilde{FF}_i = \frac{\text{TotalTailMass}_i + (K \cdot \bar{FF})}{\text{CompletedYears}_i + K}$$
 
 ### 3.3 Net Tail Skew ($NTS$) Regolarizzato
 
-Determina se la volatilità pende verso il trionfo o verso la disfatta con fattore di regolarizzazione ($M = 1.5$):
+Determina se la volatilità pende verso il trionfo o verso la disfatta con fattore di regolarizzazione unitario ($M = 1.0$):
 $$NTS_i = \begin{cases} 0 & \text{se } \text{TotalTailMass}_i = 0 \\ \frac{\text{FeastMass}_i - \text{DisasterMass}_i}{\text{TotalTailMass}_i + M} & \text{altrimenti} \end{cases} \quad \in [-1.0, +1.0]$$
 
 ### 3.4 Net Tail Index ($NTI$)
@@ -286,13 +286,59 @@ $$G_{\text{rating}}: 0.48 \to 0.48 \quad (\text{stabile})$$
 
 ---
 
-## 7. Roadmap & Evoluzioni Future (TODO)
+---
 
-### 7.1 Global Clutch Index ($GCI$)
+## 7. Global Clutch Index ($GCI$) & Cinismo Avanzato
 
-Per unificare in un unico indicatore sintetico sia la capacità di convertire la maratona di campionato sia la letalità nelle finali secche a eliminazione diretta, è pianificata l'introduzione del **Global Clutch Index ($GCI$)**:
+Per unificare in un unico indicatore sintetico sia la capacità di convertire la maratona di campionato in scudetti sia la letalità nelle finali secche a eliminazione diretta (Coppa e Supercoppa), il modulo analitico implementa il **Global Clutch Index ($GCI$)**:
 
-$$GCI_i = w_{\text{league}} \cdot KI_i + w_{\text{cups}} \cdot CR_i$$
+### 7.1 Formulazione Matematica & Regolarizzazione Bayesiana
 
-- **Pesi del GCI da calibrare in futuro** (es. 50% Campionato e 50% Coppe, oppure sbilanciato a favore del Campionato), con gestione neutra per chi non ha ancora disputato finali di coppa.
-- **Integrazione Storico Mundialito**: Formalizzazione dello storico finale Mundialito (vinti e persi) per completare il set di dati delle coppe della lega.
+Per evitare che manager con un ridottissimo numero di partecipazioni al podio o di finali giocate assumano valori distorti (es. $1/1 = 100\%$ o $0/1 = 0\%$), sia il Killer Instinct di campionato sia il tasso di conversione nelle coppe applicano uno shrinkage empirico bayesiano con parametro di fiducia unitario $K = 1.0$ (Smoothing di Laplace):
+
+1. **Killer Instinct Bayesiano di Campionato ($\widetilde{KI}_i$)**:
+   $$\widetilde{KI}_i = \frac{\text{Gold}_i + K \cdot \bar{KI}}{\text{Podiums}_i + K}$$
+   con prior di lega $\bar{KI} = 0.33$ (in quanto un podio ospita 3 squadre, dunque l'attesa a priori di vittoria è $1/3$).
+
+2. **Cinismo Bayesiano nelle Finali Secche ($\widetilde{CR}_i$)**:
+   $$\widetilde{CR}_i = \frac{\text{FinalsWon}_i + K \cdot \bar{CR}}{\text{FinalsPlayed}_i + K}$$
+   con prior di finale secca $\bar{CR} = 0.50$ (probabilità a priori di vittoria $50\%$ in una finale tra due contendenti).
+
+3. **Sintesi Pesata Global Clutch Index ($GCI_i$)**:
+   Assegna un peso primario del $70\%$ alla regolarità del trionfo in campionato e del $30\%$ alla freddezza nei trofei a scontro diretto secco:
+   $$GCI_i = \text{round}\left((0.70 \cdot \widetilde{KI}_i + 0.30 \cdot \widetilde{CR}_i) \times 100, 1\right)$$
+
+### 7.2 Trattamento dei Debuttanti (Rookie Neutrality)
+
+Se un fantallenatore non ha ancora completato alcuna stagione ufficiale ($\text{CompletedYears}_i = 0$):
+$$GCI_i = 0.0\% \quad (\text{Badge: } 🌱 \text{ Debuttante})$$
+Nelle tabelle comparative di Tab 2, i debuttanti vengono posizionati convenzionalmente in fondo alle graduatorie ordinate per GCI, esponendo un valore neutro `—` e il badge dedicato.
+
+### 7.3 Fasce di Freddezza & Tiering Comportamentale
+
+| Tier | Range GCI | Icona | Colore | Profilo Comportamentale |
+| :--- | :--- | :---: | :---: | :--- |
+| **Glaciale** | $\ge 70.0\%$ | ❄️ | `#0ea5e9` | Traguardo leggendario: letalità quasi infallibile e dominio assoluto nei momenti di massima pressione. |
+| **Cinico** | $55.0\% - 69.9\%$ | 🏹 | `#34d399` | Freddezza d'élite: converte regolarmente le volate scudetto e le finali di coppa nei trofei massimi. |
+| **Equilibrato** | $45.0\% - 54.9\%$ | ⚖️ | `#06b6d4` | Rendimento solido e bilanciato nelle posizioni di vertice. |
+| **Incerto** | $25.0\% - 44.9\%$ | 😶‍🌫️ | `#f59e0b` | Fatica a capitalizzare le occasioni d'oro; propensione al piazzamento senza vittoria. |
+| **Choker** | $< 25.0\%$ | 🥶 | `#ef4444` | Frequenti crolli all'atto conclusivo o collezione di argenti/bronzi non capitalizzati. |
+| **Debuttante** | $\text{Anni} = 0$ | 🌱 | `#94a3b8` | Partecipante alla sola stagione in corso, campione statistico insufficiente. |
+
+### 7.4 Integrazione UI in Tab 2 (Cinismo & Podi)
+
+L'interfaccia adotta l'architettura a due livelli (**Opzione 2**):
+1. **Highlight Cards Superiori**:
+   - **Mister Più Cinico / Glaciale (Top GCI)**: evidenzia l'allenatore storicamente più letale della lega con badge e percentuali bayesiane.
+   - **Specialista Finali Secche (Top CR%)**: evidenzia il miglior conversion rate nei trofei a scontro diretto secco (Coppa e Supercoppa).
+2. **Tabella Interattiva a 5 Colonne**:
+   - Colonne: *Allenatore*, *Tasso Podio (PR%)*, *Killer Instinct (KI%)*, *Cinismo Finali (CR%)*, *Indice GCI*.
+   - Ordinamento nativo interattivo con supporto completo al campo `'gci'` (impostato come ordinamento predefinito di apertura).
+3. **Guida Matematica Collapsible**:
+   - Box esplicativo integrato con le formule formali e la legenda cromatica dei 5 tier.
+
+---
+
+## 8. Roadmap & Evoluzioni Future
+
+- **Integrazione Storico Mundialito**: Formalizzazione dello storico finale Mundialito (vinti e persi) per completare il set di dati delle coppe della lega quando i dati delle prime edizioni saranno integralmente reperiti.

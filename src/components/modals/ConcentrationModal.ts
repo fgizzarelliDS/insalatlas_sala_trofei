@@ -179,11 +179,12 @@ export function toggleConcentrationGuide(guideId: string = 'macro-guide'): void 
 
 /**
  * Opens modal displaying league concentration, econometric balance, and historical parity
+ * @param targetTab - Target sub-tab to open ('macro' | 'clutch' | 'risk' | 'chronology' | 'nemesis')
  */
-export function openConcentrationModal(): void {
+export function openConcentrationModal(targetTab: AnalyticsTab = 'macro'): void {
   const modal = document.getElementById('concentration-modal');
   if (!modal) return;
-  currentTab = 'macro';
+  currentTab = targetTab;
   currentMacroMetricMode = 'prestige';
   renderAnalyticsModalBody();
   modal.classList.remove('hidden');

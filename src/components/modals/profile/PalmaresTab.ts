@@ -1,7 +1,8 @@
 import type { Manager, TradingCardBadge } from '@/types';
 import { formatScore } from '@/score';
 import { renderTrophySVG, renderCoachBanner } from '@/trophies';
-import { computeManagerBadges } from '@/analytics';
+import { computeManagerBadges, computeManagerRivalries } from '@/analytics';
+import { state } from '@/state';
 
 /**
  * Updates DOM elements for vital stats, badges, and trophy shelf inside the profile modal (Palmares tab)
@@ -41,6 +42,88 @@ export function populatePalmaresDOM(m: Manager, score: number, totalMajor: numbe
         badgesContainer.appendChild(el);
       });
     }
+  }
+
+  // 2.1 Rivalità Storiche: Bestia Nera (Nemesis) & Babbo Natale (Victim)
+  const rivalriesContainer = document.getElementById('profile-rivalries-container');
+  if (rivalriesContainer) {
+    const rivalries = computeManagerRivalries(m, state.managers || []);
+
+    let nemesisHTML = '';
+    if (rivalries.nemesis) {
+      const nem = rivalries.nemesis;
+      const ptsPrefix = nem.pointsDiff > 0 ? '+' : '';
+      nemesisHTML = `
+        <button type="button" onclick="window.openH2HWithOpponent('${m.id}', '${nem.opponent.id}')"
+          class="flex items-center justify-between p-2.5 rounded-xl border text-left transition hover:scale-[1.01] shadow-sm bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300 group cursor-pointer"
+          title="Clicca per aprire il duello Head-to-Head contro ${nem.opponent.name}">
+          <div class="flex items-center gap-2 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-rose-500/20 flex items-center justify-center font-bold text-sm shrink-0 border border-rose-500/30">
+              👹
+            </div>
+            <div class="min-w-0">
+              <span class="block text-[9px] uppercase tracking-wider font-extrabold opacity-70">Bestia Nera</span>
+              <span class="block text-xs font-black truncate">${nem.opponent.name}</span>
+            </div>
+          </div>
+          <div class="text-right shrink-0">
+            <span class="block text-[11px] font-black">${nem.wins}V - ${nem.ties}N - ${nem.losses}P</span>
+            <span class="block text-[10px] font-bold text-rose-600 dark:text-rose-400">${ptsPrefix}${nem.pointsDiff} pt</span>
+          </div>
+        </button>
+      `;
+    } else {
+      nemesisHTML = `
+        <div class="flex items-center gap-2 p-2.5 rounded-xl border opacity-60 border-slate-700/40 bg-black/5 dark:bg-white/5">
+          <div class="w-8 h-8 rounded-lg bg-black/10 dark:bg-white/10 flex items-center justify-center font-bold text-sm shrink-0">
+            👹
+          </div>
+          <div>
+            <span class="block text-[9px] uppercase tracking-wider font-extrabold opacity-70">Bestia Nera</span>
+            <span class="block text-xs font-bold italic opacity-80">Nessun tabù storico</span>
+          </div>
+        </div>
+      `;
+    }
+
+    let victimHTML = '';
+    if (rivalries.victim) {
+      const vic = rivalries.victim;
+      const ptsPrefix = vic.pointsDiff > 0 ? '+' : '';
+      victimHTML = `
+        <button type="button" onclick="window.openH2HWithOpponent('${m.id}', '${vic.opponent.id}')"
+          class="flex items-center justify-between p-2.5 rounded-xl border text-left transition hover:scale-[1.01] shadow-sm bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 group cursor-pointer"
+          title="Clicca per aprire il duello Head-to-Head contro ${vic.opponent.name}">
+          <div class="flex items-center gap-2 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-500/30">
+              🎅
+            </div>
+            <div class="min-w-0">
+              <span class="block text-[9px] uppercase tracking-wider font-extrabold opacity-70">Babbo Natale</span>
+              <span class="block text-xs font-black truncate">${vic.opponent.name}</span>
+            </div>
+          </div>
+          <div class="text-right shrink-0">
+            <span class="block text-[11px] font-black">${vic.wins}V - ${vic.ties}N - ${vic.losses}P</span>
+            <span class="block text-[10px] font-bold text-emerald-600 dark:text-emerald-400">${ptsPrefix}${vic.pointsDiff} pt</span>
+          </div>
+        </button>
+      `;
+    } else {
+      victimHTML = `
+        <div class="flex items-center gap-2 p-2.5 rounded-xl border opacity-60 border-slate-700/40 bg-black/5 dark:bg-white/5">
+          <div class="w-8 h-8 rounded-lg bg-black/10 dark:bg-white/10 flex items-center justify-center font-bold text-sm shrink-0">
+            🎅
+          </div>
+          <div>
+            <span class="block text-[9px] uppercase tracking-wider font-extrabold opacity-70">Babbo Natale</span>
+            <span class="block text-xs font-bold italic opacity-80">Nessuna preda fissa</span>
+          </div>
+        </div>
+      `;
+    }
+
+    rivalriesContainer.innerHTML = nemesisHTML + victimHTML;
   }
 
   // 3. Graphic Trophy Shelf

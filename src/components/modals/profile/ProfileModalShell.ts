@@ -94,6 +94,17 @@ export function getProfileModalShellHTML(): string {
           <div id="profile-badges-container" class="flex flex-wrap gap-1.5"></div>
         </div>
 
+        <!-- Rivalità Storiche Head-to-Head -->
+        <div id="profile-rivalries-section" class="mb-5">
+          <div class="text-xs font-bold uppercase tracking-wider mb-2 opacity-75 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <i class="fa-solid fa-handshake-angle text-amber-400"></i> Rivalità Storiche Head-to-Head
+            </span>
+            <span class="text-[10px] opacity-60 font-semibold">Duelli Diretti (≥ 2 st.)</span>
+          </div>
+          <div id="profile-rivalries-container" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+        </div>
+
         <!-- Bacheca Trofei del Mister -->
         <div class="p-4 rounded-2xl border mb-5"
           style="background-color: var(--table-surface); border-color: var(--table-border);">

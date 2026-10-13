@@ -364,5 +364,66 @@ describe('Head-to-Head (H2H) Engine & Router', () => {
       modalElement.listeners['click']({ target: modalElement });
       expect(modalElement.classList.contains('hidden')).toBe(true);
     });
+
+    it('renders subcomponents and handles duel vs matrix subtabs properly', async () => {
+      const { renderHeadToHeadModalHTML } = await import('@/components/modals/h2h/HeadToHeadTemplate');
+      const { renderHeadToHeadHero } = await import('@/components/modals/h2h/HeadToHeadHero');
+      const { renderHeadToHeadScoreboard } = await import('@/components/modals/h2h/HeadToHeadScoreboard');
+      const { renderHeadToHeadPalmares } = await import('@/components/modals/h2h/HeadToHeadPalmares');
+      const { renderHeadToHeadMetrics } = await import('@/components/modals/h2h/HeadToHeadMetrics');
+      const { renderNemesisMatrixView } = await import('@/components/modals/h2h/NemesisMatrixView');
+
+      const managerA: Manager = createTestManager({
+        id: 'm1',
+        name: 'Alfo',
+        years: 2,
+        gold: 1,
+        history: [{ season: '2024/25', team: 'A', rank: 1, points: 65, achievements: [] }]
+      });
+      const managerB: Manager = createTestManager({
+        id: 'm2',
+        name: 'Vannico',
+        years: 2,
+        silver: 1,
+        history: [{ season: '2024/25', team: 'B', rank: 2, points: 60, achievements: [] }]
+      });
+      const stats = computeHeadToHead(managerA, managerB);
+
+      // 1. Hero
+      const heroHTML = renderHeadToHeadHero(stats, [managerA, managerB]);
+      expect(heroHTML).toContain('Mister A');
+      expect(heroHTML).toContain('Mister B');
+      expect(heroHTML).toContain('VS');
+
+      // 2. Scoreboard
+      const scoreHTML = renderHeadToHeadScoreboard(stats, managerA, managerB, false);
+      expect(scoreHTML).toContain('Scontri Diretti di Campionato');
+      expect(scoreHTML).toContain('Vittorie Alfo');
+      expect(scoreHTML).toContain('Vittorie Vannico');
+
+      // 3. Palmares
+      const palmHTML = renderHeadToHeadPalmares(stats.palmares, managerA, managerB);
+      expect(palmHTML).toContain('Bacheca Trofei a Confronto');
+      expect(palmHTML).toContain('Scudetti (1° Posto)');
+
+      // 4. Metrics
+      const metricsHTML = renderHeadToHeadMetrics(stats, managerA, managerB, 'radar');
+      expect(metricsHTML).toContain('Indicatori &amp; Confronto Grafico');
+      expect(metricsHTML).toContain('Verdetto Storico della Sfida');
+
+      // 5. Matrix View
+      const matrixHTML = renderNemesisMatrixView([managerA, managerB], 'all');
+      expect(matrixHTML).toContain('Matrice Nemesi');
+      expect(matrixHTML).toContain('selectH2HDuel');
+
+      // 6. Duel tab vs Matrix tab in Shell
+      const duelHTML = renderHeadToHeadModalHTML(stats, [managerA, managerB], false, 'radar', 'duel');
+      expect(duelHTML).toContain('Duello 1 vs 1');
+      expect(duelHTML).toContain('Bacheca Trofei a Confronto');
+
+      const matrixTabHTML = renderHeadToHeadModalHTML(stats, [managerA, managerB], false, 'radar', 'matrix');
+      expect(matrixTabHTML).toContain('Matrice Globale');
+      expect(matrixTabHTML).toContain('MISTER A \\ B');
+    });
   });
 });

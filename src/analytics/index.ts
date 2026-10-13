@@ -4,3 +4,4 @@ export * from './econometrics';
 export * from './chronology';
 export * from './badges';
 export * from './headToHead';
+export * from './nemesis';

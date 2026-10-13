@@ -58,8 +58,14 @@ import {
   changeH2HManagerB,
   toggleH2HChronology,
   openH2HFromProfile,
+  openH2HWithOpponent,
   shareH2HWhatsApp,
-  setH2HVisualMode
+  setH2HVisualMode,
+  setH2HTab,
+  getH2HTab,
+  selectH2HDuel,
+  openNemesisMatrixModal,
+  setNemesisFilter
 } from '@/components/modals';
 import {
   exportGraphicHD,
@@ -127,6 +133,7 @@ declare global {
     switchAnalyticsTab: typeof switchAnalyticsTab;
     switchChronologyView: typeof switchChronologyView;
     setManagerFilter: typeof setManagerFilter;
+    setNemesisFilter: typeof setNemesisFilter;
     toggleChronologySort: typeof toggleChronologySort;
     toggleSeasonSort: typeof toggleSeasonSort;
     changeChronologySort: typeof changeChronologySort;
@@ -169,8 +176,13 @@ declare global {
     changeH2HManagerB: typeof changeH2HManagerB;
     toggleH2HChronology: typeof toggleH2HChronology;
     openH2HFromProfile: typeof openH2HFromProfile;
+    openH2HWithOpponent: typeof openH2HWithOpponent;
     shareH2HWhatsApp: typeof shareH2HWhatsApp;
     setH2HVisualMode: typeof setH2HVisualMode;
+    setH2HTab: typeof setH2HTab;
+    getH2HTab: typeof getH2HTab;
+    selectH2HDuel: typeof selectH2HDuel;
+    openNemesisMatrixModal: typeof openNemesisMatrixModal;
   }
 }
 
@@ -265,6 +277,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     switchAnalyticsTab,
     switchChronologyView,
     setManagerFilter,
+    setNemesisFilter,
     toggleChronologySort,
     toggleSeasonSort,
     changeChronologySort,
@@ -307,7 +320,12 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     changeH2HManagerB,
     toggleH2HChronology,
     openH2HFromProfile,
+    openH2HWithOpponent,
     shareH2HWhatsApp,
-    setH2HVisualMode
+    setH2HVisualMode,
+    setH2HTab,
+    getH2HTab,
+    selectH2HDuel,
+    openNemesisMatrixModal
   });
 }

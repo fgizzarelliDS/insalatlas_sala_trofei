@@ -1,13 +1,15 @@
 import { state } from '@/state';
 import { computeHeadToHead } from '@/analytics';
 import { formatScore } from '@/score';
-import { renderHeadToHeadModalHTML } from './HeadToHeadTemplate';
+import { renderHeadToHeadModalHTML, type H2HTabMode } from './HeadToHeadTemplate';
 import { closeProfileModal } from '@/components/modals/ProfileModal';
 
 let selectedManagerIdA: string | null = null;
 let selectedManagerIdB: string | null = null;
 let isChronologyExpanded = false;
 let h2hVisualMode: 'radar' | 'bars' = 'radar';
+let currentH2HTab: H2HTabMode = 'duel';
+let currentNemesisFilter: 'active' | 'veterans' | 'all' = 'active';
 
 /**
  * Sets visual comparison mode: 'radar' or 'bars'
@@ -22,6 +24,41 @@ export function setH2HVisualMode(mode: 'radar' | 'bars'): void {
  */
 export function getH2HVisualMode(): 'radar' | 'bars' {
   return h2hVisualMode;
+}
+
+/**
+ * Sets active sub-tab: 'duel' (1vs1 face-off) or 'matrix' (N x N cross-table)
+ */
+export function setH2HTab(tab: H2HTabMode): void {
+  currentH2HTab = tab;
+  renderHeadToHeadDOM();
+}
+
+/**
+ * Gets active H2H sub-tab
+ */
+export function getH2HTab(): H2HTabMode {
+  return currentH2HTab;
+}
+
+/**
+ * Sets scope filter for the Nemesis matrix ('active' | 'veterans' | 'all')
+ */
+export function setNemesisFilter(filter: 'active' | 'veterans' | 'all'): void {
+  currentNemesisFilter = filter;
+  renderHeadToHeadDOM();
+}
+
+/**
+ * Selects a specific duel from the matrix and switches immediately to the 1vs1 duel tab
+ */
+export function selectH2HDuel(idA: string, idB: string): void {
+  selectedManagerIdA = idA;
+  selectedManagerIdB = idB;
+  currentH2HTab = 'duel';
+  isChronologyExpanded = false;
+  renderHeadToHeadDOM();
+  updateURL(selectedManagerIdA, selectedManagerIdB);
 }
 
 /**
@@ -50,6 +87,7 @@ function cleanURL(): void {
 
 /**
  * Renders the Head-to-Head modal content into #head-to-head-modal-content
+ * and adjusts modal card width dynamically based on active tab
  */
 export function renderHeadToHeadDOM(): void {
   if (typeof document === 'undefined') return;
@@ -61,14 +99,37 @@ export function renderHeadToHeadDOM(): void {
 
   if (!managerA || !managerB) return;
 
+  // Dynamically adjust modal container width: max-w-2xl for duel, max-w-5xl for matrix
+  const dialog = document.getElementById('head-to-head-dialog');
+  if (dialog) {
+    if (currentH2HTab === 'matrix') {
+      dialog.classList.remove('max-w-2xl');
+      dialog.classList.add('max-w-5xl');
+    } else {
+      dialog.classList.remove('max-w-5xl');
+      dialog.classList.add('max-w-2xl');
+    }
+  }
+
   const stats = computeHeadToHead(managerA, managerB);
-  container.innerHTML = renderHeadToHeadModalHTML(stats, state.managers, isChronologyExpanded, h2hVisualMode);
+  container.innerHTML = renderHeadToHeadModalHTML(
+    stats,
+    state.managers,
+    isChronologyExpanded,
+    h2hVisualMode,
+    currentH2HTab,
+    currentNemesisFilter
+  );
 }
 
 /**
  * Opens Head-to-Head modal with specified or default managers
  */
-export function openHeadToHeadModal(idA?: string, idB?: string): void {
+export function openHeadToHeadModal(
+  idA?: string,
+  idB?: string,
+  initialTab: H2HTabMode = 'duel'
+): void {
   if (state.managers.length < 2) return;
 
   // Determine initial manager A
@@ -81,6 +142,7 @@ export function openHeadToHeadModal(idA?: string, idB?: string): void {
 
   selectedManagerIdA = initialA;
   selectedManagerIdB = initialB;
+  currentH2HTab = initialTab;
   isChronologyExpanded = false;
 
   renderHeadToHeadDOM();
@@ -176,7 +238,22 @@ export function openH2HFromProfile(): void {
 
   // Find another prominent manager as B (e.g. first manager different from current)
   const otherManager = state.managers.find(m => m.id !== currentId);
-  openHeadToHeadModal(currentId, otherManager?.id);
+  openHeadToHeadModal(currentId, otherManager?.id, 'duel');
+}
+
+/**
+ * Opens H2H comparison with a specific opponent directly from a profile rivalry badge
+ */
+export function openH2HWithOpponent(managerId: string, opponentId: string): void {
+  closeProfileModal();
+  openHeadToHeadModal(managerId, opponentId, 'duel');
+}
+
+/**
+ * Shortcut to open H2H modal directly into the global Nemesis Matrix view
+ */
+export function openNemesisMatrixModal(): void {
+  openHeadToHeadModal(undefined, undefined, 'matrix');
 }
 
 /**

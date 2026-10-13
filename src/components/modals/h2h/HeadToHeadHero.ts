@@ -1,0 +1,123 @@
+import type { Manager, HeadToHeadStats } from '@/types';
+import { formatScore } from '@/score';
+
+/**
+ * Extracts initials for manager avatar
+ */
+export function getInitials(name: string): string {
+  const parts = name.split(/[ &+/,-]/).filter(Boolean);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+}
+
+/**
+ * Renders the top manager selectors and face-off contender hero cards
+ */
+export function renderHeadToHeadHero(
+  stats: HeadToHeadStats,
+  allManagers: Manager[]
+): string {
+  const { managerA, managerB, metricsA, metricsB } = stats;
+  const initialsA = getInitials(managerA.name);
+  const initialsB = getInitials(managerB.name);
+
+  // Options for dropdowns
+  const optionsA = allManagers
+    .map(
+      m =>
+        `<option value="${m.id}" ${m.id === managerA.id ? 'selected' : ''} ${m.id === managerB.id ? 'disabled' : ''}>${m.name}</option>`
+    )
+    .join('');
+
+  const optionsB = allManagers
+    .map(
+      m =>
+        `<option value="${m.id}" ${m.id === managerB.id ? 'selected' : ''} ${m.id === managerA.id ? 'disabled' : ''}>${m.name}</option>`
+    )
+    .join('');
+
+  return `
+    <div class="p-3 rounded-2xl border" style="background-color: var(--table-surface); border-color: var(--table-border);">
+      <!-- Dropdown Selectors -->
+      <div class="grid grid-cols-2 gap-3 items-center">
+        <!-- Select A -->
+        <div class="min-w-0">
+          <label class="block text-[10px] font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5" style="color: var(--h2h-contender-a);">
+            <span class="w-2 h-2 rounded-full inline-block" style="background-color: var(--h2h-contender-a);"></span>
+            Mister A
+          </label>
+          <select id="h2h-select-a" onchange="changeH2HManagerA(this.value)"
+            class="w-full text-xs font-bold rounded-xl px-2.5 py-2 border focus:outline-none cursor-pointer truncate shadow-sm transition"
+            style="background-color: var(--input-bg); border-color: var(--input-border); color: var(--input-text);">
+            ${optionsA}
+          </select>
+        </div>
+
+        <!-- Select B -->
+        <div class="min-w-0">
+          <label class="block text-[10px] font-bold uppercase tracking-wider mb-1 flex items-center justify-end gap-1.5" style="color: var(--h2h-contender-b);">
+            Mister B
+            <span class="w-2 h-2 rounded-full inline-block" style="background-color: var(--h2h-contender-b);"></span>
+          </label>
+          <select id="h2h-select-b" onchange="changeH2HManagerB(this.value)"
+            class="w-full text-xs font-bold rounded-xl px-2.5 py-2 border focus:outline-none cursor-pointer truncate text-right shadow-sm transition"
+            style="background-color: var(--input-bg); border-color: var(--input-border); color: var(--input-text);">
+            ${optionsB}
+          </select>
+        </div>
+      </div>
+
+      <!-- Face-off Hero Cards -->
+      <div class="grid grid-cols-11 gap-1 items-center mt-3 pt-3 border-t" style="border-color: var(--table-border);">
+        <!-- Contender A Card -->
+        <div class="col-span-5 text-center p-2.5 rounded-xl border" style="background-color: var(--modal-bg); border-color: var(--table-border);">
+          <div class="w-11 h-11 mx-auto rounded-full flex items-center justify-center font-black text-sm border-2 mb-1.5 shadow"
+               style="background: radial-gradient(circle, var(--h2h-contender-a) 0%, transparent 80%), rgba(255,255,255,0.05); border-color: var(--h2h-contender-a); color: var(--text-main);">
+            ${initialsA}
+          </div>
+          <h3 class="font-sport font-black text-sm uppercase truncate leading-tight mb-1" style="color: var(--text-main);">
+            ${managerA.name}
+          </h3>
+          <div class="flex flex-wrap items-center justify-center gap-1">
+            <span class="inline-block text-[10px] font-black px-2 py-0.5 rounded-full border"
+                  style="color: var(--h2h-contender-a); border-color: var(--h2h-contender-a); background-color: rgba(125, 125, 125, 0.08);">
+              ${formatScore(metricsA.score)} PT
+            </span>
+            <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border"
+                  style="background: ${metricsA.archetypeColor}20; color: ${metricsA.archetypeColor}; border-color: ${metricsA.archetypeColor}50;">
+              <i class="fa-solid ${metricsA.archetypeIcon} text-[9px]"></i> ${metricsA.archetypeTag}
+            </span>
+          </div>
+        </div>
+
+        <!-- VS Emblem -->
+        <div class="col-span-1 text-center font-sport font-black text-sm italic tracking-widest opacity-60 drop-shadow" style="color: var(--accent-color);">
+          VS
+        </div>
+
+        <!-- Contender B Card -->
+        <div class="col-span-5 text-center p-2.5 rounded-xl border" style="background-color: var(--modal-bg); border-color: var(--table-border);">
+          <div class="w-11 h-11 mx-auto rounded-full flex items-center justify-center font-black text-sm border-2 mb-1.5 shadow"
+               style="background: radial-gradient(circle, var(--h2h-contender-b) 0%, transparent 80%), rgba(255,255,255,0.05); border-color: var(--h2h-contender-b); color: var(--text-main);">
+            ${initialsB}
+          </div>
+          <h3 class="font-sport font-black text-sm uppercase truncate leading-tight mb-1" style="color: var(--text-main);">
+            ${managerB.name}
+          </h3>
+          <div class="flex flex-wrap items-center justify-center gap-1">
+            <span class="inline-block text-[10px] font-black px-2 py-0.5 rounded-full border"
+                  style="color: var(--h2h-contender-b); border-color: var(--h2h-contender-b); background-color: rgba(125, 125, 125, 0.08);">
+              ${formatScore(metricsB.score)} PT
+            </span>
+            <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border"
+                  style="background: ${metricsB.archetypeColor}20; color: ${metricsB.archetypeColor}; border-color: ${metricsB.archetypeColor}50;">
+              <i class="fa-solid ${metricsB.archetypeIcon} text-[9px]"></i> ${metricsB.archetypeTag}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}

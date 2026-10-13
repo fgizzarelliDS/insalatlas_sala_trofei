@@ -46,7 +46,7 @@ export function initModalMounts(): void {
       <!-- Modal: Head-to-Head Comparison -->
       <div id="head-to-head-modal"
         class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-2 sm:p-4">
-        <div class="w-full max-w-2xl rounded-3xl border shadow-2xl flex flex-col max-h-[92vh] overflow-hidden relative"
+        <div id="head-to-head-dialog" class="w-full max-w-2xl rounded-3xl border shadow-2xl flex flex-col max-h-[92vh] overflow-hidden relative transition-all duration-300"
           style="background-color: var(--modal-bg); border-color: var(--modal-border); color: var(--modal-text);">
           <div id="head-to-head-modal-content" class="flex flex-col h-full overflow-hidden"></div>
         </div>

@@ -108,7 +108,7 @@ export function renderAnalyticsModalDOM(
     </div>
 
     <!-- Navigation Tabs Bar -->
-    <div class="px-2 sm:px-6 py-2 border-b grid grid-cols-4 sm:flex items-center gap-1 sm:gap-2 shrink-0" style="border-color: var(--table-border); background: rgba(0,0,0,0.08);">
+    <div class="px-2 sm:px-6 py-2 border-b grid grid-cols-4 sm:flex items-center gap-1 sm:gap-2 shrink-0 overflow-x-auto" style="border-color: var(--table-border); background: rgba(0,0,0,0.08); scrollbar-width: thin;">
       ${tabButton('macro', 'Equilibrio & Macro', 'Equilibrio', 'fa-solid fa-scale-balanced')}
       ${tabButton('clutch', 'Cinismo & Podi', 'Cinismo', 'fa-solid fa-bullseye')}
       ${tabButton('risk', 'Archetipi', 'Archetipi', 'fa-solid fa-dice')}

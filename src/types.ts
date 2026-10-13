@@ -388,3 +388,44 @@ export interface HeadToHeadStats {
   narrativeVerdict: string;
 }
 
+export interface RivalryOpponent {
+  opponent: Manager;
+  wins: number;
+  ties: number;
+  losses: number;
+  pointsDiff: number;
+  sharedSeasons: number;
+  rivalryScore: number;
+}
+
+export interface ManagerRivalryStats {
+  managerId: string;
+  nemesis: RivalryOpponent | null;
+  victim: RivalryOpponent | null;
+  biggestBlowout: {
+    opponent: Manager;
+    season: string;
+    margin: number;
+    rankA: number;
+    rankB: number;
+    winner: 'A' | 'B';
+  } | null;
+  titleClashesCount: number;
+}
+
+export interface NemesisMatrixCell {
+  managerAId: string;
+  managerBId: string;
+  sharedSeasons: number;
+  winsA: number;
+  ties: number;
+  winsB: number;
+  pointsDiffA: number;
+  status: 'positive' | 'negative' | 'neutral' | 'none' | 'self';
+}
+
+export interface NemesisMatrixData {
+  managers: Manager[];
+  matrix: Record<string, Record<string, NemesisMatrixCell>>;
+}
+

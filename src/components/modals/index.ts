@@ -5,3 +5,4 @@ export * from './ManagerModal';
 export * from './ManagerModalTemplate';
 export * from './ConcentrationModal';
 export * from './analytics';
+export * from './season';

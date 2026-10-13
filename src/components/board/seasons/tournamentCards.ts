@@ -37,49 +37,82 @@ export function renderOtherTournamentsSection(otherTournaments: CompetitionRecor
     }
 
     let tournRows = '';
-    tourn.ranking?.forEach(r => {
-      let rankBadge = `#${r.rank}`;
-      let badgeStyle = 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
+    const isInProgress = !!tourn.in_progress || tourn.status === 'in_progress';
+    const hasRankings = Boolean(tourn.ranking && tourn.ranking.length > 0);
 
-      if (r.rank === 1) {
-        rankBadge = '🥇 Vincitore';
-        badgeStyle = 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-500/25 dark:text-amber-300 dark:border-amber-500/40 font-black';
-      } else if (r.rank === 2) {
-        rankBadge = '🥈 Finalista';
-        badgeStyle = 'bg-slate-200 text-slate-800 border-slate-300 dark:bg-slate-700/60 dark:text-slate-200 dark:border-slate-600 font-bold';
-      }
+    if (hasRankings) {
+      tourn.ranking?.forEach(r => {
+        let rankBadge = `#${r.rank}`;
+        let badgeStyle = 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
 
-      const mgr = state.managers?.find(m => m.id === r.managerId);
-      const managerName = mgr ? mgr.name : (r.coach || 'Sconosciuto');
-      const clickHandler = r.managerId ? `onclick="openProfileModal('${r.managerId}')"` : '';
-      const cursorClass = r.managerId ? 'cursor-pointer hover:bg-amber-500/10' : '';
+        if (!isInProgress) {
+          if (r.rank === 1) {
+            rankBadge = '🥇 Vincitore';
+            badgeStyle = 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-500/25 dark:text-amber-300 dark:border-amber-500/40 font-black';
+          } else if (r.rank === 2) {
+            rankBadge = '🥈 Finalista';
+            badgeStyle = 'bg-slate-200 text-slate-800 border-slate-300 dark:bg-slate-700/60 dark:text-slate-200 dark:border-slate-600 font-bold';
+          }
+        }
 
-      tournRows += `
-        <tr ${clickHandler} class="border-b last:border-b-0 transition-colors ${cursorClass}" style="border-color: var(--table-border);">
-          <td class="py-2 px-1.5 sm:px-2.5 text-center align-middle whitespace-nowrap w-20 sm:w-24">
-            <span class="px-2 py-0.5 rounded-lg text-[11px] border shadow-sm inline-block ${badgeStyle}">
-              ${rankBadge}
-            </span>
-          </td>
-          <td class="py-2 px-2 sm:px-2.5 text-left align-middle min-w-0">
-            <div class="flex items-center gap-2 min-w-0">
-              <img src="${resolveTeamLogo(r.teamName, r.logo)}" alt="${r.teamName}" 
-                   class="w-6 h-6 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-700 shadow-sm"
-                   onerror="this.onerror=null; this.src='${getTeamFallbackCrest(r.teamName)}'">
-              <div class="min-w-0 flex-1">
-                <div class="font-bold text-xs leading-snug break-words" style="color: var(--text-main); word-break: break-word;">
-                  ${r.teamName}
-                </div>
-                <div class="text-[10px] font-semibold flex items-center gap-1 mt-0.5 truncate" style="color: var(--accent-color, #f59e0b);">
-                  <i class="fa-solid fa-user-tie text-[9px] opacity-70 shrink-0"></i>
-                  <span class="truncate">${managerName}</span>
+        const mgr = state.managers?.find(m => m.id === r.managerId);
+        const managerName = mgr ? mgr.name : (r.coach || 'Sconosciuto');
+        const clickHandler = r.managerId ? `onclick="openProfileModal('${r.managerId}')"` : '';
+        const cursorClass = r.managerId ? 'cursor-pointer hover:bg-amber-500/10' : '';
+
+        tournRows += `
+          <tr ${clickHandler} class="border-b last:border-b-0 transition-colors ${cursorClass}" style="border-color: var(--table-border);">
+            <td class="py-2 px-1.5 sm:px-2.5 text-center align-middle whitespace-nowrap w-20 sm:w-24">
+              <span class="px-2 py-0.5 rounded-lg text-[11px] border shadow-sm inline-block ${badgeStyle}">
+                ${rankBadge}
+              </span>
+            </td>
+            <td class="py-2 px-2 sm:px-2.5 text-left align-middle min-w-0">
+              <div class="flex items-center gap-2 min-w-0">
+                <img src="${resolveTeamLogo(r.teamName, r.logo)}" alt="${r.teamName}" 
+                     class="w-6 h-6 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-700 shadow-sm"
+                     onerror="this.onerror=null; this.src='${getTeamFallbackCrest(r.teamName)}'">
+                <div class="min-w-0 flex-1">
+                  <div class="font-bold text-xs leading-snug break-words" style="color: var(--text-main); word-break: break-word;">
+                    ${r.teamName}
+                  </div>
+                  <div class="text-[10px] font-semibold flex items-center gap-1 mt-0.5 truncate" style="color: var(--accent-color, #f59e0b);">
+                    <i class="fa-solid fa-user-tie text-[9px] opacity-70 shrink-0"></i>
+                    <span class="truncate">${managerName}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </td>
-        </tr>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    const cardBodyHtml = hasRankings
+      ? `
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b text-[10px] uppercase tracking-wider opacity-70" style="border-color: var(--table-border);">
+              <th class="py-1.5 px-2.5 text-center w-24">Esito</th>
+              <th class="py-1.5 px-2.5 text-left">Squadra / Mister</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tournRows}
+          </tbody>
+        </table>
+      `
+      : `
+        <div class="py-7 px-4 text-center flex flex-col items-center justify-center gap-2">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+            In corso
+          </span>
+          <span class="text-xs italic font-medium" style="color: var(--text-muted);">
+            Verdetti finali in definizione
+          </span>
+        </div>
       `;
-    });
 
     return `
       <div class="albo-table-wrap rounded-2xl overflow-hidden border flex flex-col justify-between" style="border-color: var(--table-border); background-color: var(--table-surface);">
@@ -88,22 +121,18 @@ export function renderOtherTournamentsSection(otherTournaments: CompetitionRecor
             <div class="flex items-center gap-2 font-sport font-bold text-xs sm:text-sm tracking-wide">
               ${trophyElement}
               <span>${tourn.name}</span>
+              ${isInProgress ? `
+                <span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-500 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                  <span class="w-1 h-1 rounded-full bg-amber-500 dark:bg-amber-400 animate-pulse"></span>
+                  In corso
+                </span>
+              ` : ''}
             </div>
             <span class="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-md border shadow-sm ${badgeStyleClass}">
               ${categoryBadge}
             </span>
           </div>
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="border-b text-[10px] uppercase tracking-wider opacity-70" style="border-color: var(--table-border);">
-                <th class="py-1.5 px-2.5 text-center w-24">Esito</th>
-                <th class="py-1.5 px-2.5 text-left">Squadra / Mister</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${tournRows}
-            </tbody>
-          </table>
+          ${cardBodyHtml}
         </div>
       </div>
     `;

@@ -56,8 +56,11 @@ def build_data(output_file: Optional[str] = None) -> int:
     # Flat competitions list (sorted descending by season for UI archive)
     all_competitions = []
     for s_doc in reversed(seasons_data):
+        s_in_progress = bool(s_doc.get('in_progress', False) or s_doc.get('status') == 'in_progress')
         comps = s_doc.get('competitions', [])
         for c in comps:
+            if s_in_progress and 'in_progress' not in c:
+                c['in_progress'] = True
             all_competitions.append(c)
 
     # Initialize managers dictionary
@@ -87,6 +90,7 @@ def build_data(output_file: Optional[str] = None) -> int:
     # Process seasons in chronological order
     for s_doc in seasons_data:
         s = s_doc.get('season', '')
+        s_in_progress = bool(s_doc.get('in_progress', False) or s_doc.get('status') == 'in_progress')
         comps = s_doc.get('competitions', [])
 
         champ = next((c for c in comps if is_championship(c.get('category', ''), c.get('name', ''))), None)
@@ -97,6 +101,9 @@ def build_data(output_file: Optional[str] = None) -> int:
 
         champ_id = champ.get('id')
         champ_ranking = champ.get('ranking', [])
+        champ_in_progress = bool(champ.get('in_progress', False) or s_in_progress or champ.get('status') == 'in_progress')
+        if champ_in_progress:
+            champ['in_progress'] = True
 
         # Determine last ranked position for wooden spoon
         ranked_numbers = [r['rank'] for r in champ_ranking if r.get('rank') is not None]
@@ -114,18 +121,25 @@ def build_data(output_file: Optional[str] = None) -> int:
             points = r.get('points')
             team_name = r.get('teamName')
 
-            achievements = create_championship_achievements(rank, last_rank, champ_id)
-            if rank == 1:
-                mgr['gold'] += 1
-            elif rank == 2:
-                mgr['silver'] += 1
-            elif rank == 3:
-                mgr['bronze'] += 1
-            elif rank == last_rank and last_rank >= 8:
-                mgr['spoon'] += 1
+            achievements = []
+            if not champ_in_progress:
+                achievements = create_championship_achievements(rank, last_rank, champ_id)
+                if rank == 1:
+                    mgr['gold'] += 1
+                elif rank == 2:
+                    mgr['silver'] += 1
+                elif rank == 3:
+                    mgr['bronze'] += 1
+                elif rank == last_rank and last_rank >= 8:
+                    mgr['spoon'] += 1
 
             # Check other competitions (cups, supercups, mundialito, playout)
             for oc in other_comps:
+                oc_in_progress = bool(oc.get('in_progress', False) or s_in_progress or oc.get('status') == 'in_progress')
+                if oc_in_progress:
+                    oc['in_progress'] = True
+                    continue
+
                 cat = oc.get('category', '')
                 ocid = oc.get('id')
                 for ocr in oc.get('ranking', []):
@@ -138,14 +152,18 @@ def build_data(output_file: Optional[str] = None) -> int:
                             if badge in mgr:
                                 mgr[badge] += 1
 
-            mgr['history'].append({
+            history_entry = {
                 'season': s,
                 'team': team_name,
                 'rank': rank,
                 'points': points,
                 'competitionId': champ_id,
                 'achievements': achievements
-            })
+            }
+            if champ_in_progress:
+                history_entry['in_progress'] = True
+
+            mgr['history'].append(history_entry)
 
     # Apply explicit overrides from managers.json and sort history descending
     for m in managers_meta:

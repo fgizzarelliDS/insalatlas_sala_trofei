@@ -1,4 +1,5 @@
 import { state } from '@/state';
+import { getAvailableSeasons } from './seasons/seasonSelector';
 
 /**
  * Recalculates and updates header summary counters
@@ -18,12 +19,29 @@ export function updateStatistics(): void {
     totalCartonati += m.cartonato || 0;
   });
 
+  const seasons = getAvailableSeasons();
+  const totalSeasons = seasons.length;
+  const inProgressSeasons = seasons.filter(s =>
+    state.competitions.some(c => c.season === s && (c.in_progress || c.status === 'in_progress'))
+  ).length;
+  const completedSeasons = totalSeasons - inProgressSeasons;
+
+  const seasonsEl = document.getElementById('stat-total-seasons');
+  const seasonsDetailEl = document.getElementById('stat-seasons-detail');
   const scudettiEl = document.getElementById('stat-total-scudetti');
   const cupsEl = document.getElementById('stat-total-cups');
   const mundialitoEl = document.getElementById('stat-total-mundialito');
   const spoonsEl = document.getElementById('stat-total-spoons');
   const cartonatiEl = document.getElementById('stat-total-cartonati');
 
+  if (seasonsEl) seasonsEl.textContent = String(totalSeasons);
+  if (seasonsDetailEl) {
+    if (inProgressSeasons > 0) {
+      seasonsDetailEl.textContent = `(${completedSeasons} + ${inProgressSeasons} in corso)`;
+    } else {
+      seasonsDetailEl.textContent = '';
+    }
+  }
   if (scudettiEl) scudettiEl.textContent = String(totalScudetti);
   if (cupsEl) cupsEl.textContent = String(totalCups);
   if (mundialitoEl) mundialitoEl.textContent = String(totalMundialito);

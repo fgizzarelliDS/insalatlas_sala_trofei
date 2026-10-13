@@ -14,6 +14,7 @@ scripts/*.html
 **/__pycache__/
 *.pyc
 scripts/extract_thropy.py
+scripts/download_*.py
 scripts/archive/teams/*
 scripts/archive/
 public/assets/trophies/*

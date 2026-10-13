@@ -90,7 +90,8 @@ export function renderSeasonsArchive(): void {
 
   // Season Header Summary
   const totalTeams = championship?.ranking?.length || comps[0]?.ranking?.length || 0;
-  const seasonSummaryHtml = renderSeasonHeaderSummary(currentSelectedSeason, comps.length, totalTeams);
+  const isSeasonInProgress = comps.some(c => c.in_progress || c.status === 'in_progress');
+  const seasonSummaryHtml = renderSeasonHeaderSummary(currentSelectedSeason, comps.length, totalTeams, isSeasonInProgress);
 
   // Render Championship Standings Table
   const championshipHtml = championship ? renderChampionshipTable(championship) : '';

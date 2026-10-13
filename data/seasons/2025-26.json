@@ -3,7 +3,7 @@
   "competitions": [
     {
       "id": 778165,
-      "name": "Serie Atlas 2025-2026",
+      "name": "Serie Atlas",
       "season": "2025/26",
       "category": "Campionato",
       "ranking": [
@@ -27,7 +27,7 @@
           "rank": 3,
           "teamName": "LevrieridAbruzzo",
           "coach": "Gizza & Gustacito",
-          "managerId": "m_1790651479571",
+          "managerId": "m_gizzagustacito",
           "points": 53.0,
           "logo": "assets/teams/16496754_03423498.png"
         },
@@ -107,7 +107,7 @@
     },
     {
       "id": 778171,
-      "name": "Coppa InsalAtlas 25-26",
+      "name": "Coppa InsalAtlas",
       "season": "2025/26",
       "category": "Coppa",
       "ranking": [
@@ -131,7 +131,7 @@
     },
     {
       "id": 778183,
-      "name": "Supercup InsalAtlas 25-26",
+      "name": "Supercoppa InsalAtlas",
       "season": "2025/26",
       "category": "Supercoppa",
       "ranking": [
@@ -155,7 +155,7 @@
     },
     {
       "id": 778190,
-      "name": "Mundialito 2025-2026",
+      "name": "Mundialito",
       "season": "2025/26",
       "category": "Mundialito",
       "ranking": [
@@ -179,7 +179,7 @@
     },
     {
       "id": 778199,
-      "name": "Coppa dei perdenti 25-26",
+      "name": "Coppa dei Perdenti",
       "season": "2025/26",
       "category": "Perdenti",
       "ranking": [

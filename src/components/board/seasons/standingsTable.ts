@@ -12,6 +12,7 @@ export function renderChampionshipTable(championship: CompetitionRecord): string
   }
 
   let rowsHtml = '';
+  const isInProgress = !!championship.in_progress || championship.status === 'in_progress';
   const numericRanks = championship.ranking
     .map(r => r.rank)
     .filter((rk): rk is number => typeof rk === 'number' && rk > 0);
@@ -21,7 +22,7 @@ export function renderChampionshipTable(championship: CompetitionRecord): string
   const sortedRanking = [...championship.ranking].sort((a, b) => {
     const getWeight = (r: typeof a) => {
       if (typeof r.rank === 'number' && r.rank > 0) {
-        if (isSpoonCompetition && r.rank === lastRank) return 999999;
+        if (!isInProgress && isSpoonCompetition && r.rank === lastRank) return 999999;
         return r.rank;
       }
       return 500000;
@@ -37,18 +38,24 @@ export function renderChampionshipTable(championship: CompetitionRecord): string
       rankLabel = `#${r.rank}`;
       rankBadgeClass = 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
 
-      if (r.rank === 1) {
-        rankLabel = '🥇 1°<span class="hidden sm:inline"> Scudetto</span>';
-        rankBadgeClass = 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-500/25 dark:text-amber-300 dark:border-amber-500/40 font-black';
-      } else if (r.rank === 2) {
-        rankLabel = '🥈 2°<span class="hidden sm:inline"> Posto</span>';
-        rankBadgeClass = 'bg-slate-200 text-slate-800 border-slate-300 dark:bg-slate-700/60 dark:text-slate-200 dark:border-slate-600 font-bold';
-      } else if (r.rank === 3) {
-        rankLabel = '🥉 3°<span class="hidden sm:inline"> Posto</span>';
-        rankBadgeClass = 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-700/25 dark:text-amber-400 dark:border-amber-700/40 font-bold';
-      } else if (r.rank === lastRank && lastRank >= 8) {
-        rankLabel = `🥄 ${r.rank}°<span class="hidden sm:inline"> Cucchiaio</span>`;
-        rankBadgeClass = 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/40 font-bold';
+      if (!isInProgress) {
+        if (r.rank === 1) {
+          rankLabel = '🥇 1°<span class="hidden sm:inline"> Scudetto</span>';
+          rankBadgeClass = 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-500/25 dark:text-amber-300 dark:border-amber-500/40 font-black';
+        } else if (r.rank === 2) {
+          rankLabel = '🥈 2°<span class="hidden sm:inline"> Posto</span>';
+          rankBadgeClass = 'bg-slate-200 text-slate-800 border-slate-300 dark:bg-slate-700/60 dark:text-slate-200 dark:border-slate-600 font-bold';
+        } else if (r.rank === 3) {
+          rankLabel = '🥉 3°<span class="hidden sm:inline"> Posto</span>';
+          rankBadgeClass = 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-700/25 dark:text-amber-400 dark:border-amber-700/40 font-bold';
+        } else if (r.rank === lastRank && lastRank >= 8) {
+          rankLabel = `🥄 ${r.rank}°<span class="hidden sm:inline"> Cucchiaio</span>`;
+          rankBadgeClass = 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/40 font-bold';
+        }
+      } else {
+        if (r.rank === 1) {
+          rankBadgeClass = 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30 font-bold';
+        }
       }
     }
 
@@ -98,7 +105,13 @@ export function renderChampionshipTable(championship: CompetitionRecord): string
       <div class="px-3.5 sm:px-4 py-2.5 sm:py-3 border-b flex items-center justify-between" style="border-color: var(--table-border); background-color: var(--header-bg); color: var(--header-text);">
         <div class="flex items-center gap-2 font-sport font-bold text-xs sm:text-sm tracking-wide">
           ${renderTrophySVG('gold_cup', 'compact')}
-          <span>${championship.name} (${championship.season}) • Classifica Ufficiale</span>
+          <span>${championship.name} (${championship.season}) • Classifica ${isInProgress ? 'Provvisoria' : 'Ufficiale'}</span>
+          ${isInProgress ? `
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-500 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400 animate-pulse"></span>
+              In corso
+            </span>
+          ` : ''}
         </div>
         <span class="text-xs font-semibold opacity-75 shrink-0 ml-2">
           ${championship.ranking.length} Squadre

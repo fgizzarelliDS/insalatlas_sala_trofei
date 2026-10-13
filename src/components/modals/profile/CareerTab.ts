@@ -106,8 +106,12 @@ export function getHistoricalTeamDetails(m: Manager): HistoricalTeamRecord[] {
             }
           }
           if (comp.season) teamsMap.get(key)!.seasons.add(comp.season);
-          if (r.logo && !teamsMap.get(key)!.logo) {
-            teamsMap.get(key)!.logo = r.logo;
+          if (r.logo) {
+            const currentLogo = teamsMap.get(key)!.logo;
+            const isCrestSvg = (logo?: string | null) => !!logo && logo.includes('assets/crests/');
+            if (!currentLogo || (isCrestSvg(currentLogo) && !isCrestSvg(r.logo))) {
+              teamsMap.get(key)!.logo = r.logo;
+            }
           }
         }
       });
@@ -121,7 +125,8 @@ export function getHistoricalTeamDetails(m: Manager): HistoricalTeamRecord[] {
         if (r.teamName && r.logo) {
           const key = norm(r.teamName);
           const entry = teamsMap.get(key);
-          if (entry && !entry.logo) {
+          const isCrestSvg = (logo?: string | null) => !!logo && logo.includes('assets/crests/');
+          if (entry && (!entry.logo || (isCrestSvg(entry.logo) && !isCrestSvg(r.logo)))) {
             entry.logo = r.logo;
           }
         }

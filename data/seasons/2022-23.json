@@ -3,7 +3,7 @@
   "competitions": [
     {
       "id": 147892,
-      "name": "Serie Atlas 2022-2023",
+      "name": "Serie Atlas",
       "season": "2022/23",
       "category": "Campionato",
       "ranking": [
@@ -107,7 +107,7 @@
     },
     {
       "id": 147893,
-      "name": "Coppa InsalAtlas 2022-2023",
+      "name": "Coppa InsalAtlas",
       "season": "2022/23",
       "category": "Coppa",
       "ranking": [
@@ -131,7 +131,7 @@
     },
     {
       "id": 778213,
-      "name": "Supercoppa InsalAtlas 2022-2023",
+      "name": "Supercoppa InsalAtlas",
       "season": "2022/23",
       "category": "Supercoppa",
       "ranking": [
@@ -155,7 +155,7 @@
     },
     {
       "id": 147876,
-      "name": "Coppa dei Perdenti 2022-2023",
+      "name": "Coppa dei Perdenti",
       "season": "2022/23",
       "category": "Perdenti",
       "ranking": [

@@ -72,7 +72,7 @@
     ]
   },
   {
-    "id": "m_1790651479571",
+    "id": "m_gizzagustacito",
     "name": "Gizza&Gustacito",
     "cartonato_coaches": []
   },
@@ -96,6 +96,16 @@
   {
     "id": "m_erboro",
     "name": "ErBoro",
+    "cartonato_coaches": []
+  },
+  {
+    "id": "m_zatte",
+    "name": "Zatte",
+    "cartonato_coaches": []
+  },
+  {
+    "id": "m_makakoleone",
+    "name": "Makako&Leone",
     "cartonato_coaches": []
   }
 ]

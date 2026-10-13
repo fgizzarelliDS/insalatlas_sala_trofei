@@ -116,7 +116,7 @@ export function renderAnalyticsModalDOM(
     </div>
 
     <!-- Modal Scrollable Body -->
-    <div class="px-3 py-2.5 sm:px-6 sm:py-3.5 overflow-y-auto space-y-2.5 flex-1 min-h-0">
+    <div class="px-3 py-2.5 sm:px-6 sm:py-3.5 overflow-y-auto space-y-2.5 flex-1 min-h-0" style="scrollbar-width: thin; scrollbar-color: var(--table-border) transparent;">
       
       <!-- Dynamic Tab Content -->
       ${tabContentHTML}

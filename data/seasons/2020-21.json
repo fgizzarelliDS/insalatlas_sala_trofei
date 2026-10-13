@@ -3,7 +3,7 @@
   "competitions": [
     {
       "id": 147888,
-      "name": "SerieAtlas 2020-2021",
+      "name": "Serie Atlas",
       "season": "2020/21",
       "category": "Campionato",
       "ranking": [
@@ -107,7 +107,7 @@
     },
     {
       "id": 147881,
-      "name": "Coppa InsalAtlas 2020-2021",
+      "name": "Coppa InsalAtlas",
       "season": "2020/21",
       "category": "Coppa",
       "ranking": [
@@ -131,7 +131,7 @@
     },
     {
       "id": 147879,
-      "name": "Supercoppa InsalAtlas 2020-2021",
+      "name": "Supercoppa InsalAtlas",
       "season": "2020/21",
       "category": "Supercoppa",
       "ranking": [

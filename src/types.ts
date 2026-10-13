@@ -25,6 +25,7 @@ export interface SeasonRecord {
   rank: number | null;
   points: number | null;
   competitionId?: number | null;
+  in_progress?: boolean;
   achievements: Achievement[];
 }
 
@@ -42,6 +43,8 @@ export interface CompetitionRecord {
   name: string;
   season: string;
   category: string;
+  in_progress?: boolean;
+  status?: 'in_progress' | 'completed';
   ranking: CompetitionRankingItem[];
 }
 

@@ -1,6 +1,7 @@
 import { closeProfileModal, closeShareDropdown } from './ProfileModal';
 import { closeManagerModal } from './ManagerModal';
 import { closeConcentrationModal, closeTierInfo } from './ConcentrationModal';
+import { closeSeasonModal } from './season/SeasonModalController';
 
 /**
  * Sets up backdrop click and Escape key listeners for all modals
@@ -9,6 +10,7 @@ export function initModalListeners(): void {
   const profileModal = document.getElementById('manager-profile-modal');
   const managerModal = document.getElementById('manager-modal');
   const concentrationModal = document.getElementById('concentration-modal');
+  const seasonModal = document.getElementById('season-modal');
 
   // Backdrop click: close profile modal when clicking outside card
   profileModal?.addEventListener('click', (e: MouseEvent) => {
@@ -28,6 +30,13 @@ export function initModalListeners(): void {
   concentrationModal?.addEventListener('click', (e: MouseEvent) => {
     if (e.target === concentrationModal) {
       closeConcentrationModal();
+    }
+  });
+
+  // Backdrop click: close season modal when clicking outside card
+  seasonModal?.addEventListener('click', (e: MouseEvent) => {
+    if (e.target === seasonModal) {
+      closeSeasonModal();
     }
   });
 
@@ -63,7 +72,9 @@ export function initModalListeners(): void {
         closeTierInfo();
         return;
       }
-      if (concentrationModal && !concentrationModal.classList.contains('hidden')) {
+      if (seasonModal && !seasonModal.classList.contains('hidden')) {
+        closeSeasonModal();
+      } else if (concentrationModal && !concentrationModal.classList.contains('hidden')) {
         closeConcentrationModal();
       } else if (managerModal && !managerModal.classList.contains('hidden')) {
         closeManagerModal();

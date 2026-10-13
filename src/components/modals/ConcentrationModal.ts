@@ -8,7 +8,7 @@ import type {
   SeasonSortField,
   ManagerFilterMode
 } from '@/types';
-import { renderAnalyticsModalDOM } from './ConcentrationModalTemplate';
+import { renderAnalyticsModalDOM } from './analytics';
 
 let currentTab: AnalyticsTab = 'macro';
 let tab2SortField: Tab2SortField = 'podiumRate';

@@ -3,7 +3,7 @@
   "competitions": [
     {
       "id": 147895,
-      "name": "Serie Atlas 2023-2024",
+      "name": "Serie Atlas",
       "season": "2023/24",
       "category": "Campionato",
       "ranking": [
@@ -107,7 +107,7 @@
     },
     {
       "id": 147896,
-      "name": "Coppa InsalAtlas 2023-2024",
+      "name": "Coppa InsalAtlas",
       "season": "2023/24",
       "category": "Coppa",
       "ranking": [
@@ -131,7 +131,7 @@
     },
     {
       "id": 778214,
-      "name": "Supercoppa InsalAtlas 2023-2024",
+      "name": "Supercoppa InsalAtlas",
       "season": "2023/24",
       "category": "Supercoppa",
       "ranking": [
@@ -155,7 +155,7 @@
     },
     {
       "id": 147878,
-      "name": "Mundialito 2023-2024",
+      "name": "Mundialito",
       "season": "2023/24",
       "category": "Mundialito",
       "ranking": [
@@ -179,7 +179,7 @@
     },
     {
       "id": 147875,
-      "name": "Coppa dei Perdenti 2023-2024",
+      "name": "Coppa dei Perdenti",
       "season": "2023/24",
       "category": "Perdenti",
       "ranking": [

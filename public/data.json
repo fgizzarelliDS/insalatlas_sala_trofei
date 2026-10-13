@@ -3,7 +3,7 @@
     {
       "id": "m_vannico",
       "name": "Vannico",
-      "years": 9,
+      "years": 10,
       "gold": 3,
       "silver": 1,
       "bronze": 0,
@@ -18,6 +18,15 @@
       "coach_banners": [],
       "cartonato_coaches": [],
       "history": [
+        {
+          "season": "2026/27",
+          "team": "A S CorradiAndBosuTeam",
+          "rank": 5,
+          "points": 0.0,
+          "competitionId": 863632,
+          "achievements": [],
+          "in_progress": true
+        },
         {
           "season": "2025/26",
           "team": "ASCorradiAndBosuTeam",
@@ -171,7 +180,7 @@
     {
       "id": "m_lucchetto",
       "name": "Lucchetto",
-      "years": 9,
+      "years": 10,
       "gold": 2,
       "silver": 1,
       "bronze": 0,
@@ -186,6 +195,15 @@
       "coach_banners": [],
       "cartonato_coaches": [],
       "history": [
+        {
+          "season": "2026/27",
+          "team": "Posto INFNito FC",
+          "rank": 6,
+          "points": 0.0,
+          "competitionId": 863632,
+          "achievements": [],
+          "in_progress": true
+        },
         {
           "season": "2025/26",
           "team": "CazzatoridelloIonio",
@@ -316,7 +334,7 @@
     {
       "id": "m_alfo",
       "name": "Alfo",
-      "years": 10,
+      "years": 11,
       "gold": 1,
       "silver": 3,
       "bronze": 2,
@@ -331,6 +349,15 @@
       "coach_banners": [],
       "cartonato_coaches": [],
       "history": [
+        {
+          "season": "2026/27",
+          "team": "Steven Bradbury FC",
+          "rank": 3,
+          "points": 0.0,
+          "competitionId": 863632,
+          "achievements": [],
+          "in_progress": true
+        },
         {
           "season": "2025/26",
           "team": "StevenBradburyFC",
@@ -530,7 +557,7 @@
     {
       "id": "m_peterdani",
       "name": "Peter&Dani",
-      "years": 7,
+      "years": 8,
       "gold": 1,
       "silver": 1,
       "bronze": 0,
@@ -545,6 +572,15 @@
       "coach_banners": [],
       "cartonato_coaches": [],
       "history": [
+        {
+          "season": "2026/27",
+          "team": "Sarviette FC",
+          "rank": 9,
+          "points": 0.0,
+          "competitionId": 863632,
+          "achievements": [],
+          "in_progress": true
+        },
         {
           "season": "2025/26",
           "team": "SarvietteFC",
@@ -766,7 +802,7 @@
     {
       "id": "m_valery",
       "name": "Valery",
-      "years": 10,
+      "years": 11,
       "gold": 1,
       "silver": 0,
       "bronze": 2,
@@ -781,6 +817,15 @@
       "coach_banners": [],
       "cartonato_coaches": [],
       "history": [
+        {
+          "season": "2026/27",
+          "team": "Scalo San Genesio",
+          "rank": 1,
+          "points": 0.0,
+          "competitionId": 863632,
+          "achievements": [],
+          "in_progress": true
+        },
         {
           "season": "2025/26",
           "team": "ScaloSanGenesio",
@@ -905,7 +950,7 @@
     {
       "id": "m_sebba",
       "name": "Sebba",
-      "years": 9,
+      "years": 10,
       "gold": 1,
       "silver": 0,
       "bronze": 1,
@@ -920,6 +965,15 @@
       "coach_banners": [],
       "cartonato_coaches": [],
       "history": [
+        {
+          "season": "2026/27",
+          "team": "Arcore 1936",
+          "rank": 4,
+          "points": 0.0,
+          "competitionId": 863632,
+          "achievements": [],
+          "in_progress": true
+        },
         {
           "season": "2025/26",
           "team": "Arcore1936",
@@ -1028,7 +1082,7 @@
     {
       "id": "m_gigicholo",
       "name": "Gigi&Dr.Cholo",
-      "years": 6,
+      "years": 7,
       "gold": 0,
       "silver": 1,
       "bronze": 0,
@@ -1050,6 +1104,15 @@
       ],
       "history": [
         {
+          "season": "2026/27",
+          "team": "CarloMonte FC",
+          "rank": 10,
+          "points": 0.0,
+          "competitionId": 863632,
+          "achievements": [],
+          "in_progress": true
+        },
+        {
           "season": "2025/26",
           "team": "CarloMonteFC",
           "rank": 11,
@@ -1058,7 +1121,7 @@
           "achievements": [
             {
               "title": "Vincitore Playout (Cartonato)",
-              "category": "Perdenti",
+              "category": "Playout",
               "badge": "cartonato",
               "icon": "📦",
               "competitionId": 778199
@@ -1111,9 +1174,9 @@
             },
             {
               "title": "Vincitore Playout (Cartonato)",
-              "category": "Perdenti",
+              "category": "Playout",
               "badge": "cartonato",
-              "icon": "🏷️",
+              "icon": "📦",
               "competitionId": 147875
             }
           ]
@@ -1163,7 +1226,7 @@
     {
       "id": "m_pippo",
       "name": "Pippo",
-      "years": 7,
+      "years": 8,
       "gold": 0,
       "silver": 0,
       "bronze": 0,
@@ -1182,6 +1245,15 @@
         "JURIC"
       ],
       "history": [
+        {
+          "season": "2026/27",
+          "team": "Partizan Peroni",
+          "rank": 8,
+          "points": 0.0,
+          "competitionId": 863632,
+          "achievements": [],
+          "in_progress": true
+        },
         {
           "season": "2025/26",
           "team": "PartizanPeroni",
@@ -1230,9 +1302,9 @@
             },
             {
               "title": "Vincitore Playout (Cartonato)",
-              "category": "Perdenti",
+              "category": "Playout",
               "badge": "cartonato",
-              "icon": "🏷️",
+              "icon": "📦",
               "competitionId": 147876
             }
           ]
@@ -1349,7 +1421,7 @@
     {
       "id": "m_scurcio",
       "name": "Scurcio",
-      "years": 10,
+      "years": 11,
       "gold": 0,
       "silver": 0,
       "bronze": 2,
@@ -1364,6 +1436,15 @@
       "coach_banners": [],
       "cartonato_coaches": [],
       "history": [
+        {
+          "season": "2026/27",
+          "team": "TorLupara FC",
+          "rank": 2,
+          "points": 0.0,
+          "competitionId": 863632,
+          "achievements": [],
+          "in_progress": true
+        },
         {
           "season": "2025/26",
           "team": "TorLuparaFC",
@@ -1481,7 +1562,7 @@
     {
       "id": "m_avvisatina",
       "name": "Avvisatina",
-      "years": 10,
+      "years": 11,
       "gold": 0,
       "silver": 0,
       "bronze": 1,
@@ -1496,6 +1577,15 @@
       "coach_banners": [],
       "cartonato_coaches": [],
       "history": [
+        {
+          "season": "2026/27",
+          "team": "LoTUS FC",
+          "rank": 7,
+          "points": 0.0,
+          "competitionId": 863632,
+          "achievements": [],
+          "in_progress": true
+        },
         {
           "season": "2025/26",
           "team": "LoTUSFC",
@@ -1605,7 +1695,7 @@
     {
       "id": "m_tazio",
       "name": "Tazio",
-      "years": 5,
+      "years": 6,
       "gold": 0,
       "silver": 0,
       "bronze": 1,
@@ -1624,6 +1714,15 @@
         "JURIC"
       ],
       "history": [
+        {
+          "season": "2026/27",
+          "team": "Kiwi Football Club",
+          "rank": 11,
+          "points": 0.0,
+          "competitionId": 863632,
+          "achievements": [],
+          "in_progress": true
+        },
         {
           "season": "2025/26",
           "team": "KiwiFootballClub",
@@ -1648,9 +1747,9 @@
             },
             {
               "title": "Vincitore Playout (Cartonato)",
-              "category": "Perdenti",
+              "category": "Playout",
               "badge": "cartonato",
-              "icon": "🏷️",
+              "icon": "📦",
               "competitionId": 147874
             }
           ]
@@ -1690,9 +1789,9 @@
       ]
     },
     {
-      "id": "m_1790651479571",
+      "id": "m_gizzagustacito",
       "name": "Gizza&Gustacito",
-      "years": 1,
+      "years": 2,
       "gold": 0,
       "silver": 0,
       "bronze": 1,
@@ -1707,6 +1806,15 @@
       "coach_banners": [],
       "cartonato_coaches": [],
       "history": [
+        {
+          "season": "2026/27",
+          "team": "Levrieri d Abruzzo",
+          "rank": 12,
+          "points": 0.0,
+          "competitionId": 863632,
+          "achievements": [],
+          "in_progress": true
+        },
         {
           "season": "2025/26",
           "team": "LevrieridAbruzzo",
@@ -1758,7 +1866,7 @@
               "title": "Vincitore Playout (Cartonato)",
               "category": "Playout",
               "badge": "cartonato",
-              "icon": "BANNER",
+              "icon": "📦",
               "competitionId": 147877
             }
           ]
@@ -1864,12 +1972,228 @@
           ]
         }
       ]
+    },
+    {
+      "id": "m_zatte",
+      "name": "Zatte",
+      "years": 1,
+      "gold": 0,
+      "silver": 0,
+      "bronze": 0,
+      "spoon": 0,
+      "cup_gold": 0,
+      "cup_silver": 0,
+      "supercup": 0,
+      "supercup_silver": 0,
+      "mundialito": 0,
+      "mundialito_silver": 0,
+      "cartonato": 0,
+      "coach_banners": [],
+      "cartonato_coaches": [],
+      "history": [
+        {
+          "season": "2026/27",
+          "team": "AS Qualo",
+          "rank": 13,
+          "points": 0.0,
+          "competitionId": 863632,
+          "achievements": [],
+          "in_progress": true
+        }
+      ]
+    },
+    {
+      "id": "m_makakoleone",
+      "name": "Makako&Leone",
+      "years": 1,
+      "gold": 0,
+      "silver": 0,
+      "bronze": 0,
+      "spoon": 0,
+      "cup_gold": 0,
+      "cup_silver": 0,
+      "supercup": 0,
+      "supercup_silver": 0,
+      "mundialito": 0,
+      "mundialito_silver": 0,
+      "cartonato": 0,
+      "coach_banners": [],
+      "cartonato_coaches": [],
+      "history": [
+        {
+          "season": "2026/27",
+          "team": "LEONE MAKAKO CORPORATION",
+          "rank": 14,
+          "points": 0.0,
+          "competitionId": 863632,
+          "achievements": [],
+          "in_progress": true
+        }
+      ]
     }
   ],
   "competitions": [
     {
+      "id": 863632,
+      "name": "Serie Atlas (Fase 1)",
+      "season": "2026/27",
+      "category": "Campionato",
+      "in_progress": true,
+      "status": "in_progress",
+      "ranking": [
+        {
+          "rank": 1,
+          "teamName": "Scalo San Genesio",
+          "coach": "valeriodam",
+          "managerId": "m_valery",
+          "points": 0.0,
+          "logo": "assets/teams/2543640_02914103.png"
+        },
+        {
+          "rank": 2,
+          "teamName": "TorLupara FC",
+          "coach": "cursimone",
+          "managerId": "m_scurcio",
+          "points": 0.0,
+          "logo": "assets/teams/2544594_04501676.png"
+        },
+        {
+          "rank": 3,
+          "teamName": "Steven Bradbury FC",
+          "coach": "alfius91",
+          "managerId": "m_alfo",
+          "points": 0.0,
+          "logo": "assets/teams/2545500_09340839.png"
+        },
+        {
+          "rank": 4,
+          "teamName": "Arcore 1936",
+          "coach": "sebbadavid",
+          "managerId": "m_sebba",
+          "points": 0.0,
+          "logo": "assets/teams/2545541_03768647.png"
+        },
+        {
+          "rank": 5,
+          "teamName": "A S CorradiAndBosuTeam",
+          "coach": "vannico",
+          "managerId": "m_vannico",
+          "points": 0.0,
+          "logo": "assets/teams/2546265_07646962.png"
+        },
+        {
+          "rank": 6,
+          "teamName": "Posto INFNito FC",
+          "coach": "Lucchetto",
+          "managerId": "m_lucchetto",
+          "points": 0.0,
+          "logo": "assets/teams/2549374_08789113.png"
+        },
+        {
+          "rank": 7,
+          "teamName": "LoTUS FC",
+          "coach": "Juliet-91",
+          "managerId": "m_avvisatina",
+          "points": 0.0,
+          "logo": "assets/crests/golden_griffin.svg"
+        },
+        {
+          "rank": 8,
+          "teamName": "Partizan Peroni",
+          "coach": "Paiden",
+          "managerId": "m_pippo",
+          "points": 0.0,
+          "logo": "assets/crests/anchor_bay.svg"
+        },
+        {
+          "rank": 9,
+          "teamName": "Sarviette FC",
+          "coach": "petrubik88",
+          "managerId": "m_peterdani",
+          "points": 0.0,
+          "logo": "assets/teams/4862674_07729756.png"
+        },
+        {
+          "rank": 10,
+          "teamName": "CarloMonte FC",
+          "coach": "Dr cholo",
+          "managerId": "m_gigicholo",
+          "points": 0.0,
+          "logo": "assets/teams/6150431_02386417.png"
+        },
+        {
+          "rank": 11,
+          "teamName": "Kiwi Football Club",
+          "coach": "tazio13",
+          "managerId": "m_tazio",
+          "points": 0.0,
+          "logo": "assets/teams/7823986_09569971.png"
+        },
+        {
+          "rank": 12,
+          "teamName": "Levrieri d Abruzzo",
+          "coach": "Gizza",
+          "managerId": "m_gizzagustacito",
+          "points": 0.0,
+          "logo": "assets/teams/16496754_03423498.png"
+        },
+        {
+          "rank": 13,
+          "teamName": "AS Qualo",
+          "coach": "Zatte",
+          "managerId": "m_zatte",
+          "points": 0.0,
+          "logo": "assets/teams/20613187_04209253.png"
+        },
+        {
+          "rank": 14,
+          "teamName": "LEONE MAKAKO CORPORATION",
+          "coach": "Leone",
+          "managerId": "m_makakoleone",
+          "points": 0.0,
+          "logo": "assets/teams/20614631_002972323.png"
+        }
+      ]
+    },
+    {
+      "id": 864215,
+      "name": "Coppa InsalAtlas",
+      "season": "2026/27",
+      "category": "Coppa",
+      "in_progress": true,
+      "status": "in_progress",
+      "ranking": []
+    },
+    {
+      "id": 864501,
+      "name": "Supercoppa InsalAtlas",
+      "season": "2026/27",
+      "category": "Supercoppa",
+      "in_progress": true,
+      "status": "in_progress",
+      "ranking": []
+    },
+    {
+      "id": 864403,
+      "name": "Mundialito",
+      "season": "2026/27",
+      "category": "Mundialito",
+      "in_progress": true,
+      "status": "in_progress",
+      "ranking": []
+    },
+    {
+      "id": 864502,
+      "name": "Coppa dei Perdenti",
+      "season": "2026/27",
+      "category": "Perdenti",
+      "in_progress": true,
+      "status": "in_progress",
+      "ranking": []
+    },
+    {
       "id": 778165,
-      "name": "Serie Atlas 2025-2026",
+      "name": "Serie Atlas",
       "season": "2025/26",
       "category": "Campionato",
       "ranking": [
@@ -1893,7 +2217,7 @@
           "rank": 3,
           "teamName": "LevrieridAbruzzo",
           "coach": "Gizza & Gustacito",
-          "managerId": "m_1790651479571",
+          "managerId": "m_gizzagustacito",
           "points": 53.0,
           "logo": "assets/teams/16496754_03423498.png"
         },
@@ -1973,7 +2297,7 @@
     },
     {
       "id": 778171,
-      "name": "Coppa InsalAtlas 25-26",
+      "name": "Coppa InsalAtlas",
       "season": "2025/26",
       "category": "Coppa",
       "ranking": [
@@ -1997,7 +2321,7 @@
     },
     {
       "id": 778183,
-      "name": "Supercup InsalAtlas 25-26",
+      "name": "Supercoppa InsalAtlas",
       "season": "2025/26",
       "category": "Supercoppa",
       "ranking": [
@@ -2021,7 +2345,7 @@
     },
     {
       "id": 778190,
-      "name": "Mundialito 2025-2026",
+      "name": "Mundialito",
       "season": "2025/26",
       "category": "Mundialito",
       "ranking": [
@@ -2045,7 +2369,7 @@
     },
     {
       "id": 778199,
-      "name": "Coppa dei perdenti 25-26",
+      "name": "Coppa dei Perdenti",
       "season": "2025/26",
       "category": "Perdenti",
       "ranking": [
@@ -2069,7 +2393,7 @@
     },
     {
       "id": 147898,
-      "name": "Serie Atlas 2024-2025",
+      "name": "Serie Atlas",
       "season": "2024/25",
       "category": "Campionato",
       "ranking": [
@@ -2173,7 +2497,7 @@
     },
     {
       "id": 147900,
-      "name": "Coppa InsalAtlas 2024-2025",
+      "name": "Coppa InsalAtlas",
       "season": "2024/25",
       "category": "Coppa",
       "ranking": [
@@ -2197,7 +2521,7 @@
     },
     {
       "id": 778206,
-      "name": "Supercoppa InsalAtlas 2024-2025",
+      "name": "Supercoppa InsalAtlas",
       "season": "2024/25",
       "category": "Supercoppa",
       "ranking": [
@@ -2221,7 +2545,7 @@
     },
     {
       "id": 778205,
-      "name": "Finale Mundialito InsalAtlas 2024-2025",
+      "name": "Mundialito",
       "season": "2024/25",
       "category": "Mundialito",
       "ranking": [
@@ -2245,7 +2569,7 @@
     },
     {
       "id": 147874,
-      "name": "Coppa dei Perdenti 2024-2025",
+      "name": "Coppa dei Perdenti",
       "season": "2024/25",
       "category": "Perdenti",
       "ranking": [
@@ -2261,7 +2585,7 @@
     },
     {
       "id": 147895,
-      "name": "Serie Atlas 2023-2024",
+      "name": "Serie Atlas",
       "season": "2023/24",
       "category": "Campionato",
       "ranking": [
@@ -2365,7 +2689,7 @@
     },
     {
       "id": 147896,
-      "name": "Coppa InsalAtlas 2023-2024",
+      "name": "Coppa InsalAtlas",
       "season": "2023/24",
       "category": "Coppa",
       "ranking": [
@@ -2389,7 +2713,7 @@
     },
     {
       "id": 778214,
-      "name": "Supercoppa InsalAtlas 2023-2024",
+      "name": "Supercoppa InsalAtlas",
       "season": "2023/24",
       "category": "Supercoppa",
       "ranking": [
@@ -2413,7 +2737,7 @@
     },
     {
       "id": 147878,
-      "name": "Mundialito 2023-2024",
+      "name": "Mundialito",
       "season": "2023/24",
       "category": "Mundialito",
       "ranking": [
@@ -2437,7 +2761,7 @@
     },
     {
       "id": 147875,
-      "name": "Coppa dei Perdenti 2023-2024",
+      "name": "Coppa dei Perdenti",
       "season": "2023/24",
       "category": "Perdenti",
       "ranking": [
@@ -2453,7 +2777,7 @@
     },
     {
       "id": 147892,
-      "name": "Serie Atlas 2022-2023",
+      "name": "Serie Atlas",
       "season": "2022/23",
       "category": "Campionato",
       "ranking": [
@@ -2557,7 +2881,7 @@
     },
     {
       "id": 147893,
-      "name": "Coppa InsalAtlas 2022-2023",
+      "name": "Coppa InsalAtlas",
       "season": "2022/23",
       "category": "Coppa",
       "ranking": [
@@ -2581,7 +2905,7 @@
     },
     {
       "id": 778213,
-      "name": "Supercoppa InsalAtlas 2022-2023",
+      "name": "Supercoppa InsalAtlas",
       "season": "2022/23",
       "category": "Supercoppa",
       "ranking": [
@@ -2605,7 +2929,7 @@
     },
     {
       "id": 147876,
-      "name": "Coppa dei Perdenti 2022-2023",
+      "name": "Coppa dei Perdenti",
       "season": "2022/23",
       "category": "Perdenti",
       "ranking": [
@@ -2621,7 +2945,7 @@
     },
     {
       "id": 147889,
-      "name": "SerieAtlas 2021-2022",
+      "name": "Serie Atlas",
       "season": "2021/22",
       "category": "Campionato",
       "ranking": [
@@ -2725,7 +3049,7 @@
     },
     {
       "id": 147891,
-      "name": "Coppa InsalAtlas 2021-2022",
+      "name": "Coppa InsalAtlas",
       "season": "2021/22",
       "category": "Coppa",
       "ranking": [
@@ -2749,7 +3073,7 @@
     },
     {
       "id": 778209,
-      "name": "Supercoppa InsalAtlas 2021-2022",
+      "name": "Supercoppa InsalAtlas",
       "season": "2021/22",
       "category": "Supercoppa",
       "ranking": [
@@ -2773,7 +3097,7 @@
     },
     {
       "id": 147877,
-      "name": "Coppa dei Perdenti 2021-2022",
+      "name": "Coppa dei Perdenti",
       "season": "2021/22",
       "category": "Perdenti",
       "ranking": [
@@ -2789,7 +3113,7 @@
     },
     {
       "id": 147888,
-      "name": "SerieAtlas 2020-2021",
+      "name": "Serie Atlas",
       "season": "2020/21",
       "category": "Campionato",
       "ranking": [
@@ -2893,7 +3217,7 @@
     },
     {
       "id": 147881,
-      "name": "Coppa InsalAtlas 2020-2021",
+      "name": "Coppa InsalAtlas",
       "season": "2020/21",
       "category": "Coppa",
       "ranking": [
@@ -2917,7 +3241,7 @@
     },
     {
       "id": 147879,
-      "name": "Supercoppa InsalAtlas 2020-2021",
+      "name": "Supercoppa InsalAtlas",
       "season": "2020/21",
       "category": "Supercoppa",
       "ranking": [
@@ -2941,7 +3265,7 @@
     },
     {
       "id": 147887,
-      "name": "SerieAtlas 2019-2020",
+      "name": "Serie Atlas",
       "season": "2019/20",
       "category": "Campionato",
       "ranking": [
@@ -3029,7 +3353,7 @@
     },
     {
       "id": 147886,
-      "name": "Coppa InsalAtlas 2019-2020",
+      "name": "Coppa InsalAtlas",
       "season": "2019/20",
       "category": "Coppa",
       "ranking": [
@@ -3053,7 +3377,7 @@
     },
     {
       "id": 147880,
-      "name": "Supercoppa InsalAtlas 2019-2020",
+      "name": "Supercoppa InsalAtlas",
       "season": "2019/20",
       "category": "Supercoppa",
       "ranking": [
@@ -3077,7 +3401,7 @@
     },
     {
       "id": 147885,
-      "name": "SerieAtlas 2018-2019",
+      "name": "Serie Atlas",
       "season": "2018/19",
       "category": "Campionato",
       "ranking": [
@@ -3165,7 +3489,7 @@
     },
     {
       "id": 147882,
-      "name": "Coppa InsalAtlas 2018-2019",
+      "name": "Coppa InsalAtlas",
       "season": "2018/19",
       "category": "Coppa",
       "ranking": [
@@ -3189,7 +3513,7 @@
     },
     {
       "id": 147884,
-      "name": "SerieAtlas 2017-2018",
+      "name": "Serie Atlas",
       "season": "2017/18",
       "category": "Campionato",
       "ranking": [
@@ -3261,7 +3585,7 @@
     },
     {
       "id": 147883,
-      "name": "SerieAtlas 2016-2017",
+      "name": "Serie Atlas",
       "season": "2016/17",
       "category": "Campionato",
       "ranking": [

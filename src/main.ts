@@ -40,7 +40,16 @@ import {
   shareCurrentManagerWhatsApp,
   toggleShareDropdown,
   closeShareDropdown,
-  initModalListeners
+  initModalListeners,
+  openSeasonModal,
+  closeSeasonModal,
+  saveSeason,
+  changeSeasonTeamCount,
+  handleFantacalcioPasteParse,
+  handleFantacalcioFileUpload,
+  handleFantacalcioUrlFetch,
+  handleManagerSelectChange,
+  toggleSeasonSection
 } from '@/components/modals';
 import {
   exportGraphicHD,
@@ -71,6 +80,17 @@ export { changeSort, toggleDisplayMode, renderBoard, dismissScrollHint };
 export { switchMainViewTab, selectArchiveSeason, renderSeasonsArchive };
 export { updateStatistics };
 export { promptPWAInstall };
+export {
+  openSeasonModal,
+  closeSeasonModal,
+  saveSeason,
+  changeSeasonTeamCount,
+  handleFantacalcioPasteParse,
+  handleFantacalcioFileUpload,
+  handleFantacalcioUrlFetch,
+  handleManagerSelectChange,
+  toggleSeasonSection
+};
 
 // Global window augmentation for inline HTML event handlers
 declare global {
@@ -85,6 +105,15 @@ declare global {
     closeProfileModal: typeof closeProfileModal;
     openConcentrationModal: typeof openConcentrationModal;
     closeConcentrationModal: typeof closeConcentrationModal;
+    openSeasonModal: typeof openSeasonModal;
+    closeSeasonModal: typeof closeSeasonModal;
+    saveSeason: typeof saveSeason;
+    changeSeasonTeamCount: typeof changeSeasonTeamCount;
+    handleFantacalcioPasteParse: typeof handleFantacalcioPasteParse;
+    handleFantacalcioFileUpload: typeof handleFantacalcioFileUpload;
+    handleFantacalcioUrlFetch: typeof handleFantacalcioUrlFetch;
+    handleManagerSelectChange: typeof handleManagerSelectChange;
+    toggleSeasonSection: typeof toggleSeasonSection;
     switchAnalyticsTab: typeof switchAnalyticsTab;
     switchChronologyView: typeof switchChronologyView;
     setManagerFilter: typeof setManagerFilter;
@@ -182,6 +211,15 @@ if (typeof window !== 'undefined') {
     closeProfileModal,
     openConcentrationModal,
     closeConcentrationModal,
+    openSeasonModal,
+    closeSeasonModal,
+    saveSeason,
+    changeSeasonTeamCount,
+    handleFantacalcioPasteParse,
+    handleFantacalcioFileUpload,
+    handleFantacalcioUrlFetch,
+    handleManagerSelectChange,
+    toggleSeasonSection,
     switchAnalyticsTab,
     switchChronologyView,
     setManagerFilter,

@@ -40,6 +40,7 @@ import {
   shareCurrentManagerWhatsApp,
   toggleShareDropdown,
   closeShareDropdown,
+  initModalMounts,
   initModalListeners,
   openSeasonModal,
   closeSeasonModal,
@@ -49,7 +50,16 @@ import {
   handleFantacalcioFileUpload,
   handleFantacalcioUrlFetch,
   handleManagerSelectChange,
-  toggleSeasonSection
+  toggleSeasonSection,
+  openHeadToHeadModal,
+  closeHeadToHeadModal,
+  swapH2HManagers,
+  changeH2HManagerA,
+  changeH2HManagerB,
+  toggleH2HChronology,
+  openH2HFromProfile,
+  shareH2HWhatsApp,
+  setH2HVisualMode
 } from '@/components/modals';
 import {
   exportGraphicHD,
@@ -71,11 +81,11 @@ import {
   selectArchiveSeason,
   renderSeasonsArchive
 } from '@/components/board/seasonsArchive';
-import { findManagerByParam, getManagerParamFromURL } from '@/router';
+import { findManagerByParam, getManagerParamFromURL, getH2HParamFromURL } from '@/router';
 import { initPWA, promptPWAInstall } from '@/pwa';
 
 // Re-export router utilities, board controls, seasons archive, and PWA for unit tests and consumers
-export { findManagerByParam, getManagerParamFromURL };
+export { findManagerByParam, getManagerParamFromURL, getH2HParamFromURL };
 export { changeSort, toggleDisplayMode, renderBoard, dismissScrollHint };
 export { switchMainViewTab, selectArchiveSeason, renderSeasonsArchive };
 export { updateStatistics };
@@ -152,6 +162,15 @@ declare global {
     switchMainViewTab: typeof switchMainViewTab;
     selectArchiveSeason: typeof selectArchiveSeason;
     renderSeasonsArchive: typeof renderSeasonsArchive;
+    openHeadToHeadModal: typeof openHeadToHeadModal;
+    closeHeadToHeadModal: typeof closeHeadToHeadModal;
+    swapH2HManagers: typeof swapH2HManagers;
+    changeH2HManagerA: typeof changeH2HManagerA;
+    changeH2HManagerB: typeof changeH2HManagerB;
+    toggleH2HChronology: typeof toggleH2HChronology;
+    openH2HFromProfile: typeof openH2HFromProfile;
+    shareH2HWhatsApp: typeof shareH2HWhatsApp;
+    setH2HVisualMode: typeof setH2HVisualMode;
   }
 }
 
@@ -159,6 +178,7 @@ declare global {
  * Application Bootstrap Sequence
  */
 export async function initApp(): Promise<void> {
+  initModalMounts();
   initModalListeners();
   initResponsiveDisplayMode();
   await loadLeagueData();
@@ -176,10 +196,20 @@ export async function initApp(): Promise<void> {
       openProfileModal(found.id);
     }
   }
+
+  // Deep-linking: auto-open H2H comparison if ?h2h=... in URL
+  const h2hParam = getH2HParamFromURL();
+  if (h2hParam) {
+    const foundA = findManagerByParam(h2hParam.managerA);
+    const foundB = findManagerByParam(h2hParam.managerB);
+    if (foundA && foundB) {
+      openHeadToHeadModal(foundA.id, foundB.id);
+    }
+  }
 }
 
 // Bootstrap Sequence
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   if (document.readyState === 'loading') {
     window.addEventListener('DOMContentLoaded', initApp);
   } else {
@@ -188,6 +218,18 @@ if (typeof window !== 'undefined') {
 
   // Popstate: handle browser back/forward navigation
   window.addEventListener('popstate', () => {
+    const h2h = getH2HParamFromURL();
+    if (h2h) {
+      const foundA = findManagerByParam(h2h.managerA);
+      const foundB = findManagerByParam(h2h.managerB);
+      if (foundA && foundB) {
+        closeProfileModal();
+        openHeadToHeadModal(foundA.id, foundB.id);
+        return;
+      }
+    }
+    closeHeadToHeadModal();
+
     const p = getManagerParamFromURL();
     if (p) {
       const found = findManagerByParam(p);
@@ -257,6 +299,15 @@ if (typeof window !== 'undefined') {
     dismissScrollHint,
     switchMainViewTab,
     selectArchiveSeason,
-    renderSeasonsArchive
+    renderSeasonsArchive,
+    openHeadToHeadModal,
+    closeHeadToHeadModal,
+    swapH2HManagers,
+    changeH2HManagerA,
+    changeH2HManagerB,
+    toggleH2HChronology,
+    openH2HFromProfile,
+    shareH2HWhatsApp,
+    setH2HVisualMode
   });
 }

@@ -34,6 +34,8 @@ body.theme-gala {
   --input-bg: #1e293b;
   --input-border: #334155;
   --input-text: #f8fafc;
+  --h2h-contender-a: #f59e0b;
+  --h2h-contender-b: #38bdf8;
 }
 
 /* THEME 2: SERIE A CYAN NIGHT (Stadium Floodlights) */
@@ -67,6 +69,8 @@ body.theme-seriea {
   --input-bg: #0c2646;
   --input-border: #0e7490;
   --input-text: #f8fafc;
+  --h2h-contender-a: #06b6d4;
+  --h2h-contender-b: #f59e0b;
 }
 
 /* THEME 3: GAZZETTA ROSA VINTAGE (Editorial Newsprint) */
@@ -100,6 +104,8 @@ body.theme-gazzetta {
   --input-bg: #fff1f2;
   --input-border: #fda4af;
   --input-text: #1c1917;
+  --h2h-contender-a: #be123c;
+  --h2h-contender-b: #0284c7;
 }
 
 /* THEME 4: CLEAN STUDIO WHITE (Premium Sports Minimal) */
@@ -133,4 +139,6 @@ body.theme-studio {
   --input-bg: #f8fafc;
   --input-border: #cbd5e1;
   --input-text: #0f172a;
+  --h2h-contender-a: #2563eb;
+  --h2h-contender-b: #d97706;
 }

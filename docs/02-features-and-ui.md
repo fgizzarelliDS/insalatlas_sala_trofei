@@ -47,7 +47,10 @@ Il componente `src/components/board/seasonsArchive.ts` gestisce la consultazione
 L'hub econometrico e longitudinale (`src/components/modals/analytics/index.ts`) fornisce una suite completa di metriche competitive avanzate articolata su 4 sezioni:
 
 - **Tab 1: Equilibrio & Macro**: Indici di Gini bivariati ($G_{\text{prestige}}$, $G_{\text{rating}}$), concentrazione $CR_3$, Herfindahl-Hirschman Index ($\text{HHI}$) ed entropia relativa ($H_{\text{rel}}$) con diagnosi qualitativa a 4 scenari.
-- **Tab 2: Cinismo & Podi**: Frequenza podio ($PR\%$), Killer Instinct su scudetti vinti ($KI\%$) e conversione nelle finali secche di coppa ($CR\%$).
+- **Tab 2: Cinismo & Freddezza (Global Clutch Index)**:
+  - *KPI Cards Riassuntive*: evidenziano il *Top GCI* (con titolo dinamico es. "Mister Più Cinico", nome, indice e record ori/finali) e i migliori specialisti della lega in Killer Instinct e Conversion Rate.
+  - *Tabella Interattiva Ordinabile a 5 Colonne*: Manager, Podi ($PR\%$), Killer Instinct su scudetti vinti ($KI\%$), Conversion Rate nelle finali secche di coppa ($CR\%$) e l'**Indice GCI** sintetico con badge e colore di tier dedicato (visualizzazione a doppia riga con emoji e tier label sia su desktop che su mobile).
+  - *Ordinamento Flessibile*: supporto all'ordinamento bidirezionale su GCI, Killer Instinct, Finals Conversion Rate, Podium Rate o nome alfabetico.
 - **Tab 3: Archetipi Comportamentali**: Modello di coda (Feast-or-Famine bayesiano $\widetilde{FF}$, Net Tail Skew $NTS$ e Net Tail Index $NTI$) con classificazione deterministica a 9 archetipi.
 - **Tab 4: Dinamica Storica & Cronologia**:
   - **Prospettiva Manager**:
@@ -86,6 +89,12 @@ Dalla modale di profilo di ogni fantallenatore (`src/components/modals/ProfileMo
 - **Bump Chart Storica Decennale**: Visualizzazione interattiva dei piazzamenti ottenuti stagione per stagione (10 stagioni complessive). Le annate in cui il manager non ha preso parte alla competizione sono gestite esplicitamente come `N/D` con nodi visivi disconnessi per evitare distorsioni analitiche.
 - **Squadre Utilizzate nel Tempo**: Mensola a pillole con aggregazione automatica degli intervalli cronologici consecutivi (es. `NomeClub (2016-2018)`), visualizzando il logo personalizzato o lo stemma vettoriale corrispondente.
 - **Bacheca Trofei & Metriche di Carriera**: Tasso di conversione, piazzamenti podio, cucchiai di legno e banner personalizzati.
+- **Badge Analitici Unificati (4 Dimensioni)**:
+  - `Profilo: <Archetipo>` (waterfall a 9 priorità comportamentali).
+  - `Rischio: <Polarità NTI>` (polarità asimmetrica di coda).
+  - `Stabilità: <Categoria>` (dispersione posizionale $\sigma_R$).
+  - `Freddezza: <Tier>` (Global Clutch Index $GCI$ con neutralità debuttanti: *Glaciale*, *Cinico*, *Equilibrato*, *Incerto*, *Choker*, *Debuttante*).
+- **Trading Card HD 9:16**: Rendering ibrido automatico FontAwesome + emoji Unicode per una resa perfetta dei badge analitici e onorari su card collezionabile ad alta risoluzione.
 
 ### Pipeline di Rendering Off-Screen
 
@@ -104,12 +113,42 @@ Per garantire un rendering perfetto senza flickering visivo o troncamenti dovuti
 
 L'applicazione integra un generatore di messaggi di condivisione (`src/export/share.ts`):
 
-- **Messaggio Formattato**: Genera un testo arricchito con emoji, statistiche di carriera, bacheca trofei e l'archetipo comportamentale assegnato.
+- **Messaggio Formattato**: Genera un testo arricchito con emoji, statistiche di carriera, rating storico, bacheca trofei, l'archetipo comportamentale e il livello di Freddezza (`🏹 *Freddezza:* Cinico`).
 - **Deep Linking con Preview**: Include il link diretto `?manager=<id>` che apre automaticamente la modale del manager all'atterraggio grazie al modulo `src/router.ts`.
 
 ---
 
-## 7. Modalità Modifica & Inline Editing
+## 7. Modulo di Confronto Diretto Head-to-Head (H2H)
+
+L'applicazione include un modulo dedicato per il confronto diretto testa a testa tra due qualsiasi fantallenatori della lega (`src/components/modals/h2h/` & `src/analytics/headToHead.ts`):
+
+- **Punti di Accesso Integrati**:
+  - Pulsante `[⚔️ H2H]` nella Top Toolbar principale della schermata iniziale.
+  - Pulsante `[⚔️ Confronta]` all'interno della Scheda Profilo (`ProfileModal`), che pre-seleziona istantaneamente il manager corrente come Contendente A.
+- **Selettori Dinamici**:
+  - Menu a tendina speculari per la scelta indipendente di Contendente A e Contendente B, con gestione intelligente e inversione automatica in caso di selezione incrociata dello stesso manager.
+- **Scoreboard Scontri Diretti in Campionato**:
+  - Conteggio delle stagioni disputate insieme escludendo le annate in corso.
+  - Box a tre indicatori (*Vittorie A, Pareggi, Vittorie B*) con barra proporzionale tricolore.
+  - Tabellino cronologico espandibile annata per annata con squadra utilizzata, piazzamento A vs piazzamento B ed esito del confronto.
+- **Bacheca Trofei a Specchio**:
+  - Confronto diretto su Scudetti, Coppe di Lega, Supercoppe, Mundialito, Totale Titoli Major, Secondi/Terzi Posti, Cucchiai, Cartonati e Rating Storico con evidenziazione del leader.
+- **Doppia Visualizzazione Comparativa (Dual-Mode: Radar vs Barre)**:
+  - **Radar Chart Poligonale SVG a 6 assi**: calcolo vettoriale puro a 6 dimensioni (*Prestigio*, *Freddezza GCI*, *Killer Instinct*, *Conversione Coppe*, *Stabilità*, *Sicurezza Anti-Baratro*) scalate e normalizzate in $[0, 100]$ con poligoni semi-trasparenti per Mister A (Verde Smeraldo) e Mister B (Ambra/Oro).
+  - **Barre Orizzontali Comparative (Stile Duello)**: barre contrapposte a specchio che si espandono dal centro con valori numerici e corona di vittoria per l'attributo migliore.
+  - **Toggle Switcher Integrato**: selettore compatto `[🕸️ Radar]` / `[📊 Barre]` per alternare istantaneamente le due modalità visive.
+- **Indicatori di Performance Avanzati & Contrasto Tematico**:
+  - Comparazione fianco a fianco di Freddezza ($GCI$ e Tier), Killer Instinct podio ($KI\%$), Conversione finali coppe ($CR\%$), Rischio di Coda ($NTI$ e Polarità) e Stabilità posizionale ($\sigma_R$).
+  - Palette 100% conforme alle variabili CSS dei 4 temi di lega (`var(--text-main)`, `var(--modal-bg)`, `var(--table-surface)`, `var(--table-border)`), garantendo leggibilità ottimale sia su sfondi scuri sia su *Gazzetta Rosa Vintage* e *Clean Studio White*.
+- **Verdetto Narrativo Automatico**:
+  - Algoritmo che analizza l'esito degli scontri diretti e i differenziali di cinismo generando una diagnosi sintetica della rivalità sportiva.
+- **Deep Linking & Condivisione WhatsApp**:
+  - Parametro URL bidirezionale `?h2h=idA:idB` per la condivisione diretta di specifici duelli storici.
+  - Pulsante per esportare e inviare su WhatsApp il testo formattato del duello con punteggio, palmarès e link di visualizzazione rapida.
+
+---
+
+## 8. Modalità Modifica & Inline Editing
 
 - Accesso protetto da password verificata via **SHA-256 Web Crypto API** (`src/config.ts`).
 - Modifica contestuale in-place di tutti i titoli e intestazioni di colonna (`data-title-key`).
@@ -118,7 +157,7 @@ L'applicazione integra un generatore di messaggi di condivisione (`src/export/sh
 
 ---
 
-## 8. Progressive Web App (PWA) & Offline Layer
+## 9. Progressive Web App (PWA) & Offline Layer
 
 L'applicazione include il supporto PWA per l'installazione nativa su desktop e dispositivi mobili Android e iOS:
 

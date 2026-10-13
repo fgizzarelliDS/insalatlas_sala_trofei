@@ -76,11 +76,33 @@ Nei campionati di Fantacalcio ($N = 8 \dots 14$), il solo indice di Gini teorico
 Misura la percentuale di successo nelle **finali secche a eliminazione diretta** (Coppa di Lega e Supercoppa):
 $$\text{Conversion Rate}_i = \left(\frac{\text{CupGold}_i + \text{Supercup}_i}{\text{CupGold}_i + \text{Supercup}_i + \text{CupSilver}_i + \text{SupercupSilver}_i}\right) \times 100$$
 
-> [!NOTE]
->
-> - **Separazione Ortogonale tra Campionato e Coppe**: Lo Scudetto è governato dal **Killer Instinct ($KI\%$)**, che misura la maratona a tappe del campionato (capacità di convertire i podi in trionfi). Il **Conversion Rate ($CR\%$)** è invece strettamente riservato alle **finali secche da dentro o fuori**: misura la freddezza nei 90 minuti quando c'è una coppa in palio.
-> - **Accesso alla Supercoppa**: Si qualificano alla finale annuale il vincitore dello Scudetto ($\text{Gold}$) e il vincitore della Coppa di Lega ($\text{CupGold}$) di ciascuna stagione (competizione introdotta a partire dalla 4ª edizione della lega). Chi vince conquista la Supercoppa ($\text{Supercup}$), chi viene sconfitto registra una finale persa ($\text{SupercupSilver}$).
-> - **Mundialito**: Verrà integrato nel computo del cinismo non appena sarà formalizzato lo storico completo dei 3 sconfitti in finale delle rispettive edizioni.
+### 2.3 Global Clutch Index ($GCI$) & Tier di Freddezza
+
+Il **Global Clutch Index ($GCI \in [0.0, 100.0]$)** unifica la freddezza nei momenti decisivi tra Campionato (maratona a tappe) e Coppe (scontri secchi a eliminazione diretta). Per evitare le distorsioni tipiche dei piccoli campioni (es. manager con una sola finale vinta che risulterebbero al 100%), il calcolo applica uno **shrinkage Bayesiano di Laplace** coerente con i restanti indici della lega ($K = 1.0$):
+
+1. **Killer Instinct Bayesiano ($\widetilde{KI}_i$)**:
+   Prior uniforme pari a $1/3 \approx 0.33$ (probabilità a priori di vincere l'oro su un podio a 3 posizioni):
+   $$\widetilde{KI}_i = \frac{\text{Gold}_i + 1.0 \cdot 0.33}{\text{Podiums}_i + 1.0}$$
+
+2. **Finals Conversion Rate Bayesiano ($\widetilde{CR}_i$)**:
+   Prior simmetrico pari a $1/2 = 0.50$ (probabilità a priori di vittoria in una finale a 2 contendenti):
+   $$\widetilde{CR}_i = \frac{\text{FinalsWon}_i + 1.0 \cdot 0.50}{\text{FinalsPlayed}_i + 1.0}$$
+
+3. **Indice di Freddezza Globale ($GCI_i$)**:
+   Sintetizza i due tassi ponderando il Campionato al **70%** e le Coppe al **30%**:
+   $$GCI_i = \text{round}\left((0.70 \cdot \widetilde{KI}_i + 0.30 \cdot \widetilde{CR}_i) \times 100, 1\right)$$
+   *(Per i manager con $0$ stagioni concluse, $\text{CompletedYears}_i = 0$, il valore è impostato neutralmente a $0.0$).*
+
+4. **Tier di Freddezza**:
+
+| Soglia GCI | Tier & Label | Icona | Colore UI | Significato Tattico & Narrativo |
+| :---: | :--- | :---: | :---: | :--- |
+| **$\ge 70.0$** | **Glaciale** | ❄️ | 🔵 Cielo (`#0ea5e9`) | Freddezza implacabile: infallibile nei momenti decisivi di campionato e coppa. |
+| **$55.0 \dots 69.9$** | **Cinico** | 🏹 | 🟢 Menta (`#34d399`) | Killer instinct letale: trasforma costantemente i podi e le finali in argenteria. |
+| **$45.0 \dots 54.9$** | **Equilibrato** | ⚖️ | 🔵 Ciano (`#06b6d4`) | Rendimento solido e proporzionato: vince e perde finali in perfetta linea con le probabilità. |
+| **$25.0 \dots 44.9$** | **Incerto** | 😶‍🌫️ | 🟡 Ambra (`#f59e0b`) | Fatica a chiudere i conti quando la posta si alza: colleziona argenti e finali amare. |
+| **$< 25.0$** | **Choker** | 🥶 | 🔴 Rosso (`#ef4444`) | Blocco psicologico totale nei momenti chiave: crolli sistematici negli atti conclusivi. |
+| **Stagioni $= 0$** | **Debuttante** | 🌱 | ⚪ Ardesia (`#94a3b8`) | Nessuna stagione conclusa; neutralità statistica in attesa dei primi verdetti. |
 
 ---
 
@@ -224,6 +246,13 @@ Per garantire assoluta coerenza visiva e concettuale tra la **Scheda Profilo** (
      - ⚖️ `Stabilità: Equilibrato` ($2.0 \le \sigma_R \le 3.5$, Blu Zaffiro `#3b82f6`)
      - 🎢 `Stabilità: Montagna Russa` ($\sigma_R > 3.5$, Ambra `#f59e0b`)
      - 🌱 `Stabilità: Esordiente` ($N < 3$ stagioni, Ardesia `#94a3b8`)
+   - **`Freddezza: <Tier>`**: categorizzazione del Global Clutch Index ($GCI$) con neutralità debuttanti:
+     - ❄️ `Freddezza: Glaciale` ($GCI \ge 70.0$, Cielo `#0ea5e9`)
+     - 🏹 `Freddezza: Cinico` ($55.0 \le GCI < 70.0$, Menta `#34d399`)
+     - ⚖️ `Freddezza: Equilibrato` ($45.0 \le GCI < 55.0$, Ciano `#06b6d4`)
+     - 😶‍🌫️ `Freddezza: Incerto` ($25.0 \le GCI < 45.0$, Ambra `#f59e0b`)
+     - 🥶 `Freddezza: Choker` ($GCI < 25.0$, Rosso `#ef4444`)
+     - 🌱 `Freddezza: Debuttante` ($\text{CompletedYears} = 0$, Ardesia `#94a3b8`)
 2. **Badge Onorari & di Merito Storico** (sblocco progressivo in base al palmarès):
    - 🛡️ **Veterano della Lega**: $\ge 6$ stagioni disputate.
    - 👑 **Re dei Titoli**: $\ge 4$ titoli major vinti.

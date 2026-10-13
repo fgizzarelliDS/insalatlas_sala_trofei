@@ -6,3 +6,5 @@ export * from './ManagerModalTemplate';
 export * from './ConcentrationModal';
 export * from './analytics';
 export * from './season';
+export * from './h2h';
+export * from './initModals';

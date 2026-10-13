@@ -43,3 +43,28 @@ export function getManagerParamFromURL(): string | null {
 
   return null;
 }
+
+/**
+ * Extracts ?h2h=idA:idB query parameter from search or hash
+ */
+export function getH2HParamFromURL(): { managerA: string; managerB: string } | null {
+  if (typeof window === 'undefined') return null;
+  const searchParams = new URLSearchParams(window.location.search);
+  let raw = searchParams.get('h2h');
+
+  if (!raw && window.location && window.location.hash && window.location.hash.includes('h2h=')) {
+    const hashQuery = window.location.hash.slice(window.location.hash.indexOf('?'));
+    const hashParams = new URLSearchParams(hashQuery);
+    raw = hashParams.get('h2h');
+  }
+
+  if (raw && raw.includes(':')) {
+    const parts = raw.split(':');
+    if (parts.length >= 2 && parts[0].trim() && parts[1].trim()) {
+      return { managerA: parts[0].trim(), managerB: parts[1].trim() };
+    }
+  }
+
+  return null;
+}
+

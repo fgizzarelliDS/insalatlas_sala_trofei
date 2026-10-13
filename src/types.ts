@@ -317,3 +317,74 @@ export interface TradingCardBadge {
   color?: string;
   customStyle?: string;
 }
+
+export interface SharedSeasonDuel {
+  season: string;
+  rankA: number;
+  rankB: number;
+  winner: 'A' | 'B' | 'tie';
+  teamA?: string;
+  teamB?: string;
+}
+
+export interface HeadToHeadStats {
+  managerA: Manager;
+  managerB: Manager;
+  sharedSeasonsCount: number;
+  winsA: number;
+  winsB: number;
+  ties: number;
+  duels: SharedSeasonDuel[];
+  palmares: {
+    gold: { a: number; b: number };
+    silver: { a: number; b: number };
+    bronze: { a: number; b: number };
+    cupGold: { a: number; b: number };
+    supercup: { a: number; b: number };
+    mundialito: { a: number; b: number };
+    spoon: { a: number; b: number };
+    cartonato: { a: number; b: number };
+    totalTitles: { a: number; b: number };
+    ratingScore: { a: number; b: number };
+  };
+  metricsA: {
+    score: number;
+    gci: number;
+    clutchLabel: string;
+    clutchIcon: string;
+    clutchColor: string;
+    kiPct: number;
+    crPct: number;
+    nti: number;
+    polarityLabel: string;
+    polarityIcon: string;
+    polarityColor: string;
+    stabilityCategory: string;
+    stabilityIcon: string;
+    stdDevRank: number;
+    archetypeTag: string;
+    archetypeIcon: string;
+    archetypeColor: string;
+  };
+  metricsB: {
+    score: number;
+    gci: number;
+    clutchLabel: string;
+    clutchIcon: string;
+    clutchColor: string;
+    kiPct: number;
+    crPct: number;
+    nti: number;
+    polarityLabel: string;
+    polarityIcon: string;
+    polarityColor: string;
+    stabilityCategory: string;
+    stabilityIcon: string;
+    stdDevRank: number;
+    archetypeTag: string;
+    archetypeIcon: string;
+    archetypeColor: string;
+  };
+  narrativeVerdict: string;
+}
+

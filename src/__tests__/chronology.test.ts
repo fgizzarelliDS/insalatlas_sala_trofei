@@ -211,6 +211,99 @@ describe('Chronology Analytics Module', () => {
       expect(res.totalSpoons).toBe(0);
     });
 
+    it('excludes in-progress seasons from trajectory stats, podiums, spoons, and streaks', () => {
+      const managerWithActiveSeason: Manager = {
+        id: 'm_active',
+        name: 'Veteran In Progress',
+        years: 4,
+        gold: 1,
+        silver: 0,
+        bronze: 0,
+        spoon: 0,
+        cup_gold: 0,
+        cup_silver: 0,
+        supercup: 0,
+        mundialito: 0,
+        cartonato: 0,
+        history: [
+          { season: '2023/24', team: 'V', rank: 4, points: 50, achievements: [] },
+          { season: '2024/25', team: 'V', rank: 5, points: 48, achievements: [] },
+          // 2026/27 is currently in progress: rank 1 must NOT grant premature podium!
+          { season: '2026/27', team: 'V', rank: 1, points: 6, achievements: [], in_progress: true }
+        ]
+      };
+
+      const metrics = computeManagerTrajectoryMetrics([managerWithActiveSeason]);
+      expect(metrics).toHaveLength(1);
+      const res = metrics[0];
+
+      // Only the 2 completed seasons must be evaluated
+      expect(res.seasonsPlayed).toBe(2);
+      expect(res.isRookieInProgress).toBe(false);
+      expect(res.avgRank).toBe(4.5); // (4 + 5) / 2 = 4.5, rank 1 ignored
+      expect(res.bestRank).toBe(4);
+      expect(res.worstRank).toBe(5);
+      expect(res.totalPodiums).toBe(0); // In-progress rank 1 must not count as podium
+      expect(res.totalSpoons).toBe(0);
+      expect(res.maxPodiumStreak).toBe(0);
+      expect(res.currentPodiumStreak).toBe(0);
+      expect(res.tierDistribution.podiumCount).toBe(0);
+    });
+
+    it('correctly initializes rookie managers active only in the current in-progress season with neutral metrics and isRookieInProgress', () => {
+      const rookieManager: Manager = {
+        id: 'm_zatte',
+        name: 'Zatte',
+        years: 1,
+        gold: 0,
+        silver: 0,
+        bronze: 0,
+        spoon: 0,
+        cup_gold: 0,
+        cup_silver: 0,
+        supercup: 0,
+        mundialito: 0,
+        cartonato: 0,
+        history: [
+          { season: '2026/27', team: 'AS Qualo', rank: 13, points: 0, achievements: [], in_progress: true }
+        ]
+      };
+
+      const competitions: CompetitionRecord[] = [
+        {
+          id: 863632,
+          name: 'Serie Atlas 2026-2027',
+          season: '2026/27',
+          category: 'Campionato',
+          in_progress: true,
+          status: 'in_progress',
+          ranking: [
+            { rank: 13, teamName: 'AS Qualo', coach: 'Zatte', managerId: 'm_zatte', points: 0 }
+          ]
+        }
+      ];
+
+      const metrics = computeManagerTrajectoryMetrics([rookieManager], competitions);
+      expect(metrics).toHaveLength(1);
+      const res = metrics[0];
+
+      expect(res.seasonsPlayed).toBe(0);
+      expect(res.isRookieInProgress).toBe(true);
+      expect(res.isActive).toBe(true);
+      expect(res.avgRank).toBe(0);
+      expect(res.bestRank).toBeNull();
+      expect(res.worstRank).toBeNull();
+      expect(res.totalPodiums).toBe(0);
+      expect(res.totalSpoons).toBe(0); // In-progress rank 13 must not count as wooden spoon
+      expect(res.volatilityCategory).toBe('esordiente');
+      expect(res.volatilityLabel).toBe('Debuttante');
+      expect(res.volatilityIcon).toBe('🌱');
+      expect(res.tierDistribution.baricenterScore).toBe(0);
+      expect(res.tierDistribution.baricenterLabel).toBe('Debuttante');
+      expect(res.tierDistribution.podiumCount).toBe(0);
+      expect(res.tierDistribution.riskCount).toBe(0);
+    });
+
     it('accurately distributes performance across 4 dynamic tiers and weights for 8, 10, and 12-team leagues', () => {
       const eliteManager: Manager = {
         id: 'm_elite',
@@ -460,6 +553,39 @@ describe('Chronology Analytics Module', () => {
       const res = computeSeasonalParityMetrics(mockComps, mockManagers);
       expect(res[0].championName).toBe('Peter&Dani');
       expect(res[0].spoonName).toBe('Makako');
+    });
+
+    it('strictly filters out in-progress championships from seasonal parity analysis', () => {
+      const mixedComps: CompetitionRecord[] = [
+        {
+          id: 101,
+          name: 'Serie Atlas 2024-2025',
+          season: '2024/25',
+          category: 'Campionato',
+          status: 'completed',
+          ranking: [
+            { rank: 1, teamName: 'A', coach: 'Coach A', points: 65 },
+            { rank: 12, teamName: 'Z', coach: 'Coach Z', points: 30 }
+          ]
+        },
+        {
+          id: 102,
+          name: 'Serie Atlas 2026-2027',
+          season: '2026/27',
+          category: 'Campionato',
+          in_progress: true,
+          status: 'in_progress',
+          ranking: [
+            { rank: 1, teamName: 'Early Leader', coach: 'Coach EL', points: 6 },
+            { rank: 14, teamName: 'Temporary Last', coach: 'Coach TL', points: 0 }
+          ]
+        }
+      ];
+
+      const res = computeSeasonalParityMetrics(mixedComps);
+      expect(res).toHaveLength(1);
+      expect(res[0].season).toBe('2024/25');
+      expect(res.find(s => s.season === '2026/27')).toBeUndefined();
     });
   });
 

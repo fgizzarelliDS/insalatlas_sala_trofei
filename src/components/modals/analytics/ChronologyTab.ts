@@ -58,11 +58,13 @@ export function renderChronologyTab(
     if (chronologySortField === 'name') {
       cmp = a.name.localeCompare(b.name);
     } else if (chronologySortField === 'avg_rank') {
-      cmp = a.avgRank - b.avgRank || b.tierDistribution.baricenterScore - a.tierDistribution.baricenterScore;
+      const rankA = a.seasonsPlayed > 0 ? a.avgRank : 999;
+      const rankB = b.seasonsPlayed > 0 ? b.avgRank : 999;
+      cmp = rankA - rankB || b.tierDistribution.baricenterScore - a.tierDistribution.baricenterScore;
     } else if (chronologySortField === 'baricenter') {
-      cmp = a.tierDistribution.baricenterScore - b.tierDistribution.baricenterScore || a.avgRank - b.avgRank;
+      cmp = a.tierDistribution.baricenterScore - b.tierDistribution.baricenterScore || (a.seasonsPlayed > 0 ? a.avgRank : 999) - (b.seasonsPlayed > 0 ? b.avgRank : 999);
     } else if (chronologySortField === 'seasons') {
-      cmp = a.seasonsPlayed - b.seasonsPlayed || a.avgRank - b.avgRank;
+      cmp = a.seasonsPlayed - b.seasonsPlayed || (a.seasonsPlayed > 0 ? a.avgRank : 999) - (b.seasonsPlayed > 0 ? b.avgRank : 999);
     } else if (chronologySortField === 'oscillation') {
       if (a.seasonsPlayed > 1 && b.seasonsPlayed > 1) {
         cmp = a.stdDevRank - b.stdDevRank;
@@ -70,11 +72,13 @@ export function renderChronologyTab(
         cmp = b.seasonsPlayed - a.seasonsPlayed;
       }
     } else if (chronologySortField === 'podiums') {
-      cmp = a.totalPodiums - b.totalPodiums || a.avgRank - b.avgRank;
+      cmp = a.totalPodiums - b.totalPodiums || (a.seasonsPlayed > 0 ? a.avgRank : 999) - (b.seasonsPlayed > 0 ? b.avgRank : 999);
     } else if (chronologySortField === 'spoons') {
-      cmp = a.totalSpoons - b.totalSpoons || a.avgRank - b.avgRank;
+      cmp = a.totalSpoons - b.totalSpoons || (a.seasonsPlayed > 0 ? a.avgRank : 999) - (b.seasonsPlayed > 0 ? b.avgRank : 999);
     } else if (chronologySortField === 'merit') {
-      cmp = a.avgMeritPct - b.avgMeritPct || a.seasonsPlayed - b.seasonsPlayed;
+      const meritA = a.seasonsPlayed > 0 ? a.avgMeritPct : -1;
+      const meritB = b.seasonsPlayed > 0 ? b.avgMeritPct : -1;
+      cmp = meritA - meritB || a.seasonsPlayed - b.seasonsPlayed;
     }
     return chronologySortDirection === 'asc' ? cmp : -cmp;
   });
@@ -131,9 +135,11 @@ export function renderChronologyTab(
   if (currentChronologySubView === 'managers') {
     const poolForHighlights = filteredTrajectory.length > 0 ? filteredTrajectory : trajectoryProfiles;
     const qualified = poolForHighlights.filter(p => p.seasonsPlayed >= 2);
-    const topBaricenter = [...(qualified.length > 0 ? qualified : poolForHighlights)].sort((a, b) => b.tierDistribution.baricenterScore - a.tierDistribution.baricenterScore || a.avgRank - b.avgRank)[0];
-    const topMetronome = [...(qualified.length > 0 ? qualified : poolForHighlights)].sort((a, b) => a.stdDevRank - b.stdDevRank)[0];
-    const topPodiums = [...poolForHighlights].sort((a, b) => b.totalPodiums - a.totalPodiums)[0];
+    const withCompletedSeasons = poolForHighlights.filter(p => p.seasonsPlayed > 0);
+    const fallbackPool = withCompletedSeasons.length > 0 ? withCompletedSeasons : poolForHighlights;
+    const topBaricenter = [...(qualified.length > 0 ? qualified : fallbackPool)].sort((a, b) => b.tierDistribution.baricenterScore - a.tierDistribution.baricenterScore || a.avgRank - b.avgRank)[0];
+    const topMetronome = [...(qualified.length > 0 ? qualified : fallbackPool)].sort((a, b) => a.stdDevRank - b.stdDevRank)[0];
+    const topPodiums = [...fallbackPool].sort((a, b) => b.totalPodiums - a.totalPodiums)[0];
 
     let managerRowsHTML = '';
     sortedTrajectory.forEach((m, idx) => {
@@ -145,17 +151,17 @@ export function renderChronologyTab(
           <td class="py-2 px-2 min-w-[110px] sm:min-w-[125px]">
             <div class="flex items-center gap-1.5">
               <span class="font-bold text-xs block leading-tight" style="color: var(--text-main);">${m.name}</span>
-              ${m.isActive ? '<span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-sm" title="Attivo nella stagione 2025/26"></span>' : ''}
+              ${m.isActive ? '<span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-sm" title="Attivo nella stagione in corso"></span>' : ''}
             </div>
-            <span class="text-[10px] font-normal" style="color: var(--text-muted);">${m.seasonsPlayed} ${m.seasonsPlayed === 1 ? 'stagione' : 'stagioni'}</span>
+            <span class="text-[10px] font-normal" style="color: var(--text-muted);">${m.isRookieInProgress ? '0 (debuttante)' : `${m.seasonsPlayed} ${m.seasonsPlayed === 1 ? 'stagione' : 'stagioni'}`}</span>
           </td>
           <td class="py-2 px-2 min-w-[170px] sm:min-w-[185px]">
             <div class="flex items-baseline justify-between mb-1">
               <span class="text-xs sm:text-sm font-black font-mono whitespace-nowrap" style="color: var(--text-main);">
-                ${m.avgRank.toFixed(1)}° <span class="text-[10px] font-normal opacity-90">medio</span>
+                ${m.seasonsPlayed > 0 ? `${m.avgRank.toFixed(1)}° <span class="text-[10px] font-normal opacity-90">medio</span>` : '<span class="text-xs font-normal opacity-50">—</span>'}
               </span>
               <span class="text-[9px] font-mono whitespace-nowrap" style="color: var(--text-muted);">
-                Best #${m.bestRank || '—'} / Worst #${m.worstRank || '—'}
+                ${m.seasonsPlayed > 0 ? `Best #${m.bestRank || '—'} / Worst #${m.worstRank || '—'}` : 'In corso'}
               </span>
             </div>
             
@@ -173,7 +179,7 @@ export function renderChronologyTab(
               <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-sm tracking-tight whitespace-nowrap" 
                     style="border-color: ${m.tierDistribution.baricenterColor}40; background-color: ${m.tierDistribution.baricenterColor}15; color: ${m.tierDistribution.baricenterColor};">
                 <span>${m.tierDistribution.baricenterIcon || '🎯'}</span>
-                <span>${m.tierDistribution.baricenterLabel} · ${m.tierDistribution.baricenterScore.toFixed(1)}/4</span>
+                <span>${m.tierDistribution.baricenterLabel}${m.seasonsPlayed > 0 ? ` · ${m.tierDistribution.baricenterScore.toFixed(1)}/4` : ''}</span>
               </span>
             </div>
           </td>

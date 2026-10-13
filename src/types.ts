@@ -191,6 +191,7 @@ export interface ManagerTrajectoryMetrics {
   id: string;
   name: string;
   seasonsPlayed: number;
+  isRookieInProgress?: boolean;
   avgRank: number; // Real average rank (e.g. 3.8)
   stdDevRank: number; // Typical rank oscillation (e.g. 1.4)
   avgMeritPct: number; // 0% to 100%

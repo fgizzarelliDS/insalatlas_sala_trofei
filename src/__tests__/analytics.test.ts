@@ -383,5 +383,75 @@ describe('analytics.ts - Econometric and Analytical Invariants', () => {
       expect(profile.finalsPlayed).toBe(0);
       expect(profile.conversionRatePct).toBe(0);
     });
+
+    it('uses completed seasons (excluding in-progress seasons) as denominator for efficiency and podium rate', () => {
+      const veteranWithActiveSeason: Manager = createTestManager({
+        id: 'm_vet',
+        name: 'Veteran',
+        years: 11, // In raw data, years might say 11 (including active season)
+        gold: 2,
+        silver: 1,
+        bronze: 1,
+        cup_gold: 1,
+        history: [
+          ...Array.from({ length: 10 }, (_, i) => ({
+            season: `201${i}/1${i + 1}`,
+            team: 'Team V',
+            rank: 3,
+            points: 50,
+            achievements: []
+          })),
+          // 11th season is in-progress:
+          {
+            season: '2026/27',
+            team: 'Team V',
+            rank: 2,
+            points: 6,
+            achievements: [],
+            in_progress: true
+          }
+        ]
+      });
+
+      const res = computeLeagueConcentration([veteranWithActiveSeason]);
+      const profile = res.profiles[0];
+
+      // Total trophies: 2 gold + 1 cup_gold = 3 trophies
+      // Denominator must be 10 completed years, NOT 11!
+      // Efficiency = 3 / 10 = 0.30 (instead of 3 / 11 = 0.27)
+      expect(profile.years).toBe(10);
+      expect(profile.efficiency).toBe(0.30);
+      // Podiums: 2 + 1 + 1 = 4
+      // Podium rate = (4 / 10) * 100 = 40.0% (instead of 4 / 11 = 36.4%)
+      expect(profile.podiumRatePct).toBe(40.0);
+    });
+
+    it('safely handles a rookie manager active only in an in-progress season with 0 completed years', () => {
+      const rookie: Manager = createTestManager({
+        id: 'm_rookie',
+        name: 'Rookie',
+        years: 1,
+        history: [
+          {
+            season: '2026/27',
+            team: 'Team R',
+            rank: 8,
+            points: 0,
+            achievements: [],
+            in_progress: true
+          }
+        ]
+      });
+
+      const res = computeLeagueConcentration([rookie]);
+      const profile = res.profiles[0];
+
+      expect(profile.years).toBe(0);
+      expect(profile.efficiency).toBe(0);
+      expect(profile.prestigeEfficiency).toBe(0);
+      expect(profile.podiumRatePct).toBe(0);
+      expect(profile.trophies).toBe(0);
+    });
   });
 });
+

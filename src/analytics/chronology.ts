@@ -45,9 +45,13 @@ export function computeManagerTrajectoryMetrics(
       return yA - yB;
     });
 
+    const isActive = history.some(h => h.season === latestSeason);
+
     history.forEach(h => {
-      if (typeof h.rank === 'number' && h.rank > 0) {
-        const comp = championshipComps.find(c => c.season === h.season);
+      const comp = championshipComps.find(c => c.season === h.season);
+      const isInProgress = Boolean(h.in_progress || (h as any).status === 'in_progress' || comp?.in_progress || comp?.status === 'in_progress');
+
+      if (!isInProgress && typeof h.rank === 'number' && h.rank > 0) {
         const teamCount = comp?.ranking?.length
           ? comp.ranking.length
           : h.season.includes('16/17') || h.season.includes('17/18')
@@ -97,16 +101,17 @@ export function computeManagerTrajectoryMetrics(
     });
 
     const seasonsPlayed = meritList.length;
+    const isRookieInProgress = seasonsPlayed === 0 && (history.some(h => Boolean(h.in_progress || (h as any).status === 'in_progress')) || isActive);
 
     let avgRank = 0;
     let stdDevRank = 0;
     let avgMeritPct = 0;
     let stdDevMeritPct = 0;
     let cvPct = 0;
-    let volatilityCategory: VolatilityCategory = 'equilibrato';
-    let volatilityLabel = 'Equilibrato';
-    let volatilityIcon = '⚖️';
-    let volatilityColor = '#3b82f6';
+    let volatilityCategory: VolatilityCategory = 'esordiente';
+    let volatilityLabel = isRookieInProgress ? 'Debuttante' : 'Esordiente';
+    let volatilityIcon = '🌱';
+    let volatilityColor = '#94a3b8';
 
     if (seasonsPlayed > 0) {
       avgRank = ranksList.reduce((acc, v) => acc + v, 0) / seasonsPlayed;
@@ -156,10 +161,10 @@ export function computeManagerTrajectoryMetrics(
     let highPct = 0;
     let midPct = 0;
     let riskPct = 0;
-    let baricenterScore = 2.0;
-    let baricenterLabel = 'Metà Classifica';
-    let baricenterColor = '#3b82f6';
-    let baricenterIcon = '⚖️';
+    let baricenterScore = 0;
+    let baricenterLabel = isRookieInProgress ? 'Debuttante' : 'In attesa di dati';
+    let baricenterColor = '#94a3b8';
+    let baricenterIcon = '🌱';
 
     if (seasonsPlayed > 0) {
       podiumPct = Math.round((podiumCount / seasonsPlayed) * 100);
@@ -236,12 +241,12 @@ export function computeManagerTrajectoryMetrics(
     const bestRank = ranksList.length > 0 ? Math.min(...ranksList) : null;
     const worstRank = ranksList.length > 0 ? Math.max(...ranksList) : null;
     const totalPodiums = podiumList.filter(Boolean).length;
-    const isActive = history.some(h => h.season === latestSeason);
 
     return {
       id: m.id,
       name: m.name,
       seasonsPlayed,
+      isRookieInProgress,
       avgRank: Math.round(avgRank * 10) / 10,
       stdDevRank: Math.round(stdDevRank * 10) / 10,
       avgMeritPct: Math.round(avgMeritPct * 10) / 10,
@@ -297,7 +302,12 @@ export function computeSeasonalParityMetrics(
   };
 
   const championshipComps = (competitions || [])
-    .filter(c => c.category === 'Campionato' || (c.name && c.name.toLowerCase().includes('serie')))
+    .filter(
+      c =>
+        (c.category === 'Campionato' || (c.name && c.name.toLowerCase().includes('serie'))) &&
+        !c.in_progress &&
+        c.status !== 'in_progress'
+    )
     .sort((a, b) => {
       const yA = parseInt(a.season?.slice(0, 4) || '0', 10);
       const yB = parseInt(b.season?.slice(0, 4) || '0', 10);

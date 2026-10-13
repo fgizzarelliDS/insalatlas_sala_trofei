@@ -37,8 +37,15 @@ export function computeLeagueConcentration(managers: Manager[]): LeagueConcentra
     };
   }
 
+  const getCompletedYears = (m: Manager): number => {
+    if (m.history && m.history.length > 0) {
+      return m.history.filter(h => !h.in_progress && (h as any).status !== 'in_progress').length;
+    }
+    return m.years || 0;
+  };
+
   // League-wide aggregate FF for empirical Bayes prior
-  const totalYears = managers.reduce((acc, m) => acc + (m.years || 0), 0);
+  const totalYears = managers.reduce((acc, m) => acc + getCompletedYears(m), 0);
   const totalLeagueTailMass = managers.reduce((acc, m) => {
     const fm = computeFeastMass(m.gold || 0, m.cup_gold || 0);
     const dm = computeDisasterMass(m.spoon || 0, m.cartonato || 0);
@@ -48,6 +55,7 @@ export function computeLeagueConcentration(managers: Manager[]): LeagueConcentra
 
   // 1. Compute Base Quantities & Profiles per manager
   const rawProfiles = managers.map(m => {
+    const completedYears = getCompletedYears(m);
     const trophies = (m.gold || 0) + (m.cup_gold || 0) + (m.supercup || 0) + (m.mundialito || 0);
     const prestigeScore = parseFloat((
       (m.gold || 0) * PRESTIGE_WEIGHTS.gold +
@@ -55,11 +63,11 @@ export function computeLeagueConcentration(managers: Manager[]): LeagueConcentra
       (m.supercup || 0) * PRESTIGE_WEIGHTS.supercup +
       (m.mundialito || 0) * PRESTIGE_WEIGHTS.mundialito
     ).toFixed(2));
-    const efficiency = m.years > 0 ? parseFloat((trophies / m.years).toFixed(2)) : 0;
-    const prestigeEfficiency = m.years > 0 ? parseFloat((prestigeScore / m.years).toFixed(2)) : 0;
+    const efficiency = completedYears > 0 ? parseFloat((trophies / completedYears).toFixed(2)) : 0;
+    const prestigeEfficiency = completedYears > 0 ? parseFloat((prestigeScore / completedYears).toFixed(2)) : 0;
 
     const podiums = (m.gold || 0) + (m.silver || 0) + (m.bronze || 0);
-    const podiumRatePct = m.years > 0 ? parseFloat(((podiums / m.years) * 100).toFixed(1)) : 0;
+    const podiumRatePct = completedYears > 0 ? parseFloat(((podiums / completedYears) * 100).toFixed(1)) : 0;
     const killerInstinctPct = podiums > 0 ? parseFloat((((m.gold || 0) / podiums) * 100).toFixed(1)) : 0;
     const finalsWon = (m.cup_gold || 0) + (m.supercup || 0);
     const finalsPlayed = finalsWon + (m.cup_silver || 0) + (m.supercup_silver || 0);
@@ -69,8 +77,8 @@ export function computeLeagueConcentration(managers: Manager[]): LeagueConcentra
     const disasterMass = computeDisasterMass(m.spoon || 0, m.cartonato || 0);
     const totalTailMass = feastMass + disasterMass;
     const tailMass = totalTailMass;
-    const feastOrFamineRatio = m.years > 0 ? parseFloat((totalTailMass / m.years).toFixed(2)) : 0;
-    const smoothedFeastOrFamine = computeSmoothedFF(totalTailMass, m.years, 2.0, leagueAverageFF);
+    const feastOrFamineRatio = completedYears > 0 ? parseFloat((totalTailMass / completedYears).toFixed(2)) : 0;
+    const smoothedFeastOrFamine = computeSmoothedFF(totalTailMass, completedYears, 2.0, leagueAverageFF);
     const netTailSkew = computeNetTailSkew(feastMass, disasterMass, 1.5);
     const netTailIndex = parseFloat((smoothedFeastOrFamine * netTailSkew).toFixed(2));
     const polarity = getNTIPolarity(netTailIndex);
@@ -94,7 +102,7 @@ export function computeLeagueConcentration(managers: Manager[]): LeagueConcentra
     return {
       id: m.id,
       name: m.name,
-      years: m.years,
+      years: completedYears,
       gold: m.gold || 0,
       trophies,
       trophySharePct: 0,

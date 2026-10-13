@@ -63,7 +63,7 @@ export function renderClutchTab(
               <span class="w-3.5 sm:w-4 text-center font-bold text-[10px] shrink-0 ${idx < 3 ? 'text-amber-400 font-black' : ''}" style="${idx >= 3 ? 'color: var(--text-muted);' : ''}">${idx + 1}</span>
               <div class="min-w-0 flex-1">
                 <span class="font-bold block truncate text-xs sm:text-sm" style="color: var(--text-main);">${p.name}</span>
-                <span class="text-[9px] sm:text-[10px] block truncate" style="color: var(--text-muted);">${p.years} ann${p.years === 1 ? 'o' : 'i'}</span>
+                <span class="text-[9px] sm:text-[10px] block truncate" style="color: var(--text-muted);">${p.years === 0 ? 'debuttante' : `${p.years} ann${p.years === 1 ? 'o' : 'i'}`}</span>
               </div>
             </div>
 
@@ -72,7 +72,7 @@ export function renderClutchTab(
               <span class="font-mono font-bold text-[11px] sm:text-xs ${p.podiumRatePct >= 50 ? 'text-amber-400 font-black' : ''}" style="${p.podiumRatePct < 50 ? 'color: var(--text-main);' : ''}">
                 ${p.podiumRatePct.toFixed(1)}%
               </span>
-              <span class="block text-[8px] sm:text-[9px] font-mono" style="color: var(--text-muted);">${p.podiums}/${p.years}</span>
+              <span class="block text-[8px] sm:text-[9px] font-mono" style="color: var(--text-muted);">${p.years > 0 ? `${p.podiums}/${p.years}` : '—'}</span>
             </div>
 
             <!-- Killer Instinct (KI%) -->

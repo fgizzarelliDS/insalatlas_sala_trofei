@@ -70,9 +70,9 @@ export function renderHeadToHeadHero(
       </div>
 
       <!-- Face-off Hero Cards -->
-      <div id="h2h-hero-cards-row" class="grid grid-cols-11 gap-1 items-center mt-3 pt-3 border-t" style="border-color: var(--table-border);">
+      <div id="h2h-hero-cards-row" class="grid grid-cols-11 gap-1 items-stretch mt-3 pt-3 border-t" style="border-color: var(--table-border);">
         <!-- Contender A Card -->
-        <div class="col-span-5 text-center p-3 rounded-xl border flex flex-col items-center" style="background-color: var(--modal-bg); border-color: var(--table-border);">
+        <div class="col-span-5 text-center p-3 rounded-xl border flex flex-col items-center justify-between" style="background-color: var(--modal-bg); border-color: var(--table-border);">
           <div class="w-11 h-11 mx-auto rounded-full flex items-center justify-center font-black text-sm border-2 mb-1 shadow"
                style="background: radial-gradient(circle, var(--h2h-contender-a) 0%, transparent 80%), rgba(255,255,255,0.05); border-color: var(--h2h-contender-a); color: var(--text-main);">
             ${initialsA}
@@ -80,12 +80,12 @@ export function renderHeadToHeadHero(
           <h3 class="h2h-contender-name font-sport font-black text-sm uppercase px-1 my-1 leading-normal" style="color: var(--text-main); line-height: 1.35;">
             ${managerA.name}
           </h3>
-          <div class="flex flex-wrap items-center justify-center gap-1 mt-0.5">
-            <span class="inline-block text-[10px] font-black px-2 py-0.5 rounded-full border"
+          <div class="flex flex-col items-center justify-center gap-1 mt-1 w-full">
+            <span class="inline-block text-[10px] font-black px-2.5 py-0.5 rounded-full border whitespace-nowrap shrink-0"
                   style="color: var(--h2h-contender-a); border-color: var(--h2h-contender-a); background-color: rgba(125, 125, 125, 0.08);">
               ${formatScore(metricsA.score)} PT
             </span>
-            <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border"
+            <span class="inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-full border whitespace-nowrap shrink-0"
                   style="background: ${metricsA.archetypeColor}20; color: ${metricsA.archetypeColor}; border-color: ${metricsA.archetypeColor}50;">
               <i class="fa-solid ${metricsA.archetypeIcon} text-[9px]"></i> ${metricsA.archetypeTag}
             </span>
@@ -93,12 +93,12 @@ export function renderHeadToHeadHero(
         </div>
 
         <!-- VS Emblem -->
-        <div class="col-span-1 text-center font-sport font-black text-sm italic tracking-widest opacity-60 drop-shadow" style="color: var(--accent-color);">
+        <div class="col-span-1 text-center font-sport font-black text-sm italic tracking-widest opacity-60 drop-shadow flex items-center justify-center" style="color: var(--accent-color);">
           VS
         </div>
 
         <!-- Contender B Card -->
-        <div class="col-span-5 text-center p-3 rounded-xl border flex flex-col items-center" style="background-color: var(--modal-bg); border-color: var(--table-border);">
+        <div class="col-span-5 text-center p-3 rounded-xl border flex flex-col items-center justify-between" style="background-color: var(--modal-bg); border-color: var(--table-border);">
           <div class="w-11 h-11 mx-auto rounded-full flex items-center justify-center font-black text-sm border-2 mb-1 shadow"
                style="background: radial-gradient(circle, var(--h2h-contender-b) 0%, transparent 80%), rgba(255,255,255,0.05); border-color: var(--h2h-contender-b); color: var(--text-main);">
             ${initialsB}
@@ -106,12 +106,12 @@ export function renderHeadToHeadHero(
           <h3 class="h2h-contender-name font-sport font-black text-sm uppercase px-1 my-1 leading-normal" style="color: var(--text-main); line-height: 1.35;">
             ${managerB.name}
           </h3>
-          <div class="flex flex-wrap items-center justify-center gap-1 mt-0.5">
-            <span class="inline-block text-[10px] font-black px-2 py-0.5 rounded-full border"
+          <div class="flex flex-col items-center justify-center gap-1 mt-1 w-full">
+            <span class="inline-block text-[10px] font-black px-2.5 py-0.5 rounded-full border whitespace-nowrap shrink-0"
                   style="color: var(--h2h-contender-b); border-color: var(--h2h-contender-b); background-color: rgba(125, 125, 125, 0.08);">
               ${formatScore(metricsB.score)} PT
             </span>
-            <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border"
+            <span class="inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-full border whitespace-nowrap shrink-0"
                   style="background: ${metricsB.archetypeColor}20; color: ${metricsB.archetypeColor}; border-color: ${metricsB.archetypeColor}50;">
               <i class="fa-solid ${metricsB.archetypeIcon} text-[9px]"></i> ${metricsB.archetypeTag}
             </span>

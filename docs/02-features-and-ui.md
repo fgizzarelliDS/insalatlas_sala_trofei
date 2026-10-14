@@ -102,7 +102,7 @@ Per garantire un rendering perfetto senza flickering visivo o troncamenti dovuti
 
 1. Il template della scheda viene clonato in un nodo isolato `#manager-profile-card-export-clone` posizionato fuori dal viewport (`fixed top-0 left-0 z-[-9999]`).
 2. Vengono rimossi i controlli interattivi (pulsanti di chiusura, menu a tendina) e viene iniettato il footer editoriale ufficiale *InsalAtlas • Palmarès Ufficiale*.
-3. `html2canvas` rasterizza la scheda a risoluzione 2.2× per una nitidezza broadcast.
+3. `html-to-image` rasterizza la scheda a risoluzione 2.2× per una nitidezza broadcast.
 4. L'immagine generata viene convertita in Blob PNG e gestita tramite:
    - **Download Diretto**: Salvataggio automatico del file `.png` sul dispositivo.
    - **Copia negli Appunti**: Utilizzo della Clipboard API nativa (`navigator.clipboard.write([new ClipboardItem(...)])`) per incollare istantaneamente l'immagine su WhatsApp Desktop, Telegram o Discord con `Cmd+V` / `Ctrl+V`.

@@ -235,13 +235,13 @@ export function renderH2HRadarSVG(
   // Circles on vertices
   const dotsA = coordsA
     .map(
-      p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="var(--h2h-contender-a)" stroke="#ffffff" stroke-width="1.2" />`
+      p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="var(--h2h-contender-a, #be123c)" stroke="#ffffff" stroke-width="1.2" style="fill: var(--h2h-contender-a, #be123c);" />`
     )
     .join('');
 
   const dotsB = coordsB
     .map(
-      p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="var(--h2h-contender-b)" stroke="#ffffff" stroke-width="1.2" />`
+      p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="var(--h2h-contender-b, #0284c7)" stroke="#ffffff" stroke-width="1.2" style="fill: var(--h2h-contender-b, #0284c7);" />`
     )
     .join('');
 
@@ -254,11 +254,11 @@ export function renderH2HRadarSVG(
         ${scaleMarkers}
 
         <!-- Manager B Polygon -->
-        <polygon points="${pointsB}" fill="var(--h2h-contender-b)" fill-opacity="0.28" stroke="var(--h2h-contender-b)" stroke-width="2" />
+        <polygon points="${pointsB}" fill="var(--h2h-contender-b, #0284c7)" fill-opacity="0.28" stroke="var(--h2h-contender-b, #0284c7)" stroke-width="2" style="fill: var(--h2h-contender-b, #0284c7); stroke: var(--h2h-contender-b, #0284c7);" />
         ${dotsB}
 
         <!-- Manager A Polygon -->
-        <polygon points="${pointsA}" fill="var(--h2h-contender-a)" fill-opacity="0.28" stroke="var(--h2h-contender-a)" stroke-width="2" />
+        <polygon points="${pointsA}" fill="var(--h2h-contender-a, #be123c)" fill-opacity="0.28" stroke="var(--h2h-contender-a, #be123c)" stroke-width="2" style="fill: var(--h2h-contender-a, #be123c); stroke: var(--h2h-contender-a, #be123c);" />
         ${dotsA}
 
         <!-- Axis Labels -->

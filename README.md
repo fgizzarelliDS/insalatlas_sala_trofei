@@ -41,7 +41,7 @@ Struttura a **7 colonne native** (`.albo-grid-row`), il motore di theming basato
 
 ### 2. [Funzionalità & Esperienza Utente](docs/02-features-and-ui.md)
 
-Guida ai moduli applicativi: albo d'oro interattivo con ordinamento multi-criterio, archivio cronologico delle stagioni e coppe, dinamica storica a doppia prospettiva (Manager vs. Stagioni), motore di fallback per stemmi vettoriali (`src/crests.ts`), rendering off-screen in HD tramite `html2canvas`, copia istantanea negli appunti, condivisione WhatsApp e modalità modifica.
+Guida ai moduli applicativi: albo d'oro interattivo con ordinamento multi-criterio, archivio cronologico delle stagioni e coppe, dinamica storica a doppia prospettiva (Manager vs. Stagioni), motore di fallback per stemmi vettoriali (`src/crests.ts`), rendering off-screen nativo in HD tramite `html-to-image`, copia istantanea negli appunti, condivisione WhatsApp e modalità modifica.
 
 ### 3. [Econometria, Cinismo & Modelli di Rischio](docs/03-analytics-and-econometrics.md)
 

@@ -7,7 +7,7 @@
 - **Vector Icons & Trophy Engine**: FontAwesome 6 affiancato da generatori SVG vettoriali nativi (`src/trophies.ts`) per trofei, coppe e stemmi.
 - **Vector Crest Fallback Engine**: Catalogo di 20 stemmi vettoriali geometrici (`public/assets/crests/`) accoppiato a un motore deterministico basato su hashing DJB2 (`src/crests.ts`) per club privi di stemma personalizzato (`public/assets/teams/`).
 - **Single Source of Truth & Build Pipeline**: Plugin Vite (`vite.config.ts`) che propaga automaticamente la versione semantica da `package.json` (SSOT) al footer HTML (`index.html`), al Service Worker PWA (`public/sw.js`) e alla costante compile-time TypeScript (`__APP_VERSION__`).
-- **Export & Sharing**: `html2canvas` per la cattura HD delle bacheche e delle schede manager a risoluzione 2.2×; copia istantanea negli appunti e condivisione formattata su WhatsApp.
+- **Export & Sharing**: `html-to-image` per la cattura HD nativa delle bacheche, delle schede manager, dei record e dei confronti H2H a risoluzione 2.2×; copia istantanea negli appunti e condivisione formattata su WhatsApp.
 - **Testing & Quality Assurance**: Vitest per test unitari e suite di regressione analitica.
 - **Hosting & CI/CD**: GitHub Actions con pipeline integrata di test e validazione (`ci.yml`) e compilazione con deploy su GitHub Pages (`deploy.yml`).
 

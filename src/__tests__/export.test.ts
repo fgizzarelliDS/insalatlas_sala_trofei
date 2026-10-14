@@ -334,5 +334,189 @@ describe('export.ts - Trading Card Logic and Formatting', () => {
       expect(getRecordParamFromURL('')).toBeNull();
     });
   });
+
+  describe('Hall of Fame Poster HD Export Engine & UI Dropdown', () => {
+    it('exports renderHallOfFamePosterCanvas, exportHallOfFamePosterHD and copyHallOfFamePosterToClipboard', async () => {
+      const { renderHallOfFamePosterCanvas, exportHallOfFamePosterHD, copyHallOfFamePosterToClipboard } = await import('@/export');
+      expect(typeof renderHallOfFamePosterCanvas).toBe('function');
+      expect(typeof exportHallOfFamePosterHD).toBe('function');
+      expect(typeof copyHallOfFamePosterToClipboard).toBe('function');
+    });
+
+    it('renders the Poster HD dropdown button in RecordsTab header', async () => {
+      const { renderRecordsContentHTML } = await import('@/components/board/records');
+      const html = renderRecordsContentHTML('all', '');
+
+      expect(html).toContain('btn-poster-share-dropdown');
+      expect(html).toContain('poster-share-dropdown-menu');
+      expect(html).toContain('Poster HD');
+      expect(html).toContain('Scarica Poster PNG (HD)');
+      expect(html).toContain('Copia per WhatsApp');
+    });
+
+    it('manages poster dropdown visibility and closeAllRecordShareDropdowns', async () => {
+      const {
+        togglePosterShareDropdown,
+        closePosterShareDropdown,
+        closeAllRecordShareDropdowns
+      } = await import('@/components/board/records');
+
+      const originalDoc = (globalThis as any).document;
+      try {
+        const posterClasses = new Set<string>(['hidden']);
+        const recordClasses = new Set<string>(['hidden']);
+
+        const posterEl = {
+          classList: {
+            contains: (c: string) => posterClasses.has(c),
+            add: (c: string) => posterClasses.add(c),
+            remove: (c: string) => posterClasses.delete(c),
+            toggle: (c: string) => {
+              if (posterClasses.has(c)) posterClasses.delete(c);
+              else posterClasses.add(c);
+            }
+          }
+        };
+
+        const recordEl = {
+          classList: {
+            contains: (c: string) => recordClasses.has(c),
+            add: (c: string) => recordClasses.add(c),
+            remove: (c: string) => recordClasses.delete(c)
+          }
+        };
+
+        (globalThis as any).document = {
+          getElementById: (id: string) => {
+            if (id === 'poster-share-dropdown-menu') return posterEl;
+            if (id === 'record-share-dropdown-rec1') return recordEl;
+            return null;
+          },
+          querySelectorAll: (sel: string) => {
+            if (sel.includes('record-share-dropdown')) return [recordEl];
+            return [];
+          }
+        };
+
+        // Toggle open
+        togglePosterShareDropdown();
+        expect(posterClasses.has('hidden')).toBe(false);
+
+        // Close via closePosterShareDropdown
+        closePosterShareDropdown();
+        expect(posterClasses.has('hidden')).toBe(true);
+
+        // Toggle open again, then closeAllRecordShareDropdowns
+        togglePosterShareDropdown();
+        recordClasses.delete('hidden');
+        expect(posterClasses.has('hidden')).toBe(false);
+        expect(recordClasses.has('hidden')).toBe(false);
+
+        closeAllRecordShareDropdowns();
+        expect(posterClasses.has('hidden')).toBe(true);
+        expect(recordClasses.has('hidden')).toBe(true);
+      } finally {
+        (globalThis as any).document = originalDoc;
+      }
+    });
+
+    it('generates rich WhatsApp share text for Hall of Fame poster with ?tab=records', async () => {
+      const { buildPosterWhatsAppShareText } = await import('@/export');
+      const text = buildPosterWhatsAppShareText('https://test.insalatlas.it/');
+
+      expect(text).toContain('🏆 *InsalAtlas • Hall of Fame Ufficiale (2016-2026)*');
+      expect(text).toContain('I 28 RECORD & PRIMATI ALL-TIME DELLA SERIE ATLAS');
+      expect(text).toContain('Punti & Podi');
+      expect(text).toContain('Rivalità Head-to-Head');
+      expect(text).toContain('https://test.insalatlas.it/?tab=records');
+    });
+  });
+
+  describe('Albo d Oro Export Engine & Toolbar Dropdown', () => {
+    it('generates rich WhatsApp share text with top 3 champions and ?tab=albo', async () => {
+      const { buildAlboWhatsAppShareText } = await import('@/export');
+      const { state } = await import('@/state');
+
+      state.managers = [
+        createTestManager({ id: 'm1', name: 'Primo Manager', gold: 3, cup_gold: 2, supercup: 1, mundialito: 0 }),
+        createTestManager({ id: 'm2', name: 'Secondo Manager', gold: 2, cup_gold: 1, supercup: 0, mundialito: 0 }),
+        createTestManager({ id: 'm3', name: 'Terzo Manager', gold: 1, cup_gold: 1, supercup: 0, mundialito: 0 }),
+        createTestManager({ id: 'm4', name: 'Quarto Manager', gold: 0, cup_gold: 0, supercup: 0, mundialito: 0 })
+      ];
+
+      const text = buildAlboWhatsAppShareText('https://test.insalatlas.it/');
+
+      expect(text).toContain('🏆 *InsalAtlas • Albo d\'Oro & Sala Trofei (2016-2026)*');
+      expect(text).toContain('CLASSIFICA STORICA DEI PIÙ TITOLATI');
+      expect(text).toContain('🥇 *Primo Manager*: 6 Titoli (3 Scudetti)');
+      expect(text).toContain('🥈 *Secondo Manager*: 3 Titoli (2 Scudetti)');
+      expect(text).toContain('🥉 *Terzo Manager*: 2 Titoli (1 Scudetti)');
+      expect(text).not.toContain('Quarto Manager');
+      expect(text).toContain('https://test.insalatlas.it/?tab=albo');
+    });
+
+    it('toggles and closes the Albo d Oro dropdown menu', async () => {
+      const { toggleAlboShareDropdown, closeAlboShareDropdown } = await import('@/components/board/tableBoard');
+
+      const originalDoc = (globalThis as any).document;
+      try {
+        const classes = new Set<string>(['hidden']);
+        const dropdownEl = {
+          classList: {
+            contains: (c: string) => classes.has(c),
+            add: (c: string) => classes.add(c),
+            remove: (c: string) => classes.delete(c),
+            toggle: (c: string) => {
+              if (classes.has(c)) classes.delete(c);
+              else classes.add(c);
+            }
+          }
+        };
+
+        (globalThis as any).document = {
+          getElementById: (id: string) => (id === 'albo-share-dropdown-menu' ? dropdownEl : null)
+        };
+
+        // Initially hidden
+        expect(classes.has('hidden')).toBe(true);
+
+        // Toggle open
+        toggleAlboShareDropdown();
+        expect(classes.has('hidden')).toBe(false);
+
+        // Close explicitly
+        closeAlboShareDropdown();
+        expect(classes.has('hidden')).toBe(true);
+      } finally {
+        (globalThis as any).document = originalDoc;
+      }
+    });
+
+    it('verifies Albo toolbar controls are positioned in main-tab-albo-content and removed from site header', async () => {
+      // In Vite / Vitest, HTML can be loaded via ?raw or fetch
+      const indexHtml = (await import('../../index.html?raw')).default;
+
+      // Toolbar exists in main tab
+      expect(indexHtml).toContain('id="albo-toolbar"');
+      expect(indexHtml).toContain('id="btn-albo-share-dropdown"');
+      expect(indexHtml).toContain('id="albo-share-dropdown-menu"');
+      expect(indexHtml).toContain('id="btn-display-mode"');
+
+      // Top navbar header should no longer contain btn-display-mode
+      const headerMatch = indexHtml.match(/<header id="site-header"[\s\S]*?<\/header>/);
+      expect(headerMatch).not.toBeNull();
+      const headerContent = headerMatch![0];
+      expect(headerContent).not.toContain('id="btn-display-mode"');
+      expect(headerContent).not.toContain('exportGraphicHD');
+    });
+
+    it('ensures package.json and package-lock.json versions stay synchronized', async () => {
+      const pkg = (await import('../../package.json')).default;
+      const lock = (await import('../../package-lock.json')).default;
+
+      expect(lock.version).toBe(pkg.version);
+      expect(lock.packages[''].version).toBe(pkg.version);
+    });
+  });
 });
 

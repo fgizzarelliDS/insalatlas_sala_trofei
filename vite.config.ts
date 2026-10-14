@@ -6,6 +6,33 @@ const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 
 const appVersion = pkg.version;
 
 /**
+ * Automatically synchronizes package-lock.json with package.json version if they diverge
+ */
+function syncPackageLockVersion(version: string): void {
+  const lockPath = fileURLToPath(new URL('./package-lock.json', import.meta.url));
+  if (existsSync(lockPath)) {
+    try {
+      const lock = JSON.parse(readFileSync(lockPath, 'utf-8'));
+      let modified = false;
+      if (lock.version !== version) {
+        lock.version = version;
+        modified = true;
+      }
+      if (lock.packages && lock.packages[''] && lock.packages[''].version !== version) {
+        lock.packages[''].version = version;
+        modified = true;
+      }
+      if (modified) {
+        writeFileSync(lockPath, JSON.stringify(lock, null, 2) + '\n', 'utf-8');
+      }
+    } catch {
+      // Ignored
+    }
+  }
+}
+syncPackageLockVersion(appVersion);
+
+/**
  * Automatically propagates package.json version to HTML, Service Worker, and bundle constants
  */
 function versionPropagationPlugin(version: string): Plugin {

@@ -111,14 +111,6 @@
           </select>
         </div>
 
-        <!-- Display Mode Toggle -->
-        <button onclick="toggleDisplayMode()" id="btn-display-mode"
-          class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold border transition flex items-center gap-1.5 shadow-sm"
-          style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);">
-          <i class="fa-solid fa-shapes"></i> <span id="display-mode-label"><span class="hidden sm:inline">Mostra
-            </span>Badge Compatti</span>
-        </button>
-
         <!-- Edit Data & Titles Button -->
         <button onclick="toggleEditMode()" id="btn-edit-mode"
           class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-500/50 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition flex items-center gap-1.5 shadow">
@@ -140,12 +132,6 @@
           title="Confronto Diretto Head-to-Head tra Manager">
           <i class="fa-solid fa-code-compare"></i>
           <span class="inline">H2H</span>
-        </button>
-
-        <!-- HD Export Button -->
-        <button onclick="exportGraphicHD()"
-          class="px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-extrabold bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white shadow-lg transition flex items-center gap-1.5">
-          <i class="fa-solid fa-download"></i> Esporta<span class="hidden sm:inline"> HD</span>
         </button>
 
         <!-- PWA Native Install Button (hidden until prompt available) -->
@@ -287,6 +273,61 @@
 
       <!-- MAIN TAB 1: ALBO D'ORO GENERALE (Cards + Table) -->
       <div id="main-tab-albo-content">
+
+        <!-- Albo d'Oro Controls Toolbar: Badge Mode Toggle + Export Albo HD Dropdown -->
+        <div id="albo-toolbar" data-html2canvas-ignore="true" class="flex flex-wrap items-center justify-between gap-2.5 mb-4 pb-2.5 border-b" style="border-color: var(--table-border);">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-black uppercase tracking-wider font-sport flex items-center gap-1.5" style="color: var(--accent-color);">
+              <i class="fa-solid fa-trophy text-amber-500"></i>
+              <span>Bacheca Ufficiale</span>
+            </span>
+            <span class="text-[11px] opacity-60 hidden sm:inline" style="color: var(--text-muted);">• Riepilogo titoli e palmarès all-time</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <!-- Display Mode Toggle: Mostra Badge Compatti / Estesi -->
+            <button onclick="toggleDisplayMode()" id="btn-display-mode"
+              class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center gap-1.5 shadow-sm opacity-90 hover:opacity-100"
+              style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);">
+              <i class="fa-solid fa-shapes text-amber-500"></i> <span id="display-mode-label"><span class="hidden sm:inline">Mostra </span>Badge Compatti</span>
+            </button>
+
+            <!-- Albo d'Oro Export HD Dropdown -->
+            <div class="relative shrink-0">
+              <button id="btn-albo-share-dropdown" type="button" onclick="window.toggleAlboShareDropdown && window.toggleAlboShareDropdown(event)"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold border transition shadow-sm flex items-center gap-1.5 opacity-90 hover:opacity-100 cursor-pointer"
+                style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);"
+                title="Esporta l'Albo d'Oro in alta definizione o condividilo su WhatsApp">
+                <i class="fa-solid fa-camera text-amber-500"></i>
+                <span class="hidden sm:inline">Esporta Albo HD</span>
+                <i class="fa-solid fa-chevron-down text-[10px] ml-0.5 opacity-70"></i>
+              </button>
+              <div id="albo-share-dropdown-menu"
+                class="hidden absolute right-0 top-full mt-1.5 w-56 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
+                style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--modal-text);">
+                <button type="button"
+                  onclick="window.exportAlboHD && window.exportAlboHD(); window.closeAlboShareDropdown && window.closeAlboShareDropdown();"
+                  class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
+                  <i class="fa-solid fa-download text-amber-500"></i>
+                  <span>Scarica Albo PNG (HD)</span>
+                </button>
+                <button type="button"
+                  onclick="window.copyAlboToClipboard && window.copyAlboToClipboard(); window.closeAlboShareDropdown && window.closeAlboShareDropdown();"
+                  class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
+                  <i class="fa-solid fa-copy text-emerald-500"></i>
+                  <span>Copia per WhatsApp</span>
+                </button>
+                <button type="button"
+                  onclick="window.shareAlboWhatsApp && window.shareAlboWhatsApp(); window.closeAlboShareDropdown && window.closeAlboShareDropdown();"
+                  class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer border-t mt-1 pt-2"
+                  style="border-color: var(--table-border);">
+                  <i class="fa-brands fa-whatsapp text-emerald-500"></i>
+                  <span>Invia Link WhatsApp</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- Quick Summary Cards -->
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6">

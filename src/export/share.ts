@@ -5,7 +5,14 @@ import { showToast } from '@/ui';
 import { calculateManagerScore, formatScore } from '@/score';
 import { getManagerArchetype, computeGlobalClutchIndex, getClutchTier } from '@/analytics';
 import { computeAllLeagueRecords } from '@/analytics/records';
-import { renderProfileModalCanvas, renderH2HDuelCanvas, renderRecordCardCanvas, downloadBlob, copyBlobToClipboard } from './canvas';
+import {
+  renderProfileModalCanvas,
+  renderH2HDuelCanvas,
+  renderRecordCardCanvas,
+  renderHallOfFamePosterCanvas,
+  downloadBlob,
+  copyBlobToClipboard
+} from './canvas';
 
 /**
  * Formats rich banter text and direct link for WhatsApp sharing with preview
@@ -385,4 +392,172 @@ export function shareRecordWhatsApp(recordId: string): void {
   window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   showToast('Apertura WhatsApp in corso...', 'info');
 }
+
+let isExportingPoster = false;
+
+/**
+ * Captures all 28 official Hall of Fame records into a high-definition poster PNG and triggers download
+ */
+export async function exportHallOfFamePosterHD(): Promise<void> {
+  if (isExportingPoster) {
+    showToast('Generazione poster già in corso...', 'info');
+    return;
+  }
+
+  isExportingPoster = true;
+  showToast('Generazione Poster Hall of Fame HD in corso...', 'info');
+
+  try {
+    const canvas = await renderHallOfFamePosterCanvas();
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        showToast("Errore durante la creazione dell'immagine del poster", 'error');
+        return;
+      }
+      const filename = `InsalAtlas_Poster_Hall_Of_Fame_${Date.now()}.png`;
+      downloadBlob(blob, filename);
+    }, 'image/png');
+  } catch (err) {
+    console.error('Poster export failed:', err);
+    showToast('Impossibile esportare il poster Hall of Fame', 'error');
+  } finally {
+    isExportingPoster = false;
+  }
+}
+
+/**
+ * Captures all 28 official Hall of Fame records into a high-definition poster PNG and copies to clipboard
+ */
+export async function copyHallOfFamePosterToClipboard(): Promise<boolean> {
+  if (isExportingPoster) {
+    showToast('Generazione poster già in corso...', 'info');
+    return false;
+  }
+
+  isExportingPoster = true;
+  showToast('Copia immagine poster in corso...', 'info');
+
+  try {
+    const canvas = await renderHallOfFamePosterCanvas();
+    return new Promise((resolve) => {
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          showToast("Errore durante la creazione dell'immagine del poster", 'error');
+          resolve(false);
+          return;
+        }
+        const filename = `InsalAtlas_Poster_Hall_Of_Fame_${Date.now()}.png`;
+        const success = await copyBlobToClipboard(blob, filename);
+        resolve(success);
+      }, 'image/png');
+    });
+  } catch (err) {
+    console.error('Poster copy failed:', err);
+    showToast('Impossibile copiare il poster Hall of Fame', 'error');
+    return false;
+  } finally {
+    isExportingPoster = false;
+  }
+}
+
+/**
+ * Formats rich banter text and direct link for sharing the Hall of Fame poster on WhatsApp
+ */
+export function buildPosterWhatsAppShareText(customBaseUrl?: string): string {
+  let baseUrl = 'https://fgizzarellids.github.io/insalatlas_sala_trofei/';
+  if (customBaseUrl) {
+    baseUrl = customBaseUrl;
+  } else if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!isLocal) {
+      baseUrl = `${window.location.origin}${window.location.pathname}`;
+    }
+  }
+  const shareUrl = `${baseUrl}?tab=records`;
+
+  return `🏆 *InsalAtlas • Hall of Fame Ufficiale (2016-2026)*
+📜 *I 28 RECORD & PRIMATI ALL-TIME DELLA SERIE ATLAS*
+
+⚡ *Punti & Podi* • 🏆 *Dominio & Coppe*
+💀 *Rivalità Head-to-Head* • 🎖️ *Strisce & Fedeltà*
+🎭 *Disonori & Curiosità*
+
+📊 Chi detiene più titoli? Chi ha segnato più punti? Chi è la bestia nera della lega?
+
+👉 Guarda tutti i record e i primatisti storici:
+${shareUrl}`;
+}
+
+/**
+ * Opens WhatsApp directly with pre-filled message and direct link to the Hall of Fame records
+ */
+export function sharePosterWhatsApp(): void {
+  const text = buildPosterWhatsAppShareText();
+  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+  if (typeof window !== 'undefined') {
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  }
+  showToast('Apertura WhatsApp in corso...', 'info');
+}
+
+/**
+ * Formats rich banter text and direct link for sharing the Albo d'Oro ranking on WhatsApp
+ */
+export function buildAlboWhatsAppShareText(customBaseUrl?: string): string {
+  let baseUrl = 'https://fgizzarellids.github.io/insalatlas_sala_trofei/';
+  if (customBaseUrl) {
+    baseUrl = customBaseUrl;
+  } else if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!isLocal) {
+      baseUrl = `${window.location.origin}${window.location.pathname}`;
+    }
+  }
+  const shareUrl = `${baseUrl}?tab=albo`;
+
+  // Sort managers by trophies then gold
+  const sorted = [...state.managers].sort((a, b) => {
+    const totalA = (a.gold || 0) + (a.cup_gold || 0) + (a.supercup || 0) + (a.mundialito || 0);
+    const totalB = (b.gold || 0) + (b.cup_gold || 0) + (b.supercup || 0) + (b.mundialito || 0);
+    if (totalB !== totalA) return totalB - totalA;
+    return (b.gold || 0) - (a.gold || 0);
+  });
+
+  const top3 = sorted.slice(0, 3).map((m, i) => {
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉';
+    const trophies = (m.gold || 0) + (m.cup_gold || 0) + (m.supercup || 0) + (m.mundialito || 0);
+    return `${medal} *${m.name}*: ${trophies} Titoli (${m.gold || 0} Scudetti)`;
+  }).join('\n');
+
+  return `🏆 *InsalAtlas • Albo d'Oro & Sala Trofei (2016-2026)*
+📜 *CLASSIFICA STORICA DEI PIÙ TITOLATI*
+
+${top3}
+
+📊 10 Campionati • 18 Fantallenatori • Albo d'Oro Ufficiale
+
+👉 Esplora la bacheca completa e le stagioni storiche:
+${shareUrl}`;
+}
+
+/**
+ * Opens WhatsApp directly with pre-filled message and direct link to the Albo d'Oro
+ */
+export function shareAlboWhatsApp(): void {
+  const text = buildAlboWhatsAppShareText();
+  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+  if (typeof window !== 'undefined') {
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  }
+  showToast('Apertura WhatsApp in corso...', 'info');
+}
+
+/**
+ * Triggers high-resolution Albo d'Oro export PNG download
+ */
+export async function exportAlboHD(): Promise<void> {
+  const { exportGraphicHD } = await import('./canvas');
+  await exportGraphicHD();
+}
+
 

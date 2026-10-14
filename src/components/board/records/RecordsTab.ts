@@ -474,26 +474,75 @@ export function renderRecordsContentHTML(
           </p>
         </div>
 
-        <!-- Live Instant Search Bar -->
-        <div class="relative w-full md:w-72 shrink-0">
-          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs opacity-50 pointer-events-none"></i>
-          <input 
-            id="records-search-input"
-            type="search"
-            value="${safeSearch}"
-            placeholder="Cerca manager, club o record..."
-            oninput="window.searchRecords && window.searchRecords(this.value)"
-            class="w-full pl-8.5 pr-8 py-1.5 rounded-xl text-xs border transition focus:outline-none focus:ring-1 focus:ring-amber-500"
-            style="background-color: var(--table-surface); border-color: var(--table-border); color: var(--text-main);"
-          />
-          ${searchQuery ? `
+        <!-- Controls: Live Search + Poster HD Export Dropdown -->
+        <div class="flex items-center gap-2 w-full md:w-auto">
+          <div class="relative w-full md:w-64 shrink-0">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs opacity-50 pointer-events-none"></i>
+            <input 
+              id="records-search-input"
+              type="search"
+              value="${safeSearch}"
+              placeholder="         Cerca manager, club o record..."
+              oninput="window.searchRecords && window.searchRecords(this.value)"
+              class="w-full pl-8.5 pr-8 py-1.5 rounded-xl text-xs border transition focus:outline-none focus:ring-1 focus:ring-amber-500"
+              style="background-color: var(--table-surface); border-color: var(--table-border); color: var(--text-main);"
+            />
+            ${searchQuery ? `
+              <button 
+                type="button" 
+                onclick="window.clearRecordsSearch && window.clearRecordsSearch()"
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs opacity-60 hover:opacity-100 transition px-1 py-0.5 rounded cursor-pointer"
+                title="Cancella ricerca"
+              >✕</button>
+            ` : ''}
+          </div>
+
+          <!-- Poster HD Dropdown -->
+          <div class="relative shrink-0">
             <button 
-              type="button" 
-              onclick="window.clearRecordsSearch && window.clearRecordsSearch()"
-              class="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs opacity-60 hover:opacity-100 transition px-1 py-0.5 rounded cursor-pointer"
-              title="Cancella ricerca"
-            >✕</button>
-          ` : ''}
+              id="btn-poster-share-dropdown"
+              type="button"
+              onclick="window.togglePosterShareDropdown && window.togglePosterShareDropdown(event)"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold border transition shadow-sm flex items-center gap-1.5 opacity-90 hover:opacity-100 cursor-pointer"
+              style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);"
+              title="Esporta il poster ufficiale ad alta risoluzione con tutti i 28 record"
+            >
+              <i class="fa-solid fa-camera text-amber-500"></i>
+              <span class="hidden sm:inline">Poster HD</span>
+              <i class="fa-solid fa-chevron-down text-[10px] ml-0.5 opacity-70"></i>
+            </button>
+            <div 
+              id="poster-share-dropdown-menu"
+              class="hidden absolute right-0 top-full mt-1.5 w-56 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
+              style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--modal-text);"
+            >
+              <button 
+                type="button"
+                onclick="window.exportHallOfFamePosterHD && window.exportHallOfFamePosterHD(); window.closePosterShareDropdown && window.closePosterShareDropdown();"
+                class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer"
+              >
+                <i class="fa-solid fa-download text-amber-500"></i>
+                <span>Scarica Poster PNG (HD)</span>
+              </button>
+              <button 
+                type="button"
+                onclick="window.copyHallOfFamePosterToClipboard && window.copyHallOfFamePosterToClipboard(); window.closePosterShareDropdown && window.closePosterShareDropdown();"
+                class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer"
+              >
+                <i class="fa-solid fa-copy text-emerald-500"></i>
+                <span>Copia per WhatsApp</span>
+              </button>
+              <button 
+                type="button"
+                onclick="window.sharePosterWhatsApp && window.sharePosterWhatsApp(); window.closePosterShareDropdown && window.closePosterShareDropdown();"
+                class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer border-t mt-1 pt-2"
+                style="border-color: var(--table-border);"
+              >
+                <i class="fa-brands fa-whatsapp text-emerald-500"></i>
+                <span>Invia Link WhatsApp</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -528,12 +577,79 @@ export function toggleRecordShareDropdown(recordId: string, event?: Event): void
 }
 
 /**
- * Closes all open record share dropdowns
+ * Closes all open record share dropdowns (including the poster dropdown)
  */
 export function closeAllRecordShareDropdowns(): void {
   document.querySelectorAll('[id^="record-share-dropdown-"]').forEach(el => {
     el.classList.add('hidden');
   });
+  closePosterShareDropdown();
+}
+
+/**
+ * Toggles the Poster HD share/export dropdown
+ */
+export function togglePosterShareDropdown(event?: Event): void {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  const dropdown = document.getElementById('poster-share-dropdown-menu');
+  if (!dropdown) return;
+  const isHidden = dropdown.classList.contains('hidden');
+  closeAllRecordShareDropdowns();
+  if (isHidden) {
+    dropdown.classList.remove('hidden');
+  }
+}
+
+/**
+ * Closes the Poster HD share/export dropdown
+ */
+export function closePosterShareDropdown(): void {
+  const dropdown = document.getElementById('poster-share-dropdown-menu');
+  if (dropdown && !dropdown.classList.contains('hidden')) {
+    dropdown.classList.add('hidden');
+  }
+}
+
+/**
+ * Triggers export of the full Hall of Fame Poster to high-definition PNG
+ */
+export async function exportHallOfFamePoster(event?: Event): Promise<void> {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  closePosterShareDropdown();
+  const { exportHallOfFamePosterHD } = await import('@/export/share');
+  await exportHallOfFamePosterHD();
+}
+
+/**
+ * Copies the full Hall of Fame Poster image to system clipboard
+ */
+export async function copyHallOfFamePoster(event?: Event): Promise<void> {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  closePosterShareDropdown();
+  const { copyHallOfFamePosterToClipboard } = await import('@/export/share');
+  await copyHallOfFamePosterToClipboard();
+}
+
+/**
+ * Shares the full Hall of Fame Poster link via WhatsApp
+ */
+export async function shareHallOfFamePosterWhatsApp(event?: Event): Promise<void> {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  closePosterShareDropdown();
+  const { sharePosterWhatsApp } = await import('@/export/share');
+  sharePosterWhatsApp();
 }
 
 /**

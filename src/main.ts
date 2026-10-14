@@ -76,7 +76,13 @@ import {
   exportManagerCardById,
   copyManagerCardById,
   shareManagerWhatsAppById,
-  shareRecordWhatsApp
+  shareRecordWhatsApp,
+  exportHallOfFamePosterHD,
+  copyHallOfFamePosterToClipboard,
+  exportAlboHD,
+  copyAlboToClipboard,
+  shareAlboWhatsApp,
+  sharePosterWhatsApp
 } from '@/export';
 import {
   changeSort,
@@ -84,7 +90,12 @@ import {
   renderBoard,
   dismissScrollHint,
   initResponsiveDisplayMode,
-  initScrollHintListener
+  initScrollHintListener,
+  toggleAlboShareDropdown,
+  closeAlboShareDropdown,
+  exportAlboGraphicHD,
+  copyAlboGraphicToClipboard,
+  shareAlboGraphicWhatsApp
 } from '@/components/board/tableBoard';
 import { updateStatistics } from '@/components/board/statsCounter';
 import {
@@ -100,7 +111,12 @@ import {
   toggleRecordShareDropdown,
   closeAllRecordShareDropdowns,
   exportRecordCard,
-  copyRecordCard
+  copyRecordCard,
+  togglePosterShareDropdown,
+  closePosterShareDropdown,
+  exportHallOfFamePoster,
+  copyHallOfFamePoster,
+  shareHallOfFamePosterWhatsApp
 } from '@/components/board/records';
 import {
   findManagerByParam,
@@ -124,7 +140,17 @@ export {
   getSeasonParamFromURL,
   getRecordCategoryParamFromURL
 };
-export { changeSort, toggleDisplayMode, renderBoard, dismissScrollHint };
+export {
+  changeSort,
+  toggleDisplayMode,
+  renderBoard,
+  dismissScrollHint,
+  toggleAlboShareDropdown,
+  closeAlboShareDropdown,
+  exportAlboGraphicHD,
+  copyAlboGraphicToClipboard,
+  shareAlboGraphicWhatsApp
+};
 export { switchMainViewTab, selectArchiveSeason, renderSeasonsArchive };
 export {
   filterRecordsCategory,
@@ -133,7 +159,18 @@ export {
   closeAllRecordShareDropdowns,
   exportRecordCard,
   copyRecordCard,
-  shareRecordWhatsApp
+  shareRecordWhatsApp,
+  togglePosterShareDropdown,
+  closePosterShareDropdown,
+  exportHallOfFamePoster,
+  copyHallOfFamePoster,
+  exportHallOfFamePosterHD,
+  copyHallOfFamePosterToClipboard,
+  sharePosterWhatsApp,
+  shareHallOfFamePosterWhatsApp,
+  exportAlboHD,
+  copyAlboToClipboard,
+  shareAlboWhatsApp
 };
 export { updateStatistics };
 export { promptPWAInstall };
@@ -237,6 +274,21 @@ declare global {
     exportRecordCard: typeof exportRecordCard;
     copyRecordCard: typeof copyRecordCard;
     shareRecordWhatsApp: typeof shareRecordWhatsApp;
+    togglePosterShareDropdown: typeof togglePosterShareDropdown;
+    exportHallOfFamePoster: typeof exportHallOfFamePoster;
+    copyHallOfFamePoster: typeof copyHallOfFamePoster;
+    exportHallOfFamePosterHD: typeof exportHallOfFamePosterHD;
+    copyHallOfFamePosterToClipboard: typeof copyHallOfFamePosterToClipboard;
+    sharePosterWhatsApp: typeof sharePosterWhatsApp;
+    shareHallOfFamePosterWhatsApp: typeof shareHallOfFamePosterWhatsApp;
+    toggleAlboShareDropdown: typeof toggleAlboShareDropdown;
+    closeAlboShareDropdown: typeof closeAlboShareDropdown;
+    exportAlboGraphicHD: typeof exportAlboGraphicHD;
+    copyAlboGraphicToClipboard: typeof copyAlboGraphicToClipboard;
+    shareAlboGraphicWhatsApp: typeof shareAlboGraphicWhatsApp;
+    exportAlboHD: typeof exportAlboHD;
+    copyAlboToClipboard: typeof copyAlboToClipboard;
+    shareAlboWhatsApp: typeof shareAlboWhatsApp;
   }
 }
 
@@ -320,6 +372,24 @@ export async function initApp(): Promise<void> {
       }
     }
   }
+
+  // Close share dropdowns when clicking outside
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement | null;
+    if (!target) return;
+    if (!target.closest('#btn-albo-share-dropdown') && !target.closest('#albo-share-dropdown-menu')) {
+      closeAlboShareDropdown();
+    }
+    if (!target.closest('#btn-poster-share-dropdown') && !target.closest('#poster-share-dropdown-menu')) {
+      closePosterShareDropdown();
+    }
+    if (!target.closest('[id^="record-share-btn-"]') && !target.closest('[id^="record-share-dropdown-"]')) {
+      closeAllRecordShareDropdowns();
+    }
+    if (!target.closest('#btn-h2h-share-dropdown') && !target.closest('#h2h-share-dropdown-menu')) {
+      closeH2HShareDropdown();
+    }
+  });
 }
 
 // Bootstrap Sequence
@@ -410,7 +480,23 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     closeAllRecordShareDropdowns,
     exportRecordCard,
     copyRecordCard,
-    shareRecordWhatsApp
+    shareRecordWhatsApp,
+    togglePosterShareDropdown,
+    closePosterShareDropdown,
+    exportHallOfFamePoster,
+    copyHallOfFamePoster,
+    exportHallOfFamePosterHD,
+    copyHallOfFamePosterToClipboard,
+    sharePosterWhatsApp,
+    shareHallOfFamePosterWhatsApp,
+    toggleAlboShareDropdown,
+    closeAlboShareDropdown,
+    exportAlboGraphicHD,
+    copyAlboGraphicToClipboard,
+    shareAlboGraphicWhatsApp,
+    exportAlboHD,
+    copyAlboToClipboard,
+    shareAlboWhatsApp
   });
 
   if (document.readyState === 'loading') {

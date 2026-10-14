@@ -319,3 +319,65 @@ export function renderBoard(): void {
     container.appendChild(addRow);
   }
 }
+
+/**
+ * Toggles the Albo d'Oro export/share popover dropdown
+ */
+export function toggleAlboShareDropdown(event?: Event): void {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  const dropdown = document.getElementById('albo-share-dropdown-menu');
+  if (!dropdown) return;
+  dropdown.classList.toggle('hidden');
+}
+
+/**
+ * Closes the Albo d'Oro export/share popover dropdown
+ */
+export function closeAlboShareDropdown(): void {
+  const dropdown = document.getElementById('albo-share-dropdown-menu');
+  if (dropdown && !dropdown.classList.contains('hidden')) {
+    dropdown.classList.add('hidden');
+  }
+}
+
+/**
+ * Triggers HD export for the Albo d'Oro
+ */
+export async function exportAlboGraphicHD(event?: Event): Promise<void> {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  closeAlboShareDropdown();
+  const { exportGraphicHD } = await import('@/export/canvas');
+  await exportGraphicHD();
+}
+
+/**
+ * Copies the Albo d'Oro high-res graphic to clipboard
+ */
+export async function copyAlboGraphicToClipboard(event?: Event): Promise<void> {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  closeAlboShareDropdown();
+  const { copyAlboToClipboard } = await import('@/export/canvas');
+  await copyAlboToClipboard();
+}
+
+/**
+ * Shares the Albo d'Oro ranking summary on WhatsApp
+ */
+export async function shareAlboGraphicWhatsApp(event?: Event): Promise<void> {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  closeAlboShareDropdown();
+  const { shareAlboWhatsApp } = await import('@/export/share');
+  shareAlboWhatsApp();
+}

@@ -36,7 +36,7 @@ export function buildWhatsAppShareText(manager: Manager, customBaseUrl?: string)
 
   const trophiesStr = trophiesList.length > 0 ? trophiesList.join(' • ') : 'Nessun trofeo';
 
-  let baseUrl = 'https://fgizzarelliids.github.io/insalatlas_sala_trofei/';
+  let baseUrl = 'https://fgizzarellids.github.io/insalatlas_sala_trofei/';
   if (customBaseUrl) {
     baseUrl = customBaseUrl;
   } else if (typeof window !== 'undefined' && window.location && window.location.origin) {
@@ -328,7 +328,7 @@ export async function copyRecordCardToClipboard(recordId: string): Promise<boole
  * Formats rich banter text and direct link for sharing a Hall of Fame record on WhatsApp
  */
 export function buildRecordWhatsAppShareText(record: LeagueRecord, customBaseUrl?: string): string {
-  let baseUrl = 'https://fgizzarelliids.github.io/insalatlas_sala_trofei/';
+  let baseUrl = 'https://fgizzarellids.github.io/insalatlas_sala_trofei/';
   if (customBaseUrl) {
     baseUrl = customBaseUrl;
   } else if (typeof window !== 'undefined' && window.location && window.location.origin) {

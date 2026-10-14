@@ -100,11 +100,27 @@ import {
   exportRecordCard,
   copyRecordCard
 } from '@/components/board/records';
-import { findManagerByParam, getManagerParamFromURL, getH2HParamFromURL, getRecordParamFromURL } from '@/router';
+import {
+  findManagerByParam,
+  getManagerParamFromURL,
+  getH2HParamFromURL,
+  getRecordParamFromURL,
+  getMainTabParamFromURL,
+  getSeasonParamFromURL,
+  getRecordCategoryParamFromURL
+} from '@/router';
 import { initPWA, promptPWAInstall } from '@/pwa';
 
 // Re-export router utilities, board controls, seasons archive, records, and PWA for unit tests and consumers
-export { findManagerByParam, getManagerParamFromURL, getH2HParamFromURL, getRecordParamFromURL };
+export {
+  findManagerByParam,
+  getManagerParamFromURL,
+  getH2HParamFromURL,
+  getRecordParamFromURL,
+  getMainTabParamFromURL,
+  getSeasonParamFromURL,
+  getRecordCategoryParamFromURL
+};
 export { changeSort, toggleDisplayMode, renderBoard, dismissScrollHint };
 export { switchMainViewTab, selectArchiveSeason, renderSeasonsArchive };
 export {
@@ -254,8 +270,15 @@ export async function initApp(): Promise<void> {
 
   // Deep-linking: auto-open and highlight record in Hall of Fame if ?record=... in URL
   const recordParam = getRecordParamFromURL();
+  const categoryParam = getRecordCategoryParamFromURL();
+
   if (recordParam) {
-    switchMainViewTab('records');
+    if (categoryParam) {
+      filterRecordsCategory(categoryParam, false);
+    } else {
+      filterRecordsCategory('all', false);
+    }
+    switchMainViewTab('records', false);
     setTimeout(() => {
       const card = document.getElementById(`record-card-${recordParam}`);
       if (card) {
@@ -266,6 +289,21 @@ export async function initApp(): Promise<void> {
         }, 2500);
       }
     }, 150);
+  } else {
+    // Navigation state restoration on refresh
+    const mainTab = getMainTabParamFromURL();
+    if (mainTab === 'seasons') {
+      const seasonParam = getSeasonParamFromURL();
+      if (seasonParam) {
+        selectArchiveSeason(seasonParam, false);
+      }
+      switchMainViewTab('seasons', false);
+    } else if (mainTab === 'records') {
+      if (categoryParam) {
+        filterRecordsCategory(categoryParam, false);
+      }
+      switchMainViewTab('records', false);
+    }
   }
 }
 
@@ -389,8 +427,14 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     closeProfileModal();
 
     const rec = getRecordParamFromURL();
+    const cat = getRecordCategoryParamFromURL();
     if (rec) {
-      switchMainViewTab('records');
+      if (cat) {
+        filterRecordsCategory(cat, false);
+      } else {
+        filterRecordsCategory('all', false);
+      }
+      switchMainViewTab('records', false);
       setTimeout(() => {
         const card = document.getElementById(`record-card-${rec}`);
         if (card) {
@@ -401,6 +445,21 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
           }, 2500);
         }
       }, 150);
+      return;
+    }
+
+    const targetTab = getMainTabParamFromURL() || 'albo';
+    if (targetTab === 'seasons') {
+      const seasonParam = getSeasonParamFromURL();
+      if (seasonParam) {
+        selectArchiveSeason(seasonParam, false);
+      }
+      switchMainViewTab('seasons', false);
+    } else if (targetTab === 'records') {
+      filterRecordsCategory(cat || 'all', false);
+      switchMainViewTab('records', false);
+    } else {
+      switchMainViewTab(targetTab, false);
     }
   });
 }

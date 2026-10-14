@@ -113,7 +113,8 @@ export function isCustomLogo(logo?: string | null): boolean {
     trimmed === 'null' ||
     trimmed === 'undefined' ||
     trimmed.includes('no_logo') ||
-    trimmed.includes('default')
+    trimmed.includes('default') ||
+    trimmed.startsWith('assets/crests/')
   ) {
     return false;
   }

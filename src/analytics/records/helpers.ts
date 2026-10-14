@@ -1,5 +1,5 @@
 import { state } from '@/state';
-import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
+import { resolveTeamLogo, getTeamFallbackCrest, isCustomLogo } from '@/crests';
 import type { Manager, CompetitionRecord } from '@/types';
 
 /**
@@ -88,9 +88,26 @@ export function resolveManagerRecordCrest(
         const item = (c.ranking || []).find(r => r.managerId === managerId);
         if (item) {
           const teamName = item.teamName || explicitTeamName || '';
+          let logo = item.logo;
+
+          // If the season ranking only had a vector crest or non-custom logo, check if the same franchise has an authentic custom logo
+          if (!isCustomLogo(logo) && teamName) {
+            for (const otherC of comps) {
+              const match = (otherC.ranking || []).find(
+                r => r.managerId === managerId &&
+                  isCustomLogo(r.logo) &&
+                  r.teamName?.trim().toLowerCase().replace(/\s+/g, '') === teamName.trim().toLowerCase().replace(/\s+/g, '')
+              );
+              if (match?.logo) {
+                logo = match.logo;
+                break;
+              }
+            }
+          }
+
           return {
             teamName,
-            logo: resolveTeamLogo(teamName, item.logo),
+            logo: resolveTeamLogo(teamName, logo),
             fallbackCrest: getTeamFallbackCrest(teamName)
           };
         }

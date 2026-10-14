@@ -11,10 +11,18 @@ import { renderRecordsTab } from '@/components/board/records';
 
 let currentSelectedSeason: string | null = null;
 
+export function getCurrentSelectedSeason(): string | null {
+  return currentSelectedSeason;
+}
+
+export function setCurrentSelectedSeason(season: string | null): void {
+  currentSelectedSeason = season ? season.replace('-', '/') : null;
+}
+
 /**
  * Switches the main view between Albo d'Oro, Archivio Stagioni & Classifiche, and Record & Primati Storici
  */
-export function switchMainViewTab(tab: 'albo' | 'seasons' | 'records'): void {
+export function switchMainViewTab(tab: 'albo' | 'seasons' | 'records', updateHistory = true): void {
   const alboContent = document.getElementById('main-tab-albo-content');
   const seasonsContent = document.getElementById('main-tab-seasons-content');
   const recordsContent = document.getElementById('main-tab-records-content');
@@ -62,14 +70,56 @@ export function switchMainViewTab(tab: 'albo' | 'seasons' | 'records'): void {
     }
     renderRecordsTab();
   }
+
+  // Synchronize browser URL and history
+  if (updateHistory && typeof window !== 'undefined' && window.location) {
+    try {
+      const url = new URL(window.location.href);
+      if (tab === 'albo') {
+        url.searchParams.delete('tab');
+        url.searchParams.delete('season');
+        url.searchParams.delete('record');
+        url.searchParams.delete('category');
+        url.searchParams.delete('cat');
+      } else if (tab === 'seasons') {
+        url.searchParams.set('tab', 'seasons');
+        url.searchParams.delete('record');
+        url.searchParams.delete('category');
+        url.searchParams.delete('cat');
+        if (currentSelectedSeason) {
+          url.searchParams.set('season', currentSelectedSeason.replace('/', '-'));
+        }
+      } else if (tab === 'records') {
+        url.searchParams.set('tab', 'records');
+        url.searchParams.delete('season');
+      }
+
+      if (url.search !== window.location.search) {
+        window.history.pushState({ tab, season: currentSelectedSeason }, '', url.toString());
+      }
+    } catch {
+      // Ignored in non-standard / mocked environments
+    }
+  }
 }
 
 /**
  * Sets active archive season and updates view
  */
-export function selectArchiveSeason(season: string): void {
-  currentSelectedSeason = season;
+export function selectArchiveSeason(season: string, updateHistory = true): void {
+  currentSelectedSeason = season.replace('-', '/');
   renderSeasonsArchive();
+
+  if (updateHistory && typeof window !== 'undefined' && window.location) {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', 'seasons');
+      url.searchParams.set('season', currentSelectedSeason.replace('/', '-'));
+      window.history.replaceState({ tab: 'seasons', season: currentSelectedSeason }, '', url.toString());
+    } catch {
+      // Ignored in non-standard / mocked environments
+    }
+  }
 }
 
 /**

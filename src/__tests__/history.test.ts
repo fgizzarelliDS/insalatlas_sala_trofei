@@ -844,5 +844,51 @@ describe('Historical Rankings & Career Visualizations', () => {
       }
     });
   });
+
+  describe('Main View Tab & Season URL Routing and History Persistence', () => {
+    it('parses tab and season parameters from URL search and hash', async () => {
+      const { getMainTabParamFromURL, getSeasonParamFromURL } = await import('@/router');
+
+      // Test ?tab=
+      expect(getMainTabParamFromURL('https://insalatlas.it/?tab=seasons')).toBe('seasons');
+      expect(getMainTabParamFromURL('https://insalatlas.it/?tab=records')).toBe('records');
+      expect(getMainTabParamFromURL('https://insalatlas.it/?tab=albo')).toBe('albo');
+
+      // Test inference from ?record= and ?season=
+      expect(getMainTabParamFromURL('https://insalatlas.it/?record=most_cups')).toBe('records');
+      expect(getMainTabParamFromURL('https://insalatlas.it/?season=2024-25')).toBe('seasons');
+
+      // Test hash routing
+      expect(getMainTabParamFromURL('https://insalatlas.it/#/seasons')).toBe('seasons');
+      expect(getMainTabParamFromURL('https://insalatlas.it/#records')).toBe('records');
+      expect(getMainTabParamFromURL('https://insalatlas.it/#albo')).toBe('albo');
+      expect(getMainTabParamFromURL('https://insalatlas.it/#/view?tab=records')).toBe('records');
+
+      // Test seasons extraction
+      expect(getSeasonParamFromURL('https://insalatlas.it/?season=2024-25')).toBe('2024/25');
+      expect(getSeasonParamFromURL('https://insalatlas.it/?season=2023%2F24')).toBe('2023/24');
+      expect(getSeasonParamFromURL('https://insalatlas.it/#/tab?season=2021-22')).toBe('2021/22');
+      expect(getSeasonParamFromURL('https://insalatlas.it/?tab=seasons')).toBeNull();
+    });
+
+    it('synchronizes URL search params when switching tabs and selecting seasons', async () => {
+      const { switchMainViewTab, selectArchiveSeason } = await import('@/components/board/seasons');
+
+      // Ensure window.location exists in test environment
+      if (typeof window !== 'undefined' && window.location) {
+        window.history.pushState({}, '', 'https://insalatlas.it/');
+
+        switchMainViewTab('records', true);
+        expect(window.location.search).toContain('tab=records');
+
+        selectArchiveSeason('2024/25', true);
+        expect(window.location.search).toContain('tab=seasons');
+        expect(window.location.search).toContain('season=2024-25');
+
+        switchMainViewTab('albo', true);
+        expect(window.location.search).toBe('');
+      }
+    });
+  });
 });
 

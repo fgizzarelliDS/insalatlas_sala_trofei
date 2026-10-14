@@ -267,7 +267,7 @@ export function shareH2HWhatsApp(): void {
 
   const stats = computeHeadToHead(managerA, managerB);
 
-  let baseUrl = 'https://fgizzarelliids.github.io/insalatlas_sala_trofei/';
+  let baseUrl = 'https://fgizzarellids.github.io/insalatlas_sala_trofei/';
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     if (!isLocal) {

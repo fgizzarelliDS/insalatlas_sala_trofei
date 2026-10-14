@@ -1,4 +1,4 @@
-import type { Manager } from '@/types';
+import type { Manager, RecordCategory } from '@/types';
 import { state } from '@/state';
 
 /**
@@ -29,16 +29,35 @@ export function findManagerByParam(param: string, managers: Manager[] = state.ma
 /**
  * Extracts ?manager= query parameter from search or hash
  */
-export function getManagerParamFromURL(): string | null {
+export function getManagerParamFromURL(customUrl?: string): string | null {
+  if (customUrl) {
+    try {
+      const url = new URL(customUrl, 'https://example.com');
+      const fromSearch = url.searchParams.get('manager');
+      if (fromSearch) return fromSearch.trim();
+
+      if (url.hash && url.hash.includes('manager=')) {
+        const hashQuery = url.hash.slice(url.hash.indexOf('?'));
+        const hashParams = new URLSearchParams(hashQuery);
+        const fromHash = hashParams.get('manager');
+        if (fromHash) return fromHash.trim();
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
   if (typeof window === 'undefined') return null;
   const searchParams = new URLSearchParams(window.location.search);
   const fromSearch = searchParams.get('manager');
-  if (fromSearch) return fromSearch;
+  if (fromSearch) return fromSearch.trim();
 
-  if (window.location.hash.includes('manager=')) {
+  if (window.location && window.location.hash && window.location.hash.includes('manager=')) {
     const hashQuery = window.location.hash.slice(window.location.hash.indexOf('?'));
     const hashParams = new URLSearchParams(hashQuery);
-    return hashParams.get('manager');
+    const fromHash = hashParams.get('manager');
+    if (fromHash) return fromHash.trim();
   }
 
   return null;
@@ -47,22 +66,53 @@ export function getManagerParamFromURL(): string | null {
 /**
  * Extracts ?h2h=idA:idB query parameter from search or hash
  */
-export function getH2HParamFromURL(): { managerA: string; managerB: string } | null {
-  if (typeof window === 'undefined') return null;
-  const searchParams = new URLSearchParams(window.location.search);
-  let raw = searchParams.get('h2h');
-
-  if (!raw && window.location && window.location.hash && window.location.hash.includes('h2h=')) {
-    const hashQuery = window.location.hash.slice(window.location.hash.indexOf('?'));
-    const hashParams = new URLSearchParams(hashQuery);
-    raw = hashParams.get('h2h');
-  }
-
-  if (raw && raw.includes(':')) {
-    const parts = raw.split(':');
+export function getH2HParamFromURL(customUrl?: string): { managerA: string; managerB: string } | null {
+  const parseRaw = (raw: string | null): { managerA: string; managerB: string } | null => {
+    if (!raw) return null;
+    const decoded = decodeURIComponent(raw).trim();
+    let parts: string[] = [];
+    if (decoded.includes(':')) {
+      parts = decoded.split(':');
+    } else if (/_vs_/i.test(decoded)) {
+      parts = decoded.split(/_vs_/i);
+    } else if (/-vs-/i.test(decoded)) {
+      parts = decoded.split(/-vs-/i);
+    } else if (/ vs /i.test(decoded)) {
+      parts = decoded.split(/ vs /i);
+    }
     if (parts.length >= 2 && parts[0].trim() && parts[1].trim()) {
       return { managerA: parts[0].trim(), managerB: parts[1].trim() };
     }
+    return null;
+  };
+
+  if (customUrl) {
+    try {
+      const url = new URL(customUrl, 'https://example.com');
+      const fromSearch = parseRaw(url.searchParams.get('h2h'));
+      if (fromSearch) return fromSearch;
+
+      if (url.hash && url.hash.includes('h2h=')) {
+        const hashQuery = url.hash.slice(url.hash.indexOf('?'));
+        const hashParams = new URLSearchParams(hashQuery);
+        return parseRaw(hashParams.get('h2h'));
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  if (typeof window === 'undefined') return null;
+  const searchParams = new URLSearchParams(window.location.search);
+  let parsed = parseRaw(searchParams.get('h2h'));
+  if (parsed) return parsed;
+
+  if (window.location && window.location.hash && window.location.hash.includes('h2h=')) {
+    const hashQuery = window.location.hash.slice(window.location.hash.indexOf('?'));
+    const hashParams = new URLSearchParams(hashQuery);
+    parsed = parseRaw(hashParams.get('h2h'));
+    if (parsed) return parsed;
   }
 
   return null;
@@ -102,6 +152,137 @@ export function getRecordParamFromURL(customUrl?: string): string | null {
     if (fromHash) return fromHash.trim();
   }
 
+  return null;
+}
+
+export type MainViewTab = 'albo' | 'seasons' | 'records';
+
+/**
+ * Extracts ?tab=albo|seasons|records from search or hash.
+ * Defaults to 'records' if ?record= is present, and 'seasons' if ?season= is present.
+ */
+export function getMainTabParamFromURL(customUrl?: string): MainViewTab | null {
+  const getParam = (search: string, hash: string): MainViewTab | null => {
+    const searchParams = new URLSearchParams(search);
+    const tabSearch = searchParams.get('tab')?.toLowerCase();
+    if (tabSearch === 'albo' || tabSearch === 'seasons' || tabSearch === 'records') {
+      return tabSearch;
+    }
+    if (searchParams.get('record') || searchParams.get('category') || searchParams.get('cat')) return 'records';
+    if (searchParams.get('season')) return 'seasons';
+
+    if (hash) {
+      const cleanHash = hash.replace(/^#\/?/, '').toLowerCase();
+      if (cleanHash === 'albo' || cleanHash === 'seasons' || cleanHash === 'records') {
+        return cleanHash;
+      }
+      if (hash.includes('?')) {
+        const hashQuery = hash.slice(hash.indexOf('?'));
+        const hashParams = new URLSearchParams(hashQuery);
+        const tabHash = hashParams.get('tab')?.toLowerCase();
+        if (tabHash === 'albo' || tabHash === 'seasons' || tabHash === 'records') {
+          return tabHash;
+        }
+        if (hashParams.get('record') || hashParams.get('category') || hashParams.get('cat')) return 'records';
+        if (hashParams.get('season')) return 'seasons';
+      }
+    }
+    return null;
+  };
+
+  if (customUrl) {
+    try {
+      const url = new URL(customUrl, 'https://example.com');
+      return getParam(url.search, url.hash);
+    } catch {
+      return null;
+    }
+  }
+
+  if (typeof window === 'undefined') return null;
+  return getParam(window.location.search, window.location.hash);
+}
+
+/**
+ * Extracts ?season=YYYY-YY or ?season=YYYY/YY from search or hash
+ */
+export function getSeasonParamFromURL(customUrl?: string): string | null {
+  const extract = (params: URLSearchParams): string | null => {
+    const s = params.get('season');
+    if (!s) return null;
+    return s.trim().replace('-', '/');
+  };
+
+  if (customUrl) {
+    try {
+      const url = new URL(customUrl, 'https://example.com');
+      const val = extract(url.searchParams);
+      if (val) return val;
+      if (url.hash && url.hash.includes('?')) {
+        const hashParams = new URLSearchParams(url.hash.slice(url.hash.indexOf('?')));
+        return extract(hashParams);
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  if (typeof window === 'undefined') return null;
+  const val = extract(new URLSearchParams(window.location.search));
+  if (val) return val;
+  if (window.location.hash && window.location.hash.includes('?')) {
+    const hashParams = new URLSearchParams(window.location.hash.slice(window.location.hash.indexOf('?')));
+    return extract(hashParams);
+  }
+  return null;
+}
+
+const VALID_RECORD_CATEGORIES = new Set<RecordCategory | 'all'>([
+  'all',
+  'points',
+  'titles',
+  'h2h',
+  'streaks',
+  'banter'
+]);
+
+/**
+ * Extracts and validates ?category= or ?cat= parameter from URL search or hash
+ * Supports exact technical IDs: 'all' | 'points' | 'titles' | 'h2h' | 'streaks' | 'banter'
+ */
+export function getRecordCategoryParamFromURL(customUrl?: string): RecordCategory | 'all' | null {
+  const extract = (params: URLSearchParams): RecordCategory | 'all' | null => {
+    const raw = (params.get('category') || params.get('cat'))?.trim().toLowerCase();
+    if (!raw) return null;
+    if (VALID_RECORD_CATEGORIES.has(raw as RecordCategory | 'all')) {
+      return raw as RecordCategory | 'all';
+    }
+    return null;
+  };
+
+  if (customUrl) {
+    try {
+      const url = new URL(customUrl, 'https://example.com');
+      const val = extract(url.searchParams);
+      if (val) return val;
+      if (url.hash && url.hash.includes('?')) {
+        const hashParams = new URLSearchParams(url.hash.slice(url.hash.indexOf('?')));
+        return extract(hashParams);
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  if (typeof window === 'undefined') return null;
+  const val = extract(new URLSearchParams(window.location.search));
+  if (val) return val;
+  if (window.location && window.location.hash && window.location.hash.includes('?')) {
+    const hashParams = new URLSearchParams(window.location.hash.slice(window.location.hash.indexOf('?')));
+    return extract(hashParams);
+  }
   return null;
 }
 

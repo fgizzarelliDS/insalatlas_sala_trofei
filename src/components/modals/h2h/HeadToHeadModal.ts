@@ -302,3 +302,53 @@ ${shareUrl}`;
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   }
 }
+
+/**
+ * Toggles the export / share dropdown menu inside the H2H duel modal
+ */
+export function toggleH2HShareDropdown(e?: Event): void {
+  if (e) {
+    e.stopPropagation();
+  }
+  const dropdown = document.getElementById('h2h-share-dropdown-menu');
+  if (dropdown) {
+    dropdown.classList.toggle('hidden');
+  }
+}
+
+/**
+ * Closes the export / share dropdown menu inside the H2H duel modal
+ */
+export function closeH2HShareDropdown(): void {
+  const dropdown = document.getElementById('h2h-share-dropdown-menu');
+  if (dropdown && !dropdown.classList.contains('hidden')) {
+    dropdown.classList.add('hidden');
+  }
+}
+
+/**
+ * Triggers HD export for the currently opened H2H duel
+ */
+export async function exportCurrentH2HDuelHD(): Promise<void> {
+  if (!selectedManagerIdA || !selectedManagerIdB) return;
+  const managerA = state.managers.find(m => m.id === selectedManagerIdA);
+  const managerB = state.managers.find(m => m.id === selectedManagerIdB);
+  if (managerA && managerB) {
+    const { exportH2HDuelHD } = await import('@/export/share');
+    await exportH2HDuelHD(managerA, managerB);
+  }
+}
+
+/**
+ * Copies HD image of current H2H duel directly to clipboard
+ */
+export async function copyCurrentH2HDuelToClipboard(): Promise<void> {
+  if (!selectedManagerIdA || !selectedManagerIdB) return;
+  const managerA = state.managers.find(m => m.id === selectedManagerIdA);
+  const managerB = state.managers.find(m => m.id === selectedManagerIdB);
+  if (managerA && managerB) {
+    const { copyH2HDuelToClipboard } = await import('@/export/share');
+    await copyH2HDuelToClipboard(managerA, managerB);
+  }
+}
+

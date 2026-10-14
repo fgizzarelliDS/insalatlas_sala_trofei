@@ -41,7 +41,7 @@ export function renderHeadToHeadHero(
   return `
     <div class="p-3 rounded-2xl border" style="background-color: var(--table-surface); border-color: var(--table-border);">
       <!-- Dropdown Selectors -->
-      <div class="grid grid-cols-2 gap-3 items-center">
+      <div id="h2h-hero-dropdown-selectors" class="grid grid-cols-2 gap-3 items-center">
         <!-- Select A -->
         <div class="min-w-0">
           <label class="block text-[10px] font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5" style="color: var(--h2h-contender-a);">
@@ -70,17 +70,17 @@ export function renderHeadToHeadHero(
       </div>
 
       <!-- Face-off Hero Cards -->
-      <div class="grid grid-cols-11 gap-1 items-center mt-3 pt-3 border-t" style="border-color: var(--table-border);">
+      <div id="h2h-hero-cards-row" class="grid grid-cols-11 gap-1 items-center mt-3 pt-3 border-t" style="border-color: var(--table-border);">
         <!-- Contender A Card -->
-        <div class="col-span-5 text-center p-2.5 rounded-xl border" style="background-color: var(--modal-bg); border-color: var(--table-border);">
-          <div class="w-11 h-11 mx-auto rounded-full flex items-center justify-center font-black text-sm border-2 mb-1.5 shadow"
+        <div class="col-span-5 text-center p-3 rounded-xl border flex flex-col items-center" style="background-color: var(--modal-bg); border-color: var(--table-border);">
+          <div class="w-11 h-11 mx-auto rounded-full flex items-center justify-center font-black text-sm border-2 mb-1 shadow"
                style="background: radial-gradient(circle, var(--h2h-contender-a) 0%, transparent 80%), rgba(255,255,255,0.05); border-color: var(--h2h-contender-a); color: var(--text-main);">
             ${initialsA}
           </div>
-          <h3 class="font-sport font-black text-sm uppercase truncate leading-tight mb-1" style="color: var(--text-main);">
+          <h3 class="h2h-contender-name font-sport font-black text-sm uppercase px-1 my-1 leading-normal" style="color: var(--text-main); line-height: 1.35;">
             ${managerA.name}
           </h3>
-          <div class="flex flex-wrap items-center justify-center gap-1">
+          <div class="flex flex-wrap items-center justify-center gap-1 mt-0.5">
             <span class="inline-block text-[10px] font-black px-2 py-0.5 rounded-full border"
                   style="color: var(--h2h-contender-a); border-color: var(--h2h-contender-a); background-color: rgba(125, 125, 125, 0.08);">
               ${formatScore(metricsA.score)} PT
@@ -98,15 +98,15 @@ export function renderHeadToHeadHero(
         </div>
 
         <!-- Contender B Card -->
-        <div class="col-span-5 text-center p-2.5 rounded-xl border" style="background-color: var(--modal-bg); border-color: var(--table-border);">
-          <div class="w-11 h-11 mx-auto rounded-full flex items-center justify-center font-black text-sm border-2 mb-1.5 shadow"
+        <div class="col-span-5 text-center p-3 rounded-xl border flex flex-col items-center" style="background-color: var(--modal-bg); border-color: var(--table-border);">
+          <div class="w-11 h-11 mx-auto rounded-full flex items-center justify-center font-black text-sm border-2 mb-1 shadow"
                style="background: radial-gradient(circle, var(--h2h-contender-b) 0%, transparent 80%), rgba(255,255,255,0.05); border-color: var(--h2h-contender-b); color: var(--text-main);">
             ${initialsB}
           </div>
-          <h3 class="font-sport font-black text-sm uppercase truncate leading-tight mb-1" style="color: var(--text-main);">
+          <h3 class="h2h-contender-name font-sport font-black text-sm uppercase px-1 my-1 leading-normal" style="color: var(--text-main); line-height: 1.35;">
             ${managerB.name}
           </h3>
-          <div class="flex flex-wrap items-center justify-center gap-1">
+          <div class="flex flex-wrap items-center justify-center gap-1 mt-0.5">
             <span class="inline-block text-[10px] font-black px-2 py-0.5 rounded-full border"
                   style="color: var(--h2h-contender-b); border-color: var(--h2h-contender-b); background-color: rgba(125, 125, 125, 0.08);">
               ${formatScore(metricsB.score)} PT

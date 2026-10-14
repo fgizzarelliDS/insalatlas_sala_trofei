@@ -170,6 +170,153 @@ export async function renderProfileModalCanvas(card: HTMLElement): Promise<HTMLC
   }
 }
 
+/**
+ * Renders an exact off-screen clone of the H2H 1vs1 duel modal card into a high-res canvas.
+ * Strips dropdowns, interactive action buttons, and adds InsalAtlas official closing footer.
+ */
+export async function renderH2HDuelCanvas(card: HTMLElement): Promise<HTMLCanvasElement> {
+  const clone = card.cloneNode(true) as HTMLElement;
+  clone.id = 'h2h-duel-card-export-clone';
+
+  // 1. Determine natural width of the card (default max-w-2xl is 672px)
+  const cardRect = card.getBoundingClientRect();
+  const naturalWidth = Math.round(cardRect.width) || card.offsetWidth || 672;
+  const targetWidth = Math.max(naturalWidth, 600);
+
+  // 2. Remove interactive UI controls (close buttons, footer action buttons, share dropdown, tab switchers)
+  clone.querySelectorAll('button').forEach(btn => {
+    // Keep internal toggles/buttons visually clean if needed, or remove controls
+    const onclickAttr = btn.getAttribute('onclick') || '';
+    if (
+      onclickAttr.includes('closeHeadToHeadModal') ||
+      onclickAttr.includes('toggleH2HShareDropdown') ||
+      onclickAttr.includes('setH2HTab') ||
+      onclickAttr.includes('setH2HVisualMode') ||
+      btn.id.includes('share') ||
+      btn.id.includes('close')
+    ) {
+      btn.remove();
+    }
+  });
+
+  clone.querySelector('#btn-h2h-share-dropdown')?.closest('.relative')?.remove();
+  clone.querySelector('#h2h-share-dropdown-menu')?.remove();
+
+  // Remove the footer bar completely
+  const footerBar = clone.querySelector('.border-t.px-4.sm\\:px-6.py-3');
+  if (footerBar) footerBar.remove();
+
+  // Remove interactive dropdown selectors row completely for the export card
+  clone.querySelector('#h2h-hero-dropdown-selectors')?.remove();
+  const heroCardsRow = clone.querySelector('#h2h-hero-cards-row') as HTMLElement | null;
+  if (heroCardsRow) {
+    heroCardsRow.classList.remove('mt-3', 'pt-3', 'border-t');
+    heroCardsRow.style.marginTop = '0';
+    heroCardsRow.style.paddingTop = '0';
+    heroCardsRow.style.borderTop = 'none';
+  }
+
+  // Ensure contender names have plenty of vertical room and never get clipped in html2canvas
+  clone.querySelectorAll('.h2h-contender-name').forEach(el => {
+    const htmlEl = el as HTMLElement;
+    htmlEl.style.lineHeight = '1.35';
+    htmlEl.style.marginTop = '4px';
+    htmlEl.style.marginBottom = '6px';
+    htmlEl.style.display = 'block';
+    htmlEl.style.overflow = 'visible';
+    htmlEl.style.whiteSpace = 'normal';
+  });
+
+  // 3. Add balanced, elegant closing footnote INSIDE the scrollable body (so it's framed within the rounded card)
+  const scrollableBody = clone.querySelector('.overflow-y-auto') as HTMLElement | null;
+  const targetParent = scrollableBody || clone;
+
+  const footer = document.createElement('div');
+  footer.className = 'flex items-center justify-center gap-2 py-4 mt-3 border-t text-xs font-bold tracking-wider uppercase opacity-85';
+  footer.style.borderColor = 'var(--table-border)';
+  footer.style.color = 'var(--text-muted)';
+  footer.innerHTML = `
+    <img src="favicon-64x64.png" alt="InsalAtlas" class="w-4 h-4 object-contain inline-block rounded-full shadow-sm">
+    <span class="font-extrabold tracking-widest text-[11px]" style="color: var(--text-main);">InsalAtlas</span>
+    <span class="opacity-40">•</span>
+    <span class="text-[10px] tracking-wider" style="color: var(--accent-color);">Head-to-Head Ufficiale</span>
+  `;
+  targetParent.appendChild(footer);
+
+  // 4. Obtain computed background and theme colors
+  const computedBg = window.getComputedStyle(card).backgroundColor || '#0f172a';
+
+  // 5. Build invisible staging container that takes zero space and prevents any layout flash/scroll shift
+  const container = document.createElement('div');
+  container.id = 'h2h-export-staging-container';
+  container.style.position = 'fixed';
+  container.style.left = '0';
+  container.style.top = '0';
+  container.style.width = '0';
+  container.style.height = '0';
+  container.style.overflow = 'hidden';
+  container.style.opacity = '0';
+  container.style.pointerEvents = 'none';
+  container.style.zIndex = '-99999';
+
+  clone.style.position = 'absolute';
+  clone.style.left = '0';
+  clone.style.top = '0';
+  clone.style.width = `${targetWidth}px`;
+  clone.style.maxWidth = `${targetWidth}px`;
+  clone.style.height = 'auto';
+  clone.style.maxHeight = 'none';
+  clone.style.overflow = 'visible';
+  clone.style.boxShadow = 'none';
+  clone.style.pointerEvents = 'none';
+  clone.style.visibility = 'visible';
+  clone.style.opacity = '1';
+
+  container.appendChild(clone);
+  document.body.appendChild(container);
+
+  try {
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
+
+    const html2canvas = (await import('html2canvas')).default;
+    const fullHeight = Math.ceil(clone.scrollHeight || clone.offsetHeight || 700);
+
+    const canvas = await html2canvas(clone, {
+      scale: 2.2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: computedBg,
+      logging: false,
+      scrollX: 0,
+      scrollY: 0,
+      width: targetWidth,
+      height: fullHeight,
+      windowWidth: targetWidth,
+      windowHeight: fullHeight,
+      onclone: (_clonedDoc, clonedEl) => {
+        const staging = clonedEl.parentElement;
+        if (staging) {
+          staging.style.position = 'static';
+          staging.style.width = `${targetWidth}px`;
+          staging.style.height = 'auto';
+          staging.style.overflow = 'visible';
+          staging.style.opacity = '1';
+          staging.style.visibility = 'visible';
+        }
+        clonedEl.style.position = 'static';
+        clonedEl.style.opacity = '1';
+        clonedEl.style.visibility = 'visible';
+      }
+    });
+
+    return canvas;
+  } finally {
+    container.remove();
+  }
+}
+
 let isExportingHD = false;
 
 /**

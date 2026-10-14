@@ -94,31 +94,40 @@ export function renderHeadToHeadModalHTML(
       <div class="flex items-center gap-2">
         ${activeTab === 'duel'
       ? `
-              <button onclick="shareH2HWhatsApp()"
-                class="px-3.5 py-1.5 rounded-xl text-xs font-bold border transition flex items-center gap-1.5 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/25 shadow-sm">
-                <i class="fa-brands fa-whatsapp text-sm"></i>
-                <span class="hidden sm:inline">Condividi Duello</span>
-                <span class="sm:hidden">Condividi</span>
-              </button>
+              <!-- Dropdown Popover Menu for H2H Duel (opens upward) -->
+              <div class="relative">
+                <button id="btn-h2h-share-dropdown" onclick="toggleH2HShareDropdown(event)"
+                  class="px-3.5 py-1.5 rounded-xl text-xs font-bold border transition shadow-sm flex items-center gap-1.5 opacity-90 hover:opacity-100"
+                  style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);">
+                  <i class="fa-solid fa-share-nodes text-xs"></i>
+                  <span>Scarica / Condividi</span>
+                  <i class="fa-solid fa-chevron-up text-[10px] ml-0.5"></i>
+                </button>
 
-              <button onclick="window.setH2HTab('matrix')"
-                class="px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center gap-1.5 opacity-80 hover:opacity-100 shadow-sm"
-                style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--text-main);"
-                title="Apri il tabellone completo della Matrice Nemesi">
-                <i class="fa-solid fa-table-cells text-amber-500 text-xs"></i>
-                <span>Matrice Globale</span>
-              </button>
+                <div id="h2h-share-dropdown-menu"
+                  class="hidden absolute bottom-full left-0 mb-2 w-52 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
+                  style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--modal-text);">
+                  <button onclick="exportCurrentH2HDuelHD(); closeH2HShareDropdown();"
+                    class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition">
+                    <i class="fa-solid fa-download text-amber-500"></i>
+                    <span>Scarica PNG</span>
+                  </button>
+                  <button onclick="copyCurrentH2HDuelToClipboard(); closeH2HShareDropdown();"
+                    class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition">
+                    <i class="fa-solid fa-copy text-emerald-500"></i>
+                    <span>Copia per WhatsApp</span>
+                  </button>
+                  <button onclick="shareH2HWhatsApp(); closeH2HShareDropdown();"
+                    class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition border-t mt-1 pt-2"
+                    style="border-color: var(--table-border);">
+                    <i class="fa-brands fa-whatsapp text-emerald-500"></i>
+                    <span>Invia Link WhatsApp</span>
+                  </button>
+                </div>
+              </div>
             `
-      : `
-              <button onclick="window.setH2HTab('duel')"
-                class="px-3.5 py-1.5 rounded-xl text-xs font-bold border transition flex items-center gap-1.5 opacity-80 hover:opacity-100 shadow-sm"
-                style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--text-main);"
-                title="Torna al duello 1 contro 1">
-                <i class="fa-solid fa-user-ninja text-amber-500 text-xs"></i>
-                <span>Duello 1 vs 1</span>
-              </button>
-            `
-    }
+          : ''
+        }
       </div>
 
       <button onclick="closeHeadToHeadModal()"

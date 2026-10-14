@@ -3,7 +3,7 @@ import { state } from '@/state';
 import { showToast } from '@/ui';
 import { calculateManagerScore, formatScore } from '@/score';
 import { getManagerArchetype, computeGlobalClutchIndex, getClutchTier } from '@/analytics';
-import { renderProfileModalCanvas, downloadBlob, copyBlobToClipboard } from './canvas';
+import { renderProfileModalCanvas, renderH2HDuelCanvas, downloadBlob, copyBlobToClipboard } from './canvas';
 
 /**
  * Formats rich banter text and direct link for WhatsApp sharing with preview
@@ -187,3 +187,71 @@ export function shareManagerWhatsAppById(managerId: string): void {
   }
   shareViaWhatsApp(manager);
 }
+
+/**
+ * Captures the H2H duel dialog in high definition and downloads PNG directly
+ */
+export async function exportH2HDuelHD(managerA: Manager, managerB: Manager): Promise<void> {
+  const card = document.getElementById('head-to-head-dialog');
+  if (!card) {
+    showToast('Impossibile trovare la scheda del duello', 'error');
+    return;
+  }
+
+  showToast('Generazione duello HD in corso...', 'info');
+
+  const dropdown = document.getElementById('h2h-share-dropdown-menu');
+  if (dropdown) dropdown.classList.add('hidden');
+
+  try {
+    const canvas = await renderH2HDuelCanvas(card);
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        showToast("Errore durante la creazione dell'immagine", 'error');
+        return;
+      }
+      const filename = `insalatlas_h2h_${managerA.id}_vs_${managerB.id}_${Date.now()}.png`;
+      downloadBlob(blob, filename);
+    }, 'image/png');
+  } catch (err) {
+    console.error('H2H export failed:', err);
+    showToast('Impossibile esportare il duello', 'error');
+  }
+}
+
+/**
+ * Captures the H2H duel dialog in high definition and copies PNG to clipboard
+ */
+export async function copyH2HDuelToClipboard(managerA: Manager, managerB: Manager): Promise<boolean> {
+  const card = document.getElementById('head-to-head-dialog');
+  if (!card) {
+    showToast('Impossibile trovare la scheda del duello', 'error');
+    return false;
+  }
+
+  showToast('Copia immagine duello in corso...', 'info');
+
+  const dropdown = document.getElementById('h2h-share-dropdown-menu');
+  if (dropdown) dropdown.classList.add('hidden');
+
+  try {
+    const canvas = await renderH2HDuelCanvas(card);
+    return new Promise((resolve) => {
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          showToast("Errore durante la creazione dell'immagine", 'error');
+          resolve(false);
+          return;
+        }
+        const filename = `insalatlas_h2h_${managerA.id}_vs_${managerB.id}_${Date.now()}.png`;
+        const success = await copyBlobToClipboard(blob, filename);
+        resolve(success);
+      }, 'image/png');
+    });
+  } catch (err) {
+    console.error('H2H copy failed:', err);
+    showToast('Impossibile copiare il duello', 'error');
+    return false;
+  }
+}
+

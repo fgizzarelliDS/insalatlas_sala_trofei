@@ -433,11 +433,18 @@ describe('Head-to-Head (H2H) Engine & Router', () => {
       const duelHTML = renderHeadToHeadModalHTML(stats, [managerA, managerB], false, 'radar', 'duel');
       expect(duelHTML).toContain('Duello 1 vs 1');
       expect(duelHTML).toContain('Bacheca Trofei a Confronto');
+      expect(duelHTML).toContain('Scarica / Condividi');
+      expect(duelHTML).toContain('Scarica PNG');
+      expect(duelHTML).toContain('Copia per WhatsApp');
+      expect(duelHTML).toContain('Invia Link WhatsApp');
+      expect(duelHTML).toContain('h2h-share-dropdown-menu');
 
       const matrixTabHTML = renderHeadToHeadModalHTML(stats, [managerA, managerB], false, 'radar', 'matrix');
       expect(matrixTabHTML).toContain('Matrice Globale');
       expect(matrixTabHTML).toContain('Mister A');
       expect(matrixTabHTML).toContain('Mister B');
+      // Matrix tab should not contain the duel share dropdown
+      expect(matrixTabHTML).not.toContain('h2h-share-dropdown-menu');
     });
   });
 });

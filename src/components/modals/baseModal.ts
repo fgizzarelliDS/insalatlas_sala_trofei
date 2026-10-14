@@ -2,7 +2,7 @@ import { closeProfileModal, closeShareDropdown } from './ProfileModal';
 import { closeManagerModal } from './ManagerModal';
 import { closeConcentrationModal, closeTierInfo } from './ConcentrationModal';
 import { closeSeasonModal } from './season/SeasonModalController';
-import { closeHeadToHeadModal } from './h2h/HeadToHeadModal';
+import { closeHeadToHeadModal, closeH2HShareDropdown } from './h2h/HeadToHeadModal';
 
 /**
  * Sets up backdrop click and Escape key listeners for all modals
@@ -66,6 +66,14 @@ export function initModalListeners(): void {
         closeShareDropdown();
       }
     }
+
+    const h2hShareDropdown = document.getElementById('h2h-share-dropdown-menu');
+    if (h2hShareDropdown && !h2hShareDropdown.classList.contains('hidden')) {
+      const target = e.target as HTMLElement;
+      if (!h2hShareDropdown.contains(target) && !target.closest('#btn-h2h-share-dropdown')) {
+        closeH2HShareDropdown();
+      }
+    }
   });
 
   // Global Escape key handler
@@ -74,6 +82,11 @@ export function initModalListeners(): void {
       const shareDropdown = document.getElementById('share-dropdown-menu');
       if (shareDropdown && !shareDropdown.classList.contains('hidden')) {
         closeShareDropdown();
+        return;
+      }
+      const h2hShareDropdown = document.getElementById('h2h-share-dropdown-menu');
+      if (h2hShareDropdown && !h2hShareDropdown.classList.contains('hidden')) {
+        closeH2HShareDropdown();
         return;
       }
       const tierPopover = document.getElementById('tier-info-popover');

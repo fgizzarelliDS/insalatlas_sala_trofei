@@ -65,7 +65,11 @@ import {
   getH2HTab,
   selectH2HDuel,
   openNemesisMatrixModal,
-  setNemesisFilter
+  setNemesisFilter,
+  toggleH2HShareDropdown,
+  closeH2HShareDropdown,
+  exportCurrentH2HDuelHD,
+  copyCurrentH2HDuelToClipboard
 } from '@/components/modals';
 import {
   exportGraphicHD,
@@ -183,6 +187,10 @@ declare global {
     getH2HTab: typeof getH2HTab;
     selectH2HDuel: typeof selectH2HDuel;
     openNemesisMatrixModal: typeof openNemesisMatrixModal;
+    toggleH2HShareDropdown: typeof toggleH2HShareDropdown;
+    closeH2HShareDropdown: typeof closeH2HShareDropdown;
+    exportCurrentH2HDuelHD: typeof exportCurrentH2HDuelHD;
+    copyCurrentH2HDuelToClipboard: typeof copyCurrentH2HDuelToClipboard;
   }
 }
 
@@ -326,6 +334,10 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     setH2HTab,
     getH2HTab,
     selectH2HDuel,
-    openNemesisMatrixModal
+    openNemesisMatrixModal,
+    toggleH2HShareDropdown,
+    closeH2HShareDropdown,
+    exportCurrentH2HDuelHD,
+    copyCurrentH2HDuelToClipboard
   });
 }

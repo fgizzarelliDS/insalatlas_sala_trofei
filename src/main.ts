@@ -91,13 +91,29 @@ import {
   selectArchiveSeason,
   renderSeasonsArchive
 } from '@/components/board/seasonsArchive';
+import {
+  filterRecordsCategory,
+  renderRecordsTab,
+  toggleRecordShareDropdown,
+  closeAllRecordShareDropdowns,
+  exportRecordCard,
+  copyRecordCard
+} from '@/components/board/records';
 import { findManagerByParam, getManagerParamFromURL, getH2HParamFromURL } from '@/router';
 import { initPWA, promptPWAInstall } from '@/pwa';
 
-// Re-export router utilities, board controls, seasons archive, and PWA for unit tests and consumers
+// Re-export router utilities, board controls, seasons archive, records, and PWA for unit tests and consumers
 export { findManagerByParam, getManagerParamFromURL, getH2HParamFromURL };
 export { changeSort, toggleDisplayMode, renderBoard, dismissScrollHint };
 export { switchMainViewTab, selectArchiveSeason, renderSeasonsArchive };
+export {
+  filterRecordsCategory,
+  renderRecordsTab,
+  toggleRecordShareDropdown,
+  closeAllRecordShareDropdowns,
+  exportRecordCard,
+  copyRecordCard
+};
 export { updateStatistics };
 export { promptPWAInstall };
 export {
@@ -173,6 +189,8 @@ declare global {
     switchMainViewTab: typeof switchMainViewTab;
     selectArchiveSeason: typeof selectArchiveSeason;
     renderSeasonsArchive: typeof renderSeasonsArchive;
+    filterRecordsCategory: typeof filterRecordsCategory;
+    renderRecordsTab: typeof renderRecordsTab;
     openHeadToHeadModal: typeof openHeadToHeadModal;
     closeHeadToHeadModal: typeof closeHeadToHeadModal;
     swapH2HManagers: typeof swapH2HManagers;
@@ -191,6 +209,10 @@ declare global {
     closeH2HShareDropdown: typeof closeH2HShareDropdown;
     exportCurrentH2HDuelHD: typeof exportCurrentH2HDuelHD;
     copyCurrentH2HDuelToClipboard: typeof copyCurrentH2HDuelToClipboard;
+    toggleRecordShareDropdown: typeof toggleRecordShareDropdown;
+    closeAllRecordShareDropdowns: typeof closeAllRecordShareDropdowns;
+    exportRecordCard: typeof exportRecordCard;
+    copyRecordCard: typeof copyRecordCard;
   }
 }
 
@@ -230,38 +252,7 @@ export async function initApp(): Promise<void> {
 
 // Bootstrap Sequence
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-  if (document.readyState === 'loading') {
-    window.addEventListener('DOMContentLoaded', initApp);
-  } else {
-    initApp();
-  }
-
-  // Popstate: handle browser back/forward navigation
-  window.addEventListener('popstate', () => {
-    const h2h = getH2HParamFromURL();
-    if (h2h) {
-      const foundA = findManagerByParam(h2h.managerA);
-      const foundB = findManagerByParam(h2h.managerB);
-      if (foundA && foundB) {
-        closeProfileModal();
-        openHeadToHeadModal(foundA.id, foundB.id);
-        return;
-      }
-    }
-    closeHeadToHeadModal();
-
-    const p = getManagerParamFromURL();
-    if (p) {
-      const found = findManagerByParam(p);
-      if (found) {
-        openProfileModal(found.id);
-        return;
-      }
-    }
-    closeProfileModal();
-  });
-
-  // Global Window Assignment for inline HTML event handlers
+  // Global Window Assignment for inline HTML event handlers (attached immediately)
   Object.assign(window, {
     changeTheme,
     changeSort,
@@ -321,6 +312,8 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     switchMainViewTab,
     selectArchiveSeason,
     renderSeasonsArchive,
+    filterRecordsCategory,
+    renderRecordsTab,
     openHeadToHeadModal,
     closeHeadToHeadModal,
     swapH2HManagers,
@@ -338,6 +331,41 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     toggleH2HShareDropdown,
     closeH2HShareDropdown,
     exportCurrentH2HDuelHD,
-    copyCurrentH2HDuelToClipboard
+    copyCurrentH2HDuelToClipboard,
+    toggleRecordShareDropdown,
+    closeAllRecordShareDropdowns,
+    exportRecordCard,
+    copyRecordCard
+  });
+
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', initApp);
+  } else {
+    initApp();
+  }
+
+  // Popstate: handle browser back/forward navigation
+  window.addEventListener('popstate', () => {
+    const h2h = getH2HParamFromURL();
+    if (h2h) {
+      const foundA = findManagerByParam(h2h.managerA);
+      const foundB = findManagerByParam(h2h.managerB);
+      if (foundA && foundB) {
+        closeProfileModal();
+        openHeadToHeadModal(foundA.id, foundB.id);
+        return;
+      }
+    }
+    closeHeadToHeadModal();
+
+    const p = getManagerParamFromURL();
+    if (p) {
+      const found = findManagerByParam(p);
+      if (found) {
+        openProfileModal(found.id);
+        return;
+      }
+    }
+    closeProfileModal();
   });
 }

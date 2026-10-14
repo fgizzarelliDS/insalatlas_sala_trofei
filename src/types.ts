@@ -429,3 +429,38 @@ export interface NemesisMatrixData {
   matrix: Record<string, Record<string, NemesisMatrixCell>>;
 }
 
+export type RecordCategory =
+  | 'points'
+  | 'titles'
+  | 'h2h'
+  | 'streaks'
+  | 'banter';
+
+export interface RecordHolder {
+  managerId: string;
+  managerName: string;
+  teamName?: string;
+  logo?: string;
+  fallbackCrest?: string;
+  season?: string;
+  value: number | string;
+  formattedValue: string;
+  normalizedDetail?: string; // e.g. "1.91 pt/g · 35 giornate"
+  detail?: string;
+}
+
+export interface LeagueRecord {
+  id: string;
+  title: string;
+  category: RecordCategory;
+  icon: string;
+  watermark?: string; // Thematic background watermark emoji or SVG icon
+  badgeLabel: string;
+  badgeColor: string;
+  primaryHolders: RecordHolder[];
+  primaryHolder: RecordHolder; // points to primaryHolders[0] for backward compatibility
+  runnerUps: RecordHolder[];
+  description: string;
+}
+
+

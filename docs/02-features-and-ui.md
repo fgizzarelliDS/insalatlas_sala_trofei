@@ -166,7 +166,7 @@ L'applicazione include il supporto PWA per l'installazione nativa su desktop e d
   - Colori di sistema coerenti (`background_color: "#0f172a"`, `theme_color: "#0f172a"`).
   - Icone ad alta risoluzione con padding circolare safe-zone (`purpose: "any maskable"` a 512×512 e 192×192) per evitare ritagli antiestetici nei launcher di sistema.
 - **Single Source of Truth per la Versione del Cache**:
-  - La versione dell'applicazione (v1.3.0) è definita centralmente in `package.json`.
+  - La versione dell'applicazione (v1.4.0) è definita centralmente in `package.json`.
   - Il plugin personalizzato di build Vite inietta la versione nel Service Worker (`CACHE_NAME = 'insalatlas-v' + version`) e nel footer dell'applicazione.
   - Al rilascio di un aggiornamento, il Service Worker invalida automaticamente le cache obsolete e garantisce l'attivazione immediata delle nuove risorse.
 - **Strategie di Caching**:

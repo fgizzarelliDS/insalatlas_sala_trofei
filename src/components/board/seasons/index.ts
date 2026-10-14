@@ -7,45 +7,60 @@ export * from './seasonSelector';
 export * from './standingsTable';
 export * from './tournamentCards';
 
+import { renderRecordsTab } from '@/components/board/records';
+
 let currentSelectedSeason: string | null = null;
 
 /**
- * Switches the main view between Albo d'Oro and Archivio Stagioni & Classifiche
+ * Switches the main view between Albo d'Oro, Archivio Stagioni & Classifiche, and Record & Primati Storici
  */
-export function switchMainViewTab(tab: 'albo' | 'seasons'): void {
+export function switchMainViewTab(tab: 'albo' | 'seasons' | 'records'): void {
   const alboContent = document.getElementById('main-tab-albo-content');
   const seasonsContent = document.getElementById('main-tab-seasons-content');
+  const recordsContent = document.getElementById('main-tab-records-content');
+
   const btnAlbo = document.getElementById('main-tab-btn-albo');
   const btnSeasons = document.getElementById('main-tab-btn-seasons');
+  const btnRecords = document.getElementById('main-tab-btn-records');
 
   const activeBtnClass =
-    'flex-1 sm:flex-initial justify-center sm:justify-start px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm bg-amber-500 text-slate-950';
+    'flex-1 sm:flex-initial justify-center sm:justify-start px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm bg-amber-500 text-slate-950 font-black';
   const inactiveBtnClass =
     'flex-1 sm:flex-initial justify-center sm:justify-start px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-bold opacity-75 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5 transition flex items-center gap-1.5 border border-transparent';
 
+  // Reset all buttons
+  [btnAlbo, btnSeasons, btnRecords].forEach(btn => {
+    if (btn) {
+      btn.className = inactiveBtnClass;
+      btn.style.color = 'var(--text-main)';
+    }
+  });
+
+  // Hide all content containers
+  alboContent?.classList.add('hidden');
+  seasonsContent?.classList.add('hidden');
+  recordsContent?.classList.add('hidden');
+
   if (tab === 'albo') {
     alboContent?.classList.remove('hidden');
-    seasonsContent?.classList.add('hidden');
     if (btnAlbo) {
       btnAlbo.className = activeBtnClass;
       btnAlbo.style.color = '#020617';
     }
-    if (btnSeasons) {
-      btnSeasons.className = inactiveBtnClass;
-      btnSeasons.style.color = 'var(--text-main)';
-    }
-  } else {
-    alboContent?.classList.add('hidden');
+  } else if (tab === 'seasons') {
     seasonsContent?.classList.remove('hidden');
     if (btnSeasons) {
       btnSeasons.className = activeBtnClass;
       btnSeasons.style.color = '#020617';
     }
-    if (btnAlbo) {
-      btnAlbo.className = inactiveBtnClass;
-      btnAlbo.style.color = 'var(--text-main)';
-    }
     renderSeasonsArchive();
+  } else if (tab === 'records') {
+    recordsContent?.classList.remove('hidden');
+    if (btnRecords) {
+      btnRecords.className = activeBtnClass;
+      btnRecords.style.color = '#020617';
+    }
+    renderRecordsTab();
   }
 }
 

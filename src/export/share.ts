@@ -3,7 +3,7 @@ import { state } from '@/state';
 import { showToast } from '@/ui';
 import { calculateManagerScore, formatScore } from '@/score';
 import { getManagerArchetype, computeGlobalClutchIndex, getClutchTier } from '@/analytics';
-import { renderProfileModalCanvas, renderH2HDuelCanvas, downloadBlob, copyBlobToClipboard } from './canvas';
+import { renderProfileModalCanvas, renderH2HDuelCanvas, renderRecordCardCanvas, downloadBlob, copyBlobToClipboard } from './canvas';
 
 /**
  * Formats rich banter text and direct link for WhatsApp sharing with preview
@@ -251,6 +251,73 @@ export async function copyH2HDuelToClipboard(managerA: Manager, managerB: Manage
   } catch (err) {
     console.error('H2H copy failed:', err);
     showToast('Impossibile copiare il duello', 'error');
+    return false;
+  }
+}
+
+/**
+ * Captures an individual Hall of Fame Record Card in high definition and downloads PNG directly
+ */
+export async function exportRecordCardHD(recordId: string): Promise<void> {
+  const card = document.getElementById(`record-card-${recordId}`);
+  if (!card) {
+    showToast('Impossibile trovare la scheda del record', 'error');
+    return;
+  }
+
+  showToast('Generazione card record HD in corso...', 'info');
+
+  const dropdown = document.getElementById(`record-share-dropdown-${recordId}`);
+  if (dropdown) dropdown.classList.add('hidden');
+
+  try {
+    const canvas = await renderRecordCardCanvas(card);
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        showToast("Errore durante la creazione dell'immagine", 'error');
+        return;
+      }
+      const filename = `insalatlas_record_${recordId}_${Date.now()}.png`;
+      downloadBlob(blob, filename);
+    }, 'image/png');
+  } catch (err) {
+    console.error('Record card export failed:', err);
+    showToast('Impossibile esportare la card del record', 'error');
+  }
+}
+
+/**
+ * Captures an individual Hall of Fame Record Card in high definition and copies PNG to clipboard
+ */
+export async function copyRecordCardToClipboard(recordId: string): Promise<boolean> {
+  const card = document.getElementById(`record-card-${recordId}`);
+  if (!card) {
+    showToast('Impossibile trovare la scheda del record', 'error');
+    return false;
+  }
+
+  showToast('Copia immagine record in corso...', 'info');
+
+  const dropdown = document.getElementById(`record-share-dropdown-${recordId}`);
+  if (dropdown) dropdown.classList.add('hidden');
+
+  try {
+    const canvas = await renderRecordCardCanvas(card);
+    return new Promise((resolve) => {
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          showToast("Errore durante la creazione dell'immagine", 'error');
+          resolve(false);
+          return;
+        }
+        const filename = `insalatlas_record_${recordId}_${Date.now()}.png`;
+        const success = await copyBlobToClipboard(blob, filename);
+        resolve(success);
+      }, 'image/png');
+    });
+  } catch (err) {
+    console.error('Record card copy failed:', err);
+    showToast('Impossibile copiare la card del record', 'error');
     return false;
   }
 }

@@ -2,11 +2,11 @@
 
 [![Deploy to GitHub Pages](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/deploy.yml/badge.svg)](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/deploy.yml)
 [![Continuous Integration](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/ci.yml/badge.svg)](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/ci.yml)
-[![Version: 1.3.0](https://img.shields.io/badge/version-1.3.0-emerald.svg)](package.json)
+[![Version: 1.4.0](https://img.shields.io/badge/version-1.4.0-emerald.svg)](package.json)
 [![TypeScript Strict](https://img.shields.io/badge/TypeScript-5.x_Strict-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> Albo d'oro interattivo, analisi econometrica di competitività, dinamica storica e schede manager per la lega Fantacalcio InsalAtlas.
+> Albo d'oro interattivo, analisi econometrica di competitività, dinamica storica, record all-time, H2H e schede manager per la lega Fantacalcio InsalAtlas.
 
 ---
 
@@ -17,6 +17,8 @@
 L'applicazione offre un'interfaccia interattiva per desktop e mobile:
 
 - **Albo d'Oro Storico Decennale**: Bacheca trofei consolidata, rating storico e schede manager ad alta risoluzione (HD) condivisibili.
+- **Bacheca Record Storici (Hall of Fame & Primati)**: Record storici su 5 categorie (Titoli, Punti, H2H, Serie, Banter) con ex-aequo per annata ed export card in HD.
+- **Head-to-Head (H2H) & Nemesis Matrix**: Motore di confronto diretto 1vs1, grafici radar a 5 assi, barre duello ed esportazione ad alta definizione per WhatsApp.
 - **Archivio Stagioni & Classifiche**: Consultazione cronologica delle singole annate con classifiche ufficiali e finaliste delle coppe.
 - **Dinamica Storica & Cronologia (Tab 4)**: Analisi longitudinale delle carriere (piazzamento medio storico, fasce di rendimento a 4 livelli, baricentro e oscillazione) ed evoluzione dell'equilibrio competitivo stagionale (compattezza, step gap e verdetti chiave).
 - **Gestione Stagioni In Corso & Debuttanti**: Isolamento delle annate attive dalle valutazioni consolidate di carriera per non penalizzare l'efficienza dei veterani e gestione asintotica dei debuttanti.

@@ -601,8 +601,13 @@ describe('Historical Rankings & Career Visualizations', () => {
       classList: { classes: Set<string>; add: (c: string) => void; remove: (c: string) => void; contains: (c: string) => boolean };
       innerHTML: string;
     };
+    let mockRecordsContent: {
+      classList: { classes: Set<string>; add: (c: string) => void; remove: (c: string) => void; contains: (c: string) => boolean };
+      innerHTML: string;
+    };
     let mockBtnAlbo: { className: string; style: { color: string } };
     let mockBtnSeasons: { className: string; style: { color: string } };
+    let mockBtnRecords: { className: string; style: { color: string } };
 
     beforeEach(() => {
       originalDocument = (globalThis as unknown as { document?: unknown }).document;
@@ -623,15 +628,27 @@ describe('Historical Rankings & Career Visualizations', () => {
         },
         innerHTML: ''
       };
+      mockRecordsContent = {
+        classList: {
+          classes: new Set<string>(['hidden']),
+          add(c: string) { this.classes.add(c); },
+          remove(c: string) { this.classes.delete(c); },
+          contains(c: string) { return this.classes.has(c); }
+        },
+        innerHTML: ''
+      };
       mockBtnAlbo = { className: '', style: { color: '' } };
       mockBtnSeasons = { className: '', style: { color: '' } };
+      mockBtnRecords = { className: '', style: { color: '' } };
 
       (globalThis as unknown as { document?: unknown }).document = {
         getElementById(id: string) {
           if (id === 'main-tab-albo-content') return mockAlboContent;
           if (id === 'main-tab-seasons-content') return mockSeasonsContent;
+          if (id === 'main-tab-records-content') return mockRecordsContent;
           if (id === 'main-tab-btn-albo') return mockBtnAlbo;
           if (id === 'main-tab-btn-seasons') return mockBtnSeasons;
+          if (id === 'main-tab-btn-records') return mockBtnRecords;
           return null;
         }
       };
@@ -653,7 +670,7 @@ describe('Historical Rankings & Career Visualizations', () => {
       expect(seasons).toEqual(['2024/25', '2021/22', '2016/17']);
     });
 
-    it('switches between Albo d\'Oro and Seasons Archive tabs', async () => {
+    it('switches between Albo d\'Oro, Seasons Archive, and Records tabs', async () => {
       const { switchMainViewTab } = await import('@/components/board/seasonsArchive');
       state.competitions = dataJson.competitions as unknown as CompetitionRecord[];
       state.managers = dataJson.leagueData as unknown as Manager[];
@@ -662,13 +679,24 @@ describe('Historical Rankings & Career Visualizations', () => {
       switchMainViewTab('seasons');
       expect(mockAlboContent.classList.contains('hidden')).toBe(true);
       expect(mockSeasonsContent.classList.contains('hidden')).toBe(false);
+      expect(mockRecordsContent.classList.contains('hidden')).toBe(true);
       expect(mockBtnSeasons.className).toContain('bg-amber-500');
       expect(mockSeasonsContent.innerHTML).toContain('Stagione');
+
+      // Switch to records
+      switchMainViewTab('records');
+      expect(mockAlboContent.classList.contains('hidden')).toBe(true);
+      expect(mockSeasonsContent.classList.contains('hidden')).toBe(true);
+      expect(mockRecordsContent.classList.contains('hidden')).toBe(false);
+      expect(mockBtnRecords.className).toContain('bg-amber-500');
+      expect(mockRecordsContent.innerHTML).toContain('Record &amp; Primati Storici');
+      expect(mockRecordsContent.innerHTML).toContain('Tutti i Record');
 
       // Switch back to albo
       switchMainViewTab('albo');
       expect(mockAlboContent.classList.contains('hidden')).toBe(false);
       expect(mockSeasonsContent.classList.contains('hidden')).toBe(true);
+      expect(mockRecordsContent.classList.contains('hidden')).toBe(true);
       expect(mockBtnAlbo.className).toContain('bg-amber-500');
     });
 

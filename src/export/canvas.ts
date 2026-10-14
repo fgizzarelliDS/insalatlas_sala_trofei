@@ -317,6 +317,243 @@ export async function renderH2HDuelCanvas(card: HTMLElement): Promise<HTMLCanvas
   }
 }
 
+/**
+ * Renders an exact off-screen clone of an individual Hall of Fame Record card into a high-res canvas.
+ * Pre-rasterizes logos/crests to avoid blank SVGs in html2canvas, normalizes metric/text alignment,
+ * cleans watermark rotation clipping, and integrates a unified InsalAtlas official closing footer.
+ */
+export async function renderRecordCardCanvas(card: HTMLElement): Promise<HTMLCanvasElement> {
+  // 1. Ensure all live images are complete before cloning
+  const origImages = Array.from(card.querySelectorAll<HTMLImageElement>('img'));
+  if (origImages.length > 0) {
+    await Promise.all(
+      origImages.map(img => {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        return new Promise<void>(resolve => {
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+          setTimeout(resolve, 500);
+        });
+      })
+    );
+  }
+
+  const clone = card.cloneNode(true) as HTMLElement;
+  clone.id = 'record-card-export-clone';
+
+  // 2. Pre-rasterize all <img> elements from live card onto off-screen canvases as PNG data URLs
+  // This solves the html2canvas blank SVG bug and guarantees CORS-free, synchronous rendering.
+  const cloneImages = Array.from(clone.querySelectorAll<HTMLImageElement>('img'));
+  for (let i = 0; i < origImages.length; i++) {
+    const origImg = origImages[i];
+    const cloneImg = cloneImages[i];
+    if (!origImg || !cloneImg) continue;
+
+    try {
+      const w = origImg.naturalWidth || origImg.clientWidth || 100;
+      const h = origImg.naturalHeight || origImg.clientHeight || 100;
+      const rasterCanvas = document.createElement('canvas');
+      const scaleFactor = 2;
+      rasterCanvas.width = Math.max(Math.round(w * scaleFactor), 120);
+      rasterCanvas.height = Math.max(Math.round(h * scaleFactor), 120);
+      const ctx = rasterCanvas.getContext('2d');
+      if (ctx) {
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(origImg, 0, 0, rasterCanvas.width, rasterCanvas.height);
+        const dataUrl = rasterCanvas.toDataURL('image/png');
+        cloneImg.src = dataUrl;
+        cloneImg.removeAttribute('onerror');
+      }
+    } catch (e) {
+      console.warn('Unable to rasterize image for card export clone:', origImg.src, e);
+    }
+  }
+
+  // 3. Determine natural width of the card, ensuring a minimum for sharp layout
+  const cardRect = card.getBoundingClientRect();
+  const naturalWidth = Math.round(cardRect.width) || card.offsetWidth || 440;
+  const targetWidth = Math.max(naturalWidth, 480);
+
+  // 4. Integrate InsalAtlas official branding directly into existing card footer (no duplicate stacked footer)
+  const existingFooter = clone.querySelector<HTMLElement>('.record-card-footer');
+  const actionsContainer = clone.querySelector<HTMLElement>('.record-card-actions');
+
+  if (actionsContainer && existingFooter) {
+    const brandPill = document.createElement('div');
+    brandPill.className = 'flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase opacity-80 shrink-0';
+    brandPill.style.color = 'var(--text-muted)';
+    brandPill.innerHTML = `
+      <img src="favicon-64x64.png" alt="InsalAtlas" class="w-3.5 h-3.5 object-contain inline-block rounded-full shadow-xs">
+      <span class="font-extrabold tracking-widest text-[10px]" style="color: var(--text-main);">InsalAtlas</span>
+      <span class="opacity-40">•</span>
+      <span class="text-[9px] tracking-wider" style="color: var(--accent-color);">Record Ufficiale</span>
+    `;
+    actionsContainer.replaceWith(brandPill);
+
+    existingFooter.style.display = 'flex';
+    existingFooter.style.alignItems = 'center';
+    existingFooter.style.justifyContent = 'space-between';
+    existingFooter.style.gap = '8px';
+    existingFooter.style.paddingTop = '10px';
+    existingFooter.style.marginTop = '12px';
+    existingFooter.style.borderTop = '1px solid var(--table-border)';
+  } else {
+    clone.querySelectorAll('.record-card-actions, [id^="record-share-dropdown-"]').forEach(el => el.remove());
+    const footer = document.createElement('div');
+    footer.className = 'flex items-center justify-between gap-2 pt-2.5 mt-3 border-t text-[10px] font-bold tracking-wider uppercase opacity-85';
+    footer.style.borderColor = 'var(--table-border)';
+    footer.style.color = 'var(--text-muted)';
+    footer.innerHTML = `
+      <div class="flex items-center gap-1">
+        <i class="fa-solid fa-medal text-[9px] text-amber-500"></i>
+        <span>Primato Ufficiale</span>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <img src="favicon-64x64.png" alt="InsalAtlas" class="w-3.5 h-3.5 object-contain inline-block rounded-full shadow-xs">
+        <span class="font-extrabold tracking-widest text-[10px]" style="color: var(--text-main);">InsalAtlas</span>
+      </div>
+    `;
+    clone.appendChild(footer);
+  }
+
+  // Remove any lingering share dropdown popovers
+  clone.querySelectorAll('[id^="record-share-dropdown-"]').forEach(el => el.remove());
+
+  // 5. Layout & Anti-Clipping Adjustments for html2canvas
+  // Watermark: remove rotate-12 and scale so html2canvas doesn't clip emoji glyphs
+  const watermark = clone.querySelector<HTMLElement>('.record-watermark');
+  if (watermark) {
+    watermark.style.transform = 'none';
+    watermark.style.right = '14px';
+    watermark.style.top = '12px';
+    watermark.style.fontSize = '46px';
+    watermark.style.lineHeight = '1';
+    watermark.style.opacity = '0.35';
+  }
+
+  // Metric row: prevent collision between big hero number, normalized rate, and season badge
+  const metricRow = clone.querySelector<HTMLElement>('.record-metric-row');
+  if (metricRow) {
+    metricRow.style.display = 'flex';
+    metricRow.style.alignItems = 'center';
+    metricRow.style.flexWrap = 'wrap';
+    metricRow.style.gap = '8px';
+    metricRow.style.marginBottom = '12px';
+    metricRow.style.lineHeight = '1';
+  }
+
+  // Manager Names: prevent vertical letter clipping (ascenders / descenders)
+  clone.querySelectorAll<HTMLElement>('.manager-record-name').forEach(el => {
+    el.style.lineHeight = '1.35';
+    el.style.display = 'inline-block';
+    el.style.overflow = 'visible';
+    el.style.paddingTop = '2px';
+    el.style.paddingBottom = '2px';
+  });
+
+  // Explicit dimensions on logos to prevent collapsing
+  clone.querySelectorAll<HTMLImageElement>('.record-holder-logo').forEach(img => {
+    img.style.width = '40px';
+    img.style.height = '40px';
+    img.style.minWidth = '40px';
+    img.style.minHeight = '40px';
+    img.style.display = 'block';
+    img.style.objectFit = 'contain';
+  });
+
+  clone.querySelectorAll<HTMLImageElement>('.runnerup-crest').forEach(img => {
+    img.style.width = '16px';
+    img.style.height = '16px';
+    img.style.minWidth = '16px';
+    img.style.minHeight = '16px';
+    img.style.display = 'inline-block';
+    img.style.verticalAlign = 'middle';
+  });
+
+  // 6. Obtain computed background and theme colors
+  const computedBg = window.getComputedStyle(card).backgroundColor || '#0f172a';
+
+  // 7. Build invisible staging container that takes zero space and prevents any layout flash/scroll shift
+  const container = document.createElement('div');
+  container.id = 'record-export-staging-container';
+  container.style.position = 'fixed';
+  container.style.left = '0';
+  container.style.top = '0';
+  container.style.width = '0';
+  container.style.height = '0';
+  container.style.overflow = 'hidden';
+  container.style.opacity = '0';
+  container.style.pointerEvents = 'none';
+  container.style.zIndex = '-99999';
+
+  clone.style.position = 'absolute';
+  clone.style.left = '0';
+  clone.style.top = '0';
+  clone.style.width = `${targetWidth}px`;
+  clone.style.maxWidth = `${targetWidth}px`;
+  clone.style.height = 'auto';
+  clone.style.maxHeight = 'none';
+  clone.style.overflow = 'visible';
+  clone.style.boxShadow = 'none';
+  clone.style.pointerEvents = 'none';
+  clone.style.visibility = 'visible';
+  clone.style.opacity = '1';
+
+  container.appendChild(clone);
+  document.body.appendChild(container);
+
+  try {
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
+
+    const html2canvas = (await import('html2canvas')).default;
+    const fullHeight = Math.ceil(clone.scrollHeight || clone.offsetHeight || 500);
+
+    const canvas = await html2canvas(clone, {
+      scale: 2.2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: computedBg,
+      logging: false,
+      scrollX: 0,
+      scrollY: 0,
+      width: targetWidth,
+      height: fullHeight,
+      windowWidth: targetWidth,
+      windowHeight: fullHeight,
+      onclone: (clonedDoc, clonedEl) => {
+        const staging = clonedEl.parentElement;
+        if (staging) {
+          staging.style.position = 'static';
+          staging.style.width = `${targetWidth}px`;
+          staging.style.height = 'auto';
+          staging.style.overflow = 'visible';
+          staging.style.opacity = '1';
+          staging.style.visibility = 'visible';
+        }
+        clonedEl.style.position = 'static';
+        clonedEl.style.opacity = '1';
+        clonedEl.style.visibility = 'visible';
+
+        // Known html2canvas + Tailwind preflight bug: `img { display: block }` shifts text
+        // baselines downward inside pills/badges. Scoped override to the export clone only.
+        const fixStyle = clonedDoc.createElement('style');
+        fixStyle.textContent = `
+          #record-card-export-clone img { display: inline-block !important; }
+          #record-card-export-clone .truncate { overflow: visible !important; text-overflow: clip !important; }
+        `;
+        clonedDoc.head.appendChild(fixStyle);
+      }
+    });
+
+    return canvas;
+  } finally {
+    container.remove();
+  }
+}
+
 let isExportingHD = false;
 
 /**
@@ -357,6 +594,7 @@ export async function exportGraphicHD(): Promise<void> {
   clone.querySelector('#albo-add-manager-row')?.remove();
   clone.querySelector('#main-view-tabs')?.remove();
   clone.querySelector('#main-tab-seasons-content')?.remove();
+  clone.querySelector('#main-tab-records-content')?.remove();
   clone.querySelectorAll('button').forEach(btn => btn.remove());
 
   // Ensure Albo tab content is always visible in export

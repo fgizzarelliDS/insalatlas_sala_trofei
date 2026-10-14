@@ -3,6 +3,7 @@ import { closeManagerModal } from './ManagerModal';
 import { closeConcentrationModal, closeTierInfo } from './ConcentrationModal';
 import { closeSeasonModal } from './season/SeasonModalController';
 import { closeHeadToHeadModal, closeH2HShareDropdown } from './h2h/HeadToHeadModal';
+import { closeAllRecordShareDropdowns } from '@/components/board/records';
 
 /**
  * Sets up backdrop click and Escape key listeners for all modals
@@ -74,11 +75,17 @@ export function initModalListeners(): void {
         closeH2HShareDropdown();
       }
     }
+
+    const targetEl = e.target as HTMLElement;
+    if (!targetEl.closest('.record-card-actions')) {
+      closeAllRecordShareDropdowns();
+    }
   });
 
   // Global Escape key handler
   window.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
+      closeAllRecordShareDropdowns();
       const shareDropdown = document.getElementById('share-dropdown-menu');
       if (shareDropdown && !shareDropdown.classList.contains('hidden')) {
         closeShareDropdown();

@@ -248,6 +248,12 @@
               <i class="fa-solid fa-calendar-days text-[11px] text-amber-500 dark:text-amber-400"></i>
               <span>Archivio<span class="hidden sm:inline"> Stagioni &amp; Classifiche</span></span>
             </button>
+            <button id="main-tab-btn-records" type="button" onclick="switchMainViewTab('records')"
+              class="flex-1 sm:flex-initial justify-center sm:justify-start px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-bold opacity-75 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5 transition flex items-center gap-1.5 border border-transparent"
+              style="color: var(--text-main);">
+              <i class="fa-solid fa-medal text-[11px] text-amber-500 dark:text-amber-400"></i>
+              <span>Record<span class="hidden sm:inline"> &amp; Primati</span></span>
+            </button>
           </div>
 
           <!-- Fallback static caption for HD export clone -->
@@ -415,6 +421,9 @@
 
       <!-- MAIN TAB 2: ARCHIVIO STAGIONI & CLASSIFICHE -->
       <div id="main-tab-seasons-content" class="hidden"></div>
+
+      <!-- MAIN TAB 3: RECORD & PRIMATI STORICI -->
+      <div id="main-tab-records-content" class="hidden"></div>
 
       <!-- Footer Stamp -->
       <div class="mt-8 pt-4 flex flex-wrap items-center justify-between text-xs font-semibold border-t"

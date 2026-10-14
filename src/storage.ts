@@ -2,7 +2,8 @@ import { Manager, LeagueData, TitlesConfig } from '@/types';
 import { DEFAULT_TITLES } from '@/config';
 import { state } from '@/state';
 import { showToast, applyTitlesToDOM } from '@/ui';
-import { renderBoard, updateStatistics } from '@/main';
+import { renderBoard } from '@/components/board/tableBoard';
+import { updateStatistics } from '@/components/board/statsCounter';
 
 const STORAGE_KEY_DATA = 'fantacalcio_palmares_data_v1';
 const STORAGE_KEY_TITLES = 'fantacalcio_custom_titles_v1';

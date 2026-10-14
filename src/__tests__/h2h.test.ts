@@ -241,7 +241,7 @@ describe('Head-to-Head (H2H) Engine & Router', () => {
       });
     });
 
-    it('renders valid SVG markup for Radar Plot', async () => {
+    it('renders valid SVG markup for Radar Plot with multi-line labels and scale markers', async () => {
       const { computeH2HAxes, renderH2HRadarSVG } = await import('@/components/modals/h2h/HeadToHeadRadar');
       const managerA: Manager = createTestManager({ id: 'm1', name: 'Alfo', gold: 3 });
       const managerB: Manager = createTestManager({ id: 'm2', name: 'Vannico', gold: 2 });
@@ -254,7 +254,14 @@ describe('Head-to-Head (H2H) Engine & Router', () => {
       expect(svgHtml).toContain('Alfo');
       expect(svgHtml).toContain('Vannico');
       expect(svgHtml).toContain('Prestigio');
-      expect(svgHtml).toContain('Freddezza (GCI)');
+      expect(svgHtml).toContain('Freddezza');
+      expect(svgHtml).toContain('(GCI)');
+      expect(svgHtml).toContain('Sicurezza');
+      expect(svgHtml).toContain('(Anti-Baratro)');
+      expect(svgHtml).toContain('33%');
+      expect(svgHtml).toContain('66%');
+      expect(svgHtml).toContain('100%');
+      expect(svgHtml).toContain('Scala normalizzata: 0 – 100%');
     });
 
     it('renders mirrored duel bars markup', async () => {
@@ -267,7 +274,8 @@ describe('Head-to-Head (H2H) Engine & Router', () => {
       const barsHtml = renderH2HDuelBars(axes, 'Alfo', 'Vannico');
       expect(barsHtml).toContain('Alfo');
       expect(barsHtml).toContain('Vannico');
-      expect(barsHtml).toContain('Prestigio');
+      expect(barsHtml).toContain('PRESTIGIO');
+      expect(barsHtml).toContain('(PT)');
       expect(barsHtml).toContain('rounded-full');
     });
 
@@ -409,12 +417,17 @@ describe('Head-to-Head (H2H) Engine & Router', () => {
       // 4. Metrics
       const metricsHTML = renderHeadToHeadMetrics(stats, managerA, managerB, 'radar');
       expect(metricsHTML).toContain('Indicatori &amp; Confronto Grafico');
+      expect(metricsHTML).toContain('(GCI)');
+      expect(metricsHTML).toContain('(KI)');
+      expect(metricsHTML).toContain('(NTI)');
       expect(metricsHTML).toContain('Verdetto Storico della Sfida');
 
       // 5. Matrix View
       const matrixHTML = renderNemesisMatrixView([managerA, managerB], 'all');
       expect(matrixHTML).toContain('Matrice Nemesi');
       expect(matrixHTML).toContain('selectH2HDuel');
+      expect(matrixHTML).toContain('Mister A');
+      expect(matrixHTML).toContain('Mister B');
 
       // 6. Duel tab vs Matrix tab in Shell
       const duelHTML = renderHeadToHeadModalHTML(stats, [managerA, managerB], false, 'radar', 'duel');
@@ -423,7 +436,8 @@ describe('Head-to-Head (H2H) Engine & Router', () => {
 
       const matrixTabHTML = renderHeadToHeadModalHTML(stats, [managerA, managerB], false, 'radar', 'matrix');
       expect(matrixTabHTML).toContain('Matrice Globale');
-      expect(matrixTabHTML).toContain('MISTER A \\ B');
+      expect(matrixTabHTML).toContain('Mister A');
+      expect(matrixTabHTML).toContain('Mister B');
     });
   });
 });

@@ -1,15 +1,52 @@
 import type { Manager, NemesisMatrixData } from '@/types';
 import { computeNemesisMatrix, filterManagersForMatrix, getLatestSeason } from '@/analytics/nemesis';
+import { getInitials } from './HeadToHeadHero';
 
 /**
- * Extracts compact 2-letter initials for table headers
+ * Computes unique initials for a list of managers, resolving collisions
+ * (e.g. Vannico -> VN vs Valery -> VL)
  */
-function getInitials(name: string): string {
-  const parts = name.split(/[ &+/,-]/).filter(Boolean);
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[1][0]).toUpperCase();
+export function computeDisambiguatedInitials(managers: Manager[]): Map<string, string> {
+  const map = new Map<string, string>();
+  const groups = new Map<string, Manager[]>();
+
+  for (const m of managers) {
+    const init = getInitials(m.name);
+    const list = groups.get(init) || [];
+    list.push(m);
+    groups.set(init, list);
   }
-  return name.slice(0, 2).toUpperCase();
+
+  for (const [init, list] of groups.entries()) {
+    if (list.length === 1) {
+      map.set(list[0].id, init);
+    } else {
+      const used = new Set<string>();
+      for (const m of list) {
+        const parts = m.name.split(/[ &+/,-]/).filter(Boolean);
+        let candidate = '';
+        if (parts.length >= 2) {
+          candidate = (parts[0][0] + parts[1][0]).toUpperCase();
+        } else {
+          const clean = m.name.toUpperCase();
+          for (let i = 2; i < clean.length; i++) {
+            const cand = clean[0] + clean[i];
+            if (!groups.has(cand) && !used.has(cand)) {
+              candidate = cand;
+              break;
+            }
+          }
+        }
+        if (!candidate || used.has(candidate)) {
+          candidate = m.name.slice(0, 2).toUpperCase();
+        }
+        used.add(candidate);
+        map.set(m.id, candidate);
+      }
+    }
+  }
+
+  return map;
 }
 
 /**
@@ -26,23 +63,33 @@ export function renderNemesisMatrixView(
 
   const scopedManagers = filterManagersForMatrix(allManagers, filterMode, latestSeason);
   const matrixData: NemesisMatrixData = computeNemesisMatrix(scopedManagers);
+  const initialsMap = computeDisambiguatedInitials(scopedManagers);
 
-  // Column header row (Contender B)
+  // Column header row (Contender B) with color-matched circular avatar badge
   const colHeadersHTML = scopedManagers
-    .map(
-      m => `
-      <th class="p-1 sm:p-1.5 text-center font-sport font-black text-[10px] sm:text-xs uppercase sticky top-0 z-20 border-b border-l min-w-[44px] max-w-[58px] truncate"
+    .map(m => {
+      const initials = initialsMap.get(m.id) || getInitials(m.name);
+      return `
+      <th class="p-1 text-center font-sport font-black uppercase sticky top-0 z-20 border-b border-l min-w-[48px] max-w-[58px] h-12 align-middle overflow-visible"
           style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--text-main);"
-          title="${m.name}">
-        <span class="block truncate max-w-[50px] mx-auto">${getInitials(m.name)}</span>
+          title="${m.name} (Mister B)">
+        <div class="flex items-center justify-center w-full h-full">
+          <!-- Mister B Color-Matched Circled Avatar Badge -->
+          <span class="w-7 h-7 rounded-full flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm transition hover:scale-110"
+                style="background-color: color-mix(in srgb, var(--accent-color) 18%, transparent); color: var(--accent-color); border: 1.5px solid color-mix(in srgb, var(--accent-color) 45%, transparent);"
+                title="${m.name}">
+            ${initials}
+          </span>
+        </div>
       </th>
-    `
-    )
+    `;
+    })
     .join('');
 
   // Table rows (Contender A vs all Contenders B)
   const rowsHTML = scopedManagers
     .map(mA => {
+      const initialsA = initialsMap.get(mA.id) || getInitials(mA.name);
       const cellsHTML = scopedManagers
         .map(mB => {
           const cell = matrixData.matrix[mA.id]?.[mB.id];
@@ -98,7 +145,7 @@ export function renderNemesisMatrixView(
               title="${mA.name}">
             <div class="flex items-center gap-1.5 truncate">
               <span class="w-5 h-5 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center font-black text-[9px] shrink-0 border border-amber-500/30">
-                ${getInitials(mA.name)}
+                ${initialsA}
               </span>
               <span class="truncate text-[11px] font-bold leading-tight">${mA.name}</span>
             </div>
@@ -150,10 +197,19 @@ export function renderNemesisMatrixView(
         <table class="w-full border-collapse text-left">
           <thead>
             <tr>
-              <!-- Sticky Top-Left Corner Cell -->
-              <th class="p-2 text-left font-sport font-black text-[10px] sm:text-xs uppercase sticky top-0 left-0 z-30 border-b min-w-[100px] max-w-[135px]"
-                  style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--accent-color);">
-                MISTER A \\ B
+              <!-- Sticky Top-Left Corner Cell: Directional Mister B (Cols) and Mister A (Rows) -->
+              <th class="p-1.5 sm:p-2 sticky top-0 left-0 z-30 border-b border-r min-w-[105px] max-w-[135px] h-12 align-middle"
+                  style="background-color: var(--modal-bg); border-color: var(--table-border);">
+                <div class="flex flex-col justify-center h-full text-[10px] font-sport font-black uppercase tracking-tight leading-tight select-none">
+                  <div class="flex items-center justify-end gap-1 pb-1" style="color: var(--accent-color);">
+                    <span>Mister B</span>
+                    <i class="fa-solid fa-arrow-right text-[8px]"></i>
+                  </div>
+                  <div class="flex items-center justify-start gap-1 pt-1 border-t opacity-75" style="border-color: var(--table-border); color: var(--text-main);">
+                    <i class="fa-solid fa-arrow-down text-[8px]"></i>
+                    <span>Mister A</span>
+                  </div>
+                </div>
               </th>
               ${colHeadersHTML}
             </tr>

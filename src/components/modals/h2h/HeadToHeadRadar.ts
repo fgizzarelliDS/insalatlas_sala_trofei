@@ -4,6 +4,8 @@ import { formatScore } from '@/score';
 export interface H2HAxisData {
   key: string;
   label: string;
+  shortTitle: string;
+  acronym: string;
   valA: number; // 0..100
   valB: number; // 0..100
   rawA: string;
@@ -30,6 +32,8 @@ export function computeH2HAxes(stats: HeadToHeadStats, maxLeagueScore = 40): H2H
     {
       key: 'prestige',
       label: 'Prestigio',
+      shortTitle: 'PRESTIGIO',
+      acronym: 'PT',
       valA: prestigeValA,
       valB: prestigeValB,
       rawA: `${formatScore(metricsA.score)} PT`,
@@ -38,6 +42,8 @@ export function computeH2HAxes(stats: HeadToHeadStats, maxLeagueScore = 40): H2H
     {
       key: 'gci',
       label: 'Freddezza (GCI)',
+      shortTitle: 'FREDDEZZA',
+      acronym: 'GCI',
       valA: Math.min(100, Math.max(0, Math.round(metricsA.gci))),
       valB: Math.min(100, Math.max(0, Math.round(metricsB.gci))),
       rawA: `${metricsA.clutchLabel} (${Math.round(metricsA.gci)})`,
@@ -46,6 +52,8 @@ export function computeH2HAxes(stats: HeadToHeadStats, maxLeagueScore = 40): H2H
     {
       key: 'ki',
       label: 'Killer Instinct',
+      shortTitle: 'KILLER INST.',
+      acronym: 'KI',
       valA: Math.min(100, Math.max(0, Math.round(metricsA.kiPct))),
       valB: Math.min(100, Math.max(0, Math.round(metricsB.kiPct))),
       rawA: `${metricsA.kiPct}%`,
@@ -54,6 +62,8 @@ export function computeH2HAxes(stats: HeadToHeadStats, maxLeagueScore = 40): H2H
     {
       key: 'cr',
       label: 'Conversione Coppe',
+      shortTitle: 'CONV. COPPE',
+      acronym: 'FINALI',
       valA: Math.min(100, Math.max(0, Math.round(metricsA.crPct))),
       valB: Math.min(100, Math.max(0, Math.round(metricsB.crPct))),
       rawA: `${metricsA.crPct}%`,
@@ -62,6 +72,8 @@ export function computeH2HAxes(stats: HeadToHeadStats, maxLeagueScore = 40): H2H
     {
       key: 'stability',
       label: 'Stabilità Classifica',
+      shortTitle: 'STABILITÀ',
+      acronym: 'RANK',
       valA: stabilityValA,
       valB: stabilityValB,
       rawA: `${metricsA.stabilityCategory}`,
@@ -70,6 +82,8 @@ export function computeH2HAxes(stats: HeadToHeadStats, maxLeagueScore = 40): H2H
     {
       key: 'nti',
       label: 'Sicurezza (Anti-Baratro)',
+      shortTitle: 'RISCHIO CODA',
+      acronym: 'NTI',
       valA: ntiValA,
       valB: ntiValB,
       rawA: `${metricsA.polarityLabel}`,
@@ -79,6 +93,18 @@ export function computeH2HAxes(stats: HeadToHeadStats, maxLeagueScore = 40): H2H
 }
 
 /**
+ * Mapping of axis keys to multi-line label configurations to prevent text clipping
+ */
+const AXIS_LABEL_LINES: Record<string, [string, string?]> = {
+  prestige: ['Prestigio'],
+  gci: ['Freddezza', '(GCI)'],
+  ki: ['Killer', 'Instinct'],
+  cr: ['Conversione', 'Coppe'],
+  stability: ['Stabilità', 'Classifica'],
+  nti: ['Sicurezza', '(Anti-Baratro)']
+};
+
+/**
  * Generates an SVG 6-axis Radar Plot for the head-to-head duel
  */
 export function renderH2HRadarSVG(
@@ -86,11 +112,11 @@ export function renderH2HRadarSVG(
   nameA: string,
   nameB: string
 ): string {
-  const width = 340;
+  const width = 376;
   const height = 290;
   const cx = width / 2;
   const cy = height / 2 + 5;
-  const rMax = 88;
+  const rMax = 82;
   const count = axes.length;
 
   // Compute angle for each axis (0 is top)
@@ -121,11 +147,25 @@ export function renderH2HRadarSVG(
     })
     .join('');
 
-  // Axis Labels
+  // Scale Percentage Markers along the top vertical spoke (Prestigio axis)
+  const scaleMarkers = levels
+    .map(lvl => {
+      const markerY = cy - rMax * lvl;
+      return `
+        <text x="${(cx + 4).toFixed(1)}" y="${(markerY + 3).toFixed(1)}"
+              text-anchor="start" fill="currentColor" opacity="0.45"
+              font-size="7.5" font-weight="700">
+          ${Math.round(lvl * 100)}%
+        </text>
+      `;
+    })
+    .join('');
+
+  // Axis Labels formatted with multi-line <tspan> to eliminate side clipping
   const labels = axes
     .map((axis, i) => {
       const angle = getAngle(i);
-      const rLabel = rMax + 24;
+      const rLabel = rMax + 20;
       const x = cx + rLabel * Math.cos(angle);
       const y = cy + rLabel * Math.sin(angle);
 
@@ -136,15 +176,33 @@ export function renderH2HRadarSVG(
       if (cos > 0.35) textAnchor = 'start';
       else if (cos < -0.35) textAnchor = 'end';
 
-      let dominantBaseline = 'middle';
-      if (sin < -0.4) dominantBaseline = 'auto';
-      else if (sin > 0.4) dominantBaseline = 'hanging';
+      const lines = AXIS_LABEL_LINES[axis.key] || [axis.label];
+
+      if (lines.length === 1) {
+        let dominantBaseline = 'middle';
+        if (sin < -0.4) dominantBaseline = 'auto';
+        else if (sin > 0.4) dominantBaseline = 'hanging';
+
+        return `
+          <text x="${x.toFixed(1)}" y="${y.toFixed(1)}"
+                text-anchor="${textAnchor}" dominant-baseline="${dominantBaseline}"
+                fill="currentColor" font-size="9" font-weight="700" opacity="0.9">
+            ${lines[0]}
+          </text>
+        `;
+      }
+
+      // 2-line rendering with baseline adjustment
+      let yStart = y - 5;
+      if (sin < -0.4) yStart = y - 7;
+      else if (sin > 0.4) yStart = y;
 
       return `
-        <text x="${x.toFixed(1)}" y="${y.toFixed(1)}"
-              text-anchor="${textAnchor}" dominant-baseline="${dominantBaseline}"
-              fill="currentColor" font-size="9" font-weight="700" opacity="0.85">
-          ${axis.label}
+        <text x="${x.toFixed(1)}" y="${yStart.toFixed(1)}"
+              text-anchor="${textAnchor}"
+              fill="currentColor" font-size="9" font-weight="700" opacity="0.9">
+          <tspan x="${x.toFixed(1)}" dy="0">${lines[0]}</tspan>
+          <tspan x="${x.toFixed(1)}" dy="1.15em">${lines[1]}</tspan>
         </text>
       `;
     })
@@ -189,10 +247,11 @@ export function renderH2HRadarSVG(
 
   return `
     <div class="flex flex-col items-center">
-      <svg viewBox="0 0 ${width} ${height}" class="w-full max-w-[340px] h-auto overflow-visible text-[var(--text-main)] select-none">
+      <svg viewBox="0 0 ${width} ${height}" class="w-full max-w-[360px] h-auto overflow-visible text-[var(--text-main)] select-none">
         <!-- Background Grid -->
         ${gridPolygons}
         ${spokes}
+        ${scaleMarkers}
 
         <!-- Manager B Polygon -->
         <polygon points="${pointsB}" fill="var(--h2h-contender-b)" fill-opacity="0.28" stroke="var(--h2h-contender-b)" stroke-width="2" />
@@ -217,6 +276,11 @@ export function renderH2HRadarSVG(
           ${nameB}
         </span>
       </div>
+
+      <!-- Radar Scale Note -->
+      <div class="text-[10px] opacity-60 mt-1 text-center font-medium">
+        Scala normalizzata: 0 – 100% (anelli a 33% • 66% • 100%)
+      </div>
     </div>
   `;
 }
@@ -237,22 +301,27 @@ export function renderH2HDuelBars(
       const colorB = winner === 'B' ? 'var(--h2h-contender-b)' : 'var(--text-main)';
 
       return `
-        <div class="py-2.5 px-3 border-b last:border-b-0" style="border-color: var(--table-border);">
-          <div class="flex items-center justify-between text-[11px] mb-1.5">
-            <!-- Left Value -->
-            <span class="w-32 text-left font-bold flex items-center gap-1 truncate" style="color: ${colorA};">
+        <div class="py-2.5 px-2.5 sm:px-3 border-b last:border-b-0" style="border-color: var(--table-border);">
+          <div class="flex items-center justify-between text-[11px] mb-2 gap-1.5">
+            <!-- Left Value (Centered) -->
+            <span class="flex-1 min-w-0 max-w-[36%] text-center font-bold flex items-center justify-center gap-1 leading-tight break-words" style="color: ${colorA};">
               ${winner === 'A' ? '<i class="fa-solid fa-crown text-[9px] shrink-0" style="color: var(--h2h-contender-a);"></i>' : ''}
-              <span class="${winner === 'A' ? 'font-black' : 'opacity-85'}">${axis.rawA}</span>
+              <span class="${winner === 'A' ? 'font-black' : 'opacity-85'} text-[10px] sm:text-[11px]">${axis.rawA}</span>
             </span>
 
-            <!-- Center Axis Label -->
-            <span class="flex-1 text-center font-bold uppercase tracking-wider text-[10px] opacity-75 truncate px-1" style="color: var(--text-main);">
-              ${axis.label}
-            </span>
+            <!-- Center Axis Label (2 Rows: Category + Acronym) -->
+            <div class="w-[28%] sm:w-[26%] text-center px-1 shrink-0 flex flex-col items-center justify-center">
+              <span class="font-black uppercase tracking-tight text-[9px] sm:text-[10px] opacity-80 leading-tight" style="color: var(--text-main);">
+                ${axis.shortTitle}
+              </span>
+              <span class="font-extrabold text-[8px] sm:text-[9px] opacity-60 leading-none mt-0.5" style="color: var(--accent-color, #eab308);">
+                (${axis.acronym})
+              </span>
+            </div>
 
-            <!-- Right Value -->
-            <span class="w-32 text-right font-bold flex items-center justify-end gap-1 truncate" style="color: ${colorB};">
-              <span class="${winner === 'B' ? 'font-black' : 'opacity-85'}">${axis.rawB}</span>
+            <!-- Right Value (Centered) -->
+            <span class="flex-1 min-w-0 max-w-[36%] text-center font-bold flex items-center justify-center gap-1 leading-tight break-words" style="color: ${colorB};">
+              <span class="${winner === 'B' ? 'font-black' : 'opacity-85'} text-[10px] sm:text-[11px]">${axis.rawB}</span>
               ${winner === 'B' ? '<i class="fa-solid fa-crown text-[9px] shrink-0" style="color: var(--h2h-contender-b);"></i>' : ''}
             </span>
           </div>

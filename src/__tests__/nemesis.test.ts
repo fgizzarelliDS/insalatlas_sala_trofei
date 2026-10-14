@@ -236,7 +236,20 @@ describe('Nemesis & Rivalry Analytics Engine', () => {
   });
 
   describe('Nemesis UI & Integration', () => {
-    it('renders NemesisMatrixView HTML with sticky headers, filter pills, and clickable duel cells', async () => {
+    it('disambiguates initials for colliding manager names like Vannico and Valery', async () => {
+      const { computeDisambiguatedInitials } = await import('@/components/modals/h2h/NemesisMatrixView');
+      const m1: Manager = createTestManager({ id: 'm1', name: 'Vannico' });
+      const m2: Manager = createTestManager({ id: 'm2', name: 'Valery' });
+      const m3: Manager = createTestManager({ id: 'm3', name: 'Peter&Dani' });
+
+      const map = computeDisambiguatedInitials([m1, m2, m3]);
+      expect(map.get('m3')).toBe('PD');
+      // m1 and m2 collide on VA:
+      expect(map.get('m1')).toBe('VN');
+      expect(map.get('m2')).toBe('VL');
+    });
+
+    it('renders NemesisMatrixView HTML with sticky headers, color-matched Mister B badges, and clickable duel cells', async () => {
       const { renderNemesisMatrixView } = await import('@/components/modals/h2h/NemesisMatrixView');
 
       const mA: Manager = createTestManager({
@@ -261,11 +274,15 @@ describe('Nemesis & Rivalry Analytics Engine', () => {
       expect(html).toContain('Veterani');
       expect(html).toContain('Tutti');
       expect(html).toContain('<table');
-      expect(html).toContain('MISTER A \\ B');
+      expect(html).toContain('Mister A');
+      expect(html).toContain('Mister B');
       expect(html).toContain('selectH2HDuel');
       expect(html).toContain('scrollbar-width: thin');
       expect(html).toContain('Saldo Favorevole');
       expect(html).toContain('Bestia Nera');
+      // Mister B column header has color-matched styling and does NOT use rotated 45deg text
+      expect(html).toContain('var(--accent-color)');
+      expect(html).not.toContain('rotate(-45deg)');
     });
 
     it('populates profile modal with Bestia Nera and Babbo Natale buttons in PalmaresTab', async () => {

@@ -126,7 +126,7 @@ export function renderClutchTab(
           ${sortIcon('podiumRate')}
         </button>
         <button type="button" onclick="changeTab2Sort('killerInstinct')" class="flex items-center justify-center hover:text-amber-400 transition cursor-pointer font-bold uppercase tracking-wider whitespace-nowrap">
-          <span class="hidden sm:inline">Killer Inst.</span>
+          <span class="hidden sm:inline">Killer Instinct</span>
           <span class="sm:hidden">Killer</span>
           ${sortIcon('killerInstinct')}
         </button>

@@ -13,33 +13,50 @@ function renderIconBadge(icon: string, label: string): string {
 }
 
 /**
- * Metrics comparison row helper
+ * Metrics comparison row helper with 2-line center category + acronym and non-truncated wrapping values
  */
 function renderMetricRow(
-  label: string,
+  category: string,
+  acronym: string,
   strA: string,
   strB: string,
   winner: 'A' | 'B' | 'none' = 'none'
 ): string {
   const classA = winner === 'A'
-    ? 'font-black rounded px-1.5'
-    : 'font-semibold opacity-85';
+    ? 'font-black rounded-lg py-1 px-1.5'
+    : 'font-semibold opacity-85 py-1 px-1.5';
   const styleA = winner === 'A'
     ? 'color: var(--h2h-contender-a); background-color: rgba(125, 125, 125, 0.08);'
     : 'color: var(--text-main);';
 
   const classB = winner === 'B'
-    ? 'font-black rounded px-1.5'
-    : 'font-semibold opacity-85';
+    ? 'font-black rounded-lg py-1 px-1.5'
+    : 'font-semibold opacity-85 py-1 px-1.5';
   const styleB = winner === 'B'
     ? 'color: var(--h2h-contender-b); background-color: rgba(125, 125, 125, 0.08);'
     : 'color: var(--text-main);';
 
   return `
-    <div class="flex items-center justify-between py-1.5 px-2.5 border-b last:border-b-0 text-xs" style="border-color: var(--table-border);">
-      <span class="w-32 text-left truncate ${classA}" style="${styleA}">${strA}</span>
-      <span class="flex-1 text-center text-[10px] uppercase tracking-wider font-bold opacity-60 px-1" style="color: var(--text-main);">${label}</span>
-      <span class="w-32 text-right truncate ${classB}" style="${styleB}">${strB}</span>
+    <div class="flex items-center justify-between py-2 px-2.5 sm:px-3 border-b last:border-b-0 text-xs gap-1.5" style="border-color: var(--table-border);">
+      <!-- Left Value (Centered) -->
+      <span class="flex-1 min-w-0 max-w-[36%] text-center leading-tight break-words text-[11px] sm:text-xs ${classA}" style="${styleA}">
+        ${strA}
+      </span>
+
+      <!-- Center Title (2 lines: Category + Acronym) -->
+      <div class="w-[28%] sm:w-[26%] text-center px-1 shrink-0 flex flex-col items-center justify-center">
+        <span class="font-black uppercase tracking-tight text-[9px] sm:text-[10px] opacity-80 leading-tight" style="color: var(--text-main);">
+          ${category}
+        </span>
+        <span class="font-extrabold text-[8px] sm:text-[9px] opacity-60 leading-none mt-0.5" style="color: var(--accent-color, #eab308);">
+          (${acronym})
+        </span>
+      </div>
+
+      <!-- Right Value (Centered) -->
+      <span class="flex-1 min-w-0 max-w-[36%] text-center leading-tight break-words text-[11px] sm:text-xs ${classB}" style="${styleB}">
+        ${strB}
+      </span>
     </div>
   `;
 }
@@ -99,35 +116,40 @@ export function renderHeadToHeadMetrics(
       <!-- Detailed Metrics Table -->
       <div class="rounded-xl border overflow-hidden" style="background-color: var(--modal-bg); border-color: var(--table-border);">
         ${renderMetricRow(
-          'Freddezza (GCI)',
-          renderIconBadge(metricsA.clutchIcon, metricsA.clutchLabel),
-          renderIconBadge(metricsB.clutchIcon, metricsB.clutchLabel),
-          metricsA.gci > metricsB.gci ? 'A' : metricsB.gci > metricsA.gci ? 'B' : 'none'
-        )}
+    'Freddezza',
+    'GCI',
+    renderIconBadge(metricsA.clutchIcon, metricsA.clutchLabel),
+    renderIconBadge(metricsB.clutchIcon, metricsB.clutchLabel),
+    metricsA.gci > metricsB.gci ? 'A' : metricsB.gci > metricsA.gci ? 'B' : 'none'
+  )}
         ${renderMetricRow(
-          'Killer Instinct Podio',
-          `${metricsA.kiPct}%`,
-          `${metricsB.kiPct}%`,
-          metricsA.kiPct > metricsB.kiPct ? 'A' : metricsB.kiPct > metricsA.kiPct ? 'B' : 'none'
-        )}
+    'Killer Instinct',
+    'KI',
+    `${metricsA.kiPct}%`,
+    `${metricsB.kiPct}%`,
+    metricsA.kiPct > metricsB.kiPct ? 'A' : metricsB.kiPct > metricsA.kiPct ? 'B' : 'none'
+  )}
         ${renderMetricRow(
-          'Conversione Finali Coppe',
-          `${metricsA.crPct}%`,
-          `${metricsB.crPct}%`,
-          metricsA.crPct > metricsB.crPct ? 'A' : metricsB.crPct > metricsA.crPct ? 'B' : 'none'
-        )}
+    'Conv. Finali',
+    'COPPE',
+    `${metricsA.crPct}%`,
+    `${metricsB.crPct}%`,
+    metricsA.crPct > metricsB.crPct ? 'A' : metricsB.crPct > metricsA.crPct ? 'B' : 'none'
+  )}
         ${renderMetricRow(
-          'Rischio di Coda (NTI)',
-          renderIconBadge(metricsA.polarityIcon, metricsA.polarityLabel),
-          renderIconBadge(metricsB.polarityIcon, metricsB.polarityLabel),
-          metricsA.nti > metricsB.nti ? 'A' : metricsB.nti > metricsA.nti ? 'B' : 'none'
-        )}
+    'Rischio Coda',
+    'NTI',
+    renderIconBadge(metricsA.polarityIcon, metricsA.polarityLabel),
+    renderIconBadge(metricsB.polarityIcon, metricsB.polarityLabel),
+    metricsA.nti > metricsB.nti ? 'A' : metricsB.nti > metricsA.nti ? 'B' : 'none'
+  )}
         ${renderMetricRow(
-          'Stabilità Classifica',
-          renderIconBadge(metricsA.stabilityIcon, metricsA.stabilityCategory),
-          renderIconBadge(metricsB.stabilityIcon, metricsB.stabilityCategory),
-          metricsA.stdDevRank < metricsB.stdDevRank ? 'A' : metricsB.stdDevRank < metricsA.stdDevRank ? 'B' : 'none'
-        )}
+    'Stabilità',
+    'RANK',
+    renderIconBadge(metricsA.stabilityIcon, metricsA.stabilityCategory),
+    renderIconBadge(metricsB.stabilityIcon, metricsB.stabilityCategory),
+    metricsA.stdDevRank < metricsB.stdDevRank ? 'A' : metricsB.stdDevRank < metricsA.stdDevRank ? 'B' : 'none'
+  )}
       </div>
     </div>
 

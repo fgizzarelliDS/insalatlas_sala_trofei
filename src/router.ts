@@ -155,6 +155,43 @@ export function getRecordParamFromURL(customUrl?: string): string | null {
   return null;
 }
 
+/**
+ * Extracts ?q= query parameter from search or hash for Hall of Fame search
+ */
+export function getSearchParamFromURL(customUrl?: string): string | null {
+  if (customUrl) {
+    try {
+      const url = new URL(customUrl, 'https://example.com');
+      const fromSearch = url.searchParams.get('q') || url.searchParams.get('search') || url.searchParams.get('query');
+      if (fromSearch) return fromSearch.trim();
+
+      if (url.hash && (url.hash.includes('q=') || url.hash.includes('search=') || url.hash.includes('query='))) {
+        const hashQuery = url.hash.slice(url.hash.indexOf('?'));
+        const hashParams = new URLSearchParams(hashQuery);
+        const fromHash = hashParams.get('q') || hashParams.get('search') || hashParams.get('query');
+        if (fromHash) return fromHash.trim();
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  if (typeof window === 'undefined') return null;
+  const searchParams = new URLSearchParams(window.location.search);
+  const fromSearch = searchParams.get('q') || searchParams.get('search') || searchParams.get('query');
+  if (fromSearch) return fromSearch.trim();
+
+  if (window.location && window.location.hash && (window.location.hash.includes('q=') || window.location.hash.includes('search=') || window.location.hash.includes('query='))) {
+    const hashQuery = window.location.hash.slice(window.location.hash.indexOf('?'));
+    const hashParams = new URLSearchParams(hashQuery);
+    const fromHash = hashParams.get('q') || hashParams.get('search') || hashParams.get('query');
+    if (fromHash) return fromHash.trim();
+  }
+
+  return null;
+}
+
 export type MainViewTab = 'albo' | 'seasons' | 'records';
 
 /**

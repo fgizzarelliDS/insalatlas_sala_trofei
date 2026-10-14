@@ -2,6 +2,7 @@ import type { Manager, TradingCardBadge } from '@/types';
 import { formatScore } from '@/score';
 import { renderTrophySVG, renderCoachBanner } from '@/trophies';
 import { computeManagerBadges, computeManagerRivalries } from '@/analytics';
+import { resolveManagerRecordCrest } from '@/analytics/records/helpers';
 import { state } from '@/state';
 
 /**
@@ -53,29 +54,47 @@ export function populatePalmaresDOM(m: Manager, score: number, totalMajor: numbe
     if (rivalries.nemesis) {
       const nem = rivalries.nemesis;
       const ptsPrefix = nem.pointsDiff > 0 ? '+' : '';
+      const totalNem = nem.wins + nem.ties + nem.losses;
+      const winRateNem = totalNem > 0 ? Math.round((nem.wins / totalNem) * 100) : 0;
+      const crest = resolveManagerRecordCrest(nem.opponent.id);
+      const logoUrl = crest.logo || crest.fallbackCrest;
+
       nemesisHTML = `
         <button type="button" onclick="window.openH2HWithOpponent('${m.id}', '${nem.opponent.id}')"
-          class="flex items-center justify-between p-2.5 rounded-xl border text-left transition hover:scale-[1.01] shadow-sm bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300 group cursor-pointer"
+          class="flex flex-col justify-between p-3 rounded-2xl border text-left transition hover:scale-[1.01] hover:shadow-md bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300 group cursor-pointer"
           title="Clicca per aprire il duello Head-to-Head contro ${nem.opponent.name}">
-          <div class="flex items-center gap-2 min-w-0">
-            <div class="w-8 h-8 rounded-lg bg-rose-500/20 flex items-center justify-center font-bold text-sm shrink-0 border border-rose-500/30">
-              👹
+          
+          <div class="flex items-start justify-between gap-2 min-w-0 w-full">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-black/5 dark:bg-white/5 border border-rose-500/30 flex items-center justify-center p-1 shrink-0 overflow-hidden">
+                <img src="${logoUrl}" alt="${nem.opponent.name}" class="w-full h-full object-contain" />
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-[9px] uppercase tracking-wider font-extrabold text-rose-600 dark:text-rose-400">👹 Bestia Nera</span>
+                  <span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-500/30 leading-none">${winRateNem}% Win</span>
+                </div>
+                <span class="block text-xs sm:text-sm font-black truncate mt-0.5" style="color: var(--text-main);">${nem.opponent.name}</span>
+                ${crest.teamName ? `<span class="block text-[10px] font-bold opacity-75 truncate" style="color: var(--text-muted);">${crest.teamName}</span>` : ''}
+              </div>
             </div>
-            <div class="min-w-0">
-              <span class="block text-[9px] uppercase tracking-wider font-extrabold opacity-70">Bestia Nera</span>
-              <span class="block text-xs font-black truncate">${nem.opponent.name}</span>
+
+            <div class="text-right shrink-0">
+              <span class="block text-xs font-black">${nem.wins}V - ${nem.ties}N - ${nem.losses}P</span>
+              <span class="block text-[11px] font-bold text-rose-600 dark:text-rose-400">${ptsPrefix}${nem.pointsDiff} pt</span>
             </div>
           </div>
-          <div class="text-right shrink-0">
-            <span class="block text-[11px] font-black">${nem.wins}V - ${nem.ties}N - ${nem.losses}P</span>
-            <span class="block text-[10px] font-bold text-rose-600 dark:text-rose-400">${ptsPrefix}${nem.pointsDiff} pt</span>
+
+          <div class="mt-2.5 pt-2 border-t border-rose-500/20 dark:border-rose-500/30 flex items-center justify-between text-[10px] font-extrabold text-rose-600 dark:text-rose-400 group-hover:text-rose-500 w-full">
+            <span class="flex items-center gap-1"><i class="fa-solid fa-swords text-[9px]"></i> ⚔️ Apri Duello Head-to-Head</span>
+            <i class="fa-solid fa-chevron-right text-[8px] group-hover:translate-x-0.5 transition-transform"></i>
           </div>
         </button>
       `;
     } else {
       nemesisHTML = `
-        <div class="flex items-center gap-2 p-2.5 rounded-xl border opacity-60 border-slate-700/40 bg-black/5 dark:bg-white/5">
-          <div class="w-8 h-8 rounded-lg bg-black/10 dark:bg-white/10 flex items-center justify-center font-bold text-sm shrink-0">
+        <div class="flex items-center gap-2.5 p-3 rounded-2xl border opacity-60 border-slate-700/40 bg-black/5 dark:bg-white/5">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-black/10 dark:bg-white/10 flex items-center justify-center font-bold text-base shrink-0">
             👹
           </div>
           <div>
@@ -90,29 +109,47 @@ export function populatePalmaresDOM(m: Manager, score: number, totalMajor: numbe
     if (rivalries.victim) {
       const vic = rivalries.victim;
       const ptsPrefix = vic.pointsDiff > 0 ? '+' : '';
+      const totalVic = vic.wins + vic.ties + vic.losses;
+      const winRateVic = totalVic > 0 ? Math.round((vic.wins / totalVic) * 100) : 0;
+      const crest = resolveManagerRecordCrest(vic.opponent.id);
+      const logoUrl = crest.logo || crest.fallbackCrest;
+
       victimHTML = `
         <button type="button" onclick="window.openH2HWithOpponent('${m.id}', '${vic.opponent.id}')"
-          class="flex items-center justify-between p-2.5 rounded-xl border text-left transition hover:scale-[1.01] shadow-sm bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 group cursor-pointer"
+          class="flex flex-col justify-between p-3 rounded-2xl border text-left transition hover:scale-[1.01] hover:shadow-md bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 group cursor-pointer"
           title="Clicca per aprire il duello Head-to-Head contro ${vic.opponent.name}">
-          <div class="flex items-center gap-2 min-w-0">
-            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-500/30">
-              🎅
+          
+          <div class="flex items-start justify-between gap-2 min-w-0 w-full">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-black/5 dark:bg-white/5 border border-emerald-500/30 flex items-center justify-center p-1 shrink-0 overflow-hidden">
+                <img src="${logoUrl}" alt="${vic.opponent.name}" class="w-full h-full object-contain" />
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-[9px] uppercase tracking-wider font-extrabold text-emerald-600 dark:text-emerald-400">🎅 Babbo Natale</span>
+                  <span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 leading-none">${winRateVic}% Win</span>
+                </div>
+                <span class="block text-sm font-black truncate mt-0.5" style="color: var(--text-main);">${vic.opponent.name}</span>
+                ${crest.teamName ? `<span class="block text-[10px] font-bold opacity-75 truncate" style="color: var(--text-muted);">${crest.teamName}</span>` : ''}
+              </div>
             </div>
-            <div class="min-w-0">
-              <span class="block text-[9px] uppercase tracking-wider font-extrabold opacity-70">Babbo Natale</span>
-              <span class="block text-xs font-black truncate">${vic.opponent.name}</span>
+
+            <div class="text-right shrink-0">
+              <span class="block text-xs font-black">${vic.wins}V - ${vic.ties}N - ${vic.losses}P</span>
+              <span class="block text-[11px] font-bold text-emerald-600 dark:text-emerald-400">${ptsPrefix}${vic.pointsDiff} pt</span>
             </div>
           </div>
-          <div class="text-right shrink-0">
-            <span class="block text-[11px] font-black">${vic.wins}V - ${vic.ties}N - ${vic.losses}P</span>
-            <span class="block text-[10px] font-bold text-emerald-600 dark:text-emerald-400">${ptsPrefix}${vic.pointsDiff} pt</span>
+
+          <div class="mt-2.5 pt-2 border-t border-emerald-500/20 dark:border-emerald-500/30 flex items-center justify-between text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 group-hover:text-emerald-500 w-full">
+            <span class="flex items-center gap-1"><i class="fa-solid fa-swords text-[9px]"></i> ⚔️ Apri Duello Head-to-Head</span>
+            <i class="fa-solid fa-chevron-right text-[8px] group-hover:translate-x-0.5 transition-transform"></i>
           </div>
         </button>
       `;
     } else {
       victimHTML = `
-        <div class="flex items-center gap-2 p-2.5 rounded-xl border opacity-60 border-slate-700/40 bg-black/5 dark:bg-white/5">
-          <div class="w-8 h-8 rounded-lg bg-black/10 dark:bg-white/10 flex items-center justify-center font-bold text-sm shrink-0">
+        <div class="flex items-center gap-2.5 p-3 rounded-2xl border opacity-60 border-slate-700/40 bg-black/5 dark:bg-white/5">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-black/10 dark:bg-white/10 flex items-center justify-center font-bold text-base shrink-0">
             🎅
           </div>
           <div>

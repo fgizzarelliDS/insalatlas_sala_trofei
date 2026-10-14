@@ -322,4 +322,48 @@ describe('All-Time League Records Engine', () => {
       expect(banterOnly.every(r => r.category === 'banter')).toBe(true);
     });
   });
+
+  describe('filterRecordsBySearch & Empty State', () => {
+    it('returns all records when search query is empty', async () => {
+      const { filterRecordsBySearch } = await import('@/components/board/records');
+      const all = computeAllLeagueRecords(managers, competitions);
+      expect(filterRecordsBySearch(all, '').length).toBe(all.length);
+      expect(filterRecordsBySearch(all, '   ').length).toBe(all.length);
+    });
+
+    it('filters records by manager name case-insensitively', async () => {
+      const { filterRecordsBySearch } = await import('@/components/board/records');
+      const all = computeAllLeagueRecords(managers, competitions);
+      const results = filterRecordsBySearch(all, 'alfo');
+      expect(results.length).toBeGreaterThan(0);
+      expect(results.some(r => r.primaryHolder.managerName.toLowerCase().includes('alfo'))).toBe(true);
+    });
+
+    it('filters records by record title keyword', async () => {
+      const { filterRecordsBySearch } = await import('@/components/board/records');
+      const all = computeAllLeagueRecords(managers, competitions);
+      const results = filterRecordsBySearch(all, 'media');
+      expect(results.length).toBeGreaterThan(0);
+      expect(results.some(r => r.title.toLowerCase().includes('media'))).toBe(true);
+    });
+
+    it('filters records by team name', async () => {
+      const { filterRecordsBySearch } = await import('@/components/board/records');
+      const all = computeAllLeagueRecords(managers, competitions);
+      const results = filterRecordsBySearch(all, 'bradbury');
+      expect(results.length).toBeGreaterThan(0);
+    });
+
+    it('returns empty array when search query matches nothing and renders empty state', async () => {
+      const { filterRecordsBySearch, renderRecordsEmptyState } = await import('@/components/board/records');
+      const all = computeAllLeagueRecords(managers, competitions);
+      const results = filterRecordsBySearch(all, 'nonexistent_query_xyz');
+      expect(results.length).toBe(0);
+
+      const html = renderRecordsEmptyState('nonexistent_query_xyz');
+      expect(html).toContain('Nessun primato trovato');
+      expect(html).toContain('nonexistent_query_xyz');
+      expect(html).toContain('Azzera Ricerca');
+    });
+  });
 });

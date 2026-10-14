@@ -400,24 +400,72 @@ export function renderRecordCard(record: LeagueRecord): string {
 }
 
 /**
+ * Filters a list of LeagueRecords by search query string
+ */
+export function filterRecordsBySearch(records: LeagueRecord[], query: string): LeagueRecord[] {
+  if (!query || !query.trim()) return records;
+  const q = query.trim().toLowerCase();
+  return records.filter(rec => {
+    if (rec.title.toLowerCase().includes(q)) return true;
+    if (rec.description && rec.description.toLowerCase().includes(q)) return true;
+    if (rec.primaryHolder.managerName.toLowerCase().includes(q)) return true;
+    if (rec.primaryHolder.teamName && rec.primaryHolder.teamName.toLowerCase().includes(q)) return true;
+    if (rec.primaryHolder.detail && rec.primaryHolder.detail.toLowerCase().includes(q)) return true;
+    if (rec.primaryHolders && rec.primaryHolders.some(h =>
+      h.managerName.toLowerCase().includes(q) || (h.teamName && h.teamName.toLowerCase().includes(q))
+    )) return true;
+    return false;
+  });
+}
+
+/**
+ * Generates empty state markup when no records match search query
+ */
+export function renderRecordsEmptyState(query: string): string {
+  const safeQuery = query.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return `
+    <div class="col-span-full py-12 px-4 text-center rounded-2xl border border-dashed border-slate-700/60 bg-black/10 dark:bg-white/5">
+      <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center text-xl">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </div>
+      <h3 class="font-sport font-bold text-base mb-1" style="color: var(--text-main);">Nessun primato trovato</h3>
+      <p class="text-xs max-w-sm mx-auto mb-4" style="color: var(--text-muted);">
+        Nessun record corrisponde alla ricerca "<strong>${safeQuery}</strong>".
+      </p>
+      <button type="button" onclick="window.clearRecordsSearch && window.clearRecordsSearch()" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 hover:bg-amber-400 transition shadow-sm cursor-pointer">
+        Azzera Ricerca
+      </button>
+    </div>
+  `;
+}
+
+/**
  * Main Template Generator for the Records & Primati Tab
  */
-export function renderRecordsContentHTML(activeCategory: RecordCategory | 'all' = 'all'): string {
+export function renderRecordsContentHTML(
+  activeCategory: RecordCategory | 'all' = 'all',
+  searchQuery: string = ''
+): string {
   const allRecords = computeAllLeagueRecords(state.managers, state.competitions);
-  const filtered = filterRecordsByCategory(allRecords, activeCategory);
+  const byCategory = filterRecordsByCategory(allRecords, activeCategory);
+  const filtered = filterRecordsBySearch(byCategory, searchQuery);
 
   const pillsHTML = renderRecordsCategoryPills(activeCategory);
-  const cardsHTML = filtered.map(r => renderRecordCard(r)).join('');
+  const cardsHTML = filtered.length > 0
+    ? filtered.map(r => renderRecordCard(r)).join('')
+    : renderRecordsEmptyState(searchQuery);
+
+  const safeSearch = searchQuery.replace(/"/g, '&quot;');
 
   return `
     <div class="space-y-4">
-      <!-- Header Banner & Category Filter -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b" style="border-color: var(--table-border);">
+      <!-- Header Banner & Search -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b" style="border-color: var(--table-border);">
         <div>
           <h2 class="text-lg sm:text-xl font-black tracking-tight flex items-center gap-2" style="color: var(--text-main);">
             <i class="fa-solid fa-medal text-amber-500"></i>
             <span>Record &amp; Primati Storici</span>
-            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400">
+            <span id="records-counter-badge" class="text-xs font-mono font-bold px-2 py-0.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400">
               ${filtered.length} Primati
             </span>
           </h2>
@@ -425,13 +473,35 @@ export function renderRecordsContentHTML(activeCategory: RecordCategory | 'all' 
             I numeri, le imprese e le sventure all-time che hanno fatto la storia della Serie Atlas (2016-2026).
           </p>
         </div>
+
+        <!-- Live Instant Search Bar -->
+        <div class="relative w-full md:w-72 shrink-0">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs opacity-50 pointer-events-none"></i>
+          <input 
+            id="records-search-input"
+            type="search"
+            value="${safeSearch}"
+            placeholder="Cerca manager, club o record..."
+            oninput="window.searchRecords && window.searchRecords(this.value)"
+            class="w-full pl-8.5 pr-8 py-1.5 rounded-xl text-xs border transition focus:outline-none focus:ring-1 focus:ring-amber-500"
+            style="background-color: var(--table-surface); border-color: var(--table-border); color: var(--text-main);"
+          />
+          ${searchQuery ? `
+            <button 
+              type="button" 
+              onclick="window.clearRecordsSearch && window.clearRecordsSearch()"
+              class="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs opacity-60 hover:opacity-100 transition px-1 py-0.5 rounded cursor-pointer"
+              title="Cancella ricerca"
+            >✕</button>
+          ` : ''}
+        </div>
       </div>
 
       <!-- Category Filter Pills -->
       ${pillsHTML}
 
       <!-- Responsive Cards Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
+      <div id="records-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
         ${cardsHTML}
       </div>
     </div>

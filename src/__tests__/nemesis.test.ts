@@ -331,6 +331,8 @@ describe('Nemesis & Rivalry Analytics Engine', () => {
       expect(rivalriesHTML).toContain('Bestia Nera');
       expect(rivalriesHTML).toContain('Lucchetto');
       expect(rivalriesHTML).toContain('0V - 0N - 2P');
+      expect(rivalriesHTML).toContain('0% Win');
+      expect(rivalriesHTML).toContain('Duello Head-to-Head');
       expect(rivalriesHTML).toContain('openH2HWithOpponent');
     });
   });

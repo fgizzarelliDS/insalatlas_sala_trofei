@@ -95,6 +95,8 @@ import {
 import {
   filterRecordsCategory,
   renderRecordsTab,
+  searchRecords,
+  clearRecordsSearch,
   toggleRecordShareDropdown,
   closeAllRecordShareDropdowns,
   exportRecordCard,
@@ -105,6 +107,7 @@ import {
   getManagerParamFromURL,
   getH2HParamFromURL,
   getRecordParamFromURL,
+  getSearchParamFromURL,
   getMainTabParamFromURL,
   getSeasonParamFromURL,
   getRecordCategoryParamFromURL
@@ -209,6 +212,8 @@ declare global {
     renderSeasonsArchive: typeof renderSeasonsArchive;
     filterRecordsCategory: typeof filterRecordsCategory;
     renderRecordsTab: typeof renderRecordsTab;
+    searchRecords: typeof searchRecords;
+    clearRecordsSearch: typeof clearRecordsSearch;
     openHeadToHeadModal: typeof openHeadToHeadModal;
     closeHeadToHeadModal: typeof closeHeadToHeadModal;
     swapH2HManagers: typeof swapH2HManagers;
@@ -303,6 +308,16 @@ export async function initApp(): Promise<void> {
         filterRecordsCategory(categoryParam, false);
       }
       switchMainViewTab('records', false);
+      const searchParam = getSearchParamFromURL();
+      if (searchParam) {
+        searchRecords(searchParam, false);
+      }
+    } else {
+      const searchParam = getSearchParamFromURL();
+      if (searchParam) {
+        switchMainViewTab('records', false);
+        searchRecords(searchParam, false);
+      }
     }
   }
 }
@@ -371,6 +386,8 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     renderSeasonsArchive,
     filterRecordsCategory,
     renderRecordsTab,
+    searchRecords,
+    clearRecordsSearch,
     openHeadToHeadModal,
     closeHeadToHeadModal,
     swapH2HManagers,
@@ -449,6 +466,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     }
 
     const targetTab = getMainTabParamFromURL() || 'albo';
+    const q = getSearchParamFromURL();
     if (targetTab === 'seasons') {
       const seasonParam = getSeasonParamFromURL();
       if (seasonParam) {
@@ -456,8 +474,13 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       }
       switchMainViewTab('seasons', false);
     } else if (targetTab === 'records') {
-      filterRecordsCategory(cat || 'all', false);
-      switchMainViewTab('records', false);
+      if (q) {
+        switchMainViewTab('records', false);
+        searchRecords(q, false);
+      } else {
+        filterRecordsCategory(cat || 'all', false);
+        switchMainViewTab('records', false);
+      }
     } else {
       switchMainViewTab(targetTab, false);
     }

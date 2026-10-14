@@ -6,13 +6,14 @@ import {
   getMainTabParamFromURL,
   getSeasonParamFromURL,
   getRecordParamFromURL,
+  getSearchParamFromURL,
   getManagerParamFromURL,
   getH2HParamFromURL,
   findManagerByParam,
   getRecordCategoryParamFromURL
 } from '@/router';
 import { switchMainViewTab, selectArchiveSeason } from '@/components/board/seasons';
-import { filterRecordsCategory } from '@/components/board/records';
+import { filterRecordsCategory, searchRecords, clearRecordsSearch } from '@/components/board/records';
 
 describe('Exhaustive URL & Deep-Linking Test Matrix', () => {
   beforeEach(() => {
@@ -116,6 +117,31 @@ describe('Exhaustive URL & Deep-Linking Test Matrix', () => {
         filterRecordsCategory('all', true);
         expect(window.location.search).toBe('?tab=records');
         expect(getRecordCategoryParamFromURL()).toBeNull();
+      }
+    });
+
+    it('extracts ?q= query parameter for Hall of Fame search', () => {
+      const url = 'https://fgizzarellids.github.io/insalatlas_sala_trofei/?tab=records&q=alfo';
+      expect(getSearchParamFromURL(url)).toBe('alfo');
+    });
+
+    it('extracts ?q= from hash query', () => {
+      const url = 'https://fgizzarellids.github.io/insalatlas_sala_trofei/#?q=steven%20bradbury';
+      expect(getSearchParamFromURL(url)).toBe('steven bradbury');
+    });
+
+    it('synchronizes ?q= when searchRecords and clearRecordsSearch are called', () => {
+      if (typeof window !== 'undefined' && window.location) {
+        window.history.pushState({}, '', 'https://insalatlas.it/?tab=records');
+
+        searchRecords('alfo', true);
+        expect(window.location.search).toContain('tab=records');
+        expect(window.location.search).toContain('q=alfo');
+        expect(getSearchParamFromURL()).toBe('alfo');
+
+        clearRecordsSearch();
+        expect(window.location.search).not.toContain('q=');
+        expect(getSearchParamFromURL()).toBeNull();
       }
     });
   });

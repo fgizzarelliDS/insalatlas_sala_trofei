@@ -374,12 +374,17 @@ export function renderRecordCard(record: LeagueRecord): string {
 
             <!-- Popover Dropdown Menu -->
             <div id="record-share-dropdown-${record.id}"
-              class="hidden absolute bottom-full right-0 mb-2 w-48 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
+              class="hidden absolute bottom-full right-0 mb-2 w-52 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
               style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--modal-text);">
               <button onclick="copyRecordCard('${record.id}', event)"
                 class="w-full px-2.5 py-1.5 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
                 <i class="fa-solid fa-copy text-emerald-500"></i>
                 <span>Copia per WhatsApp</span>
+              </button>
+              <button onclick="shareRecordWhatsApp('${record.id}'); closeAllRecordShareDropdowns();"
+                class="w-full px-2.5 py-1.5 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition mt-0.5 cursor-pointer">
+                <i class="fa-brands fa-whatsapp text-emerald-400"></i>
+                <span>Invia Link WhatsApp</span>
               </button>
               <button onclick="exportRecordCard('${record.id}', event)"
                 class="w-full px-2.5 py-1.5 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition mt-0.5 cursor-pointer">

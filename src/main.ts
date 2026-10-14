@@ -75,7 +75,8 @@ import {
   exportGraphicHD,
   exportManagerCardById,
   copyManagerCardById,
-  shareManagerWhatsAppById
+  shareManagerWhatsAppById,
+  shareRecordWhatsApp
 } from '@/export';
 import {
   changeSort,
@@ -99,11 +100,11 @@ import {
   exportRecordCard,
   copyRecordCard
 } from '@/components/board/records';
-import { findManagerByParam, getManagerParamFromURL, getH2HParamFromURL } from '@/router';
+import { findManagerByParam, getManagerParamFromURL, getH2HParamFromURL, getRecordParamFromURL } from '@/router';
 import { initPWA, promptPWAInstall } from '@/pwa';
 
 // Re-export router utilities, board controls, seasons archive, records, and PWA for unit tests and consumers
-export { findManagerByParam, getManagerParamFromURL, getH2HParamFromURL };
+export { findManagerByParam, getManagerParamFromURL, getH2HParamFromURL, getRecordParamFromURL };
 export { changeSort, toggleDisplayMode, renderBoard, dismissScrollHint };
 export { switchMainViewTab, selectArchiveSeason, renderSeasonsArchive };
 export {
@@ -112,7 +113,8 @@ export {
   toggleRecordShareDropdown,
   closeAllRecordShareDropdowns,
   exportRecordCard,
-  copyRecordCard
+  copyRecordCard,
+  shareRecordWhatsApp
 };
 export { updateStatistics };
 export { promptPWAInstall };
@@ -213,6 +215,7 @@ declare global {
     closeAllRecordShareDropdowns: typeof closeAllRecordShareDropdowns;
     exportRecordCard: typeof exportRecordCard;
     copyRecordCard: typeof copyRecordCard;
+    shareRecordWhatsApp: typeof shareRecordWhatsApp;
   }
 }
 
@@ -247,6 +250,22 @@ export async function initApp(): Promise<void> {
     if (foundA && foundB) {
       openHeadToHeadModal(foundA.id, foundB.id);
     }
+  }
+
+  // Deep-linking: auto-open and highlight record in Hall of Fame if ?record=... in URL
+  const recordParam = getRecordParamFromURL();
+  if (recordParam) {
+    switchMainViewTab('records');
+    setTimeout(() => {
+      const card = document.getElementById(`record-card-${recordParam}`);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.classList.add('ring-2', 'ring-amber-500', 'shadow-2xl');
+        setTimeout(() => {
+          card.classList.remove('ring-2', 'ring-amber-500', 'shadow-2xl');
+        }, 2500);
+      }
+    }, 150);
   }
 }
 
@@ -335,7 +354,8 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     toggleRecordShareDropdown,
     closeAllRecordShareDropdowns,
     exportRecordCard,
-    copyRecordCard
+    copyRecordCard,
+    shareRecordWhatsApp
   });
 
   if (document.readyState === 'loading') {
@@ -367,5 +387,20 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       }
     }
     closeProfileModal();
+
+    const rec = getRecordParamFromURL();
+    if (rec) {
+      switchMainViewTab('records');
+      setTimeout(() => {
+        const card = document.getElementById(`record-card-${rec}`);
+        if (card) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          card.classList.add('ring-2', 'ring-amber-500', 'shadow-2xl');
+          setTimeout(() => {
+            card.classList.remove('ring-2', 'ring-amber-500', 'shadow-2xl');
+          }, 2500);
+        }
+      }, 150);
+    }
   });
 }

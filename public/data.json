@@ -2403,7 +2403,7 @@
           "coach": "Lucchetto",
           "managerId": "m_lucchetto",
           "points": 58.0,
-          "logo": "assets/teams/2549374_01800333.png"
+          "logo": "assets/teams/olympic_lasagna.png"
         },
         {
           "rank": 2,
@@ -2515,7 +2515,7 @@
           "coach": "Lucchetto",
           "managerId": "m_lucchetto",
           "points": 0.0,
-          "logo": "assets/teams/2549374_01800333.png"
+          "logo": "assets/teams/olympic_lasagna.png"
         }
       ]
     },
@@ -2527,11 +2527,11 @@
       "ranking": [
         {
           "rank": 1,
-          "teamName": "OlympicLasagna",
+          "teamName": "Olympic Lasagna",
           "coach": "Lucchetto",
           "managerId": "m_lucchetto",
           "points": 0.0,
-          "logo": "assets/teams/2549374_01800333.png"
+          "logo": "assets/teams/olympic_lasagna.png"
         },
         {
           "rank": 2,
@@ -3163,7 +3163,7 @@
           "coach": "Lucchetto",
           "managerId": "m_lucchetto",
           "points": 46.0,
-          "logo": "assets/teams/2549374_01800333.png"
+          "logo": "assets/crests/falconcrest_athletic.svg"
         },
         {
           "rank": 7,

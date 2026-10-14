@@ -1,8 +1,10 @@
 import type { Manager } from '@/types';
+import type { LeagueRecord } from '@/analytics/records';
 import { state } from '@/state';
 import { showToast } from '@/ui';
 import { calculateManagerScore, formatScore } from '@/score';
 import { getManagerArchetype, computeGlobalClutchIndex, getClutchTier } from '@/analytics';
+import { computeAllLeagueRecords } from '@/analytics/records';
 import { renderProfileModalCanvas, renderH2HDuelCanvas, renderRecordCardCanvas, downloadBlob, copyBlobToClipboard } from './canvas';
 
 /**
@@ -320,5 +322,67 @@ export async function copyRecordCardToClipboard(recordId: string): Promise<boole
     showToast('Impossibile copiare la card del record', 'error');
     return false;
   }
+}
+
+/**
+ * Formats rich banter text and direct link for sharing a Hall of Fame record on WhatsApp
+ */
+export function buildRecordWhatsAppShareText(record: LeagueRecord, customBaseUrl?: string): string {
+  let baseUrl = 'https://fgizzarelliids.github.io/insalatlas_sala_trofei/';
+  if (customBaseUrl) {
+    baseUrl = customBaseUrl;
+  } else if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!isLocal) {
+      baseUrl = `${window.location.origin}${window.location.pathname}`;
+    }
+  }
+
+  const shareUrl = `${baseUrl}?record=${encodeURIComponent(record.id)}`;
+
+  let holderLine = '';
+  if (record.primaryHolders && record.primaryHolders.length > 1) {
+    const names = record.primaryHolders
+      .map(h => `${h.managerName}${h.season ? ` (${h.season})` : ''}`)
+      .join(' • ');
+    holderLine = `🤝 *Co-Primatisti (Pari Merito):* ${names}`;
+  } else {
+    const details = [
+      record.primaryHolder.season ? `(${record.primaryHolder.season})` : '',
+      record.primaryHolder.teamName ? `_${record.primaryHolder.teamName}_` : ''
+    ].filter(Boolean).join(' • ');
+    holderLine = `👑 *Primatista:* *${record.primaryHolder.managerName}*${details ? ` ${details}` : ''}`;
+  }
+
+  const val = record.primaryHolder.formattedValue;
+  const sub = record.primaryHolder.normalizedDetail || record.primaryHolder.detail;
+
+  const lines = [
+    `🏆 *InsalAtlas • Record & Primati Storici*`,
+    `📜 *${record.title.toUpperCase()}*`,
+    `📊 *Valore:* *${val}*${sub ? ` (${sub})` : ''}`,
+    holderLine,
+    record.description ? `\n📖 _"${record.description}"_` : '',
+    `\n👉 Guarda la scheda e la Hall of Fame:\n${shareUrl}`
+  ].filter(Boolean);
+
+  return lines.join('\n');
+}
+
+/**
+ * Opens WhatsApp directly with pre-filled message and direct link to the record
+ */
+export function shareRecordWhatsApp(recordId: string): void {
+  const records = computeAllLeagueRecords(state.managers, state.competitions);
+  const record = records.find(r => r.id === recordId);
+  if (!record) {
+    showToast('Impossibile trovare il record selezionato', 'error');
+    return;
+  }
+
+  const text = buildRecordWhatsAppShareText(record);
+  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+  window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  showToast('Apertura WhatsApp in corso...', 'info');
 }
 

@@ -191,7 +191,7 @@ describe('All-Time League Records Engine', () => {
       expect(cupsRec!.primaryHolder.detail).toContain('3 Coppe');
       expect(cupsRec!.primaryHolder.detail).toContain('3 Supercoppe');
       expect(cupsRec!.primaryHolder.detail).toContain('2 Mundialiti');
-      expect(cupsRec!.watermark).toBe('🏺');
+      expect(cupsRec!.watermark).toBe('🏆');
     });
 
     it('identifies Pippo as worst career PPG (1.10 pt/g with >= 3 seasons)', () => {
@@ -293,8 +293,9 @@ describe('All-Time League Records Engine', () => {
       const html = renderRecordCard(firstRec);
       expect(html).toContain(`id="record-card-${firstRec.id}"`);
       expect(html).toContain(`id="btn-record-share-${firstRec.id}"`);
-      expect(html).toContain(`id="record-share-dropdown-${firstRec.id}"`);
       expect(html).toContain('Copia per WhatsApp');
+      expect(html).toContain('Invia Link WhatsApp');
+      expect(html).toContain(`shareRecordWhatsApp('${firstRec.id}')`);
       expect(html).toContain('Scarica PNG HD');
       expect(html).toContain('record-card-actions');
       expect(html).toContain('record-card-footer');

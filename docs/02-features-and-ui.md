@@ -148,7 +148,21 @@ L'applicazione include un modulo dedicato per il confronto diretto testa a testa
 
 ---
 
-## 8. Modalità Modifica & Inline Editing
+## 8. Hall of Fame — Bacheca Record & Primati Storici
+
+- **Tab Principale Dedicato**: Navigazione contestuale integrata nella schermata primaria (*Albo d'Oro*, *Stagioni*, *Record & Primati*).
+- **Filtri di Categoria**: Segmentazione dei primati tra *Tutti*, *Punti*, *Titoli & Trofei*, *Strisce*, *Scontri Diretti* e *Goliardici*.
+- **Normalizzazione Storica**: Ponderazione su base media partita (`pt/g`) per armonizzare campionati storici disputati su 33, 35 e 36 giornate.
+- **Card Vettoriali con Stemmi d'Epoca & Filigrane**: Ogni record espone il valore primato, il primatista (o co-primatisti ex-aequo), piazzamenti d'onore e filigrana grafica tematica.
+- **Menu di Condivisione Rapido**:
+  - **Copia per WhatsApp**: Incolla direttamente l'immagine ad alta risoluzione negli appunti (`navigator.clipboard.write`).
+  - **Invia Link WhatsApp**: Apertura immediata della chat con messaggio banter precompilato e deep-link di puntamento diretto (`?record=<id>`).
+  - **Scarica PNG HD**: Salvataggio del file grafico generato via `html-to-image`.
+- **Deep Linking con Animazione**: L'URL `?record=<id>` seleziona automaticamente la tab, centra il record nello schermo e ne illumina i bordi per 2.5 secondi.
+
+---
+
+## 9. Modalità Modifica & Inline Editing
 
 - Accesso protetto da password verificata via **SHA-256 Web Crypto API** (`src/config.ts`).
 - Modifica contestuale in-place di tutti i titoli e intestazioni di colonna (`data-title-key`).
@@ -157,7 +171,7 @@ L'applicazione include un modulo dedicato per il confronto diretto testa a testa
 
 ---
 
-## 9. Progressive Web App (PWA) & Offline Layer
+## 10. Progressive Web App (PWA) & Offline Layer
 
 L'applicazione include il supporto PWA per l'installazione nativa su desktop e dispositivi mobili Android e iOS:
 
@@ -166,7 +180,7 @@ L'applicazione include il supporto PWA per l'installazione nativa su desktop e d
   - Colori di sistema coerenti (`background_color: "#0f172a"`, `theme_color: "#0f172a"`).
   - Icone ad alta risoluzione con padding circolare safe-zone (`purpose: "any maskable"` a 512×512 e 192×192) per evitare ritagli antiestetici nei launcher di sistema.
 - **Single Source of Truth per la Versione del Cache**:
-  - La versione dell'applicazione (v1.4.0) è definita centralmente in `package.json`.
+  - La versione dell'applicazione (v1.4.1) è definita centralmente in `package.json`.
   - Il plugin personalizzato di build Vite inietta la versione nel Service Worker (`CACHE_NAME = 'insalatlas-v' + version`) e nel footer dell'applicazione.
   - Al rilascio di un aggiornamento, il Service Worker invalida automaticamente le cache obsolete e garantisce l'attivazione immediata delle nuove risorse.
 - **Strategie di Caching**:

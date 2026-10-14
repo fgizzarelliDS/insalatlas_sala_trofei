@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { computeTradingCardBadges, getManagerInitials, buildTradingCardHTML, buildWhatsAppShareText } from '@/export';
-import { Manager } from '@/types';
+import { Manager, LeagueRecord } from '@/types';
 import { createTestManager } from './test-utils';
 
 describe('export.ts - Trading Card Logic and Formatting', () => {
@@ -245,6 +245,93 @@ describe('export.ts - Trading Card Logic and Formatting', () => {
       const { findManagerByParam } = await import('@/main');
       expect(findManagerByParam('non_existent', managers)).toBeUndefined();
       expect(findManagerByParam('', managers)).toBeUndefined();
+    });
+  });
+
+  describe('Record WhatsApp Share & Deep Linking', () => {
+    it('builds formatted share text for a single record holder', async () => {
+      const { buildRecordWhatsAppShareText } = await import('@/export');
+      const holder1 = {
+        managerId: 'm_makako',
+        managerName: 'Makako',
+        season: '2017/18',
+        teamName: 'Makako Antwerpen',
+        value: 67,
+        formattedValue: '67.0 pt',
+        normalizedDetail: '1.91 pt/g • 35 giornate'
+      };
+      const mockRecord: LeagueRecord = {
+        id: 'punti-singola-stagione',
+        category: 'points',
+        title: 'Record Punti Singola Stagione',
+        icon: 'fa-solid fa-bolt',
+        badgeLabel: 'Campionato Record',
+        badgeColor: 'amber',
+        description: 'Il maggior numero di punti mai totalizzato in un singolo campionato.',
+        watermark: '⚡',
+        primaryHolders: [holder1],
+        primaryHolder: holder1,
+        runnerUps: []
+      };
+
+      const text = buildRecordWhatsAppShareText(mockRecord, 'https://test.insalatlas.it/');
+      expect(text).toContain('🏆 *InsalAtlas • Record & Primati Storici*');
+      expect(text).toContain('RECORD PUNTI SINGOLA STAGIONE');
+      expect(text).toContain('67.0 pt');
+      expect(text).toContain('Makako');
+      expect(text).toContain('(2017/18)');
+      expect(text).toContain('_Makako Antwerpen_');
+      expect(text).toContain('https://test.insalatlas.it/?record=punti-singola-stagione');
+    });
+
+    it('builds formatted share text for ex-aequo co-holders', async () => {
+      const { buildRecordWhatsAppShareText } = await import('@/export');
+      const holderA = {
+        managerId: 'm_sebba',
+        managerName: 'Sebba',
+        season: '2023/24',
+        value: 56,
+        formattedValue: '56.0 pt',
+        normalizedDetail: '1.70 pt/g • 33 giornate'
+      };
+      const holderB = {
+        managerId: 'm_vannico',
+        managerName: 'Vannico',
+        season: '2022/23',
+        value: 56,
+        formattedValue: '56.0 pt',
+        normalizedDetail: '1.70 pt/g • 33 giornate'
+      };
+      const mockRecord: LeagueRecord = {
+        id: 'scudetto-meno-punti',
+        category: 'points',
+        title: 'Scudetto con Meno Punti',
+        icon: 'fa-solid fa-trophy',
+        badgeLabel: 'Scudetto Low Cost',
+        badgeColor: 'blue',
+        description: 'Titolo con il minor bottino di punti.',
+        watermark: '🏆',
+        primaryHolders: [holderA, holderB],
+        primaryHolder: holderA,
+        runnerUps: []
+      };
+
+      const text = buildRecordWhatsAppShareText(mockRecord);
+      expect(text).toContain('SCUDETTO CON MENO PUNTI');
+      expect(text).toContain('🤝 *Co-Primatisti (Pari Merito):*');
+      expect(text).toContain('Sebba (2023/24)');
+      expect(text).toContain('Vannico (2022/23)');
+      expect(text).toContain('?record=scudetto-meno-punti');
+    });
+
+    it('extracts record param from URL search and hash', async () => {
+      const { getRecordParamFromURL } = await import('@/router');
+
+      // Test with custom URLs (search and hash)
+      expect(getRecordParamFromURL('https://insalatlas.it/?record=scudetto-meno-punti')).toBe('scudetto-meno-punti');
+      expect(getRecordParamFromURL('https://insalatlas.it/#/tab?record=mister-camaleonte')).toBe('mister-camaleonte');
+      expect(getRecordParamFromURL('https://insalatlas.it/?other=123')).toBeNull();
+      expect(getRecordParamFromURL('')).toBeNull();
     });
   });
 });

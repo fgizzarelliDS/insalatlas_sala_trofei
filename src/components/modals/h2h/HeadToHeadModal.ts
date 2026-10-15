@@ -16,7 +16,7 @@ let currentNemesisFilter: 'active' | 'veterans' | 'all' = 'active';
  */
 export function setH2HVisualMode(mode: 'radar' | 'bars'): void {
   h2hVisualMode = mode;
-  renderHeadToHeadDOM();
+  renderHeadToHeadDOM(true);
 }
 
 /**
@@ -158,10 +158,13 @@ export function returnToPreviousProfile(): void {
  * Renders the Head-to-Head modal content into #head-to-head-modal-content
  * and adjusts modal card width dynamically based on active tab
  */
-export function renderHeadToHeadDOM(): void {
+export function renderHeadToHeadDOM(preserveScroll = false): void {
   if (typeof document === 'undefined') return;
   const container = document.getElementById('head-to-head-modal-content');
   if (!container || !selectedManagerIdA || !selectedManagerIdB) return;
+
+  const scrollContainer = container.querySelector ? container.querySelector('.overflow-y-auto') : null;
+  const prevScrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
 
   const managerA = state.managers.find(m => m.id === selectedManagerIdA);
   const managerB = state.managers.find(m => m.id === selectedManagerIdB);
@@ -197,6 +200,13 @@ export function renderHeadToHeadDOM(): void {
     currentNemesisFilter,
     profileReturnManagerName
   );
+
+  if (preserveScroll && prevScrollTop > 0 && container.querySelector) {
+    const newScrollContainer = container.querySelector('.overflow-y-auto');
+    if (newScrollContainer) {
+      newScrollContainer.scrollTop = prevScrollTop;
+    }
+  }
 }
 
 /**
@@ -306,7 +316,7 @@ export function changeH2HManagerB(newId: string): void {
  */
 export function toggleH2HChronology(): void {
   isChronologyExpanded = !isChronologyExpanded;
-  renderHeadToHeadDOM();
+  renderHeadToHeadDOM(true);
 }
 
 /**

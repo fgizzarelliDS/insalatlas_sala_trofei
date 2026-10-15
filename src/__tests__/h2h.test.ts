@@ -289,6 +289,33 @@ describe('Head-to-Head (H2H) Engine & Router', () => {
       setH2HVisualMode('radar');
       expect(getH2HVisualMode()).toBe('radar');
     });
+
+    it('preserves scroll position when switching visual mode', async () => {
+      const { setH2HVisualMode, openHeadToHeadModal } = await import('@/components/modals/h2h/HeadToHeadModal');
+      const mockScrollContainer = { scrollTop: 350 };
+      const mockContainer = {
+        innerHTML: '',
+        querySelector: (selector: string) => (selector === '.overflow-y-auto' ? mockScrollContainer : null)
+      };
+
+      const originalDoc = (globalThis as unknown as { document?: unknown }).document;
+      (globalThis as unknown as { document?: unknown }).document = {
+        getElementById: (id: string) => {
+          if (id === 'head-to-head-modal-content') return mockContainer;
+          if (id === 'head-to-head-dialog') return { classList: { remove: () => {}, add: () => {} } };
+          return null;
+        }
+      };
+
+      try {
+        openHeadToHeadModal('m_alfo', 'm_vannico', 'duel');
+        mockScrollContainer.scrollTop = 350;
+        setH2HVisualMode('bars');
+        expect(mockScrollContainer.scrollTop).toBe(350);
+      } finally {
+        (globalThis as unknown as { document?: unknown }).document = originalDoc;
+      }
+    });
   });
 
   describe('Modal Modularization & Mounting', () => {

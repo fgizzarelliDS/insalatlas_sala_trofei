@@ -24,7 +24,7 @@ export function renderHeadToHeadScoreboard(
   if (duels.length === 0) {
     duelsRowsHTML = `
       <tr>
-        <td colspan="4" class="py-3 text-center text-xs opacity-60 italic">
+        <td colspan="3" class="py-3 text-center text-xs opacity-60 italic">
           Nessuna stagione disputata contemporaneamente da entrambi i mister.
         </td>
       </tr>
@@ -32,15 +32,6 @@ export function renderHeadToHeadScoreboard(
   } else {
     duelsRowsHTML = duels
       .map(d => {
-        let outcomeBadge = '';
-        if (d.winner === 'A') {
-          outcomeBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-black border" style="background-color: rgba(125, 125, 125, 0.08); color: var(--h2h-contender-a); border-color: var(--h2h-contender-a);">Vince ${managerA.name}</span>`;
-        } else if (d.winner === 'B') {
-          outcomeBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-black border" style="background-color: rgba(125, 125, 125, 0.08); color: var(--h2h-contender-b); border-color: var(--h2h-contender-b);">Vince ${managerB.name}</span>`;
-        } else {
-          outcomeBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-500/20 text-slate-700 dark:text-slate-300 border border-slate-500/40">Pari</span>`;
-        }
-
         const rankClassA = d.winner === 'A' ? 'font-black' : 'opacity-80';
         const rankClassB = d.winner === 'B' ? 'font-black' : 'opacity-80';
         const rankStyleA = d.winner === 'A' ? 'color: var(--h2h-contender-a);' : '';
@@ -51,13 +42,12 @@ export function renderHeadToHeadScoreboard(
             <td class="py-2 px-2.5 font-bold text-xs" style="color: var(--text-main);">${d.season}</td>
             <td class="py-2 px-2 text-center text-xs ${rankClassA}" style="${rankStyleA}">
               <span class="font-extrabold">${d.rankA}°</span>
-              ${d.teamA ? `<span class="block text-[10px] opacity-60 truncate max-w-[100px] mx-auto">${d.teamA}</span>` : ''}
+              ${d.teamA ? `<span class="block text-[10px] opacity-65 truncate max-w-[140px] mx-auto">${d.teamA}</span>` : ''}
             </td>
             <td class="py-2 px-2 text-center text-xs ${rankClassB}" style="${rankStyleB}">
               <span class="font-extrabold">${d.rankB}°</span>
-              ${d.teamB ? `<span class="block text-[10px] opacity-60 truncate max-w-[100px] mx-auto">${d.teamB}</span>` : ''}
+              ${d.teamB ? `<span class="block text-[10px] opacity-65 truncate max-w-[140px] mx-auto">${d.teamB}</span>` : ''}
             </td>
-            <td class="py-2 px-2 text-right">${outcomeBadge}</td>
           </tr>
         `;
       })
@@ -132,7 +122,6 @@ export function renderHeadToHeadScoreboard(
                 <th class="py-2 px-2.5">Stagione</th>
                 <th class="py-2 px-2 text-center">${managerA.name}</th>
                 <th class="py-2 px-2 text-center">${managerB.name}</th>
-                <th class="py-2 px-2 text-right">Esito</th>
               </tr>
             </thead>
             <tbody>

@@ -60,20 +60,22 @@
     style="background-color: var(--nav-bg); border-color: var(--nav-border); color: var(--nav-text);">
     <div class="max-w-[1380px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
 
-      <!-- League Brand -->
-      <div class="flex items-center gap-3">
+      <!-- League Brand (Click to Navigate Home) -->
+      <div id="league-brand-header" onclick="window.handleBrandHomeClick && window.handleBrandHomeClick(event)"
+        class="flex items-center gap-3 cursor-pointer group select-none transition-transform active:scale-[0.98]"
+        title="Torna alla Home (Albo d'Oro)">
         <div
-          class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-amber-500/20">
-          <i class="fa-solid fa-trophy text-lg"></i>
+          class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-amber-500/20 transition-all duration-200 group-hover:scale-105 group-hover:shadow-amber-500/40 shrink-0">
+          <i class="fa-solid fa-trophy text-lg transition-transform duration-200 group-hover:rotate-6"></i>
         </div>
         <div>
-          <h1 class="font-sport font-extrabold text-base sm:text-xl tracking-wide uppercase leading-tight">
+          <h1 class="font-sport font-extrabold text-base sm:text-xl tracking-wide uppercase leading-tight transition-colors group-hover:text-amber-400">
             <span id="title-brand-main" data-title-key="brandMain" onblur="handleTitleBlur(this)">Sala Trofei</span>
             <span id="title-brand-highlight" data-title-key="brandHighlight" onblur="handleTitleBlur(this)"
               class="text-amber-400">InsalAtlas</span>
           </h1>
           <p id="title-brand-sub" data-title-key="brandSub" onblur="handleTitleBlur(this)"
-            class="text-[11px] opacity-80">Albo d'Oro Storico Ufficiale</p>
+            class="text-[11px] opacity-80 group-hover:opacity-100 transition-opacity">Albo d'Oro Storico Ufficiale</p>
         </div>
       </div>
 
@@ -204,9 +206,11 @@
         <div class="w-full sm:w-auto">
           <!-- Title Row: Logo + Headings aligned cleanly -->
           <div class="flex items-center gap-3 sm:gap-4">
-            <!-- InsalAtlas Particle/Salad Logo -->
+            <!-- InsalAtlas Particle/Salad Logo (Click to Navigate Home) -->
             <img src="favicon-512x512.png?v=1" alt="InsalAtlas Logo"
-              class="w-11 h-11 sm:w-14 sm:h-14 shrink-0 object-contain drop-shadow-md transition-transform hover:scale-105" />
+              onclick="window.navigateToHome && window.navigateToHome(event)"
+              title="Torna alla Home (Albo d'Oro)"
+              class="w-11 h-11 sm:w-14 sm:h-14 shrink-0 object-contain drop-shadow-md transition-transform hover:scale-105 active:scale-95 cursor-pointer" />
             <div class="min-w-0">
               <div class="flex items-baseline gap-2 flex-wrap">
                 <h2 id="title-main-heading" data-title-key="mainHeading" onblur="handleTitleBlur(this)"

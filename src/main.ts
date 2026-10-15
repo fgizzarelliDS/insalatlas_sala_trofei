@@ -95,13 +95,16 @@ import {
   closeAlboShareDropdown,
   exportAlboGraphicHD,
   copyAlboGraphicToClipboard,
-  shareAlboGraphicWhatsApp
+  shareAlboGraphicWhatsApp,
+  navigateToHome,
+  handleBrandHomeClick
 } from '@/components/board/tableBoard';
 import { updateStatistics } from '@/components/board/statsCounter';
 import {
   switchMainViewTab,
   selectArchiveSeason,
-  renderSeasonsArchive
+  renderSeasonsArchive,
+  navigateToSeasonStandings
 } from '@/components/board/seasonsArchive';
 import {
   filterRecordsCategory,
@@ -149,9 +152,11 @@ export {
   closeAlboShareDropdown,
   exportAlboGraphicHD,
   copyAlboGraphicToClipboard,
-  shareAlboGraphicWhatsApp
+  shareAlboGraphicWhatsApp,
+  navigateToHome,
+  handleBrandHomeClick
 };
-export { switchMainViewTab, selectArchiveSeason, renderSeasonsArchive };
+export { switchMainViewTab, selectArchiveSeason, renderSeasonsArchive, navigateToSeasonStandings };
 export {
   filterRecordsCategory,
   renderRecordsTab,
@@ -247,6 +252,7 @@ declare global {
     switchMainViewTab: typeof switchMainViewTab;
     selectArchiveSeason: typeof selectArchiveSeason;
     renderSeasonsArchive: typeof renderSeasonsArchive;
+    navigateToSeasonStandings: typeof navigateToSeasonStandings;
     filterRecordsCategory: typeof filterRecordsCategory;
     renderRecordsTab: typeof renderRecordsTab;
     searchRecords: typeof searchRecords;
@@ -289,6 +295,8 @@ declare global {
     exportAlboHD: typeof exportAlboHD;
     copyAlboToClipboard: typeof copyAlboToClipboard;
     shareAlboWhatsApp: typeof shareAlboWhatsApp;
+    navigateToHome: typeof navigateToHome;
+    handleBrandHomeClick: typeof handleBrandHomeClick;
   }
 }
 
@@ -454,6 +462,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     switchMainViewTab,
     selectArchiveSeason,
     renderSeasonsArchive,
+    navigateToSeasonStandings,
     filterRecordsCategory,
     renderRecordsTab,
     searchRecords,
@@ -496,7 +505,9 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     shareAlboGraphicWhatsApp,
     exportAlboHD,
     copyAlboToClipboard,
-    shareAlboWhatsApp
+    shareAlboWhatsApp,
+    navigateToHome,
+    handleBrandHomeClick
   });
 
   if (document.readyState === 'loading') {

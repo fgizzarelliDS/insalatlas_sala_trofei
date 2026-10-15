@@ -123,6 +123,45 @@ export function selectArchiveSeason(season: string, updateHistory = true): void 
 }
 
 /**
+ * Navigates directly from a Record / external link to a season's standings table,
+ * scrolls smoothly into view, and highlights the relevant manager row.
+ */
+export function navigateToSeasonStandings(season: string, highlightManagerId?: string, event?: Event): void {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+
+  // 1. Switch to Seasons tab and select season
+  switchMainViewTab('seasons', true);
+  selectArchiveSeason(season, true);
+
+  // 2. Smoothly scroll to the championship standings table and apply highlight pulse
+  if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    requestAnimationFrame(() => {
+      const targetRow = highlightManagerId
+        ? (document.querySelector(`tr[data-manager-id="${highlightManagerId}"]`) as HTMLElement | null)
+        : null;
+
+      if (targetRow) {
+        targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        targetRow.classList.remove('highlight-row-pulse');
+        void targetRow.offsetWidth;
+        targetRow.classList.add('highlight-row-pulse');
+        setTimeout(() => {
+          targetRow.classList.remove('highlight-row-pulse');
+        }, 2500);
+      } else {
+        const standingsWrapper = document.querySelector('.albo-table-wrap') as HTMLElement | null;
+        if (standingsWrapper) {
+          standingsWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    });
+  }
+}
+
+/**
  * Renders the full seasonal tournament archive view
  */
 export function renderSeasonsArchive(): void {
@@ -184,4 +223,6 @@ if (typeof window !== 'undefined') {
   (window as unknown as { switchMainViewTab?: typeof switchMainViewTab }).switchMainViewTab = switchMainViewTab;
   (window as unknown as { selectArchiveSeason?: typeof selectArchiveSeason }).selectArchiveSeason = selectArchiveSeason;
   (window as unknown as { renderSeasonsArchive?: typeof renderSeasonsArchive }).renderSeasonsArchive = renderSeasonsArchive;
+  (window as unknown as { navigateToSeasonStandings?: typeof navigateToSeasonStandings }).navigateToSeasonStandings = navigateToSeasonStandings;
 }
+

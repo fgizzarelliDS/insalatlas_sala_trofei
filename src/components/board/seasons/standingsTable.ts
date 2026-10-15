@@ -71,7 +71,7 @@ export function renderChampionshipTable(championship: CompetitionRecord): string
     const cursorClass = r.managerId ? 'cursor-pointer hover:bg-amber-500/10' : '';
 
     rowsHtml += `
-      <tr ${clickHandler} class="border-b last:border-b-0 transition-colors ${cursorClass}" style="border-color: var(--table-border);">
+      <tr ${clickHandler} data-manager-id="${r.managerId || ''}" id="standings-row-${r.managerId || ''}" class="border-b last:border-b-0 transition-colors ${cursorClass}" style="border-color: var(--table-border);">
         <td class="py-2 sm:py-2.5 px-1.5 sm:px-3 text-center align-middle whitespace-nowrap w-14 sm:w-28">
           <span class="px-1.5 sm:px-2 py-0.5 rounded-lg text-[11px] sm:text-xs border shadow-sm inline-block ${rankBadgeClass}">
             ${rankLabel}

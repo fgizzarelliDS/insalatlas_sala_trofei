@@ -366,4 +366,71 @@ describe('All-Time League Records Engine', () => {
       expect(html).toContain('Azzera Ricerca');
     });
   });
+
+  describe('Dual-Target Record Holder & Season Standings Navigation', () => {
+    it('generates interactive season links for records with a season and separate manager profile clicks', async () => {
+      const { state } = await import('@/state');
+      state.managers = managers;
+      state.competitions = competitions;
+
+      const { renderRecordsContentHTML } = await import('@/components/board/records');
+      const html = renderRecordsContentHTML('all', '');
+
+      // Records with season (like Volata Podio or Punti Singola Stagione) must contain navigateToSeasonStandings
+      expect(html).toContain('navigateToSeasonStandings');
+      // Manager name click must stop propagation and open profile modal
+      expect(html).toContain('openProfileModal');
+      expect(html).toContain('event.stopPropagation()');
+    });
+
+    it('navigates to season archive and updates selected season when navigateToSeasonStandings is called', async () => {
+      const { navigateToSeasonStandings, getCurrentSelectedSeason } = await import('@/components/board/seasons');
+
+      const originalDoc = (globalThis as any).document;
+      try {
+        const scrolledElements: any[] = [];
+        const pulseClasses: string[] = [];
+        const mockTargetRow = {
+          scrollIntoView: (opts: any) => scrolledElements.push(opts),
+          classList: {
+            add: (c: string) => pulseClasses.push(c),
+            remove: (c: string) => {
+              const idx = pulseClasses.indexOf(c);
+              if (idx >= 0) pulseClasses.splice(idx, 1);
+            }
+          },
+          offsetWidth: 100
+        };
+
+        (globalThis as any).document = {
+          getElementById: () => null,
+          querySelector: (sel: string) => {
+            if (sel.includes('m_makako')) return mockTargetRow;
+            return null;
+          }
+        };
+
+        const mockEvent = {
+          stopPropagation: () => {},
+          preventDefault: () => {}
+        };
+
+        navigateToSeasonStandings('2017/18', 'm_makako', mockEvent as any);
+
+        expect(getCurrentSelectedSeason()).toBe('2017/18');
+      } finally {
+        (globalThis as any).document = originalDoc;
+      }
+    });
+
+    it('adds data-manager-id to championship table rows for precise highlighting', async () => {
+      const { renderChampionshipTable } = await import('@/components/board/seasons');
+      const championshipComp = competitions.find(c => c.category === 'Campionato' || /campionato|serie\s*atlas/i.test(c.name))!;
+      const html = renderChampionshipTable(championshipComp);
+
+      expect(html).toContain('data-manager-id=');
+      expect(html).toContain('id="standings-row-');
+    });
+  });
 });
+

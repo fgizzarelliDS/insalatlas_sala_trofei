@@ -381,3 +381,68 @@ export async function shareAlboGraphicWhatsApp(event?: Event): Promise<void> {
   const { shareAlboWhatsApp } = await import('@/export/share');
   shareAlboWhatsApp();
 }
+
+/**
+ * Navigates back to application Home (Albo d'Oro):
+ * - Closes any open modals (Profile, H2H, Concentration, Season, TierInfo)
+ * - Sets the main view tab to 'albo'
+ * - Smoothly scrolls to the top of the window
+ * - Cleans up URL search and hash parameters (?tab, ?manager, ?h2h, ?record, ?q, ?season, ?category)
+ * - Preserves user theme and sort settings
+ */
+export async function navigateToHome(event?: Event): Promise<void> {
+  if (event) {
+    event.stopPropagation();
+  }
+
+  // 1. Close any open modals
+  const {
+    closeProfileModal,
+    closeHeadToHeadModal,
+    closeConcentrationModal,
+    closeSeasonModal,
+    closeTierInfo
+  } = await import('@/components/modals');
+
+  closeProfileModal();
+  closeHeadToHeadModal();
+  closeConcentrationModal();
+  closeSeasonModal();
+  closeTierInfo();
+
+  // 2. Switch main tab to albo d'oro
+  const { switchMainViewTab } = await import('@/components/board/seasons');
+  switchMainViewTab('albo', false);
+
+  // 3. Smooth scroll to top of window
+  if (typeof window !== 'undefined') {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // 4. Clean up URL search and hash parameters
+    try {
+      const url = new URL(window.location.href);
+      if (url.search || url.hash) {
+        url.search = '';
+        url.hash = '';
+        window.history.pushState({ tab: 'albo' }, '', url.pathname);
+      }
+    } catch {
+      // Ignored in non-browser env
+    }
+  }
+}
+
+/**
+ * Handles click on brand group (gold cup and title) in the site header
+ */
+export function handleBrandHomeClick(event?: Event): void {
+  // If user is actively editing text in edit mode, don't navigate
+  if (state.isEditMode) {
+    const target = event?.target as HTMLElement | null;
+    if (target && (target.isContentEditable || target.hasAttribute('contenteditable'))) {
+      return;
+    }
+  }
+  void navigateToHome(event);
+}
+

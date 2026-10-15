@@ -302,4 +302,86 @@ describe('Exhaustive URL & Deep-Linking Test Matrix', () => {
       expect(getMainTabParamFromURL()).toBeNull();
     });
   });
+
+  describe('10. Navigate to Home Feature (Brand & Cup Header Navigation)', () => {
+    it('resets URL search params, switches to Albo tab, and scrolls to top', async () => {
+      const { navigateToHome } = await import('@/components/board/tableBoard');
+      const { switchMainViewTab } = await import('@/components/board/seasons');
+
+      if (typeof window === 'undefined' || !window.location) return;
+
+      // Simulate being on records tab with URL parameters
+      switchMainViewTab('records', true);
+      window.history.pushState({}, '', 'https://insalatlas.it/?tab=records&q=makako');
+      expect(window.location.search).toBe('?tab=records&q=makako');
+
+      let scrolledTo: any = null;
+      window.scrollTo = (opts: any) => {
+        scrolledTo = opts;
+      };
+
+      await navigateToHome();
+
+      // Verified smooth scroll to top
+      expect(scrolledTo).toEqual({ top: 0, behavior: 'smooth' });
+      // Verified URL cleared
+      expect(window.location.search).toBe('');
+    });
+
+    it('handles brand home clicks respecting active edit mode on editable fields', async () => {
+      const { handleBrandHomeClick } = await import('@/components/board/tableBoard');
+      const { state } = await import('@/state');
+
+      if (typeof window === 'undefined') return;
+
+      let scrolledTo: any = null;
+      window.scrollTo = (opts: any) => {
+        scrolledTo = opts;
+      };
+
+      // 1. Normal mode (not editing): clicking anywhere on brand navigates home
+      state.isEditMode = false;
+      const normalEvent = {
+        target: { isContentEditable: false },
+        stopPropagation: () => {}
+      };
+      handleBrandHomeClick(normalEvent as any);
+      expect(scrolledTo).toEqual({ top: 0, behavior: 'smooth' });
+
+      // 2. Edit mode active: clicking a contenteditable title span does NOT navigate
+      scrolledTo = null;
+      state.isEditMode = true;
+      const editTitleEvent = {
+        target: { isContentEditable: true },
+        stopPropagation: () => {}
+      };
+      handleBrandHomeClick(editTitleEvent as any);
+      expect(scrolledTo).toBeNull();
+
+      // 3. Edit mode active: clicking the trophy icon (not contenteditable) DOES navigate home
+      scrolledTo = null;
+      const editCupEvent = {
+        target: { isContentEditable: false },
+        stopPropagation: () => {}
+      };
+      handleBrandHomeClick(editCupEvent as any);
+      expect(scrolledTo).toEqual({ top: 0, behavior: 'smooth' });
+
+      // Restore
+      state.isEditMode = false;
+    });
+
+    it('verifies index.html has brand header and palmares favicon linked to Home', async () => {
+      const indexHtml = (await import('../../index.html?raw')).default;
+
+      // Header brand
+      expect(indexHtml).toContain('id="league-brand-header"');
+      expect(indexHtml).toContain('handleBrandHomeClick');
+
+      // Favicon logo in board
+      expect(indexHtml).toContain('favicon-512x512.png');
+      expect(indexHtml).toContain('navigateToHome');
+    });
+  });
 });
+

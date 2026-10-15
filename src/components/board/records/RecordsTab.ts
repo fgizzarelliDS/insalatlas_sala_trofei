@@ -138,10 +138,13 @@ export function renderRecordCard(record: LeagueRecord): string {
   let seasonBadgeHTML = '';
   if (distinctSeasons.length === 1) {
     seasonBadgeHTML = `
-      <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-md border inline-flex items-center gap-1.5 shadow-xs"
+      <span onclick="window.navigateToSeasonStandings && window.navigateToSeasonStandings('${distinctSeasons[0]}', undefined, event)"
+        title="Vai alla classifica della stagione ${distinctSeasons[0]}"
+        class="text-xs font-mono font-bold px-2 py-0.5 rounded-md border inline-flex items-center gap-1.5 shadow-xs cursor-pointer hover:border-amber-400 hover:bg-amber-500/15 hover:text-amber-400 transition-all"
         style="border-color: var(--input-border); background-color: var(--input-bg); color: var(--text-main);">
-        <i class="fa-regular fa-calendar text-[10px] opacity-75"></i>
+        <i class="fa-regular fa-calendar-days text-[10px] text-amber-500"></i>
         <span>${distinctSeasons[0]}</span>
+        <i class="fa-solid fa-arrow-right text-[8px] opacity-70"></i>
       </span>
     `;
   } else if (distinctSeasons.length > 1) {
@@ -159,24 +162,36 @@ export function renderRecordCard(record: LeagueRecord): string {
   if (holders.length > 1) {
     // Ex-Aequo ties display
     const itemsHTML = holders.map(h => {
-      const clickAttr = h.managerId
-        ? `onclick="openProfileModal('${h.managerId}')" title="Apri scheda di ${h.managerName}" class="p-2 sm:p-2.5 rounded-xl border flex items-center justify-between gap-2.5 transition-colors cursor-pointer hover:bg-white/5"`
-        : `class="p-2 sm:p-2.5 rounded-xl border flex items-center justify-between gap-2.5"`;
+      const boxClickAttr = h.season
+        ? `onclick="window.navigateToSeasonStandings && window.navigateToSeasonStandings('${h.season}', '${h.managerId || ''}', event)" title="Vai alla classifica della stagione ${h.season}" class="p-2 sm:p-2.5 rounded-xl border flex items-center justify-between gap-2.5 transition-colors cursor-pointer hover:bg-white/5 hover:border-amber-500/40"`
+        : (h.managerId
+          ? `onclick="openProfileModal('${h.managerId}')" title="Apri scheda di ${h.managerName}" class="p-2 sm:p-2.5 rounded-xl border flex items-center justify-between gap-2.5 transition-colors cursor-pointer hover:bg-white/5"`
+          : `class="p-2 sm:p-2.5 rounded-xl border flex items-center justify-between gap-2.5"`);
+
+      const managerClickAttr = h.managerId
+        ? `onclick="window.openProfileModal && window.openProfileModal('${h.managerId}'); event.stopPropagation();" title="Apri scheda di ${h.managerName}" class="manager-record-name font-bold text-xs inline-block cursor-pointer hover:underline hover:text-amber-400 transition-colors"`
+        : `class="manager-record-name font-bold text-xs inline-block"`;
+
+      const logoMarkup = h.managerId
+        ? `<div onclick="window.openProfileModal && window.openProfileModal('${h.managerId}'); event.stopPropagation();" title="Apri scheda di ${h.managerName}" class="cursor-pointer transition-transform hover:scale-105 shrink-0">${renderHolderLogoMarkup(h, 'w-8 h-8')}</div>`
+        : renderHolderLogoMarkup(h, 'w-8 h-8');
 
       return `
-        <div ${clickAttr} style="border-color: var(--input-border); background-color: var(--input-bg);">
+        <div ${boxClickAttr} style="border-color: var(--input-border); background-color: var(--input-bg);">
           <div class="flex items-center gap-2.5 min-w-0">
-            ${renderHolderLogoMarkup(h, 'w-8 h-8')}
+            ${logoMarkup}
             <div class="min-w-0">
               <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="manager-record-name font-bold text-xs inline-block" style="color: var(--text-main); line-height: 1.35;">
+                <span ${managerClickAttr} style="color: var(--text-main); line-height: 1.35;">
                   ${h.managerName}
                 </span>
                 <span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 inline-flex items-center leading-tight">1°</span>
                 ${h.season
-          ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border shadow-xs inline-flex items-center leading-tight"
-                        style="border-color: var(--table-border); background-color: var(--table-surface); color: var(--text-main);">
-                        ${h.season}
+          ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border border-amber-500/30 bg-amber-500/10 text-amber-400 shadow-xs inline-flex items-center gap-1 leading-tight"
+                        title="Vai alla classifica della stagione ${h.season}">
+                        <i class="fa-regular fa-calendar-days text-[8px]"></i>
+                        <span>${h.season}</span>
+                        <i class="fa-solid fa-arrow-right text-[7px] opacity-60"></i>
                       </span>`
           : ''
         }
@@ -191,9 +206,11 @@ export function renderRecordCard(record: LeagueRecord): string {
         }
             </div>
           </div>
-          ${h.managerId
-          ? `<i class="fa-solid fa-chevron-right text-[10px] shrink-0 opacity-40 hover:opacity-100 transition" style="color: var(--text-main);"></i>`
-          : ''
+          ${h.season
+          ? `<span class="flex items-center gap-1 text-[10px] font-bold opacity-60 hover:opacity-100 transition shrink-0 text-amber-400" title="Classifica ${h.season}"><i class="fa-regular fa-calendar-days text-[10px]"></i><i class="fa-solid fa-chevron-right text-[8px]"></i></span>`
+          : (h.managerId
+            ? `<i class="fa-solid fa-chevron-right text-[10px] shrink-0 opacity-40 hover:opacity-100 transition" style="color: var(--text-main);"></i>`
+            : '')
         }
         </div>
       `;
@@ -212,26 +229,37 @@ export function renderRecordCard(record: LeagueRecord): string {
     `;
   } else {
     // Single leader hero card
-    const clickAttr = primary.managerId
-      ? `onclick="openProfileModal('${primary.managerId}')" title="Apri scheda di ${primary.managerName}"`
-      : '';
+    const heroBoxClickAttr = primary.season
+      ? `onclick="window.navigateToSeasonStandings && window.navigateToSeasonStandings('${primary.season}', '${primary.managerId || ''}', event)" title="Vai alla classifica della stagione ${primary.season}" class="p-2.5 sm:p-3 rounded-xl border flex items-center justify-between gap-3 transition-colors cursor-pointer hover:bg-white/5 hover:border-amber-500/40"`
+      : (primary.managerId
+        ? `onclick="openProfileModal('${primary.managerId}')" title="Apri scheda di ${primary.managerName}" class="p-2.5 sm:p-3 rounded-xl border flex items-center justify-between gap-3 transition-colors cursor-pointer hover:bg-white/5"`
+        : `class="p-2.5 sm:p-3 rounded-xl border flex items-center justify-between gap-3 transition-colors"`);
+
+    const heroManagerClickAttr = primary.managerId
+      ? `onclick="window.openProfileModal && window.openProfileModal('${primary.managerId}'); event.stopPropagation();" title="Apri scheda di ${primary.managerName}" class="manager-record-name font-bold text-xs sm:text-sm inline-block cursor-pointer hover:underline hover:text-amber-400 transition-colors"`
+      : `class="manager-record-name font-bold text-xs sm:text-sm inline-block"`;
+
+    const heroLogoMarkup = primary.managerId
+      ? `<div onclick="window.openProfileModal && window.openProfileModal('${primary.managerId}'); event.stopPropagation();" title="Apri scheda di ${primary.managerName}" class="cursor-pointer transition-transform hover:scale-105 shrink-0">${renderHolderLogoMarkup(primary)}</div>`
+      : renderHolderLogoMarkup(primary);
 
     primaryHoldersHTML = `
-      <div ${clickAttr} 
-        class="p-2.5 sm:p-3 rounded-xl border flex items-center justify-between gap-3 transition-colors ${primary.managerId ? 'cursor-pointer hover:bg-white/5' : ''}"
+      <div ${heroBoxClickAttr} 
         style="border-color: var(--input-border); background-color: var(--input-bg);">
         <div class="flex items-center gap-2.5 min-w-0">
-          ${renderHolderLogoMarkup(primary)}
+          ${heroLogoMarkup}
           <div class="min-w-0">
             <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="manager-record-name font-bold text-xs sm:text-sm inline-block" style="color: var(--text-main); line-height: 1.35;">
+              <span ${heroManagerClickAttr} style="color: var(--text-main); line-height: 1.35;">
                 ${primary.managerName}
               </span>
               <span class="text-[10px] font-black px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 inline-flex items-center leading-tight">1°</span>
               ${primary.season
-        ? `<span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border shadow-xs inline-flex items-center leading-tight"
-                      style="border-color: var(--table-border); background-color: var(--table-surface); color: var(--text-main);">
-                      ${primary.season}
+        ? `<span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-amber-500/30 bg-amber-500/10 text-amber-400 shadow-xs inline-flex items-center gap-1 leading-tight"
+                      title="Vai alla classifica della stagione ${primary.season}">
+                      <i class="fa-regular fa-calendar-days text-[9px]"></i>
+                      <span>${primary.season}</span>
+                      <i class="fa-solid fa-arrow-right text-[8px] opacity-60"></i>
                     </span>`
         : ''
       }
@@ -246,9 +274,11 @@ export function renderRecordCard(record: LeagueRecord): string {
       }
           </div>
         </div>
-        ${primary.managerId
-        ? `<i class="fa-solid fa-chevron-right text-xs shrink-0 opacity-40 hover:opacity-100 transition" style="color: var(--text-main);"></i>`
-        : ''
+        ${primary.season
+        ? `<span class="flex items-center gap-1 text-[11px] font-bold opacity-60 hover:opacity-100 transition shrink-0 text-amber-400" title="Classifica ${primary.season}"><i class="fa-regular fa-calendar-days text-xs"></i><i class="fa-solid fa-chevron-right text-[10px]"></i></span>`
+        : (primary.managerId
+          ? `<i class="fa-solid fa-chevron-right text-xs shrink-0 opacity-40 hover:opacity-100 transition" style="color: var(--text-main);"></i>`
+          : '')
       }
       </div>
     `;
@@ -260,11 +290,20 @@ export function renderRecordCard(record: LeagueRecord): string {
     const contenders = record.runnerUps.map((ru, idx) => {
       const pos = idx === 0 ? '🥈 2°' : '🥉 3°';
       const detailStr = ru.detail ? ` · <span style="color: var(--text-muted);">${ru.detail}</span>` : '';
-      const seasonStr = ru.season ? ` (${ru.season})` : '';
       const normStr = ru.normalizedDetail ? ` · <span class="font-mono text-[10px] opacity-80">${ru.normalizedDetail}</span>` : '';
 
+      const seasonBadge = ru.season
+        ? `<span onclick="window.navigateToSeasonStandings && window.navigateToSeasonStandings('${ru.season}', '${ru.managerId || ''}', event)"
+                 title="Vai alla classifica della stagione ${ru.season}"
+                 class="cursor-pointer font-mono font-bold text-[10px] px-1.5 py-0.2 rounded border border-amber-500/30 hover:border-amber-400 bg-amber-500/10 hover:bg-amber-500/25 text-amber-400 transition inline-flex items-center gap-1 shadow-xs">
+             <i class="fa-regular fa-calendar-days text-[8px]"></i>
+             <span>${ru.season}</span>
+             <i class="fa-solid fa-arrow-right text-[7px] opacity-60"></i>
+           </span>`
+        : '';
+
       const clickHandler = ru.managerId
-        ? `onclick="openProfileModal('${ru.managerId}')" class="cursor-pointer hover:underline font-bold" style="color: var(--text-main);"`
+        ? `onclick="window.openProfileModal && window.openProfileModal('${ru.managerId}'); event.stopPropagation();" title="Apri scheda di ${ru.managerName}" class="cursor-pointer hover:underline font-bold" style="color: var(--text-main);"`
         : `class="font-bold" style="color: var(--text-main);"`;
 
       const miniLogoUrl = ru.logo || (ru.teamName ? resolveTeamLogo(ru.teamName) : null);
@@ -279,7 +318,7 @@ export function renderRecordCard(record: LeagueRecord): string {
           ${miniCrest}
           <span ${clickHandler}>${ru.managerName}</span>
           <span class="font-mono font-bold" style="color: var(--text-main);">${ru.formattedValue}</span>
-          <span class="text-[10px]" style="color: var(--text-muted);">${seasonStr}</span>
+          ${seasonBadge}
           ${normStr}
           ${detailStr}
         </div>

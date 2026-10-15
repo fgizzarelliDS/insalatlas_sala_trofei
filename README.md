@@ -2,11 +2,11 @@
 
 [![Deploy to GitHub Pages](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/deploy.yml/badge.svg)](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/deploy.yml)
 [![Continuous Integration](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/ci.yml/badge.svg)](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/ci.yml)
-[![Version: 1.4.4](https://img.shields.io/badge/version-1.4.4-emerald.svg)](package.json)
+[![Version: 1.5.0](https://img.shields.io/badge/version-1.5.0-emerald.svg)](package.json)
 [![TypeScript Strict](https://img.shields.io/badge/TypeScript-5.x_Strict-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> Albo d'oro interattivo, analisi econometrica di competitività, dinamica storica, record all-time, H2H e schede manager per la lega Fantacalcio InsalAtlas.
+> Albo d'oro interattivo, motore league-agnostic, analisi econometrica di competitività, dinamica storica, record all-time, H2H e schede manager per leghe Fantacalcio.
 
 ---
 
@@ -16,9 +16,10 @@
 
 L'applicazione offre un'interfaccia interattiva per desktop e mobile:
 
+- **Architettura League-Agnostic**: Configurazione centralizzata (`src/config.ts`), colonne del tabellone dinamiche con griglia CSS reattiva, isolamento multi-tenant in local storage e supporto chiavi in mano per leghe arbitrarie (cfr. `specs/13-second-league-setup-guide.md`).
 - **Albo d'Oro Storico Decennale**: Bacheca trofei consolidata, rating storico e schede manager ad alta risoluzione (HD) condivisibili.
 - **Bacheca Record Storici (Hall of Fame & Primati)**: 25 record certificati su 5 categorie storiche (Punti & Podi, Dominio & Coppe, Rivalità H2H, Strisce & Fedeltà, Disonori & Curiosità) con navigazione contestuale duale (scheda manager e archivio classifica di stagione), gestione ex-aequo ed export Poster HD all-in-one.
-- **Head-to-Head (H2H) & Nemesis Matrix**: Motore di confronto diretto 1vs1, grafici radar a 5 assi, barre duello ed esportazione ad alta definizione per WhatsApp.
+- **Head-to-Head (H2H) & Nemesis Matrix**: Motore di confronto diretto 1vs1, grafici radar a 5 assi, barre duello con preservazione dello scroll, tabellino annate a 3 colonne ed esportazione ad alta definizione per WhatsApp.
 - **Archivio Stagioni & Classifiche**: Consultazione cronologica delle singole annate con classifiche ufficiali e finaliste delle coppe.
 - **Dinamica Storica & Cronologia (Tab 4)**: Analisi longitudinale delle carriere (piazzamento medio storico, fasce di rendimento a 4 livelli, baricentro e oscillazione) ed evoluzione dell'equilibrio competitivo stagionale (compattezza, step gap e verdetti chiave).
 - **Gestione Stagioni In Corso & Debuttanti**: Isolamento delle annate attive dalle valutazioni consolidate di carriera per non penalizzare l'efficienza dei veterani e gestione asintotica dei debuttanti.

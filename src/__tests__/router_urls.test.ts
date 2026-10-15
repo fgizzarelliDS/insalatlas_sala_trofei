@@ -301,6 +301,45 @@ describe('Exhaustive URL & Deep-Linking Test Matrix', () => {
       expect(window.location.search).toBe('');
       expect(getMainTabParamFromURL()).toBeNull();
     });
+
+    it('synchronizes browser URL state during H2H <-> Profile bidirectional transitions', async () => {
+      const {
+        openHeadToHeadModal,
+        closeHeadToHeadModal,
+        openProfileFromH2H,
+        returnToPreviousH2HDuel
+      } = await import('@/components/modals/h2h');
+      const { openProfileModal, closeProfileModal } = await import('@/components/modals/ProfileModal');
+
+      if (typeof window === 'undefined' || !window.location) return;
+
+      // Ensure window handlers exist
+      (window as any).openProfileModal = openProfileModal;
+      (window as any).closeProfileModal = closeProfileModal;
+
+      // 1. Open H2H duel between alfo and vannico with pushState
+      openHeadToHeadModal('m_alfo', 'm_vannico', 'duel', true);
+      expect(window.location.search).toBe('?h2h=m_alfo%3Am_vannico');
+      expect(getH2HParamFromURL()).toEqual({ managerA: 'm_alfo', managerB: 'm_vannico' });
+      expect(getManagerParamFromURL()).toBeNull();
+
+      // 2. Click contender Alfo -> opens profile with pushState
+      openProfileFromH2H('m_alfo');
+      expect(window.location.search).toBe('?manager=m_alfo');
+      expect(getManagerParamFromURL()).toBe('m_alfo');
+      expect(getH2HParamFromURL()).toBeNull();
+
+      // 3. Click return banner -> returns to H2H duel
+      returnToPreviousH2HDuel();
+      expect(window.location.search).toBe('?h2h=m_alfo%3Am_vannico');
+      expect(getH2HParamFromURL()).toEqual({ managerA: 'm_alfo', managerB: 'm_vannico' });
+      expect(getManagerParamFromURL()).toBeNull();
+
+      // 4. Close H2H modal -> cleanly removes ?h2h from URL
+      closeHeadToHeadModal();
+      expect(window.location.search).toBe('');
+      expect(getH2HParamFromURL()).toBeNull();
+    });
   });
 
   describe('10. Navigate to Home Feature (Brand & Cup Header Navigation)', () => {

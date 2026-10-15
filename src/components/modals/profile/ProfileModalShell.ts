@@ -10,6 +10,20 @@ export function getProfileModalShellHTML(): string {
       class="border w-full max-w-xl min-w-0 rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 max-h-[92vh] overflow-y-auto overflow-x-hidden transition-colors"
       style="background-color: var(--modal-bg); border-color: var(--modal-border); color: var(--modal-text); scrollbar-width: thin; scrollbar-color: var(--table-border) transparent;">
 
+      <!-- H2H Return Banner (contextual when opened from an active duel) -->
+      <div id="profile-h2h-return-banner" class="hidden mb-3 px-3 py-2 rounded-xl border flex items-center justify-between text-xs font-bold transition shadow-sm"
+        style="background-color: var(--table-surface); border-color: rgba(245, 158, 11, 0.4); color: var(--text-main);">
+        <button type="button" onclick="window.returnToPreviousH2HDuel()"
+          class="flex items-center gap-2 transition hover:opacity-80 cursor-pointer"
+          style="color: var(--accent-color);">
+          <i class="fa-solid fa-arrow-left text-[11px]"></i>
+          <span>Torna al Duello H2H vs <span id="profile-h2h-opponent-name" class="underline font-black">-</span></span>
+        </button>
+        <span class="text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full border border-amber-500/30 text-amber-400 bg-amber-500/10">
+          ⚔️ Duello Attivo
+        </span>
+      </div>
+
       <!-- Header Profilo -->
       <div class="flex items-center justify-between border-b pb-4 mb-4 sm:mb-5 min-w-0 gap-2"
         style="border-color: var(--table-border);">

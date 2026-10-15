@@ -17,7 +17,7 @@
 L'applicazione offre un'interfaccia interattiva per desktop e mobile:
 
 - **Albo d'Oro Storico Decennale**: Bacheca trofei consolidata, rating storico e schede manager ad alta risoluzione (HD) condivisibili.
-- **Bacheca Record Storici (Hall of Fame & Primati)**: Record storici su 5 categorie (Titoli, Punti, H2H, Serie, Banter) con ex-aequo per annata ed export card in HD.
+- **Bacheca Record Storici (Hall of Fame & Primati)**: 25 record certificati su 5 categorie storiche (Punti & Podi, Dominio & Coppe, Rivalità H2H, Strisce & Fedeltà, Disonori & Curiosità) con navigazione contestuale duale (scheda manager e archivio classifica di stagione), gestione ex-aequo ed export Poster HD all-in-one.
 - **Head-to-Head (H2H) & Nemesis Matrix**: Motore di confronto diretto 1vs1, grafici radar a 5 assi, barre duello ed esportazione ad alta definizione per WhatsApp.
 - **Archivio Stagioni & Classifiche**: Consultazione cronologica delle singole annate con classifiche ufficiali e finaliste delle coppe.
 - **Dinamica Storica & Cronologia (Tab 4)**: Analisi longitudinale delle carriere (piazzamento medio storico, fasce di rendimento a 4 livelli, baricentro e oscillazione) ed evoluzione dell'equilibrio competitivo stagionale (compattezza, step gap e verdetti chiave).

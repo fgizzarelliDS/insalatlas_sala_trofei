@@ -243,7 +243,7 @@ export function computePointsRecords(
     let seasonsPlayed = 0;
 
     (m.history || []).forEach(h => {
-      if (h.season === '2026/27' || h.in_progress) return;
+      if (h.in_progress || (h as any).status === 'in_progress') return;
       if (typeof h.points === 'number' && h.points > 0) {
         const comp = completedChampionships.find(c => c.season === h.season);
         const teamCount = comp?.ranking?.length || 12;

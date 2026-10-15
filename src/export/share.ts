@@ -396,7 +396,7 @@ export function shareRecordWhatsApp(recordId: string): void {
 let isExportingPoster = false;
 
 /**
- * Captures all 28 official Hall of Fame records into a high-definition poster PNG and triggers download
+ * Captures all official Hall of Fame records into a high-definition poster PNG and triggers download
  */
 export async function exportHallOfFamePosterHD(): Promise<void> {
   if (isExportingPoster) {
@@ -426,7 +426,7 @@ export async function exportHallOfFamePosterHD(): Promise<void> {
 }
 
 /**
- * Captures all 28 official Hall of Fame records into a high-definition poster PNG and copies to clipboard
+ * Captures all official Hall of Fame records into a high-definition poster PNG and copies to clipboard
  */
 export async function copyHallOfFamePosterToClipboard(): Promise<boolean> {
   if (isExportingPoster) {
@@ -475,8 +475,11 @@ export function buildPosterWhatsAppShareText(customBaseUrl?: string): string {
   }
   const shareUrl = `${baseUrl}?tab=records`;
 
+  const allRecords = computeAllLeagueRecords(state.managers, state.competitions);
+  const count = allRecords.length > 0 ? allRecords.length : 25;
+
   return `🏆 *InsalAtlas • Hall of Fame Ufficiale (2016-2026)*
-📜 *I 28 RECORD & PRIMATI ALL-TIME DELLA SERIE ATLAS*
+📜 *I ${count} RECORD & PRIMATI ALL-TIME DELLA SERIE ATLAS*
 
 ⚡ *Punti & Podi* • 🏆 *Dominio & Coppe*
 💀 *Rivalità Head-to-Head* • 🎖️ *Strisce & Fedeltà*

@@ -61,14 +61,33 @@ export function selectH2HDuel(idA: string, idB: string): void {
   updateURL(selectedManagerIdA, selectedManagerIdB);
 }
 
+import {
+  type H2HReturnContext,
+  getH2HReturnContext,
+  setH2HReturnContext,
+  clearH2HReturnContext
+} from './HeadToHeadContext';
+
+export {
+  type H2HReturnContext,
+  getH2HReturnContext,
+  setH2HReturnContext,
+  clearH2HReturnContext
+};
+
 /**
  * Updates URL search parameter with ?h2h=idA:idB
  */
-function updateURL(idA: string, idB: string): void {
+function updateURL(idA: string, idB: string, pushState = false): void {
   if (typeof window !== 'undefined' && window.history && window.location) {
     const url = new URL(window.location.href);
+    url.searchParams.delete('manager');
     url.searchParams.set('h2h', `${idA}:${idB}`);
-    window.history.replaceState({ h2h: `${idA}:${idB}` }, '', url.toString());
+    if (pushState) {
+      window.history.pushState({ h2h: `${idA}:${idB}` }, '', url.toString());
+    } else {
+      window.history.replaceState({ h2h: `${idA}:${idB}` }, '', url.toString());
+    }
   }
 }
 
@@ -82,6 +101,36 @@ function cleanURL(): void {
       url.searchParams.delete('h2h');
       window.history.replaceState({}, '', url.toString());
     }
+  }
+}
+
+/**
+ * Opens a manager's profile from the H2H duel, storing the duel context so the user can easily return.
+ */
+export function openProfileFromH2H(targetManagerId: string): void {
+  if (selectedManagerIdA && selectedManagerIdB) {
+    setH2HReturnContext({
+      managerIdA: selectedManagerIdA,
+      managerIdB: selectedManagerIdB
+    });
+  }
+  closeHeadToHeadModal(false);
+  if (typeof window !== 'undefined' && (window as any).openProfileModal) {
+    (window as any).openProfileModal(targetManagerId, true);
+  }
+}
+
+/**
+ * Returns to the previous H2H duel from the manager profile modal.
+ */
+export function returnToPreviousH2HDuel(): void {
+  const context = getH2HReturnContext();
+  clearH2HReturnContext();
+  if (typeof window !== 'undefined' && (window as any).closeProfileModal) {
+    (window as any).closeProfileModal(false);
+  }
+  if (context) {
+    openHeadToHeadModal(context.managerIdA, context.managerIdB, 'duel', true);
   }
 }
 
@@ -128,7 +177,8 @@ export function renderHeadToHeadDOM(): void {
 export function openHeadToHeadModal(
   idA?: string,
   idB?: string,
-  initialTab: H2HTabMode = 'duel'
+  initialTab: H2HTabMode = 'duel',
+  pushState = false
 ): void {
   if (state.managers.length < 2) return;
 
@@ -146,7 +196,7 @@ export function openHeadToHeadModal(
   isChronologyExpanded = false;
 
   renderHeadToHeadDOM();
-  updateURL(selectedManagerIdA, selectedManagerIdB);
+  updateURL(selectedManagerIdA, selectedManagerIdB, pushState);
 
   const modal = typeof document !== 'undefined' ? document.getElementById('head-to-head-modal') : null;
   if (modal) {
@@ -166,13 +216,15 @@ export function openHeadToHeadModal(
 /**
  * Closes Head-to-Head modal and cleans URL
  */
-export function closeHeadToHeadModal(): void {
+export function closeHeadToHeadModal(clean = true): void {
   const modal = typeof document !== 'undefined' ? document.getElementById('head-to-head-modal') : null;
   if (modal) {
     modal.classList.add('hidden');
     modal.classList.remove('flex');
   }
-  cleanURL();
+  if (clean) {
+    cleanURL();
+  }
 }
 
 /**

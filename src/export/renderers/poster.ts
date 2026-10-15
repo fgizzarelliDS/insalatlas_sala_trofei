@@ -5,7 +5,7 @@ import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
 import { renderNodeToCanvas } from './core';
 
 /**
- * Renders an all-in-one celebratory high-resolution Poster Infographic covering all 28 official Hall of Fame records.
+ * Renders an all-in-one celebratory high-resolution Poster Infographic covering all official Hall of Fame records.
  * Uses html-to-image with an off-screen desktop layout (~1400px width) rendered at high pixel density.
  */
 export async function renderHallOfFamePosterCanvas(
@@ -235,7 +235,7 @@ export async function renderHallOfFamePosterCanvas(
       <div style="display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap;">
         <div style="padding: 5px 14px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.35); background: rgba(245, 158, 11, 0.12); color: #fbbf24; font-weight: 800; font-size: 11px; display: flex; align-items: center; gap: 6px;">
           <i class="fa-solid fa-medal"></i>
-          <span>28 Record Certificati</span>
+          <span>${allRecords.length} Record Certificati</span>
         </div>
         <div style="padding: 5px 14px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.12); color: #34d399; font-weight: 800; font-size: 11px; display: flex; align-items: center; gap: 6px;">
           <i class="fa-solid fa-layer-group"></i>

@@ -73,13 +73,18 @@ export function renderHeadToHeadHero(
       <div id="h2h-hero-cards-row" class="grid grid-cols-11 gap-1 items-stretch mt-3 pt-3 border-t" style="border-color: var(--table-border);">
         <!-- Contender A Card -->
         <div class="col-span-5 text-center p-3 rounded-xl border flex flex-col items-center justify-between" style="background-color: var(--modal-bg); border-color: var(--table-border);">
-          <div class="w-11 h-11 mx-auto rounded-full flex items-center justify-center font-black text-sm border-2 mb-1 shadow"
-               style="background: radial-gradient(circle, var(--h2h-contender-a) 0%, transparent 80%), rgba(255,255,255,0.05); border-color: var(--h2h-contender-a); color: var(--text-main);">
-            ${initialsA}
+          <div class="cursor-pointer group flex flex-col items-center w-full transition"
+               onclick="window.openProfileFromH2H('${managerA.id}')"
+               title="Vedi scheda profilo di ${managerA.name}">
+            <div class="w-11 h-11 mx-auto rounded-full flex items-center justify-center font-black text-sm border-2 mb-1 shadow transition group-hover:scale-110"
+                 style="background: radial-gradient(circle, var(--h2h-contender-a) 0%, transparent 80%), rgba(255,255,255,0.05); border-color: var(--h2h-contender-a); color: var(--text-main);">
+              ${initialsA}
+            </div>
+            <h3 class="h2h-contender-name font-sport font-black text-sm uppercase px-1 my-1 leading-normal transition group-hover:underline flex items-center justify-center gap-1" style="color: var(--text-main); line-height: 1.35;">
+              <span>${managerA.name}</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[9px] opacity-0 group-hover:opacity-75 transition shrink-0" style="color: var(--h2h-contender-a);"></i>
+            </h3>
           </div>
-          <h3 class="h2h-contender-name font-sport font-black text-sm uppercase px-1 my-1 leading-normal" style="color: var(--text-main); line-height: 1.35;">
-            ${managerA.name}
-          </h3>
           <div class="flex flex-col items-center justify-center gap-1 mt-1 w-full">
             <span class="inline-block text-[10px] font-black px-2.5 py-0.5 rounded-full border whitespace-nowrap shrink-0"
                   style="color: var(--h2h-contender-a); border-color: var(--h2h-contender-a); background-color: rgba(125, 125, 125, 0.08);">
@@ -99,13 +104,18 @@ export function renderHeadToHeadHero(
 
         <!-- Contender B Card -->
         <div class="col-span-5 text-center p-3 rounded-xl border flex flex-col items-center justify-between" style="background-color: var(--modal-bg); border-color: var(--table-border);">
-          <div class="w-11 h-11 mx-auto rounded-full flex items-center justify-center font-black text-sm border-2 mb-1 shadow"
-               style="background: radial-gradient(circle, var(--h2h-contender-b) 0%, transparent 80%), rgba(255,255,255,0.05); border-color: var(--h2h-contender-b); color: var(--text-main);">
-            ${initialsB}
+          <div class="cursor-pointer group flex flex-col items-center w-full transition"
+               onclick="window.openProfileFromH2H('${managerB.id}')"
+               title="Vedi scheda profilo di ${managerB.name}">
+            <div class="w-11 h-11 mx-auto rounded-full flex items-center justify-center font-black text-sm border-2 mb-1 shadow transition group-hover:scale-110"
+                 style="background: radial-gradient(circle, var(--h2h-contender-b) 0%, transparent 80%), rgba(255,255,255,0.05); border-color: var(--h2h-contender-b); color: var(--text-main);">
+              ${initialsB}
+            </div>
+            <h3 class="h2h-contender-name font-sport font-black text-sm uppercase px-1 my-1 leading-normal transition group-hover:underline flex items-center justify-center gap-1" style="color: var(--text-main); line-height: 1.35;">
+              <span>${managerB.name}</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[9px] opacity-0 group-hover:opacity-75 transition shrink-0" style="color: var(--h2h-contender-b);"></i>
+            </h3>
           </div>
-          <h3 class="h2h-contender-name font-sport font-black text-sm uppercase px-1 my-1 leading-normal" style="color: var(--text-main); line-height: 1.35;">
-            ${managerB.name}
-          </h3>
           <div class="flex flex-col items-center justify-center gap-1 mt-1 w-full">
             <span class="inline-block text-[10px] font-black px-2.5 py-0.5 rounded-full border whitespace-nowrap shrink-0"
                   style="color: var(--h2h-contender-b); border-color: var(--h2h-contender-b); background-color: rgba(125, 125, 125, 0.08);">

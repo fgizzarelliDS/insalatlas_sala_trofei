@@ -52,12 +52,11 @@ export function resolveManagerName(
 }
 
 /**
- * Filters out in-progress competitions (e.g. 2026/27) and returns only completed Serie Atlas championships
+ * Filters out in-progress competitions and returns only completed Serie Atlas championships
  */
 export function getCompletedChampionships(competitions: CompetitionRecord[]): CompetitionRecord[] {
   return (competitions || []).filter(c => {
     if (c.in_progress || c.status === 'in_progress') return false;
-    if (c.season === '2026/27') return false;
     const cat = (c.category || '').toLowerCase();
     const name = (c.name || '').toLowerCase();
     return cat === 'championship' || name.includes('serie') || (!c.category && !name.includes('coppa'));

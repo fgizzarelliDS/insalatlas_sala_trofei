@@ -6,3 +6,4 @@ export * from './HeadToHeadScoreboard';
 export * from './HeadToHeadPalmares';
 export * from './HeadToHeadMetrics';
 export * from './NemesisMatrixView';
+export * from './HeadToHeadContext';

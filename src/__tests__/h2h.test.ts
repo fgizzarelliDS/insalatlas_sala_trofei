@@ -447,4 +447,197 @@ describe('Head-to-Head (H2H) Engine & Router', () => {
       expect(matrixTabHTML).not.toContain('h2h-share-dropdown-menu');
     });
   });
+
+  describe('Head-to-Head to Profile Bidirectional Navigation & Context Preservation', () => {
+    it('Hero card renders click handler, hover affordances, and tooltip for contenders', async () => {
+      const { renderHeadToHeadHero } = await import('@/components/modals/h2h/HeadToHeadHero');
+      const managerA: Manager = createTestManager({ id: 'm1', name: 'Alfo' });
+      const managerB: Manager = createTestManager({ id: 'm2', name: 'Vannico' });
+      const stats = computeHeadToHead(managerA, managerB);
+
+      const html = renderHeadToHeadHero(stats, [managerA, managerB]);
+
+      // Verifies Contender A clickable avatar and name
+      expect(html).toContain("window.openProfileFromH2H('m1')");
+      expect(html).toContain('title="Vedi scheda profilo di Alfo"');
+
+      // Verifies Contender B clickable avatar and name
+      expect(html).toContain("window.openProfileFromH2H('m2')");
+      expect(html).toContain('title="Vedi scheda profilo di Vannico"');
+
+      // Verifies link indicator icons and hover scale
+      expect(html).toContain('fa-arrow-up-right-from-square');
+      expect(html).toContain('group-hover:scale-110');
+    });
+
+    it('openProfileFromH2H saves duel context, closes H2H modal, and opens Profile modal with pushState', async () => {
+      const { state } = await import('@/state');
+      const {
+        openHeadToHeadModal,
+        openProfileFromH2H,
+        getH2HReturnContext,
+        clearH2HReturnContext
+      } = await import('@/components/modals/h2h');
+
+      clearH2HReturnContext();
+
+      const managerA = createTestManager({ id: 'm1', name: 'Alfo' });
+      const managerB = createTestManager({ id: 'm2', name: 'Vannico' });
+      state.managers = [managerA, managerB];
+
+      const modalElement = {
+        classList: {
+          classes: new Set(['hidden']),
+          remove(cls: string) { this.classes.delete(cls); },
+          add(cls: string) { this.classes.add(cls); },
+          contains(cls: string) { return this.classes.has(cls); }
+        },
+        listeners: {} as Record<string, (e: any) => void>,
+        addEventListener(event: string, fn: (e: any) => void) {
+          this.listeners[event] = fn;
+        }
+      };
+
+      (globalThis as any).document = {
+        getElementById: (id: string) => {
+          if (id === 'head-to-head-modal') return modalElement;
+          if (id === 'head-to-head-modal-content') return { innerHTML: '' };
+          return null;
+        }
+      };
+
+      let profileOpenedId: string | null = null;
+      let profilePushState: boolean | null = null;
+
+      (globalThis as any).window = (globalThis as any).window || {};
+      (globalThis as any).window.openProfileModal = (id: string, pushState = false) => {
+        profileOpenedId = id;
+        profilePushState = pushState;
+      };
+
+      openHeadToHeadModal('m1', 'm2');
+      expect(modalElement.classList.contains('flex')).toBe(true);
+
+      // Trigger navigation from H2H to Manager A's profile
+      openProfileFromH2H('m1');
+
+      // 1. Context saved
+      const ctx = getH2HReturnContext();
+      expect(ctx).toEqual({ managerIdA: 'm1', managerIdB: 'm2' });
+
+      // 2. H2H modal hidden
+      expect(modalElement.classList.contains('hidden')).toBe(true);
+
+      // 3. openProfileModal invoked with target ID and pushState = true
+      expect(profileOpenedId).toBe('m1');
+      expect(profilePushState).toBe(true);
+    });
+
+    it('ProfileModal displays contextual return banner with correct opponent name when opened from H2H', async () => {
+      const { state } = await import('@/state');
+      const { openProfileModal, closeProfileModal } = await import('@/components/modals/ProfileModal');
+      const { setH2HReturnContext, getH2HReturnContext } = await import('@/components/modals/h2h/HeadToHeadContext');
+
+      const managerA = createTestManager({ id: 'm1', name: 'Alfo' });
+      const managerB = createTestManager({ id: 'm2', name: 'Vannico' });
+      state.managers = [managerA, managerB];
+
+      const bannerClasses = new Set(['hidden']);
+      const bannerEl = {
+        classList: {
+          classes: bannerClasses,
+          remove(cls: string) { bannerClasses.delete(cls); },
+          add(cls: string) { bannerClasses.add(cls); },
+          contains(cls: string) { return bannerClasses.has(cls); }
+        }
+      };
+
+      const opponentNameEl = { textContent: '' };
+      const profileModalEl = {
+        classList: {
+          classes: new Set(['hidden']),
+          remove(cls: string) { this.classes.delete(cls); },
+          add(cls: string) { this.classes.add(cls); },
+          contains(cls: string) { return this.classes.has(cls); }
+        }
+      };
+
+      (globalThis as any).document = {
+        getElementById: (id: string) => {
+          if (id === 'profile-h2h-return-banner') return bannerEl;
+          if (id === 'profile-h2h-opponent-name') return opponentNameEl;
+          if (id === 'manager-profile-modal') return profileModalEl;
+          return null;
+        }
+      };
+
+      // Set context as if navigating from duel m1 vs m2
+      setH2HReturnContext({ managerIdA: 'm1', managerIdB: 'm2' });
+
+      // Open profile of manager A (m1)
+      openProfileModal('m1');
+
+      // Banner should be unhidden
+      expect(bannerEl.classList.contains('hidden')).toBe(false);
+      // Opponent name should be manager B's name ("Vannico")
+      expect(opponentNameEl.textContent).toBe('Vannico');
+
+      // Now close the profile modal normally
+      closeProfileModal(true);
+
+      // Banner hidden and context cleared
+      expect(bannerEl.classList.contains('hidden')).toBe(true);
+      expect(getH2HReturnContext()).toBeNull();
+    });
+
+    it('returnToPreviousH2HDuel switches back to H2H duel with contenders restored', async () => {
+      const { state } = await import('@/state');
+      const {
+        returnToPreviousH2HDuel,
+        setH2HReturnContext,
+        getH2HReturnContext
+      } = await import('@/components/modals/h2h');
+
+      const managerA = createTestManager({ id: 'm1', name: 'Alfo' });
+      const managerB = createTestManager({ id: 'm2', name: 'Vannico' });
+      state.managers = [managerA, managerB];
+
+      let profileClosed = false;
+
+      (globalThis as any).window = (globalThis as any).window || {};
+      (globalThis as any).window.closeProfileModal = (clearContext: boolean) => {
+        profileClosed = true;
+        expect(clearContext).toBe(false); // preserves history state
+      };
+
+      const modalElement = {
+        classList: {
+          classes: new Set(['hidden']),
+          remove(cls: string) { this.classes.delete(cls); },
+          add(cls: string) { this.classes.add(cls); },
+          contains(cls: string) { return this.classes.has(cls); }
+        },
+        listeners: {} as Record<string, (e: any) => void>,
+        addEventListener(event: string, fn: (e: any) => void) {
+          this.listeners[event] = fn;
+        }
+      };
+
+      (globalThis as any).document = {
+        getElementById: (id: string) => {
+          if (id === 'head-to-head-modal') return modalElement;
+          if (id === 'head-to-head-modal-content') return { innerHTML: '' };
+          return null;
+        }
+      };
+
+      setH2HReturnContext({ managerIdA: 'm1', managerIdB: 'm2' });
+
+      returnToPreviousH2HDuel();
+
+      expect(profileClosed).toBe(true);
+      expect(getH2HReturnContext()).toBeNull(); // Context consumed
+      expect(modalElement.classList.contains('flex')).toBe(true);
+    });
+  });
 });

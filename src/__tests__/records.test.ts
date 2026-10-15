@@ -162,6 +162,75 @@ describe('All-Time League Records Engine', () => {
       expect(runnerUpNames).toContain('Vannico');
     });
 
+    it('identifies Vannico as sole holder of consecutive scudetti (Back-to-Back, 2 titles)', () => {
+      const records = computeAllLeagueRecords(managers, competitions);
+      const b2bRec = records.find(r => r.id === 'consecutive_scudetti');
+      expect(b2bRec).toBeDefined();
+      expect(b2bRec!.primaryHolder.managerName).toBe('Vannico');
+      expect(b2bRec!.primaryHolder.value).toBe(2);
+      expect(b2bRec!.primaryHolder.formattedValue).toBe('2 Scudetti di Fila');
+      expect(b2bRec!.primaryHolder.detail).toBe('2019/20 e 2020/21');
+      expect(b2bRec!.primaryHolder.season).toBe('2020/21');
+    });
+
+    it('identifies Gigi&Dr.Cholo for biggest season climb (+10 positions in 2024/25)', () => {
+      const records = computeAllLeagueRecords(managers, competitions);
+      const climbRec = records.find(r => r.id === 'biggest_season_climb');
+      expect(climbRec).toBeDefined();
+      expect(climbRec!.primaryHolder.managerName).toBe('Gigi&Dr.Cholo');
+      expect(climbRec!.primaryHolder.value).toBe(10);
+      expect(climbRec!.primaryHolder.formattedValue).toBe('+10 Posizioni');
+      expect(climbRec!.primaryHolder.season).toBe('2024/25');
+      expect(climbRec!.primaryHolder.detail).toContain('12°');
+      expect(climbRec!.primaryHolder.detail).toContain('2°');
+
+      // Runner-ups should contain Sebba (+9) and Lucchetto (+9)
+      expect(climbRec!.runnerUps.length).toBe(2);
+      const runnerUpNames = climbRec!.runnerUps.map(r => r.managerName);
+      expect(runnerUpNames).toContain('Sebba');
+      expect(runnerUpNames).toContain('Lucchetto');
+    });
+
+    it('identifies Sebba for worst defending champion collapse (10th place in 2024/25)', () => {
+      const records = computeAllLeagueRecords(managers, competitions);
+      const collapseRec = records.find(r => r.id === 'champion_worst_collapse');
+      expect(collapseRec).toBeDefined();
+      expect(collapseRec!.primaryHolder.managerName).toBe('Sebba');
+      expect(collapseRec!.primaryHolder.value).toBe(10);
+      expect(collapseRec!.primaryHolder.formattedValue).toBe('10° Posto');
+      expect(collapseRec!.primaryHolder.season).toBe('2024/25');
+      expect(collapseRec!.primaryHolder.detail).toContain('2023/24');
+      expect(collapseRec!.primaryHolder.detail).toContain('2024/25');
+
+      // Runner-ups should be Lucchetto (9°) and Peter & Dani (9°)
+      expect(collapseRec!.runnerUps.length).toBe(2);
+      const runnerUpRanks = collapseRec!.runnerUps.map(r => r.value);
+      expect(runnerUpRanks).toEqual([9, 9]);
+    });
+
+    it('identifies Scurcio and Avvisatina tied for longest title drought purgatory (10 completed seasons without gold)', () => {
+      const records = computeAllLeagueRecords(managers, competitions);
+      const droughtRec = records.find(r => r.id === 'title_drought_purgatory');
+      expect(droughtRec).toBeDefined();
+      expect(droughtRec!.primaryHolders.length).toBe(2);
+      expect(droughtRec!.primaryHolders.every(h => h.value === 10)).toBe(true);
+      const tiedNames = droughtRec!.primaryHolders.map(h => h.managerName);
+      expect(tiedNames).toContain('Scurcio');
+      expect(tiedNames).toContain('Avvisatina');
+
+      // Runner-ups should be Pippo (7 completed) and Gigi&Dr.Cholo (6 completed)
+      expect(droughtRec!.runnerUps.length).toBe(2);
+      expect(droughtRec!.runnerUps[0].managerName).toBe('Pippo');
+      expect(droughtRec!.runnerUps[0].value).toBe(7);
+      expect(droughtRec!.runnerUps[1].managerName).toBe('Gigi&Dr.Cholo');
+      expect(droughtRec!.runnerUps[1].value).toBe(6);
+    });
+
+    it('computes exactly 25 official league records across all 5 categories', () => {
+      const records = computeAllLeagueRecords(managers, competitions);
+      expect(records.length).toBe(25);
+    });
+
     it('resolves pertinent crests and team names for both single-season and career records', async () => {
       const { resolveManagerRecordCrest } = await import('@/analytics/records');
       

@@ -1,5 +1,5 @@
 import type { Manager, CompetitionRecord, LeagueRecord, RecordHolder } from '@/types';
-import { resolveManagerRecordCrest } from './helpers';
+import { resolveManagerRecordCrest, resolveManagerName, getCompletedChampionships } from './helpers';
 
 /**
  * Computes all records in the 'banter' (curiosities & wooden spoons) category:
@@ -324,5 +324,156 @@ export function computeBanterRecords(
     });
   }
 
+  // -------------------------------------------------------------
+  // Record 5.6: Il Crollo del Campione (Flop Post-Scudetto)
+  // -------------------------------------------------------------
+  const parseStartYear = (s: string) => {
+    const match = s.match(/^(\d{4})\/(\d{2})$/);
+    return match ? parseInt(match[1], 10) : 0;
+  };
+
+  const completedChamps = getCompletedChampionships(competitions)
+    .sort((a, b) => a.season.localeCompare(b.season));
+
+  const allFlopsMap = new Map<string, {
+    managerId: string;
+    champSeason: string;
+    defendingSeason: string;
+    rank: number;
+    teamName: string;
+    coach: string;
+  }>();
+
+  for (let i = 0; i < completedChamps.length - 1; i++) {
+    const currC = completedChamps[i];
+    const nextC = completedChamps[i + 1];
+
+    if (parseStartYear(nextC.season) - parseStartYear(currC.season) === 1) {
+      const champ = (currC.ranking || []).find(r => r.rank === 1);
+      if (champ && champ.managerId) {
+        const defending = (nextC.ranking || []).find(r => r.managerId === champ.managerId);
+        if (defending && typeof defending.rank === 'number' && defending.rank > 0) {
+          const existing = allFlopsMap.get(champ.managerId);
+          // Keep worst finish (higher rank number)
+          if (!existing || defending.rank > existing.rank) {
+            allFlopsMap.set(champ.managerId, {
+              managerId: champ.managerId,
+              champSeason: currC.season,
+              defendingSeason: nextC.season,
+              rank: defending.rank,
+              teamName: defending.teamName || '',
+              coach: defending.coach || champ.coach || ''
+            });
+          }
+        }
+      }
+    }
+  }
+
+  const allFlops = Array.from(allFlopsMap.values()).map(f => {
+    const crest = resolveManagerRecordCrest(f.managerId, f.defendingSeason, f.teamName, managers, competitions);
+    return {
+      managerId: f.managerId,
+      rank: f.rank,
+      defendingSeason: f.defendingSeason,
+      holder: {
+        managerId: f.managerId,
+        managerName: resolveManagerName(f.managerId, f.coach, managers),
+        teamName: crest.teamName,
+        logo: crest.logo,
+        fallbackCrest: crest.fallbackCrest,
+        season: f.defendingSeason,
+        value: f.rank,
+        formattedValue: `${f.rank}° Posto`,
+        detail: `Campione nel ${f.champSeason}, ${f.rank}° nel ${f.defendingSeason}`
+      }
+    };
+  });
+
+  allFlops.sort((a, b) => b.rank - a.rank);
+
+  if (allFlops.length > 0) {
+    const worstRank = allFlops[0].rank;
+    const topTied = allFlops.filter(f => f.rank === worstRank);
+    const primaryHolders = topTied.map(t => t.holder);
+    const runnerUps = allFlops
+      .filter(f => f.rank < worstRank)
+      .slice(0, 2)
+      .map(f => f.holder);
+
+    records.push({
+      id: 'champion_worst_collapse',
+      title: 'Il Crollo del Campione (Flop Post-Scudetto)',
+      category: 'banter',
+      icon: 'fa-solid fa-arrow-trend-down',
+      watermark: '📉',
+      badgeLabel: 'Flop Difesa Titolo',
+      badgeColor: 'rose',
+      primaryHolders,
+      primaryHolder: primaryHolders[0],
+      runnerUps,
+      description: 'Il peggior piazzamento in classifica registrato l’anno successivo alla vittoria dello Scudetto.'
+    });
+  }
+
+  // -------------------------------------------------------------
+  // Record 5.7: Il Purgatorio della Serie Atlas (Attesa Scudetto)
+  // -------------------------------------------------------------
+  const allDroughtHolders: {
+    managerId: string;
+    completedSeasons: number;
+    holder: RecordHolder;
+  }[] = [];
+
+  managers.forEach(m => {
+    const gold = m.gold || 0;
+    // Count ONLY completed championships (excluding active in_progress season)
+    const completed = (m.history || []).filter(h => !h.in_progress && (h as any).status !== 'in_progress').length;
+    if (gold === 0 && completed > 0) {
+      const crest = resolveManagerRecordCrest(m.id, undefined, undefined, managers, competitions);
+      allDroughtHolders.push({
+        managerId: m.id,
+        completedSeasons: completed,
+        holder: {
+          managerId: m.id,
+          managerName: m.name,
+          teamName: crest.teamName,
+          logo: crest.logo,
+          fallbackCrest: crest.fallbackCrest,
+          value: completed,
+          formattedValue: `${completed} Stagioni a Zero`,
+          detail: `${completed} campionati conclusi senza vincere lo Scudetto`
+        }
+      });
+    }
+  });
+
+  allDroughtHolders.sort((a, b) => b.completedSeasons - a.completedSeasons);
+
+  if (allDroughtHolders.length > 0) {
+    const maxCompleted = allDroughtHolders[0].completedSeasons;
+    const topTied = allDroughtHolders.filter(d => d.completedSeasons === maxCompleted);
+    const primaryHolders = topTied.map(t => t.holder);
+    const runnerUps = allDroughtHolders
+      .filter(d => d.completedSeasons < maxCompleted)
+      .slice(0, 2)
+      .map(d => d.holder);
+
+    records.push({
+      id: 'title_drought_purgatory',
+      title: 'Il Purgatorio della Serie Atlas',
+      category: 'banter',
+      icon: 'fa-solid fa-hourglass-empty',
+      watermark: '⏳',
+      badgeLabel: 'Astinenza da Scudetto',
+      badgeColor: 'rose',
+      primaryHolders,
+      primaryHolder: primaryHolders[0],
+      runnerUps,
+      description: 'Il maggior numero di campionati disputati in Serie Atlas senza mai essere riuscito a cucirsi lo Scudetto sul petto.'
+    });
+  }
+
   return records;
 }
+

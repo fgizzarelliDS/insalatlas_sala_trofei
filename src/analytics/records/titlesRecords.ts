@@ -457,5 +457,128 @@ export function computeTitlesRecords(
     });
   }
 
+  // -------------------------------------------------------------
+  // Record 2.8: L'Imbattibile (Back-to-Back Scudetti)
+  // -------------------------------------------------------------
+  const champChronology = [...completedChampionships]
+    .sort((a, b) => a.season.localeCompare(b.season))
+    .map(c => {
+      const champR = (c.ranking || []).find(r => r.rank === 1);
+      return {
+        season: c.season,
+        managerId: champR?.managerId || '',
+        coach: champR?.coach || '',
+        teamName: champR?.teamName || ''
+      };
+    })
+    .filter(x => x.managerId !== '');
+
+  interface StreakData {
+    managerId: string;
+    coach: string;
+    teamName: string;
+    count: number;
+    startSeason: string;
+    endSeason: string;
+  }
+
+  const managerConsecutiveStreaks = new Map<string, StreakData>();
+
+  let currStreak = 0;
+  let currMgrId = '';
+  let currStartSeason = '';
+  let currEndSeason = '';
+  let currCoach = '';
+  let currTeam = '';
+
+  champChronology.forEach(item => {
+    if (item.managerId === currMgrId) {
+      currStreak += 1;
+      currEndSeason = item.season;
+      currTeam = item.teamName;
+    } else {
+      if (currStreak >= 2 && currMgrId) {
+        const existing = managerConsecutiveStreaks.get(currMgrId);
+        if (!existing || currStreak > existing.count) {
+          managerConsecutiveStreaks.set(currMgrId, {
+            managerId: currMgrId,
+            coach: currCoach,
+            teamName: currTeam,
+            count: currStreak,
+            startSeason: currStartSeason,
+            endSeason: currEndSeason
+          });
+        }
+      }
+      currStreak = 1;
+      currMgrId = item.managerId;
+      currStartSeason = item.season;
+      currEndSeason = item.season;
+      currCoach = item.coach;
+      currTeam = item.teamName;
+    }
+  });
+
+  if (currStreak >= 2 && currMgrId) {
+    const existing = managerConsecutiveStreaks.get(currMgrId);
+    if (!existing || currStreak > existing.count) {
+      managerConsecutiveStreaks.set(currMgrId, {
+        managerId: currMgrId,
+        coach: currCoach,
+        teamName: currTeam,
+        count: currStreak,
+        startSeason: currStartSeason,
+        endSeason: currEndSeason
+      });
+    }
+  }
+
+  const allConsecutiveHolders = Array.from(managerConsecutiveStreaks.values()).map(s => {
+    const crest = resolveManagerRecordCrest(s.managerId, s.endSeason, s.teamName, managers, competitions);
+    const spanStr = s.startSeason === s.endSeason ? s.startSeason : `${s.startSeason} e ${s.endSeason}`;
+    return {
+      managerId: s.managerId,
+      count: s.count,
+      holder: {
+        managerId: s.managerId,
+        managerName: resolveManagerName(s.managerId, s.coach, managers),
+        teamName: crest.teamName,
+        logo: crest.logo,
+        fallbackCrest: crest.fallbackCrest,
+        season: s.endSeason,
+        value: s.count,
+        formattedValue: `${s.count} Scudetti di Fila`,
+        detail: spanStr
+      }
+    };
+  });
+
+  allConsecutiveHolders.sort((a, b) => b.count - a.count);
+
+  if (allConsecutiveHolders.length > 0) {
+    const maxConsecutive = allConsecutiveHolders[0].count;
+    const topTied = allConsecutiveHolders.filter(h => h.count === maxConsecutive);
+    const primaryHolders = topTied.map(t => t.holder);
+    const runnerUps = allConsecutiveHolders
+      .filter(h => h.count < maxConsecutive)
+      .slice(0, 2)
+      .map(h => h.holder);
+
+    records.push({
+      id: 'consecutive_scudetti',
+      title: 'L’Imbattibile (Back-to-Back)',
+      category: 'titles',
+      icon: 'fa-solid fa-repeat',
+      watermark: '👑',
+      badgeLabel: 'Scudetti Consecutivi',
+      badgeColor: 'amber',
+      primaryHolders,
+      primaryHolder: primaryHolders[0],
+      runnerUps,
+      description: 'L’unica storica impresa di chi è riuscito a vincere e difendere il titolo della Serie Atlas per due stagioni consecutive.'
+    });
+  }
+
   return records;
 }
+

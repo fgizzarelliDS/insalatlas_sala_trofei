@@ -25,7 +25,7 @@ export function computeStreaksRecords(
 
   managers.forEach(m => {
     const sortedHistory = [...(m.history || [])]
-      .filter(h => !h.in_progress && h.season !== '2026/27')
+      .filter(h => !h.in_progress && (h as any).status !== 'in_progress')
       .sort((a, b) => a.season.localeCompare(b.season));
 
     let currentStreak = 0;
@@ -112,10 +112,15 @@ export function computeStreaksRecords(
 
   managers.forEach(m => {
     const seasons = m.years || 0;
-    const completed = (m.history || []).filter(h => !h.in_progress && h.season !== '2026/27').length;
+    const completed = (m.history || []).filter(h => !h.in_progress && (h as any).status !== 'in_progress').length;
 
     if (seasons > 0) {
       const crest = resolveManagerRecordCrest(m.id, undefined, undefined, managers, competitions);
+      const inProgressCount = seasons - completed;
+      const detailStr = inProgressCount > 0
+        ? `${completed} concluse + ${inProgressCount} in corso`
+        : `${completed} concluse`;
+
       allVeterans.push({
         managerId: m.id,
         managerName: m.name,
@@ -129,7 +134,7 @@ export function computeStreaksRecords(
           fallbackCrest: crest.fallbackCrest,
           value: seasons,
           formattedValue: `${seasons} Edizioni`,
-          detail: `${completed} concluse + 1 in corso`
+          detail: detailStr
         }
       });
     }
@@ -161,5 +166,109 @@ export function computeStreaksRecords(
     });
   }
 
+  // -------------------------------------------------------------
+  // Record 4.3: La Grande Rimonta (Scalata Stagionale)
+  // -------------------------------------------------------------
+  const parseStartYear = (s: string) => {
+    const match = s.match(/^(\d{4})\/(\d{2})$/);
+    return match ? parseInt(match[1], 10) : 0;
+  };
+
+  const allClimbs: {
+    managerId: string;
+    climb: number;
+    toSeason: string;
+    holder: RecordHolder;
+  }[] = [];
+
+  managers.forEach(m => {
+    const sortedHistory = [...(m.history || [])]
+      .filter(h => !h.in_progress && (h as any).status !== 'in_progress')
+      .sort((a, b) => a.season.localeCompare(b.season));
+
+    let bestMgrClimb = 0;
+    let bestMgrEntry: {
+      climb: number;
+      fromSeason: string;
+      toSeason: string;
+      fromRank: number;
+      toRank: number;
+      team: string;
+    } | null = null;
+
+    for (let i = 1; i < sortedHistory.length; i++) {
+      const prev = sortedHistory[i - 1];
+      const curr = sortedHistory[i];
+
+      const prevRank = typeof prev.rank === 'number' ? prev.rank : 0;
+      const currRank = typeof curr.rank === 'number' ? curr.rank : 0;
+
+      if (prevRank > 0 && currRank > 0) {
+        const yearDiff = parseStartYear(curr.season) - parseStartYear(prev.season);
+        if (yearDiff === 1) {
+          const climb = prevRank - currRank;
+          if (climb > bestMgrClimb) {
+            bestMgrClimb = climb;
+            bestMgrEntry = {
+              climb,
+              fromSeason: prev.season,
+              toSeason: curr.season,
+              fromRank: prevRank,
+              toRank: currRank,
+              team: curr.team || ''
+            };
+          }
+        }
+      }
+    }
+
+    if (bestMgrEntry && bestMgrClimb > 0) {
+      const crest = resolveManagerRecordCrest(m.id, bestMgrEntry.toSeason, bestMgrEntry.team, managers, competitions);
+      allClimbs.push({
+        managerId: m.id,
+        climb: bestMgrClimb,
+        toSeason: bestMgrEntry.toSeason,
+        holder: {
+          managerId: m.id,
+          managerName: m.name,
+          teamName: crest.teamName,
+          logo: crest.logo,
+          fallbackCrest: crest.fallbackCrest,
+          season: bestMgrEntry.toSeason,
+          value: bestMgrClimb,
+          formattedValue: `+${bestMgrClimb} Posizioni`,
+          detail: `dal ${bestMgrEntry.fromRank}° (${bestMgrEntry.fromSeason}) al ${bestMgrEntry.toRank}° posto (${bestMgrEntry.toSeason})`
+        }
+      });
+    }
+  });
+
+  allClimbs.sort((a, b) => b.climb - a.climb);
+
+  if (allClimbs.length > 0) {
+    const maxClimb = allClimbs[0].climb;
+    const topTied = allClimbs.filter(c => c.climb === maxClimb);
+    const primaryHolders = topTied.map(t => t.holder);
+    const runnerUps = allClimbs
+      .filter(c => c.climb < maxClimb)
+      .slice(0, 2)
+      .map(c => c.holder);
+
+    records.push({
+      id: 'biggest_season_climb',
+      title: 'La Grande Rimonta (Scalata Stagionale)',
+      category: 'streaks',
+      icon: 'fa-solid fa-arrow-trend-up',
+      watermark: '📈',
+      badgeLabel: 'Scalata Epica',
+      badgeColor: 'emerald',
+      primaryHolders,
+      primaryHolder: primaryHolders[0],
+      runnerUps,
+      description: 'Il maggior salto in avanti di posizioni in classifica da una stagione all’altra della Serie Atlas.'
+    });
+  }
+
   return records;
 }
+

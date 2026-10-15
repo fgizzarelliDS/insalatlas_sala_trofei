@@ -150,15 +150,26 @@ L'applicazione include un modulo dedicato per il confronto diretto testa a testa
 
 ## 8. Hall of Fame — Bacheca Record & Primati Storici
 
-- **Tab Principale Dedicato**: Navigazione contestuale integrata nella schermata primaria (*Albo d'Oro*, *Stagioni*, *Record & Primati*).
-- **Filtri di Categoria**: Segmentazione dei primati tra *Tutti*, *Punti*, *Titoli & Trofei*, *Strisce*, *Scontri Diretti* e *Goliardici*.
+- **Tab Principale Dedicato**: Navigazione contestuale integrata nella schermata primaria (*Albo d'Oro*, *Stagioni*, *Record & Primati*, *Dinamica Storica*).
+- **25 Record Certificati su 5 Categorie Storiche**:
+  - **Punti & Podi**: Record assoluti di punteggio stagionale, minima quota salvezza/scudetto, miglior e peggior media gara (`pt/g`).
+  - **Dominio & Coppe**: Massimo e minimo distacco scudetto, volata podio serrata, multi-trofeo solare (*Triplete*), re dei campionati, signore delle coppe, abbonato al podio e *L’Imbattibile (Back-to-Back Scudetti)*.
+  - **Rivalità Head-to-Head**: Vittime preferite, bestie nere storiche e duelli scudetto di cartello.
+  - **Strisce & Fedeltà**: Continuità a podio, fedeltà e presenze all-time, e *La Grande Rimonta (Scalata Stagionale)* (+10 posizioni).
+  - **Disonori & Curiosità**: Mister Camaleonte, cucchiai di legno, eterni secondi (campionato e coppe), re del cartonato, *Il Crollo del Campione (Flop Post-Scudetto)* e *Il Purgatorio della Serie Atlas* (stagioni senza scudetto).
+- **Navigazione Contestuale Dual-Target**:
+  - **Click sul Box o Badge Stagione (`[📅 YYYY/YY ➔]`)**: Naviga istantaneamente alla classifica ufficiale di quella specifica annata nell'Archivio Stagioni con smooth scroll ed effetto pulse dorato sulla riga del primatista.
+  - **Click sul Nome/Avatar del Manager**: Apre la scheda profilo del fantallenatore con palmarès completo, archetipo e statistiche.
 - **Normalizzazione Storica**: Ponderazione su base media partita (`pt/g`) per armonizzare campionati storici disputati su 33, 35 e 36 giornate.
 - **Card Vettoriali con Stemmi d'Epoca & Filigrane**: Ogni record espone il valore primato, il primatista (o co-primatisti ex-aequo), piazzamenti d'onore e filigrana grafica tematica.
+- **Poster Celebrativo All-in-One HD**: Esportazione grafica panoramica in altissima definizione a 1400px con griglia a 2/3 colonne per tutte le 5 categorie, badge tematici e intestazione ufficiale della Serie Atlas.
 - **Menu di Condivisione Rapido**:
   - **Copia per WhatsApp**: Incolla direttamente l'immagine ad alta risoluzione negli appunti (`navigator.clipboard.write`).
   - **Invia Link WhatsApp**: Apertura immediata della chat con messaggio banter precompilato e deep-link di puntamento diretto (`?record=<id>`).
   - **Scarica PNG HD**: Salvataggio del file grafico generato via `html-to-image`.
 - **Deep Linking con Animazione**: L'URL `?record=<id>` seleziona automaticamente la tab, centra il record nello schermo e ne illumina i bordi per 2.5 secondi.
+- **Navigazione Rapida Home**: Il click sul trofeo, sul titolo o sulla favicon riporta immediatamente alla vista principale dell'Albo d'Oro, chiudendo eventuali modali e ripristinando l'URL.
+
 
 ---
 

@@ -425,7 +425,7 @@ describe('export.ts - Trading Card Logic and Formatting', () => {
       const text = buildPosterWhatsAppShareText('https://test.insalatlas.it/');
 
       expect(text).toContain('🏆 *InsalAtlas • Hall of Fame Ufficiale (2016-2026)*');
-      expect(text).toContain('I 28 RECORD & PRIMATI ALL-TIME DELLA SERIE ATLAS');
+      expect(text).toContain('RECORD & PRIMATI ALL-TIME DELLA SERIE ATLAS');
       expect(text).toContain('Punti & Podi');
       expect(text).toContain('Rivalità Head-to-Head');
       expect(text).toContain('https://test.insalatlas.it/?tab=records');

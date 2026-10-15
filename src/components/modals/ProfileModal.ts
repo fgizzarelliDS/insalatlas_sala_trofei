@@ -6,6 +6,7 @@ import {
   exportProfileModalHD,
   copyProfileModalToClipboard
 } from '@/export';
+import { getH2HReturnContext, clearH2HReturnContext } from './h2h/HeadToHeadContext';
 
 /**
  * Switches between Tab 1 ('palmares') and Tab 2 ('career')
@@ -38,7 +39,7 @@ export function switchProfileModalTab(tab: 'palmares' | 'career'): void {
  * Opens read-only manager profile modal displaying career honors and trophy shelf
  * @param id - Manager unique ID
  */
-export function openProfileModal(id: string): void {
+export function openProfileModal(id: string, pushState = false): void {
   const m = state.managers.find(item => item.id === id);
   if (!m) return;
   state.selectedManagerId = id;
@@ -50,6 +51,21 @@ export function openProfileModal(id: string): void {
   populateProfileModalDOM(m, score, totalMajor, successRate);
   switchProfileModalTab('palmares');
 
+  // Check if opened from an active H2H duel
+  const h2hContext = getH2HReturnContext();
+  const banner = document.getElementById('profile-h2h-return-banner');
+  const opponentNameEl = document.getElementById('profile-h2h-opponent-name');
+  if (h2hContext && (h2hContext.managerIdA === id || h2hContext.managerIdB === id)) {
+    const opponentId = h2hContext.managerIdA === id ? h2hContext.managerIdB : h2hContext.managerIdA;
+    const opponent = state.managers.find(item => item.id === opponentId);
+    if (opponentNameEl) {
+      opponentNameEl.textContent = opponent ? opponent.name : opponentId;
+    }
+    banner?.classList.remove('hidden');
+  } else {
+    banner?.classList.add('hidden');
+  }
+
   const modal = document.getElementById('manager-profile-modal');
   if (modal) {
     modal.classList.remove('hidden');
@@ -59,16 +75,29 @@ export function openProfileModal(id: string): void {
   // Synchronize browser URL query param with ?manager=<id>
   if (typeof window !== 'undefined' && window.history && window.location) {
     const url = new URL(window.location.href);
+    url.searchParams.delete('h2h');
     url.searchParams.set('manager', id);
-    window.history.replaceState({ managerId: id }, '', url.toString());
+    if (pushState) {
+      window.history.pushState({ managerId: id }, '', url.toString());
+    } else {
+      window.history.replaceState({ managerId: id }, '', url.toString());
+    }
   }
 }
 
 /**
  * Closes manager profile modal and cleans URL
+ * @param clearContext - Whether to clear the H2H return context (defaults to true)
  */
-export function closeProfileModal(): void {
+export function closeProfileModal(clearContext = true): void {
   closeShareDropdown();
+  const banner = document.getElementById('profile-h2h-return-banner');
+  if (banner) {
+    banner.classList.add('hidden');
+  }
+  if (clearContext) {
+    clearH2HReturnContext();
+  }
   const modal = document.getElementById('manager-profile-modal');
   if (modal) {
     modal.classList.add('hidden');

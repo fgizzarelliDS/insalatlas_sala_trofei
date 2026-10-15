@@ -5,7 +5,7 @@ export function getProfileModalShellHTML(): string {
   return `
   <!-- MODAL: SCHEDA PROFILO ALLENATORE (SOLA LETTURA) -->
   <div id="manager-profile-modal"
-    class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden items-center justify-center p-3 sm:p-4 overflow-x-hidden">
+    class="fixed inset-0 bg-black/80 backdrop-blur-md z-[90] hidden items-center justify-center p-3 sm:p-4 overflow-x-hidden">
     <div id="manager-profile-card"
       class="border w-full max-w-xl min-w-0 rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 max-h-[92vh] overflow-y-auto overflow-x-hidden transition-colors"
       style="background-color: var(--modal-bg); border-color: var(--modal-border); color: var(--modal-text); scrollbar-width: thin; scrollbar-color: var(--table-border) transparent;">

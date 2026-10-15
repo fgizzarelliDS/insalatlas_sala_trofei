@@ -5,7 +5,7 @@ export function getManagerModalShellHTML(): string {
   return `
   <!-- MODAL: ADD / EDIT MANAGER -->
   <div id="manager-modal"
-    class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    class="fixed inset-0 bg-black/80 backdrop-blur-md z-[90] hidden flex items-center justify-center p-4">
     <div class="border w-full max-w-xl rounded-3xl shadow-2xl p-6 max-h-[92vh] overflow-y-auto transition-colors"
       style="background-color: var(--modal-bg); border-color: var(--modal-border); color: var(--modal-text);">
 

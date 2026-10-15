@@ -259,7 +259,9 @@ export function populateCareerTimeline(m: Manager): void {
 
       // League placement chip
       let rankBadge = '';
-      if (typeof s.rank === 'number' && s.rank > 0) {
+      if (s.in_progress || (s as any).status === 'in_progress') {
+        rankBadge = `<span class="px-2 py-0.5 rounded-lg text-[11px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-500 border border-amber-500/30 animate-pulse shadow-sm">In Corso</span>`;
+      } else if (typeof s.rank === 'number' && s.rank > 0) {
         const hasValidPoints = typeof s.points === 'number' && s.points > 0;
         const ptsLabel = hasValidPoints ? ` • ${s.points} pt` : '';
         if (s.rank === 1) {

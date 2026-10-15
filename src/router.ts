@@ -1,4 +1,5 @@
 import type { Manager, RecordCategory } from '@/types';
+import type { TrophyModalKey, CupSubTab } from '@/components/modals/trophy';
 import { state } from '@/state';
 
 /**
@@ -296,6 +297,46 @@ export function getRecordCategoryParamFromURL(customUrl?: string): RecordCategor
       return raw as RecordCategory | 'all';
     }
     return null;
+  };
+
+  if (customUrl) {
+    try {
+      const url = new URL(customUrl, 'https://example.com');
+      const val = extract(url.searchParams);
+      if (val) return val;
+      if (url.hash && url.hash.includes('?')) {
+        const hashParams = new URLSearchParams(url.hash.slice(url.hash.indexOf('?')));
+        return extract(hashParams);
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  if (typeof window === 'undefined') return null;
+  const val = extract(new URLSearchParams(window.location.search));
+  if (val) return val;
+  if (window.location && window.location.hash && window.location.hash.includes('?')) {
+    const hashParams = new URLSearchParams(window.location.hash.slice(window.location.hash.indexOf('?')));
+    return extract(hashParams);
+  }
+  return null;
+}
+
+const VALID_TROPHY_KEYS = new Set(['seasons', 'scudetti', 'cups', 'mundialito', 'spoons', 'cartonato']);
+
+/**
+ * Extracts and validates ?trophy= parameter from URL search or hash
+ * Supports: 'seasons' | 'scudetti' | 'cups' | 'mundialito' | 'spoons' | 'cartonato'
+ */
+export function getTrophyParamFromURL(customUrl?: string): { trophy: TrophyModalKey; sub?: CupSubTab } | null {
+  const extract = (params: URLSearchParams): { trophy: TrophyModalKey; sub?: CupSubTab } | null => {
+    const raw = params.get('trophy')?.trim().toLowerCase();
+    if (!raw || !VALID_TROPHY_KEYS.has(raw)) return null;
+    const subRaw = params.get('sub')?.trim().toLowerCase();
+    const sub = (subRaw === 'supercoppa' || subRaw === 'coppa') ? (subRaw as CupSubTab) : undefined;
+    return { trophy: raw as TrophyModalKey, sub };
   };
 
   if (customUrl) {

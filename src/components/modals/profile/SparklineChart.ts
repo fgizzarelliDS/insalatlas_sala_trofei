@@ -2,19 +2,23 @@ import type { SeasonRecord } from '@/types';
 import { state } from '@/state';
 
 /**
- * Returns all distinct league seasons sorted chronologically ascending (2016/17 -> 2025/26)
+ * Returns all distinct completed league seasons sorted chronologically ascending (2016/17 -> 2025/26)
  */
 export function getAllLeagueSeasonsChronological(): string[] {
   const seasonsSet = new Set<string>();
   if (state.competitions) {
     state.competitions.forEach(c => {
-      if (c.season) seasonsSet.add(c.season);
+      if (c.season && !c.in_progress && c.status !== 'in_progress') {
+        seasonsSet.add(c.season);
+      }
     });
   }
   if (state.managers) {
     state.managers.forEach(m => {
       m.history?.forEach(h => {
-        if (h.season) seasonsSet.add(h.season);
+        if (h.season && !h.in_progress && (h as any).status !== 'in_progress') {
+          seasonsSet.add(h.season);
+        }
       });
     });
   }
@@ -33,10 +37,12 @@ export function getAllLeagueSeasonsChronological(): string[] {
 
 /**
  * Renders an inline responsive SVG bump chart showing historical league positions
- * across the full 10-season timeline, rendering N/D nodes for unrecorded or missing seasons.
+ * across the full timeline of completed seasons, rendering N/D nodes for unrecorded or missing seasons.
  */
 export function renderRankTrajectorySparkline(history: SeasonRecord[]): string {
-  const rankedSeasons = history.filter(s => typeof s.rank === 'number' && (s.rank as number) > 0);
+  const rankedSeasons = history.filter(
+    s => !s.in_progress && (s as any).status !== 'in_progress' && typeof s.rank === 'number' && (s.rank as number) > 0
+  );
   if (rankedSeasons.length === 0) return '';
 
   const allSeasons = getAllLeagueSeasonsChronological();
@@ -100,7 +106,13 @@ export function renderRankTrajectorySparkline(history: SeasonRecord[]): string {
 
   const points = allSeasons.map((season, idx) => {
     const record = historyMap.get(season);
-    const isRanked = typeof record?.rank === 'number' && (record.rank as number) > 0;
+    const isRanked = Boolean(
+      record &&
+      !record.in_progress &&
+      (record as any).status !== 'in_progress' &&
+      typeof record.rank === 'number' &&
+      (record.rank as number) > 0
+    );
     const teamCount = getSeasonTeamCount(season);
     const lastRank = getSeasonLastRank(season, teamCount);
     const hasSpoon = Boolean(record?.achievements?.some(a => a.badge === 'spoon'));

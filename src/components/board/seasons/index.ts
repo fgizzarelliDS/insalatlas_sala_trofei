@@ -132,6 +132,11 @@ export function navigateToSeasonStandings(season: string, highlightManagerId?: s
     event.preventDefault();
   }
 
+  // Close trophy modal if open
+  if (typeof window !== 'undefined' && (window as unknown as { closeTrophyModal?: (updateHistory?: boolean) => void }).closeTrophyModal) {
+    (window as unknown as { closeTrophyModal: (updateHistory?: boolean) => void }).closeTrophyModal(false);
+  }
+
   // 1. Switch to Seasons tab and select season
   switchMainViewTab('seasons', true);
   selectArchiveSeason(season, true);

@@ -72,7 +72,15 @@ import {
   toggleH2HShareDropdown,
   closeH2HShareDropdown,
   exportCurrentH2HDuelHD,
-  copyCurrentH2HDuelToClipboard
+  copyCurrentH2HDuelToClipboard,
+  openTrophyModal,
+  closeTrophyModal,
+  switchTrophyModalTab,
+  shareTrophyWhatsApp,
+  toggleTrophyShareDropdown,
+  closeTrophyShareDropdown,
+  exportTrophyModalHD,
+  copyTrophyModalToClipboard
 } from '@/components/modals';
 import {
   exportGraphicHD,
@@ -132,7 +140,8 @@ import {
   getSearchParamFromURL,
   getMainTabParamFromURL,
   getSeasonParamFromURL,
-  getRecordCategoryParamFromURL
+  getRecordCategoryParamFromURL,
+  getTrophyParamFromURL
 } from '@/router';
 import { initPWA, promptPWAInstall } from '@/pwa';
 
@@ -303,6 +312,14 @@ declare global {
     shareAlboWhatsApp: typeof shareAlboWhatsApp;
     navigateToHome: typeof navigateToHome;
     handleBrandHomeClick: typeof handleBrandHomeClick;
+    openTrophyModal: typeof openTrophyModal;
+    closeTrophyModal: typeof closeTrophyModal;
+    switchTrophyModalTab: typeof switchTrophyModalTab;
+    shareTrophyWhatsApp: typeof shareTrophyWhatsApp;
+    toggleTrophyShareDropdown: typeof toggleTrophyShareDropdown;
+    closeTrophyShareDropdown: typeof closeTrophyShareDropdown;
+    exportTrophyModalHD: typeof exportTrophyModalHD;
+    copyTrophyModalToClipboard: typeof copyTrophyModalToClipboard;
   }
 }
 
@@ -337,6 +354,12 @@ export async function initApp(): Promise<void> {
     if (foundA && foundB) {
       openHeadToHeadModal(foundA.id, foundB.id);
     }
+  }
+
+  // Deep-linking: auto-open Trophy History Modal if ?trophy=... in URL
+  const trophyParam = getTrophyParamFromURL();
+  if (trophyParam) {
+    openTrophyModal(trophyParam.trophy, trophyParam.sub, false);
   }
 
   // Deep-linking: auto-open and highlight record in Hall of Fame if ?record=... in URL
@@ -402,6 +425,9 @@ export async function initApp(): Promise<void> {
     }
     if (!target.closest('#btn-h2h-share-dropdown') && !target.closest('#h2h-share-dropdown-menu')) {
       closeH2HShareDropdown();
+    }
+    if (!target.closest('#btn-trophy-share-dropdown') && !target.closest('#trophy-share-dropdown-menu')) {
+      closeTrophyShareDropdown();
     }
   });
 }
@@ -516,7 +542,15 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     copyAlboToClipboard,
     shareAlboWhatsApp,
     navigateToHome,
-    handleBrandHomeClick
+    handleBrandHomeClick,
+    openTrophyModal,
+    closeTrophyModal,
+    switchTrophyModalTab,
+    shareTrophyWhatsApp,
+    toggleTrophyShareDropdown,
+    closeTrophyShareDropdown,
+    exportTrophyModalHD,
+    copyTrophyModalToClipboard
   });
 
   if (document.readyState === 'loading') {
@@ -548,6 +582,13 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       }
     }
     closeProfileModal();
+
+    const trophyParam = getTrophyParamFromURL();
+    if (trophyParam) {
+      openTrophyModal(trophyParam.trophy, trophyParam.sub, false);
+      return;
+    }
+    closeTrophyModal(false);
 
     const rec = getRecordParamFromURL();
     const cat = getRecordCategoryParamFromURL();

@@ -69,7 +69,8 @@
           <i class="fa-solid fa-trophy text-lg transition-transform duration-200 group-hover:rotate-6"></i>
         </div>
         <div>
-          <h1 class="font-sport font-extrabold text-base sm:text-xl tracking-wide uppercase leading-tight transition-colors group-hover:text-amber-400">
+          <h1
+            class="font-sport font-extrabold text-base sm:text-xl tracking-wide uppercase leading-tight transition-colors group-hover:text-amber-400">
             <span id="title-brand-main" data-title-key="brandMain" onblur="handleTitleBlur(this)">Sala Trofei</span>
             <span id="title-brand-highlight" data-title-key="brandHighlight" onblur="handleTitleBlur(this)"
               class="text-amber-400">InsalAtlas</span>
@@ -108,7 +109,7 @@
             <option value="years_desc">📅 Partecipazioni (Anzianità)</option>
             <option value="mundialito_desc">🌍 Più Mundialito</option>
             <option value="spoons_desc">🥄 Cucchiai di Legno</option>
-            <option value="cartonato_desc">🏷️ Cartonati (Playout)</option>
+            <option value="cartonato_desc">📦 Cartonati (Playout)</option>
             <option value="rating_desc">⭐ Rating Storico (Punti)</option>
           </select>
         </div>
@@ -208,8 +209,7 @@
           <div class="flex items-center gap-3 sm:gap-4">
             <!-- InsalAtlas Particle/Salad Logo (Click to Navigate Home) -->
             <img src="favicon-512x512.png?v=1" alt="InsalAtlas Logo"
-              onclick="window.navigateToHome && window.navigateToHome(event)"
-              title="Torna alla Home (Albo d'Oro)"
+              onclick="window.navigateToHome && window.navigateToHome(event)" title="Torna alla Home (Albo d'Oro)"
               class="w-11 h-11 sm:w-14 sm:h-14 shrink-0 object-contain drop-shadow-md transition-transform hover:scale-105 active:scale-95 cursor-pointer" />
             <div class="min-w-0">
               <div class="flex items-baseline gap-2 flex-wrap">
@@ -279,13 +279,17 @@
       <div id="main-tab-albo-content">
 
         <!-- Albo d'Oro Controls Toolbar: Badge Mode Toggle + Export Albo HD Dropdown -->
-        <div id="albo-toolbar" data-html2canvas-ignore="true" class="flex flex-wrap items-center justify-between gap-2.5 mb-4 pb-2.5 border-b" style="border-color: var(--table-border);">
+        <div id="albo-toolbar" data-html2canvas-ignore="true"
+          class="flex flex-wrap items-center justify-between gap-2.5 mb-4 pb-2.5 border-b"
+          style="border-color: var(--table-border);">
           <div class="flex items-center gap-2">
-            <span class="text-xs font-black uppercase tracking-wider font-sport flex items-center gap-1.5" style="color: var(--accent-color);">
+            <span class="text-xs font-black uppercase tracking-wider font-sport flex items-center gap-1.5"
+              style="color: var(--accent-color);">
               <i class="fa-solid fa-trophy text-amber-500"></i>
               <span>Bacheca Ufficiale</span>
             </span>
-            <span class="text-[11px] opacity-60 hidden sm:inline" style="color: var(--text-muted);">• Riepilogo titoli e palmarès all-time</span>
+            <span class="text-[11px] opacity-60 hidden sm:inline" style="color: var(--text-muted);">• Riepilogo titoli e
+              palmarès all-time</span>
           </div>
 
           <div class="flex items-center gap-2">
@@ -293,12 +297,14 @@
             <button onclick="toggleDisplayMode()" id="btn-display-mode"
               class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center gap-1.5 shadow-sm opacity-90 hover:opacity-100"
               style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);">
-              <i class="fa-solid fa-shapes text-amber-500"></i> <span id="display-mode-label"><span class="hidden sm:inline">Mostra </span>Badge Compatti</span>
+              <i class="fa-solid fa-shapes text-amber-500"></i> <span id="display-mode-label"><span
+                  class="hidden sm:inline">Mostra </span>Badge Compatti</span>
             </button>
 
             <!-- Albo d'Oro Export HD Dropdown -->
             <div class="relative shrink-0">
-              <button id="btn-albo-share-dropdown" type="button" onclick="window.toggleAlboShareDropdown && window.toggleAlboShareDropdown(event)"
+              <button id="btn-albo-share-dropdown" type="button"
+                onclick="window.toggleAlboShareDropdown && window.toggleAlboShareDropdown(event)"
                 class="px-3 py-1.5 rounded-xl text-xs font-bold border transition shadow-sm flex items-center gap-1.5 opacity-90 hover:opacity-100 cursor-pointer"
                 style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);"
                 title="Esporta l'Albo d'Oro in alta definizione o condividilo su WhatsApp">
@@ -333,81 +339,107 @@
           </div>
         </div>
 
-        <!-- Quick Summary Cards -->
+        <!-- Quick Summary Cards (Interactive Roll of Honor Triggers) -->
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6">
           <!-- Card 0: Stagioni Totali -->
-          <div class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3">
+          <div onclick="window.openTrophyModal && window.openTrophyModal('seasons')"
+            title="Clicca per visualizzare la cronologia e i verdetti di tutte le stagioni"
+            class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
             <div
-              class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg font-black shrink-0">
+              class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg font-black shrink-0 transition-transform group-hover:scale-110">
               📅</div>
-            <div>
+            <div class="min-w-0">
               <div id="stat-total-seasons" class="font-sport font-extrabold text-xl leading-none"
                 style="color: var(--text-main);">0</div>
-              <div class="text-[11px] font-bold uppercase tracking-wider mt-1" style="color: var(--text-muted);">
+              <div class="text-[11px] font-bold uppercase tracking-wider mt-1 truncate"
+                style="color: var(--text-muted);">
                 Stagioni <span id="stat-seasons-detail" class="text-[9px] font-semibold lowercase opacity-75"></span>
               </div>
             </div>
           </div>
 
-          <div class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3">
+          <!-- Card 1: Scudetti -->
+          <div onclick="window.openTrophyModal && window.openTrophyModal('scudetti')"
+            title="Clicca per visualizzare l'Albo d'Oro e i podi storici dei Campionati"
+            class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
             <div
-              class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg font-black shrink-0">
+              class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg font-black shrink-0 transition-transform group-hover:scale-110">
               🥇</div>
-            <div>
+            <div class="min-w-0">
               <div id="stat-total-scudetti" class="font-sport font-extrabold text-xl leading-none"
                 style="color: var(--text-main);">0</div>
-              <div class="text-[11px] font-bold uppercase tracking-wider mt-1" style="color: var(--text-muted);">
+              <div class="text-[11px] font-bold uppercase tracking-wider mt-1 truncate"
+                style="color: var(--text-muted);">
                 Scudetti
               </div>
             </div>
           </div>
 
-          <div class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3">
+          <!-- Card 2: Coppe & Supercoppe -->
+          <div onclick="window.openTrophyModal && window.openTrophyModal('cups')"
+            title="Clicca per visualizzare l'Albo d'Oro e le finali di Coppa e Supercoppa"
+            class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
             <div
-              class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-lg font-black shrink-0">
+              class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-lg font-black shrink-0 transition-transform group-hover:scale-110">
               🏆</div>
-            <div>
+            <div class="min-w-0">
               <div id="stat-total-cups" class="font-sport font-extrabold text-xl leading-none"
                 style="color: var(--text-main);">0</div>
-              <div class="text-[11px] font-bold uppercase tracking-wider mt-1" style="color: var(--text-muted);">Coppe
-                &amp; Superc.</div>
+              <div class="text-[11px] font-bold uppercase tracking-wider mt-1 truncate"
+                style="color: var(--text-muted);">
+                Coppe &amp; Superc.
+              </div>
             </div>
           </div>
 
-          <div class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3">
+          <!-- Card 3: Mundialito -->
+          <div onclick="window.openTrophyModal && window.openTrophyModal('mundialito')"
+            title="Clicca per visualizzare l'Albo d'Oro e i finalisti del Mundialito"
+            class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
             <div
-              class="w-10 h-10 rounded-xl bg-amber-700/20 text-amber-500 flex items-center justify-center text-lg font-black shrink-0">
+              class="w-10 h-10 rounded-xl bg-amber-700/20 text-amber-500 flex items-center justify-center text-lg font-black shrink-0 transition-transform group-hover:scale-110">
               🌍</div>
-            <div>
+            <div class="min-w-0">
               <div id="stat-total-mundialito" class="font-sport font-extrabold text-xl leading-none"
                 style="color: var(--text-main);">0</div>
-              <div class="text-[11px] font-bold uppercase tracking-wider mt-1" style="color: var(--text-muted);">
-                Mundialito</div>
+              <div class="text-[11px] font-bold uppercase tracking-wider mt-1 truncate"
+                style="color: var(--text-muted);">
+                Mundialito
+              </div>
             </div>
           </div>
 
-          <div class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3">
+          <!-- Card 4: Cucchiai di Legno -->
+          <div onclick="window.openTrophyModal && window.openTrophyModal('spoons')"
+            title="Clicca per visualizzare il Muro dei Cucchiai di Legno (ultimi posti)"
+            class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
             <div
-              class="w-10 h-10 rounded-xl bg-amber-800/20 text-amber-500 flex items-center justify-center text-lg font-black shrink-0">
+              class="w-10 h-10 rounded-xl bg-amber-800/20 text-amber-500 flex items-center justify-center text-lg font-black shrink-0 transition-transform group-hover:scale-110">
               🥄</div>
-            <div>
+            <div class="min-w-0">
               <div id="stat-total-spoons" class="font-sport font-extrabold text-xl leading-none"
                 style="color: var(--text-main);">0</div>
-              <div class="text-[11px] font-bold uppercase tracking-wider mt-1" style="color: var(--text-muted);">
-                Cucchiai
-                Legno</div>
+              <div class="text-[11px] font-bold uppercase tracking-wider mt-1 truncate"
+                style="color: var(--text-muted);">
+                Cucchiai Legno
+              </div>
             </div>
           </div>
 
-          <div class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3">
+          <!-- Card 5: Banner Cartonato -->
+          <div onclick="window.openTrophyModal && window.openTrophyModal('cartonato')"
+            title="Clicca per visualizzare l'Albo dei Cartonati e Playout"
+            class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
             <div
-              class="w-10 h-10 rounded-xl bg-blue-900/30 text-blue-400 flex items-center justify-center text-lg font-black shrink-0">
-              🏷️</div>
-            <div>
+              class="w-10 h-10 rounded-xl bg-blue-900/30 text-blue-400 flex items-center justify-center text-lg font-black shrink-0 transition-transform group-hover:scale-110">
+              📦</div>
+            <div class="min-w-0">
               <div id="stat-total-cartonati" class="font-sport font-extrabold text-xl leading-none"
                 style="color: var(--text-main);">0</div>
-              <div class="text-[11px] font-bold uppercase tracking-wider mt-1" style="color: var(--text-muted);">Banner
-                Cartonato</div>
+              <div class="text-[11px] font-bold uppercase tracking-wider mt-1 truncate"
+                style="color: var(--text-muted);">
+                Banner Cartonato
+              </div>
             </div>
           </div>
         </div>
@@ -487,6 +519,7 @@
   </main>
 
   <!-- Modal Mount Roots -->
+  <div id="trophy-history-modal" class="hidden"></div>
   <div id="manager-profile-modal-root"></div>
   <div id="manager-modal-root"></div>
   <div id="concentration-modal-root"></div>

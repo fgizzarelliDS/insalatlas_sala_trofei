@@ -11,7 +11,7 @@ La vista principale offre una bacheca dinamica ad alta leggibilità sportiva:
   - `years_desc` (📅 Anzianità): Stagioni disputate $\rightarrow$ Scudetti.
   - `mundialito_desc` (🌍 Mundialito): Titoli Mundialito vinti.
   - `spoons_desc` (🥄 Cucchiai di Legno): Ultimi posti collezionati.
-  - `cartonato_desc` (🏷️ Banner Playout): Sconfitte ai playout accumulati.
+  - `cartonato_desc` (📦 Banner Playout): Sconfitte ai playout accumulati.
 
 - **Formula Ufficiale di Rating Storico**:
 
@@ -25,7 +25,7 @@ La vista principale offre una bacheca dinamica ad alta leggibilità sportiva:
 | 🥈　　| **Coppa di Lega (Argento)**        | **+0.25 pt**    | Finalista sconfitto in Coppa di Lega          |
 | 🥉　　| **3° Posto Campionato**            | **+0.25 pt**    | Medaglia di bronzo della regular season       |
 | 🥄　　| **Cucchiaio di Legno**             | **-1.00 pt**    | Ultimo classificato della regular season      |
-| 🏷️　　| **Banner Cartonato (Playout)**     | **-2.00 pt**    | Retrocessione o sconfitta ai playout          |
+| 📦　　| **Banner Cartonato (Playout)**     | **-2.00 pt**    | Retrocessione o sconfitta ai playout          |
 
 ---
 

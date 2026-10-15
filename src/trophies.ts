@@ -123,5 +123,5 @@ export function renderCoachBanner(badgeName: string): string {
     return `<div class="coach-banner bg-gradient-to-r from-zinc-500 to-neutral-950 text-slate-100 border border-zinc-500" title="Banner Cartonato: Ventura (Disco Dance)"><span>🪩</span><span>VENTURA</span></div>`;
   }
 
-  return `<div class="coach-banner bg-gradient-to-r from-blue-900 to-slate-900 text-blue-200 border border-blue-500/60" title="Banner Cartonato: ${b}"><span>🏷️</span><span>${b}</span></div>`;
+  return `<div class="coach-banner bg-gradient-to-r from-blue-900 to-slate-900 text-blue-200 border border-blue-500/60" title="Banner Cartonato: ${b}"><span>📦</span><span>${b}</span></div>`;
 }

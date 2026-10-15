@@ -65,14 +65,22 @@ import {
   type H2HReturnContext,
   getH2HReturnContext,
   setH2HReturnContext,
-  clearH2HReturnContext
+  clearH2HReturnContext,
+  type ProfileReturnContext,
+  getProfileReturnContext,
+  setProfileReturnContext,
+  clearProfileReturnContext
 } from './HeadToHeadContext';
 
 export {
   type H2HReturnContext,
   getH2HReturnContext,
   setH2HReturnContext,
-  clearH2HReturnContext
+  clearH2HReturnContext,
+  type ProfileReturnContext,
+  getProfileReturnContext,
+  setProfileReturnContext,
+  clearProfileReturnContext
 };
 
 /**
@@ -135,6 +143,18 @@ export function returnToPreviousH2HDuel(): void {
 }
 
 /**
+ * Returns to the previous manager profile from the H2H duel modal.
+ */
+export function returnToPreviousProfile(): void {
+  const context = getProfileReturnContext();
+  clearProfileReturnContext();
+  closeHeadToHeadModal(false);
+  if (context && typeof window !== 'undefined' && (window as any).openProfileModal) {
+    (window as any).openProfileModal(context.managerId, true);
+  }
+}
+
+/**
  * Renders the Head-to-Head modal content into #head-to-head-modal-content
  * and adjusts modal card width dynamically based on active tab
  */
@@ -160,6 +180,13 @@ export function renderHeadToHeadDOM(): void {
     }
   }
 
+  const profileReturnContext = getProfileReturnContext();
+  let profileReturnManagerName: string | null = null;
+  if (profileReturnContext) {
+    const origMgr = state.managers.find(m => m.id === profileReturnContext.managerId);
+    profileReturnManagerName = origMgr ? origMgr.name : profileReturnContext.managerId;
+  }
+
   const stats = computeHeadToHead(managerA, managerB);
   container.innerHTML = renderHeadToHeadModalHTML(
     stats,
@@ -167,7 +194,8 @@ export function renderHeadToHeadDOM(): void {
     isChronologyExpanded,
     h2hVisualMode,
     currentH2HTab,
-    currentNemesisFilter
+    currentNemesisFilter,
+    profileReturnManagerName
   );
 }
 
@@ -223,6 +251,7 @@ export function closeHeadToHeadModal(clean = true): void {
     modal.classList.remove('flex');
   }
   if (clean) {
+    clearProfileReturnContext();
     cleanURL();
   }
 }
@@ -286,19 +315,21 @@ export function toggleH2HChronology(): void {
 export function openH2HFromProfile(): void {
   const currentId = state.selectedManagerId;
   if (!currentId) return;
-  closeProfileModal();
+  setProfileReturnContext({ managerId: currentId });
+  closeProfileModal(false);
 
   // Find another prominent manager as B (e.g. first manager different from current)
   const otherManager = state.managers.find(m => m.id !== currentId);
-  openHeadToHeadModal(currentId, otherManager?.id, 'duel');
+  openHeadToHeadModal(currentId, otherManager?.id, 'duel', true);
 }
 
 /**
  * Opens H2H comparison with a specific opponent directly from a profile rivalry badge
  */
 export function openH2HWithOpponent(managerId: string, opponentId: string): void {
-  closeProfileModal();
-  openHeadToHeadModal(managerId, opponentId, 'duel');
+  setProfileReturnContext({ managerId });
+  closeProfileModal(false);
+  openHeadToHeadModal(managerId, opponentId, 'duel', true);
 }
 
 /**

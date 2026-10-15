@@ -19,7 +19,8 @@ export function renderHeadToHeadModalHTML(
   isChronologyExpanded: boolean,
   visualMode: 'radar' | 'bars' = 'radar',
   activeTab: H2HTabMode = 'duel',
-  nemesisFilter: 'active' | 'veterans' | 'all' = 'active'
+  nemesisFilter: 'active' | 'veterans' | 'all' = 'active',
+  profileReturnName?: string | null
 ): string {
   const { managerA, managerB, palmares } = stats;
 
@@ -65,6 +66,22 @@ export function renderHeadToHeadModalHTML(
         </button>
       </div>
     </div>
+
+    ${profileReturnName ? `
+      <!-- Profile Return Banner (contextual when opened from a manager profile) -->
+      <div id="h2h-profile-return-banner" class="mx-3 sm:mx-6 mt-3 px-3 py-2 rounded-xl border flex items-center justify-between text-xs font-bold transition shadow-sm shrink-0"
+        style="background-color: var(--table-surface); border-color: rgba(245, 158, 11, 0.4); color: var(--text-main);">
+        <button type="button" onclick="window.returnToPreviousProfile && window.returnToPreviousProfile()"
+          class="flex items-center gap-2 transition hover:opacity-80 cursor-pointer"
+          style="color: var(--accent-color);">
+          <i class="fa-solid fa-arrow-left text-[11px]"></i>
+          <span>Torna alla Scheda Profilo di <span class="underline font-black">${profileReturnName}</span></span>
+        </button>
+        <span class="text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full border border-amber-500/30 text-amber-400 bg-amber-500/10">
+          👤 Profilo Attivo
+        </span>
+      </div>
+    ` : ''}
 
     <!-- Scrollable Modal Body -->
     <div class="p-3 sm:p-5 overflow-y-auto flex-1 space-y-4" style="scrollbar-width: thin; scrollbar-color: var(--table-border) transparent;">

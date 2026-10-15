@@ -26,6 +26,7 @@ export function computeBanterRecords(
 
   managers.forEach(m => {
     const rawNames = (m.history || [])
+      .filter(h => !h.in_progress && (h as any).status !== 'in_progress')
       .map(h => (h.team || '').trim())
       .filter(t => t.length > 0);
 
@@ -98,6 +99,7 @@ export function computeBanterRecords(
 
   managers.forEach(m => {
     if ((m.spoon || 0) > 0) {
+      const completed = (m.history || []).filter(h => !h.in_progress && (h as any).status !== 'in_progress').length;
       const crest = resolveManagerRecordCrest(m.id, undefined, undefined, managers, competitions);
       allSpoonCollectors.push({
         managerId: m.id,
@@ -111,7 +113,7 @@ export function computeBanterRecords(
           fallbackCrest: crest.fallbackCrest,
           value: m.spoon || 0,
           formattedValue: `${m.spoon} Cucchiai`,
-          detail: `su ${m.years || 1} edizioni disputate`
+          detail: `su ${completed || 1} edizioni disputate`
         }
       });
     }
@@ -217,6 +219,7 @@ export function computeBanterRecords(
     const totalCupSilvers = cs + scs + ms;
 
     if (totalCupSilvers > 0) {
+      const completed = (m.history || []).filter(h => !h.in_progress && (h as any).status !== 'in_progress').length;
       const crest = resolveManagerRecordCrest(m.id, undefined, undefined, managers, competitions);
       const detailParts: string[] = [];
       if (cs > 0) detailParts.push(`${cs} Coppe`);
@@ -235,7 +238,7 @@ export function computeBanterRecords(
           fallbackCrest: crest.fallbackCrest,
           value: totalCupSilvers,
           formattedValue: `${totalCupSilvers} Finali Perse`,
-          detail: detailParts.join(', ') || `su ${m.years || 1} edizioni`
+          detail: detailParts.join(', ') || `su ${completed || 1} edizioni`
         }
       });
     }

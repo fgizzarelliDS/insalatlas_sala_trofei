@@ -65,8 +65,14 @@ class SimpleTableParser(HTMLParser):
 
 def detect_next_season(seasons_dir: str) -> str:
     """Calculates chronological next season based on existing season files."""
+    def fallback_season() -> str:
+        from datetime import datetime
+        now = datetime.now()
+        year = now.year if now.month >= 8 else now.year - 1
+        return f"{year}/{str(year + 1)[2:]}"
+
     if not os.path.exists(seasons_dir):
-        return "2026/27"
+        return fallback_season()
 
     years = []
     for f in os.listdir(seasons_dir):
@@ -76,7 +82,7 @@ def detect_next_season(seasons_dir: str) -> str:
                 years.append(int(m.group(1)))
 
     if not years:
-        return "2026/27"
+        return fallback_season()
 
     max_year = max(years)
     next_start = max_year + 1

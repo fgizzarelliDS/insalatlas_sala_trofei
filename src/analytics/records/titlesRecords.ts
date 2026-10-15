@@ -287,6 +287,7 @@ export function computeTitlesRecords(
 
   managers.forEach(m => {
     if ((m.gold || 0) > 0) {
+      const completed = (m.history || []).filter(h => !h.in_progress && (h as any).status !== 'in_progress').length;
       const crest = resolveManagerRecordCrest(m.id, undefined, undefined, managers, competitions);
       allScudettiHolders.push({
         managerId: m.id,
@@ -300,7 +301,7 @@ export function computeTitlesRecords(
           fallbackCrest: crest.fallbackCrest,
           value: m.gold || 0,
           formattedValue: `${m.gold} Scudetti`,
-          detail: `su ${m.years || 1} stagioni disputate`
+          detail: `su ${completed || 1} stagioni disputate`
         }
       });
     }
@@ -349,6 +350,7 @@ export function computeTitlesRecords(
     const totalCups = cg + sc + mun;
 
     if (totalCups > 0) {
+      const completed = (m.history || []).filter(h => !h.in_progress && (h as any).status !== 'in_progress').length;
       const crest = resolveManagerRecordCrest(m.id, undefined, undefined, managers, competitions);
       const detailParts: string[] = [];
       if (cg > 0) detailParts.push(`${cg} Coppe`);
@@ -367,7 +369,7 @@ export function computeTitlesRecords(
           fallbackCrest: crest.fallbackCrest,
           value: totalCups,
           formattedValue: `${totalCups} Coppe`,
-          detail: detailParts.join(', ') || `su ${m.years || 1} edizioni disputate`
+          detail: detailParts.join(', ') || `su ${completed || 1} edizioni disputate`
         }
       });
     }

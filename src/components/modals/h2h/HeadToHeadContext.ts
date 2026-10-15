@@ -19,3 +19,24 @@ export function setH2HReturnContext(context: H2HReturnContext | null): void {
 export function clearH2HReturnContext(): void {
   h2hReturnContext = null;
 }
+
+/**
+ * Context saved when navigating from a manager profile to an active H2H duel
+ */
+export interface ProfileReturnContext {
+  managerId: string;
+}
+
+let profileReturnContext: ProfileReturnContext | null = null;
+
+export function getProfileReturnContext(): ProfileReturnContext | null {
+  return profileReturnContext;
+}
+
+export function setProfileReturnContext(context: ProfileReturnContext | null): void {
+  profileReturnContext = context;
+}
+
+export function clearProfileReturnContext(): void {
+  profileReturnContext = null;
+}

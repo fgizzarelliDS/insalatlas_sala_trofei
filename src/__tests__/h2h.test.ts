@@ -639,5 +639,59 @@ describe('Head-to-Head (H2H) Engine & Router', () => {
       expect(getH2HReturnContext()).toBeNull(); // Context consumed
       expect(modalElement.classList.contains('flex')).toBe(true);
     });
+
+    it('openH2HFromProfile and openH2HWithOpponent save profile return context and render contextual banner', async () => {
+      const { state } = await import('@/state');
+      const {
+        openH2HFromProfile,
+        openH2HWithOpponent,
+        getProfileReturnContext,
+        clearProfileReturnContext,
+        returnToPreviousProfile,
+        closeHeadToHeadModal
+      } = await import('@/components/modals/h2h');
+      const { renderHeadToHeadModalHTML } = await import('@/components/modals/h2h/HeadToHeadTemplate');
+
+      clearProfileReturnContext();
+
+      const managerA = createTestManager({ id: 'm1', name: 'Alfo' });
+      const managerB = createTestManager({ id: 'm2', name: 'Vannico' });
+      state.managers = [managerA, managerB];
+      state.selectedManagerId = 'm1';
+
+      // 1. Test openH2HFromProfile
+      openH2HFromProfile();
+      expect(getProfileReturnContext()).toEqual({ managerId: 'm1' });
+
+      // 2. Test banner rendering in HTML
+      const stats = computeHeadToHead(managerA, managerB);
+      const htmlWithBanner = renderHeadToHeadModalHTML(stats, [managerA, managerB], false, 'radar', 'duel', 'active', 'Alfo');
+      expect(htmlWithBanner).toContain('id="h2h-profile-return-banner"');
+      expect(htmlWithBanner).toContain('Torna alla Scheda Profilo di <span class="underline font-black">Alfo</span>');
+      expect(htmlWithBanner).toContain('window.returnToPreviousProfile');
+
+      const htmlWithoutBanner = renderHeadToHeadModalHTML(stats, [managerA, managerB], false, 'radar', 'duel', 'active', null);
+      expect(htmlWithoutBanner).not.toContain('id="h2h-profile-return-banner"');
+
+      // 3. Test returnToPreviousProfile
+      let profileOpenedId: string | null = null;
+      let profilePushState: boolean | null = null;
+      (globalThis as any).window = (globalThis as any).window || {};
+      (globalThis as any).window.openProfileModal = (id: string, pushState = false) => {
+        profileOpenedId = id;
+        profilePushState = pushState;
+      };
+
+      returnToPreviousProfile();
+      expect(getProfileReturnContext()).toBeNull();
+      expect(profileOpenedId).toBe('m1');
+      expect(profilePushState).toBe(true);
+
+      // 4. Test openH2HWithOpponent and closeHeadToHeadModal
+      openH2HWithOpponent('m2', 'm1');
+      expect(getProfileReturnContext()).toEqual({ managerId: 'm2' });
+      closeHeadToHeadModal(true);
+      expect(getProfileReturnContext()).toBeNull();
+    });
   });
 });

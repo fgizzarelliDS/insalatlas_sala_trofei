@@ -1,6 +1,7 @@
 import { state } from '@/state';
 import type { Manager, CompetitionRecord, LeagueRecord } from '@/types';
 import { computeAllLeagueRecords } from '@/analytics/records';
+import { getLeagueYearSpan } from '@/analytics/records/helpers';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
 import { renderNodeToCanvas } from './core';
 
@@ -213,6 +214,8 @@ export async function renderHallOfFamePosterCanvas(
     `;
   }
 
+  const leagueSpan = getLeagueYearSpan(allCompetitions);
+
   poster.innerHTML = `
     <!-- Poster Top Championship Banner -->
     <div style="text-align: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1.5px solid var(--table-border, rgba(51, 65, 85, 0.5));">
@@ -228,7 +231,7 @@ export async function renderHallOfFamePosterCanvas(
         </div>
       </div>
       <p style="font-size: 12px; font-weight: 500; color: var(--text-muted, #94a3b8); margin: 6px auto 14px auto; max-width: 820px; line-height: 1.4;">
-        I numeri epici, le dominazioni assolute, i duelli infuocati e le sventure memorabili che hanno scritto la leggenda del Fantacalcio (2016-2026).
+        I numeri epici, le dominazioni assolute, i duelli infuocati e le sventure memorabili che hanno scritto la leggenda del Fantacalcio (${leagueSpan.spanText}).
       </p>
 
       <!-- 4 Badges Counters Bar -->
@@ -243,11 +246,11 @@ export async function renderHallOfFamePosterCanvas(
         </div>
         <div style="padding: 5px 14px; border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.35); background: rgba(56, 189, 248, 0.12); color: #38bdf8; font-weight: 800; font-size: 11px; display: flex; align-items: center; gap: 6px;">
           <i class="fa-solid fa-calendar-days"></i>
-          <span>10 Campionati (2016-2026)</span>
+          <span>${leagueSpan.completedCount} Campionati (${leagueSpan.spanText})</span>
         </div>
         <div style="padding: 5px 14px; border-radius: 12px; border: 1px solid rgba(168, 85, 247, 0.35); background: rgba(168, 85, 247, 0.12); color: #c084fc; font-weight: 800; font-size: 11px; display: flex; align-items: center; gap: 6px;">
           <i class="fa-solid fa-users"></i>
-          <span>18 Fantallenatori</span>
+          <span>${allManagers.length} Fantallenatori</span>
         </div>
       </div>
     </div>
@@ -282,7 +285,7 @@ export async function renderHallOfFamePosterCanvas(
         </span>
       </div>
       <div style="font-family: monospace; font-size: 10px; opacity: 0.75; color: var(--text-muted, #94a3b8);">
-        fgizzarellids.github.io/insalatlas_sala_trofei • 2016-2026
+        fgizzarellids.github.io/insalatlas_sala_trofei • ${leagueSpan.spanText}
       </div>
     </div>
   `;

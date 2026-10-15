@@ -111,7 +111,7 @@ export function renderSeasonModalContent(
             <label class="block text-[10px] uppercase font-bold tracking-wider mb-1" style="color: var(--text-muted);">
               Edizione Stagione
             </label>
-            <input type="text" id="season-field-year" required placeholder="es. 2026/27" value="${suggestedSeason}"
+            <input type="text" id="season-field-year" required placeholder="es. ${suggestedSeason}" value="${suggestedSeason}"
               class="w-full px-3 py-1.5 rounded-xl border text-xs font-mono font-black"
               style="background: var(--table-surface); border-color: var(--table-border); color: var(--accent-color, #f59e0b);" />
           </div>
@@ -120,7 +120,7 @@ export function renderSeasonModalContent(
             <label class="block text-[10px] uppercase font-bold tracking-wider mb-1" style="color: var(--text-muted);">
               Nome Campionato
             </label>
-            <input type="text" id="season-field-comp-name" required placeholder="es. Serie Atlas 2026-2027" value="${suggestedCompName.replace(/"/g, '&quot;')}"
+            <input type="text" id="season-field-comp-name" required placeholder="es. ${suggestedCompName.replace(/"/g, '&quot;')}" value="${suggestedCompName.replace(/"/g, '&quot;')}"
               class="w-full px-3 py-1.5 rounded-xl border text-xs font-bold"
               style="background: var(--table-surface); border-color: var(--table-border); color: var(--text-main);" />
           </div>

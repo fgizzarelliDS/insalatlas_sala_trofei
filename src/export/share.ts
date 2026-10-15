@@ -5,6 +5,7 @@ import { showToast } from '@/ui';
 import { calculateManagerScore, formatScore } from '@/score';
 import { getManagerArchetype, computeGlobalClutchIndex, getClutchTier } from '@/analytics';
 import { computeAllLeagueRecords } from '@/analytics/records';
+import { getLeagueYearSpan } from '@/analytics/records/helpers';
 import {
   renderProfileModalCanvas,
   renderH2HDuelCanvas,
@@ -475,10 +476,11 @@ export function buildPosterWhatsAppShareText(customBaseUrl?: string): string {
   }
   const shareUrl = `${baseUrl}?tab=records`;
 
+  const leagueSpan = getLeagueYearSpan(state.competitions);
   const allRecords = computeAllLeagueRecords(state.managers, state.competitions);
   const count = allRecords.length > 0 ? allRecords.length : 25;
 
-  return `🏆 *InsalAtlas • Hall of Fame Ufficiale (2016-2026)*
+  return `🏆 *InsalAtlas • Hall of Fame Ufficiale (${leagueSpan.spanText})*
 📜 *I ${count} RECORD & PRIMATI ALL-TIME DELLA SERIE ATLAS*
 
 ⚡ *Punti & Podi* • 🏆 *Dominio & Coppe*
@@ -532,12 +534,14 @@ export function buildAlboWhatsAppShareText(customBaseUrl?: string): string {
     return `${medal} *${m.name}*: ${trophies} Titoli (${m.gold || 0} Scudetti)`;
   }).join('\n');
 
-  return `🏆 *InsalAtlas • Albo d'Oro & Sala Trofei (2016-2026)*
+  const leagueSpan = getLeagueYearSpan(state.competitions);
+
+  return `🏆 *InsalAtlas • Albo d'Oro & Sala Trofei (${leagueSpan.spanText})*
 📜 *CLASSIFICA STORICA DEI PIÙ TITOLATI*
 
 ${top3}
 
-📊 10 Campionati • 18 Fantallenatori • Albo d'Oro Ufficiale
+📊 ${leagueSpan.completedCount} Campionati • ${state.managers.length} Fantallenatori • Albo d'Oro Ufficiale
 
 👉 Esplora la bacheca completa e le stagioni storiche:
 ${shareUrl}`;

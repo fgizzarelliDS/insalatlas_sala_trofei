@@ -61,6 +61,7 @@ import {
   openH2HWithOpponent,
   openProfileFromH2H,
   returnToPreviousH2HDuel,
+  returnToPreviousProfile,
   shareH2HWhatsApp,
   setH2HVisualMode,
   setH2HTab,
@@ -269,6 +270,7 @@ declare global {
     openH2HWithOpponent: typeof openH2HWithOpponent;
     openProfileFromH2H: typeof openProfileFromH2H;
     returnToPreviousH2HDuel: typeof returnToPreviousH2HDuel;
+    returnToPreviousProfile: typeof returnToPreviousProfile;
     shareH2HWhatsApp: typeof shareH2HWhatsApp;
     setH2HVisualMode: typeof setH2HVisualMode;
     setH2HTab: typeof setH2HTab;
@@ -481,6 +483,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     openH2HWithOpponent,
     openProfileFromH2H,
     returnToPreviousH2HDuel,
+    returnToPreviousProfile,
     shareH2HWhatsApp,
     setH2HVisualMode,
     setH2HTab,

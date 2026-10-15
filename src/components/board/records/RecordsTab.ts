@@ -1,5 +1,6 @@
 import { state } from '@/state';
 import { computeAllLeagueRecords, filterRecordsByCategory } from '@/analytics/records';
+import { getLeagueYearSpan } from '@/analytics/records/helpers';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
 import type { LeagueRecord, RecordCategory, RecordHolder } from '@/types';
 
@@ -336,8 +337,8 @@ export function renderRecordCard(record: LeagueRecord): string {
   }
 
   const watermarkHTML = record.watermark
-    ? `<div class="record-watermark absolute -right-1 -top-1 sm:right-2 sm:top-2 text-5xl sm:text-6xl select-none pointer-events-none transform rotate-12 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
-        style="opacity: ${RECORD_WATERMARK_DEFAULT_OPACITY}; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;"
+    ? `<div class="record-watermark absolute top-3 right-3 sm:top-4 sm:right-4 text-4xl sm:text-5xl select-none pointer-events-none transform rotate-12 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 flex items-center justify-center [&>svg]:w-9 [&>svg]:h-9 sm:[&>svg]:w-11 sm:[&>svg]:h-11"
+        style="opacity: ${RECORD_WATERMARK_DEFAULT_OPACITY}; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif; line-height: 1;"
         aria-hidden="true">${record.watermark}</div>`
     : '';
 
@@ -488,6 +489,7 @@ export function renderRecordsContentHTML(
   const allRecords = computeAllLeagueRecords(state.managers, state.competitions);
   const byCategory = filterRecordsByCategory(allRecords, activeCategory);
   const filtered = filterRecordsBySearch(byCategory, searchQuery);
+  const leagueSpan = getLeagueYearSpan(state.competitions);
 
   const pillsHTML = renderRecordsCategoryPills(activeCategory);
   const cardsHTML = filtered.length > 0
@@ -509,31 +511,34 @@ export function renderRecordsContentHTML(
             </span>
           </h2>
           <p class="text-xs" style="color: var(--text-muted);">
-            I numeri, le imprese e le sventure all-time che hanno fatto la storia della Serie Atlas (2016-2026).
+            I numeri, le imprese e le sventure all-time che hanno fatto la storia della Serie Atlas (${leagueSpan.spanText}).
           </p>
         </div>
 
         <!-- Controls: Live Search + Poster HD Export Dropdown -->
         <div class="flex items-center gap-2 w-full md:w-auto">
-          <div class="relative w-full md:w-64 shrink-0">
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs opacity-50 pointer-events-none"></i>
+          <div class="relative flex-1 min-w-0 sm:w-64 md:w-72">
+            <i class="fa-solid fa-magnifying-glass absolute text-xs opacity-50 pointer-events-none" style="position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: 0.5;"></i>
             <input 
               id="records-search-input"
-              type="search"
+              type="text"
+              inputmode="search"
+              autocomplete="off"
+              spellcheck="false"
               value="${safeSearch}"
-              placeholder="         Cerca manager, club o record..."
+              placeholder="Cerca manager, club..."
               oninput="window.searchRecords && window.searchRecords(this.value)"
-              class="w-full pl-8.5 pr-8 py-1.5 rounded-xl text-xs border transition focus:outline-none focus:ring-1 focus:ring-amber-500"
-              style="background-color: var(--table-surface); border-color: var(--table-border); color: var(--text-main);"
+              class="w-full py-1.5 rounded-xl text-xs border transition focus:outline-none focus:ring-1 focus:ring-amber-500"
+              style="padding-left: 2.35rem !important; padding-right: 2.25rem !important; background-color: var(--table-surface); border-color: var(--table-border); color: var(--text-main);"
             />
-            ${searchQuery ? `
-              <button 
-                type="button" 
-                onclick="window.clearRecordsSearch && window.clearRecordsSearch()"
-                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs opacity-60 hover:opacity-100 transition px-1 py-0.5 rounded cursor-pointer"
-                title="Cancella ricerca"
-              >✕</button>
-            ` : ''}
+            <button 
+              id="records-search-clear-btn"
+              type="button" 
+              onclick="window.clearRecordsSearch && window.clearRecordsSearch()"
+              class="absolute text-xs opacity-60 hover:opacity-100 transition px-1 py-0.5 rounded cursor-pointer ${searchQuery ? '' : 'hidden'}"
+              style="position: absolute; right: 0.65rem; top: 50%; transform: translateY(-50%);"
+              title="Cancella ricerca"
+            >✕</button>
           </div>
 
           <!-- Poster HD Dropdown -->
@@ -544,7 +549,7 @@ export function renderRecordsContentHTML(
               onclick="window.togglePosterShareDropdown && window.togglePosterShareDropdown(event)"
               class="px-3 py-1.5 rounded-xl text-xs font-bold border transition shadow-sm flex items-center gap-1.5 opacity-90 hover:opacity-100 cursor-pointer"
               style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);"
-              title="Esporta il poster ufficiale ad alta risoluzione con tutti i 28 record"
+              title="Esporta il poster ufficiale ad alta risoluzione con tutti i ${allRecords.length} record"
             >
               <i class="fa-solid fa-camera text-amber-500"></i>
               <span class="hidden sm:inline">Poster HD</span>

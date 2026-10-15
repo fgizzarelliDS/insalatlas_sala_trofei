@@ -10,29 +10,62 @@ import type { Manager, CompetitionRecord } from '@/types';
  * - 12 teams: 33 matchdays (3 rounds x 11)
  * - 14 teams: 26 matchdays (2 rounds x 13)
  */
-export function getSeasonMatchdays(season: string, teamCount: number): number {
+export function getSeasonMatchdays(season: string, teamCount?: number): number {
   if (teamCount === 8 || season.includes('16/17') || season.includes('17/18')) {
     return 35;
   }
   if (teamCount === 10 || season.includes('18/19') || season.includes('19/20')) {
     return 36;
   }
-  if (
-    teamCount === 12 ||
-    season.includes('20/21') ||
-    season.includes('21/22') ||
-    season.includes('22/23') ||
-    season.includes('23/24') ||
-    season.includes('24/25') ||
-    season.includes('25/26')
-  ) {
-    return 33;
-  }
   if (teamCount === 14) {
     return 26;
   }
+  if (teamCount === 12) {
+    return 33;
+  }
+  // All Serie Atlas 12-team seasons from 2020/21 onwards have 33 matchdays
+  const seasonStartYear = parseInt(season.split('/')[0], 10);
+  if (!isNaN(seasonStartYear) && seasonStartYear >= 2020) {
+    return 33;
+  }
   const rounds = 3;
-  return teamCount > 1 ? (teamCount - 1) * rounds : 33;
+  return teamCount && teamCount > 1 ? (teamCount - 1) * rounds : 33;
+}
+
+/**
+ * Computes dynamic year span and count of completed Serie Atlas championships
+ * e.g. { startYear: 2016, endYear: 2026, spanText: '2016-2026', completedCount: 10 }
+ */
+export function getLeagueYearSpan(competitionsList?: CompetitionRecord[]): {
+  startYear: number;
+  endYear: number;
+  spanText: string;
+  completedCount: number;
+} {
+  const comps = competitionsList || state.competitions || [];
+  const completedChampionships = getCompletedChampionships(comps);
+
+  const years: number[] = [];
+  completedChampionships.forEach(c => {
+    if (c.season) {
+      const start = parseInt(c.season.split('/')[0], 10);
+      if (!isNaN(start)) {
+        years.push(start);
+      }
+    }
+  });
+
+  const startYear = years.length > 0 ? Math.min(...years) : 2016;
+  const maxStartYear = years.length > 0 ? Math.max(...years) : 2025;
+  const endYear = maxStartYear + 1;
+  const completedCount = completedChampionships.length > 0 ? completedChampionships.length : 10;
+
+  return {
+    startYear,
+    endYear,
+    spanText: `${startYear}-${endYear}`,
+    completedCount
+  };
 }
 
 /**

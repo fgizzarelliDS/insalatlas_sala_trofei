@@ -105,9 +105,14 @@ export function searchRecords(query: string, updateHistory = true): void {
 
     counterBadge.textContent = `${filtered.length} Primati`;
 
-    // Ensure input value reflects query if called programmatically
-    if (searchInput.value !== currentRecordsSearchQuery) {
-      searchInput.value = currentRecordsSearchQuery;
+    const clearBtn = document.getElementById('records-search-clear-btn');
+    if (clearBtn) {
+      clearBtn.classList.toggle('hidden', !currentRecordsSearchQuery);
+    }
+
+    // Ensure input value reflects query if called programmatically and not currently focused
+    if (document.activeElement !== searchInput && searchInput.value !== query) {
+      searchInput.value = query;
     }
   } else {
     // Fallback full re-render

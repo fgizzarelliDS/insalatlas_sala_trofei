@@ -340,7 +340,7 @@ export function saveSeason(e: Event): void {
 
   // Validate header
   if (!season || !/^\d{4}\/\d{2}$/.test(season)) {
-    showToast("Formato stagione non valido. Usa la forma 'YYYY/YY' (es. 2026/27).", 'error');
+    showToast("Formato stagione non valido. Usa il formato 'YYYY/YY' (es. 2024/25).", 'error');
     return;
   }
   if (!compName) {

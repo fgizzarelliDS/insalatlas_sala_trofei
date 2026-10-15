@@ -340,6 +340,42 @@ describe('Exhaustive URL & Deep-Linking Test Matrix', () => {
       expect(window.location.search).toBe('');
       expect(getH2HParamFromURL()).toBeNull();
     });
+
+    it('synchronizes browser URL state during Profile -> H2H -> Profile bidirectional transitions', async () => {
+      const {
+        openH2HWithOpponent,
+        returnToPreviousProfile
+      } = await import('@/components/modals/h2h');
+      const { openProfileModal, closeProfileModal } = await import('@/components/modals/ProfileModal');
+
+      if (typeof window === 'undefined' || !window.location) return;
+
+      (window as any).openProfileModal = openProfileModal;
+      (window as any).closeProfileModal = closeProfileModal;
+
+      // 1. Start in Alfo profile with pushState
+      openProfileModal('m_alfo', true);
+      expect(window.location.search).toBe('?manager=m_alfo');
+      expect(getManagerParamFromURL()).toBe('m_alfo');
+      expect(getH2HParamFromURL()).toBeNull();
+
+      // 2. Open H2H from profile with opponent Vannico
+      openH2HWithOpponent('m_alfo', 'm_vannico');
+      expect(window.location.search).toBe('?h2h=m_alfo%3Am_vannico');
+      expect(getH2HParamFromURL()).toEqual({ managerA: 'm_alfo', managerB: 'm_vannico' });
+      expect(getManagerParamFromURL()).toBeNull();
+
+      // 3. Return to previous profile using returnToPreviousProfile()
+      returnToPreviousProfile();
+      expect(window.location.search).toBe('?manager=m_alfo');
+      expect(getManagerParamFromURL()).toBe('m_alfo');
+      expect(getH2HParamFromURL()).toBeNull();
+
+      // 4. Close profile modal
+      closeProfileModal();
+      expect(window.location.search).toBe('');
+      expect(getManagerParamFromURL()).toBeNull();
+    });
   });
 
   describe('10. Navigate to Home Feature (Brand & Cup Header Navigation)', () => {

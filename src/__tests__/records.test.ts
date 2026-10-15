@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { getSeasonMatchdays, computeAllLeagueRecords, filterRecordsByCategory } from '@/analytics/records';
+import { getLeagueYearSpan } from '@/analytics/records/helpers';
 import type { Manager, CompetitionRecord } from '@/types';
 import dataJson from '../../public/data.json';
 
@@ -124,14 +125,33 @@ describe('All-Time League Records Engine', () => {
       expect(streakRec!.primaryHolder.value).toBe(4);
     });
 
-    it('identifies Lucchetto as Mister Camaleonte (10 team names without ellipsis truncation)', () => {
+    it('identifies Vannico as Re dei Campionati and details only completed seasons', () => {
+      const records = computeAllLeagueRecords(managers, competitions);
+      const scudettiRec = records.find(r => r.id === 'most_scudetti');
+      expect(scudettiRec).toBeDefined();
+      expect(scudettiRec!.primaryHolder.managerName).toBe('Vannico');
+      expect(scudettiRec!.primaryHolder.value).toBe(3);
+      // Completed seasons only: Vannico has 9 completed seasons
+      expect(scudettiRec!.primaryHolder.detail).toBe('su 9 stagioni disputate');
+
+      // Runner-ups: Lucchetto (9 completed seasons) and Alfo (10 completed seasons, NOT 11!)
+      const lucchetto = scudettiRec!.runnerUps.find(h => h.managerName === 'Lucchetto');
+      expect(lucchetto).toBeDefined();
+      expect(lucchetto!.detail).toBe('su 9 stagioni disputate');
+
+      const alfo = scudettiRec!.runnerUps.find(h => h.managerName === 'Alfo');
+      expect(alfo).toBeDefined();
+      expect(alfo!.detail).toBe('su 10 stagioni disputate');
+    });
+
+    it('identifies Lucchetto as Mister Camaleonte (9 completed team names without in-progress)', () => {
       const records = computeAllLeagueRecords(managers, competitions);
       const camaleonteRec = records.find(r => r.id === 'chameleon_manager_names');
       expect(camaleonteRec).toBeDefined();
       expect(camaleonteRec!.primaryHolder.managerName).toBe('Lucchetto');
-      expect(camaleonteRec!.primaryHolder.value).toBe(10);
+      expect(camaleonteRec!.primaryHolder.value).toBe(9);
       expect(camaleonteRec!.primaryHolder.detail).not.toContain('...');
-      expect(camaleonteRec!.primaryHolder.detail!.split(',').length).toBe(10);
+      expect(camaleonteRec!.primaryHolder.detail!.split(',').length).toBe(9);
     });
 
     it('identifies biggest H2H blowout (+41.0 pt)', () => {
@@ -142,12 +162,12 @@ describe('All-Time League Records Engine', () => {
       expect(blowoutRec!.primaryHolder.formattedValue).toBe('+41.0 pt');
     });
 
-    it('identifies 4 tied leaders for historical loyalty (Alfo, Valery, Scurcio, Avvisatina at 11 seasons)', () => {
+    it('identifies 4 tied leaders for historical loyalty (Alfo, Valery, Scurcio, Avvisatina at 10 completed seasons)', () => {
       const records = computeAllLeagueRecords(managers, competitions);
       const loyaltyRec = records.find(r => r.id === 'most_seasons_loyalty');
       expect(loyaltyRec).toBeDefined();
       expect(loyaltyRec!.primaryHolders.length).toBe(4);
-      expect(loyaltyRec!.primaryHolders.every(h => h.value === 11)).toBe(true);
+      expect(loyaltyRec!.primaryHolders.every(h => h.value === 10)).toBe(true);
 
       const names = loyaltyRec!.primaryHolders.map(h => h.managerName);
       expect(names).toContain('Alfo');
@@ -155,9 +175,9 @@ describe('All-Time League Records Engine', () => {
       expect(names).toContain('Scurcio');
       expect(names).toContain('Avvisatina');
 
-      // Runner-ups should be the next tier (Vannico, Lucchetto, Sebba at 10 seasons)
+      // Runner-ups should be the next tier (Vannico, Lucchetto, Sebba at 9 completed seasons)
       expect(loyaltyRec!.runnerUps.length).toBeGreaterThanOrEqual(1);
-      expect(loyaltyRec!.runnerUps[0].value).toBe(10);
+      expect(loyaltyRec!.runnerUps[0].value).toBe(9);
       const runnerUpNames = loyaltyRec!.runnerUps.map(h => h.managerName);
       expect(runnerUpNames).toContain('Vannico');
     });
@@ -372,6 +392,15 @@ describe('All-Time League Records Engine', () => {
       expect(html).toContain('manager-record-name');
       expect(html).toContain('record-holder-logo');
       expect(html).toContain('record-watermark');
+      expect(html).toContain('top-3 right-3');
+    });
+
+    it('computes the dynamic league year span without hardcoding', () => {
+      const span = getLeagueYearSpan(competitions);
+      expect(span.startYear).toBe(2016);
+      expect(span.endYear).toBe(2026);
+      expect(span.spanText).toBe('2016-2026');
+      expect(span.completedCount).toBe(10);
     });
   });
 

@@ -1,12 +1,42 @@
-import { Manager, LeagueData, TitlesConfig } from '@/types';
-import { DEFAULT_TITLES } from '@/config';
+import { Manager, LeagueData, TitlesConfig, CompetitionRecord } from '@/types';
+import { DEFAULT_TITLES, LEAGUE } from '@/config';
 import { state } from '@/state';
 import { showToast, applyTitlesToDOM } from '@/ui';
 import { renderBoard } from '@/components/board/tableBoard';
 import { updateStatistics } from '@/components/board/statsCounter';
 
-const STORAGE_KEY_DATA = 'fantacalcio_palmares_data_v1';
-const STORAGE_KEY_TITLES = 'fantacalcio_custom_titles_v1';
+const STORAGE_KEY_DATA = `${LEAGUE.storagePrefix}_palmares_data_v1`;
+const STORAGE_KEY_TITLES = `${LEAGUE.storagePrefix}_custom_titles_v1`;
+const STORAGE_KEY_COMPETITIONS = `${LEAGUE.storagePrefix}_competitions_data_v1`;
+
+/**
+ * Parses and populates league payload into app state
+ */
+export function applyLoadedData(json: LeagueData): boolean {
+  let loaded = false;
+  if (json && Array.isArray(json.leagueData)) {
+    state.managers = json.leagueData;
+    loaded = true;
+  } else if (json && Array.isArray(json.managers)) {
+    state.managers = json.managers;
+    loaded = true;
+  } else if (Array.isArray(json)) {
+    state.managers = json as Manager[];
+    loaded = true;
+  }
+
+  if (json && Array.isArray(json.competitions)) {
+    state.competitions = json.competitions;
+  }
+
+  if (json && json.customTitles && typeof json.customTitles === 'object') {
+    state.titles = { ...DEFAULT_TITLES, ...json.customTitles };
+  } else if (json && json.titles && typeof json.titles === 'object') {
+    state.titles = { ...DEFAULT_TITLES, ...json.titles };
+  }
+
+  return loaded;
+}
 
 /**
  * Loads remote data.json or falls back to localStorage
@@ -16,29 +46,12 @@ export async function loadLeagueData(): Promise<Manager[]> {
     const response = await fetch('data.json?t=' + Date.now());
     if (response.ok) {
       const json: LeagueData = await response.json();
-
-      if (json && Array.isArray(json.leagueData)) {
-        state.managers = json.leagueData;
-      } else if (json && Array.isArray(json.managers)) {
-        state.managers = json.managers;
-      } else if (Array.isArray(json)) {
-        state.managers = json as Manager[];
+      if (applyLoadedData(json)) {
+        // Sync local cache
+        saveData();
+        saveTitles();
+        return state.managers;
       }
-
-      if (json && Array.isArray(json.competitions)) {
-        state.competitions = json.competitions;
-      }
-
-      if (json && json.customTitles && typeof json.customTitles === 'object') {
-        state.titles = { ...DEFAULT_TITLES, ...json.customTitles };
-      } else if (json && json.titles && typeof json.titles === 'object') {
-        state.titles = { ...DEFAULT_TITLES, ...json.titles };
-      }
-
-      // Sync local cache
-      saveData();
-      saveTitles();
-      return state.managers;
     }
   } catch (err) {
     console.warn('Impossibile caricare data.json dal server, uso fallback locale', err);
@@ -57,17 +70,21 @@ export function loadData(): void {
   try {
     const saved = localStorage.getItem(STORAGE_KEY_DATA);
     state.managers = saved ? (JSON.parse(saved) as Manager[]) : [];
+    const savedComps = localStorage.getItem(STORAGE_KEY_COMPETITIONS);
+    state.competitions = savedComps ? (JSON.parse(savedComps) as CompetitionRecord[]) : [];
   } catch (e) {
     state.managers = [];
+    state.competitions = [];
   }
 }
 
 /**
- * Saves current managers to localStorage
+ * Saves current managers and competitions to localStorage
  */
 export function saveData(): void {
   try {
     localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(state.managers));
+    localStorage.setItem(STORAGE_KEY_COMPETITIONS, JSON.stringify(state.competitions));
   } catch (e) {
     console.error('Errore salvataggio localStorage:', e);
   }
@@ -131,27 +148,10 @@ export function importBackupJSON(event: Event): void {
       const content = e.target?.result as string;
       const parsed = JSON.parse(content);
 
-      const managersList = Array.isArray(parsed?.leagueData)
-        ? parsed.leagueData
-        : Array.isArray(parsed?.managers)
-          ? parsed.managers
-          : Array.isArray(parsed)
-            ? parsed
-            : null;
-
-      if (managersList) {
-        state.managers = managersList as Manager[];
-        if (parsed && Array.isArray(parsed.competitions)) {
-          state.competitions = parsed.competitions;
-        }
+      if (applyLoadedData(parsed)) {
         saveData();
-
-        if (parsed && parsed.customTitles && typeof parsed.customTitles === 'object') {
-          state.titles = { ...DEFAULT_TITLES, ...parsed.customTitles };
-          saveTitles();
-          applyTitlesToDOM();
-        }
-
+        saveTitles();
+        applyTitlesToDOM();
         renderBoard();
         updateStatistics();
         showToast('Dati e titoli importati con successo dal file JSON!', 'success');
@@ -193,16 +193,16 @@ export async function resetOfficialData(): Promise<void> {
     if (!response.ok) throw new Error('File data.json non raggiungibile');
 
     const json = await response.json();
-    if (json && Array.isArray(json.leagueData)) {
-      state.managers = json.leagueData;
-    } else if (Array.isArray(json)) {
-      state.managers = json as Manager[];
+    if (applyLoadedData(json)) {
+      saveData();
+      saveTitles();
+      applyTitlesToDOM();
+      renderBoard();
+      updateStatistics();
+      showToast('Dati ufficiali ripristinati con successo da data.json!', 'success');
+    } else {
+      throw new Error('Formato dati non riconosciuto in data.json');
     }
-
-    saveData();
-    renderBoard();
-    updateStatistics();
-    showToast('Dati ufficiali ripristinati con successo da data.json!', 'success');
   } catch (err) {
     console.error('Errore durante il ripristino:', err);
     showToast('Impossibile scaricare data.json dal server.', 'error');

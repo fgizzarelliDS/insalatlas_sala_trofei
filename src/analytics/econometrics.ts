@@ -136,7 +136,7 @@ export function computeLeagueConcentration(managers: Manager[]): LeagueConcentra
 
   const getCompletedYears = (m: Manager): number => {
     if (m.history && m.history.length > 0) {
-      return m.history.filter(h => !h.in_progress && (h as any).status !== 'in_progress').length;
+      return m.history.filter(h => !h.in_progress && h.status !== 'in_progress').length;
     }
     return m.years || 0;
   };

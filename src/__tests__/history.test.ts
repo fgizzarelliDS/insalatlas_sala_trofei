@@ -27,6 +27,16 @@ describe('Historical Rankings & Career Visualizations', () => {
       expect(svg).toBe('');
     });
 
+    it('returns empty string when state has no league seasons (Bug B6)', () => {
+      state.competitions = [];
+      state.managers = [];
+      const history: SeasonRecord[] = [
+        { season: '2025/26', team: 'Champion', rank: 1, points: 60, achievements: [] }
+      ];
+      const svg = renderRankTrajectorySparkline(history);
+      expect(svg).toBe('');
+    });
+
     it('generates valid SVG bump chart with inverted Y-axis and nodes for ranked seasons', () => {
       const history: SeasonRecord[] = [
         {

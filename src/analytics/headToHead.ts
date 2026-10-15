@@ -15,11 +15,11 @@ import { getManagerArchetype } from './archetypes';
 export function computeHeadToHead(managerA: Manager, managerB: Manager): HeadToHeadStats {
   const historyA = (managerA.history || []).filter(
     (h): h is typeof h & { rank: number } =>
-      !h.in_progress && (h as any).status !== 'in_progress' && typeof h.rank === 'number' && h.rank > 0
+      !h.in_progress && h.status !== 'in_progress' && typeof h.rank === 'number' && h.rank > 0
   );
   const historyB = (managerB.history || []).filter(
     (h): h is typeof h & { rank: number } =>
-      !h.in_progress && (h as any).status !== 'in_progress' && typeof h.rank === 'number' && h.rank > 0
+      !h.in_progress && h.status !== 'in_progress' && typeof h.rank === 'number' && h.rank > 0
   );
 
   const duels: SharedSeasonDuel[] = [];
@@ -70,7 +70,7 @@ export function computeHeadToHead(managerA: Manager, managerB: Manager): HeadToH
 
   const getMetrics = (m: Manager, totalTitles: number, score: number) => {
     const completedYears = m.history && m.history.length > 0
-      ? m.history.filter(h => !h.in_progress && (h as any).status !== 'in_progress').length
+      ? m.history.filter(h => !h.in_progress && h.status !== 'in_progress').length
       : (m.years || 0);
     const podiums = (m.gold || 0) + (m.silver || 0) + (m.bronze || 0);
     const finalsWon = (m.cup_gold || 0) + (m.supercup || 0);

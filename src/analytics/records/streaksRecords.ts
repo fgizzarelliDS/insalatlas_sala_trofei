@@ -25,7 +25,7 @@ export function computeStreaksRecords(
 
   managers.forEach(m => {
     const sortedHistory = [...(m.history || [])]
-      .filter(h => !h.in_progress && (h as any).status !== 'in_progress')
+      .filter(h => !h.in_progress && h.status !== 'in_progress')
       .sort((a, b) => a.season.localeCompare(b.season));
 
     let currentStreak = 0;
@@ -111,7 +111,7 @@ export function computeStreaksRecords(
   }[] = [];
 
   managers.forEach(m => {
-    const completed = (m.history || []).filter(h => !h.in_progress && (h as any).status !== 'in_progress').length;
+    const completed = (m.history || []).filter(h => !h.in_progress && h.status !== 'in_progress').length;
 
     if (completed > 0) {
       const crest = resolveManagerRecordCrest(m.id, undefined, undefined, managers, competitions);
@@ -178,7 +178,7 @@ export function computeStreaksRecords(
 
   managers.forEach(m => {
     const sortedHistory = [...(m.history || [])]
-      .filter(h => !h.in_progress && (h as any).status !== 'in_progress')
+      .filter(h => !h.in_progress && h.status !== 'in_progress')
       .sort((a, b) => a.season.localeCompare(b.season));
 
     let bestMgrClimb = 0;

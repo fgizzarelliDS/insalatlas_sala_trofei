@@ -1,4 +1,5 @@
 import { state } from '@/state';
+import { LEAGUE } from '@/config';
 import { getAvailableSeasons } from './seasons/seasonSelector';
 
 /**
@@ -43,8 +44,24 @@ export function updateStatistics(): void {
     }
   }
   if (scudettiEl) scudettiEl.textContent = String(totalScudetti);
-  if (cupsEl) cupsEl.textContent = String(totalCups);
-  if (mundialitoEl) mundialitoEl.textContent = String(totalMundialito);
-  if (spoonsEl) spoonsEl.textContent = String(totalSpoons);
-  if (cartonatiEl) cartonatiEl.textContent = String(totalCartonati);
+  if (cupsEl) {
+    cupsEl.textContent = String(totalCups);
+    const card = cupsEl.closest?.('.albo-table-wrap') as HTMLElement | null;
+    if (card) card.style.display = (LEAGUE.features.cup || LEAGUE.features.supercup) ? '' : 'none';
+  }
+  if (mundialitoEl) {
+    mundialitoEl.textContent = String(totalMundialito);
+    const card = mundialitoEl.closest?.('.albo-table-wrap') as HTMLElement | null;
+    if (card) card.style.display = LEAGUE.features.mundialito ? '' : 'none';
+  }
+  if (spoonsEl) {
+    spoonsEl.textContent = String(totalSpoons);
+    const card = spoonsEl.closest?.('.albo-table-wrap') as HTMLElement | null;
+    if (card) card.style.display = LEAGUE.features.spoon ? '' : 'none';
+  }
+  if (cartonatiEl) {
+    cartonatiEl.textContent = String(totalCartonati);
+    const card = cartonatiEl.closest?.('.albo-table-wrap') as HTMLElement | null;
+    if (card) card.style.display = LEAGUE.features.cartonato ? '' : 'none';
+  }
 }

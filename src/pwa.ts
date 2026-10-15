@@ -26,8 +26,10 @@ export function initPWA(): void {
       window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
     );
 
-    // Only activate Service Worker in production / GitHub Pages to keep dev reload instant
-    if (!isLocalhost) {
+    // Activate Service Worker in production / GitHub Pages, or on localhost if ?pwa=true is requested
+    const shouldEnableSW = !isLocalhost || (typeof window !== 'undefined' && window.location.search.includes('pwa=true'));
+
+    if (shouldEnableSW) {
       // Auto-reload immediately when a new service worker takes control
       let refreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {

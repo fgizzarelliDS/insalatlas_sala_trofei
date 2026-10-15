@@ -1,12 +1,12 @@
 import { AppState } from '@/types';
-import { DEFAULT_TITLES } from '@/config';
+import { DEFAULT_TITLES, LEAGUE } from '@/config';
 
 const isMobileDevice = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
 
 export const state: AppState = {
   managers: [],
   competitions: [],
-  currentTheme: 'gazzetta',
+  currentTheme: LEAGUE.defaultTheme || 'gazzetta',
   currentSort: 'trophies_desc',
   displayMode: isMobileDevice ? 'compact' : 'multiple',
   isEditMode: false,

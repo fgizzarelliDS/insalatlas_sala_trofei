@@ -1,5 +1,6 @@
 import type { CompetitionRecord } from '@/types';
 import { state } from '@/state';
+import { LEAGUE } from '@/config';
 import { renderTrophySVG } from '@/trophies';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
 
@@ -11,7 +12,25 @@ export function renderOtherTournamentsSection(otherTournaments: CompetitionRecor
     return '';
   }
 
-  const tournamentCards = otherTournaments.map(tourn => {
+  const filteredTournaments = otherTournaments.filter(tourn => {
+    const catLower = (tourn.category || '').toLowerCase();
+    const nameLower = (tourn.name || '').toLowerCase();
+    const isSupercoppa = catLower.includes('supercoppa') || nameLower.includes('supercup') || nameLower.includes('supercoppa');
+    const isMundialito = catLower.includes('mundialito') || nameLower.includes('mundialito');
+    const isPlayout = catLower.includes('perdenti') || catLower.includes('cartonato') || nameLower.includes('perdenti') || nameLower.includes('playout');
+
+    if (!LEAGUE.features.mundialito && isMundialito) return false;
+    if (!LEAGUE.features.supercup && isSupercoppa) return false;
+    if (!LEAGUE.features.cartonato && isPlayout) return false;
+    if (!LEAGUE.features.cup && !isSupercoppa && !isMundialito && !isPlayout) return false;
+    return true;
+  });
+
+  if (filteredTournaments.length === 0) {
+    return '';
+  }
+
+  const tournamentCards = filteredTournaments.map(tourn => {
     const catLower = (tourn.category || '').toLowerCase();
     const nameLower = (tourn.name || '').toLowerCase();
     const isSupercoppa = catLower.includes('supercoppa') || nameLower.includes('supercup') || nameLower.includes('supercoppa');

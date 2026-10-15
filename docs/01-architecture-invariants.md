@@ -16,7 +16,7 @@
 ```text
 insalatlas_sala_trofei/
 ├── index.html                  # Entry point HTML principale (con version placeholder __APP_VERSION__)
-├── package.json                # Dipendenze, script npm e versione semantica SSOT (v1.1.0)
+├── package.json                # Dipendenze, script npm e versione semantica SSOT
 ├── tsconfig.json               # Configurazione TypeScript Strict Mode
 ├── vite.config.ts              # Configurazione Vite (base path relativa e plugin propagazione versione)
 ├── .github/workflows/          # CI/CD: pipeline continua di test e validazione (ci.yml) e deploy (deploy.yml)

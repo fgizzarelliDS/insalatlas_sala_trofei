@@ -4,6 +4,7 @@ import { showToast } from '@/ui';
 import { renderTrophySVG, renderCoachBanner } from '@/trophies';
 import { calculateManagerScore, formatScore, getSortedManagers } from '@/score';
 import { openManagerModal, openProfileModal } from '@/components/modals';
+import { LEAGUE, ALBO_COLUMNS } from '@/config';
 
 /**
  * Changes active sorting criterion and updates table
@@ -62,7 +63,7 @@ export function dismissScrollHint(): void {
     }, 300);
   }
   try {
-    sessionStorage.setItem('insalatlas_dismissed_scroll_hint', 'true');
+    sessionStorage.setItem(`${LEAGUE.storagePrefix}_dismissed_scroll_hint`, 'true');
   } catch {
     // ignore
   }
@@ -75,7 +76,7 @@ export function initScrollHintListener(): void {
   if (typeof window === 'undefined') return;
 
   try {
-    if (sessionStorage.getItem('insalatlas_dismissed_scroll_hint') === 'true') {
+    if (sessionStorage.getItem(`${LEAGUE.storagePrefix}_dismissed_scroll_hint`) === 'true') {
       const pill = document.getElementById('scroll-hint-pill');
       if (pill) pill.style.display = 'none';
       return;
@@ -111,17 +112,57 @@ export function toggleDisplayMode(): void {
 }
 
 /**
+ * Synchronizes the --albo-cols CSS variable with enabled columns in ALBO_COLUMNS
+ */
+export function syncAlboGridColumns(): void {
+  if (typeof document === 'undefined' || !document.documentElement?.style?.setProperty) return;
+  const colsTemplate = ALBO_COLUMNS.map(c => `var(${c.cssVar})`).join(' ');
+  document.documentElement.style.setProperty('--albo-cols', colsTemplate);
+}
+
+/**
+ * Synchronizes header columns in #albo-table-header with ALBO_COLUMNS
+ */
+export function renderBoardHeader(): void {
+  const header = document.getElementById('albo-table-header');
+  if (!header) return;
+
+  header.innerHTML = ALBO_COLUMNS.map(col => {
+    switch (col.key) {
+      case 'manager':
+        return `
+          <div id="th-col-1" data-title-key="col1" onblur="handleTitleBlur(this)"
+            class="sticky left-0 z-20 px-2 sm:pl-4 sm:pr-3 transition border-r shadow-[3px_0_6px_-2px_rgba(0,0,0,0.25)] text-[11px] sm:text-xs truncate self-stretch flex items-center"
+            style="background-color: var(--header-bg); border-color: rgba(255, 255, 255, 0.15);">
+            ${state.titles.col1 || col.defaultTitle}
+          </div>
+        `;
+      case 'championship':
+        return `<div id="th-col-2" data-title-key="col2" onblur="handleTitleBlur(this)" class="text-center px-1 sm:px-3 transition text-[11px] sm:text-xs">${state.titles.col2 || col.defaultTitle}</div>`;
+      case 'spoon':
+        return `<div id="th-col-3" data-title-key="col3" onblur="handleTitleBlur(this)" class="text-center transition text-[11px] sm:text-xs">${state.titles.col3 || col.defaultTitle}</div>`;
+      case 'cup':
+        return `<div id="th-col-4" data-title-key="col4" onblur="handleTitleBlur(this)" class="text-center transition text-[11px] sm:text-xs">${state.titles.col4 || col.defaultTitle}</div>`;
+      case 'supercup':
+        return `<div id="th-col-5" data-title-key="col5" onblur="handleTitleBlur(this)" class="text-center px-1 transition text-[10px] sm:text-xs tracking-tight sm:tracking-wider truncate">${state.titles.col5 || col.defaultTitle}</div>`;
+      case 'mundialito':
+        return `<div id="th-col-6" data-title-key="col6" onblur="handleTitleBlur(this)" class="text-center px-1 transition text-[10px] sm:text-xs tracking-tight sm:tracking-wider truncate">${state.titles.col6 || col.defaultTitle}</div>`;
+      case 'cartonato':
+        return `<div id="th-col-7" data-title-key="col7" onblur="handleTitleBlur(this)" class="text-right pr-2 sm:pr-4 transition text-[11px] sm:text-xs">${state.titles.col7 || col.defaultTitle}</div>`;
+      default:
+        return '';
+    }
+  }).join('');
+}
+
+/**
  * Renders manager table rows onto the shelf grid.
- * STRICT INVARIANCE: Every row in .albo-grid-row must contain EXACTLY 7 direct child <div> elements:
- * 1. Col 1: Manager & Presenze
- * 2. Col 2: Campionato (Scudetto / Argento / Bronzo)
- * 3. Col 3: Cucchiaio di Legno
- * 4. Col 4: Coppa di Lega (Oro / Argento)
- * 5. Col 5: Supercoppa
- * 6. Col 6: Mundialito
- * 7. Col 7: Cartonato (Playout)
+ * Strict grid invariance: row cells map dynamically to ALBO_COLUMNS.
  */
 export function renderBoard(): void {
+  syncAlboGridColumns();
+  renderBoardHeader();
+
   const container = document.getElementById('managers-table-body');
   if (!container) return;
   container.innerHTML = '';
@@ -243,69 +284,70 @@ export function renderBoard(): void {
       cartonatoHTML = `<div class="flex items-center justify-end gap-1.5 flex-nowrap overflow-visible pb-2">${bannersHTML.join('')}</div>`;
     }
 
-    // Strictly EXACTLY 7 direct child <div> elements
-    row.innerHTML = `
-      <!-- Col 1: Manager & Presenze (Responsive Sticky Column) -->
-      <div class="sticky left-0 z-10 px-2 sm:pl-4 sm:pr-3 self-stretch flex items-center justify-between pb-2 overflow-hidden border-r shadow-[3px_0_6px_-2px_rgba(0,0,0,0.20)]"
-           style="background-color: var(--table-surface); border-color: var(--shelf-line);">
-        <div class="flex items-center gap-1.5 sm:gap-2.5 overflow-hidden w-full">
-          <span class="w-5 h-5 sm:w-6 sm:h-6 rounded bg-black/20 flex items-center justify-center font-sport font-bold text-[10px] sm:text-xs opacity-75 shrink-0">
-            ${index + 1}
-          </span>
-          <div class="flex flex-col justify-center min-w-0 flex-1">
-            <div class="font-sport font-bold text-xs sm:text-base tracking-normal uppercase leading-tight truncate" style="color: var(--text-main);" title="${m.name} (${m.years})">
-              ${m.name} <span class="font-semibold text-[10px] sm:text-xs opacity-75">(${m.years})</span>
-            </div>
-            <div class="text-[10px] sm:text-[11px] font-bold leading-tight mt-0.5 flex items-center gap-1 sm:gap-1.5 truncate">
-              ${totalMajor > 0 ? `
-                <span class="font-extrabold shrink-0" style="color: var(--badge-trophy, #b45309);">🏆 ${totalMajor}</span>
-                <span class="opacity-40">•</span>
-              ` : ''}
-              <span class="text-amber-500 font-extrabold shrink-0">⭐ ${formatScore(score)} pt</span>
+    const columnCells: Record<string, string> = {
+      manager: `
+        <div class="sticky left-0 z-10 px-2 sm:pl-4 sm:pr-3 self-stretch flex items-center justify-between pb-2 overflow-hidden border-r shadow-[3px_0_6px_-2px_rgba(0,0,0,0.20)]"
+             style="background-color: var(--table-surface); border-color: var(--shelf-line);">
+          <div class="flex items-center gap-1.5 sm:gap-2.5 overflow-hidden w-full">
+            <span class="w-5 h-5 sm:w-6 sm:h-6 rounded bg-black/20 flex items-center justify-center font-sport font-bold text-[10px] sm:text-xs opacity-75 shrink-0">
+              ${index + 1}
+            </span>
+            <div class="flex flex-col justify-center min-w-0 flex-1">
+              <div class="font-sport font-bold text-xs sm:text-base tracking-normal uppercase leading-tight truncate" style="color: var(--text-main);" title="${m.name} (${m.years})">
+                ${m.name} <span class="font-semibold text-[10px] sm:text-xs opacity-75">(${m.years})</span>
+              </div>
+              <div class="text-[10px] sm:text-[11px] font-bold leading-tight mt-0.5 flex items-center gap-1 sm:gap-1.5 truncate">
+                ${totalMajor > 0 ? `
+                  <span class="font-extrabold shrink-0" style="color: var(--badge-trophy, #b45309);">🏆 ${totalMajor}</span>
+                  <span class="opacity-40">•</span>
+                ` : ''}
+                <span class="text-amber-500 font-extrabold shrink-0">⭐ ${formatScore(score)} pt</span>
+              </div>
             </div>
           </div>
+
+          ${state.isEditMode ? `
+            <div class="flex items-center gap-1 shrink-0 ml-1">
+              <button class="w-5 h-5 sm:w-6 sm:h-6 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500 hover:text-slate-950 flex items-center justify-center transition shrink-0">
+                <i class="fa-solid fa-pen text-[9px] sm:text-[10px]"></i>
+              </button>
+            </div>
+          ` : ''}
         </div>
+      `,
+      championship: `
+        <div class="flex items-end justify-center min-h-[38px] px-1 sm:px-3 pb-0">
+          ${champHTML}
+        </div>
+      `,
+      spoon: `
+        <div class="flex items-end justify-center min-h-[38px] pb-0">
+          ${spoonHTML}
+        </div>
+      `,
+      cup: `
+        <div class="flex items-end justify-center min-h-[38px] pb-0">
+          ${cupHTML}
+        </div>
+      `,
+      supercup: `
+        <div class="flex items-end justify-center min-h-[38px] pb-0">
+          ${superHTML}
+        </div>
+      `,
+      mundialito: `
+        <div class="flex items-end justify-center min-h-[38px] pb-0">
+          ${mundialitoHTML}
+        </div>
+      `,
+      cartonato: `
+        <div class="flex items-center justify-end pr-2 sm:pr-4 self-center pb-2 min-h-[38px]">
+          ${cartonatoHTML}
+        </div>
+      `
+    };
 
-        ${state.isEditMode ? `
-          <div class="flex items-center gap-1 shrink-0 ml-1">
-            <button class="w-5 h-5 sm:w-6 sm:h-6 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500 hover:text-slate-950 flex items-center justify-center transition shrink-0">
-              <i class="fa-solid fa-pen text-[9px] sm:text-[10px]"></i>
-            </button>
-          </div>
-        ` : ''}
-      </div>
-
-      <!-- Col 2: Campionato -->
-      <div class="flex items-end justify-center min-h-[38px] px-1 sm:px-3 pb-0">
-        ${champHTML}
-      </div>
-
-      <!-- Col 3: Cucchiaio -->
-      <div class="flex items-end justify-center min-h-[38px] pb-0">
-        ${spoonHTML}
-      </div>
-
-      <!-- Col 4: Coppa di Lega -->
-      <div class="flex items-end justify-center min-h-[38px] pb-0">
-        ${cupHTML}
-      </div>
-
-      <!-- Col 5: Supercoppa -->
-      <div class="flex items-end justify-center min-h-[38px] pb-0">
-        ${superHTML}
-      </div>
-
-      <!-- Col 6: Mundialito -->
-      <div class="flex items-end justify-center min-h-[38px] pb-0">
-        ${mundialitoHTML}
-      </div>
-
-      <!-- Col 7: Cartonato (Playout) -->
-      <div class="flex items-center justify-end pr-2 sm:pr-4 self-center pb-2 min-h-[38px]">
-        ${cartonatoHTML}
-      </div>
-    `;
-
+    row.innerHTML = ALBO_COLUMNS.map(col => columnCells[col.key] || '').join('');
     container.appendChild(row);
   });
 

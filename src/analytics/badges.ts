@@ -109,7 +109,7 @@ export function computeManagerBadges(manager: Manager): TradingCardBadge[] {
 
   // 4. Global Clutch Index (GCI) & Cold-Bloodedness
   const completedYears = (manager.history && manager.history.length > 0)
-    ? manager.history.filter(h => !h.in_progress && (h as any).status !== 'in_progress').length
+    ? manager.history.filter(h => !h.in_progress && h.status !== 'in_progress').length
     : (manager.years || 0);
   const podiums = (manager.gold || 0) + (manager.silver || 0) + (manager.bronze || 0);
   const finalsWon = (manager.cup_gold || 0) + (manager.supercup || 0);

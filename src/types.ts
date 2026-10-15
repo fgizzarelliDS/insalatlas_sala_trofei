@@ -26,7 +26,72 @@ export interface SeasonRecord {
   points: number | null;
   competitionId?: number | null;
   in_progress?: boolean;
+  status?: 'in_progress' | 'completed' | string;
   achievements: Achievement[];
+}
+
+export interface LeagueFeatures {
+  spoon: boolean;
+  cup: boolean;
+  supercup: boolean;
+  mundialito: boolean;
+  cartonato: boolean;
+}
+
+export type AlboColumnKey =
+  | 'manager'
+  | 'championship'
+  | 'spoon'
+  | 'cup'
+  | 'supercup'
+  | 'mundialito'
+  | 'cartonato';
+
+export interface AlboColumnDef {
+  key: AlboColumnKey;
+  cssVar: string;
+  titleKey: 'col1' | 'col2' | 'col3' | 'col4' | 'col5' | 'col6' | 'col7';
+  defaultTitle: string;
+  enabled: boolean;
+  order: number;
+}
+
+export interface LeagueProfile {
+  id: string;
+  brand: {
+    name: string;
+    mainTitle: string;
+    subtitle: string;
+    pwaShortName: string;
+    description: string;
+    championshipLabel: string;
+  };
+  siteUrl: string;
+  filePrefix: string;
+  storagePrefix: string;
+  defaultTheme: ThemeKey;
+  features: LeagueFeatures;
+  rules: {
+    spoonMinTeams: number;
+  };
+  competitions: {
+    championship: {
+      category: string;
+      nameContains: string[];
+      title: string;
+    };
+    cup: {
+      category: string;
+      title: string;
+      runnerUpTitle: string;
+    };
+    supercup: {
+      category: string;
+      title: string;
+      runnerUpTitle: string;
+    };
+    categoryIdMap: Record<string, string>;
+  };
 }
 
 export interface CompetitionRankingItem {

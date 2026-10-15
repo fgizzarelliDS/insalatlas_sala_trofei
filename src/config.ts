@@ -1,4 +1,72 @@
-import { ScoringWeights, TitlesConfig } from '@/types';
+import { ScoringWeights, TitlesConfig, LeagueProfile, LeagueFeatures, AlboColumnDef } from '@/types';
+
+export const LEAGUE: LeagueProfile = {
+  id: 'insalatlas',
+  brand: {
+    name: 'InsalAtlas',
+    mainTitle: 'Sala Trofei',
+    subtitle: "Albo d'Oro Storico Ufficiale",
+    pwaShortName: 'InsalAtlas',
+    description: "Albo d'Oro Storico Ufficiale e Sala Trofei della Lega Fantacalcio InsalAtlas",
+    championshipLabel: 'Serie InsalAtlas'
+  },
+  siteUrl: 'https://fgizzarellids.github.io/insalatlas_sala_trofei/',
+  filePrefix: 'insalatlas',
+  storagePrefix: 'fantacalcio',
+  defaultTheme: 'gazzetta',
+  features: {
+    spoon: true,
+    cup: true,
+    supercup: true,
+    mundialito: true,
+    cartonato: true
+  },
+  rules: {
+    spoonMinTeams: 8
+  },
+  competitions: {
+    championship: {
+      category: 'Campionato',
+      nameContains: ['serie'],
+      title: 'Scudetto'
+    },
+    cup: {
+      category: 'Coppa',
+      title: 'Coppa InsalAtlas',
+      runnerUpTitle: 'Finalista Coppa InsalAtlas'
+    },
+    supercup: {
+      category: 'Supercoppa',
+      title: 'Supercoppa InsalAtlas',
+      runnerUpTitle: 'Finalista Supercoppa'
+    },
+    categoryIdMap: {
+      '31666': 'Coppa',
+      '348809': 'Supercoppa',
+      '348808': 'Mundialito',
+      '348805': 'Perdenti'
+    }
+  }
+};
+
+export const LEAGUE_SITE_HOST: string = LEAGUE.siteUrl
+  .replace(/^https?:\/\//, '')
+  .replace(/\/+$/, '');
+
+export function buildAlboColumns(features: LeagueFeatures): AlboColumnDef[] {
+  const allColumns: AlboColumnDef[] = [
+    { key: 'manager', cssVar: '--col-manager', titleKey: 'col1', defaultTitle: 'Allenatore (Presenze)', enabled: true, order: 1 },
+    { key: 'championship', cssVar: '--col-championship', titleKey: 'col2', defaultTitle: 'Campionato', enabled: true, order: 2 },
+    { key: 'spoon', cssVar: '--col-spoon', titleKey: 'col3', defaultTitle: 'Cucchiaio', enabled: features.spoon, order: 3 },
+    { key: 'cup', cssVar: '--col-cup', titleKey: 'col4', defaultTitle: 'Coppa di Lega', enabled: features.cup, order: 4 },
+    { key: 'supercup', cssVar: '--col-supercup', titleKey: 'col5', defaultTitle: 'Supercoppa', enabled: features.supercup, order: 5 },
+    { key: 'mundialito', cssVar: '--col-mundialito', titleKey: 'col6', defaultTitle: 'Mundialito', enabled: features.mundialito, order: 6 },
+    { key: 'cartonato', cssVar: '--col-cartonato', titleKey: 'col7', defaultTitle: 'Cartonato', enabled: features.cartonato, order: 7 }
+  ];
+  return allColumns.filter(c => c.enabled);
+}
+
+export const ALBO_COLUMNS: AlboColumnDef[] = buildAlboColumns(LEAGUE.features);
 
 export const SCORING_WEIGHTS: ScoringWeights = {
   gold: 3.0,
@@ -13,10 +81,10 @@ export const SCORING_WEIGHTS: ScoringWeights = {
 };
 
 export const DEFAULT_TITLES: TitlesConfig = {
-  brandMain: 'Sala Trofei',
-  brandHighlight: 'InsalAtlas',
-  brandSub: "Albo d'Oro Storico Ufficiale",
-  mainHeading: 'InsalAtlas',
+  brandMain: LEAGUE.brand.mainTitle,
+  brandHighlight: LEAGUE.brand.name,
+  brandSub: LEAGUE.brand.subtitle,
+  mainHeading: LEAGUE.brand.name,
   subHeading: '(Palmares)',
   leagueCaption: "ALBO D'ORO STORICO",
   col1: 'Allenatore (Presenze)',

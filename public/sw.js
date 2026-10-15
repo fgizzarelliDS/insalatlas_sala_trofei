@@ -44,21 +44,22 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 1. Stale-While-Revalidate for data.json
+  // 1. Network-First for data.json (normalised cache key to avoid cache bloat with ?t= timestamp)
   if (url.pathname.endsWith('data.json')) {
     event.respondWith(
       caches.open(CACHE_NAME).then(async (cache) => {
-        const cachedResponse = await cache.match(event.request);
-        const networkFetch = fetch(event.request)
-          .then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              cache.put(event.request, networkResponse.clone());
-            }
-            return networkResponse;
-          })
-          .catch(() => cachedResponse);
-
-        return cachedResponse || networkFetch;
+        try {
+          const networkResponse = await fetch(event.request);
+          if (networkResponse && networkResponse.status === 200) {
+            await cache.put('./data.json', networkResponse.clone());
+          }
+          return networkResponse;
+        } catch {
+          const cachedResponse =
+            (await cache.match('./data.json')) ||
+            (await cache.match(event.request, { ignoreSearch: true }));
+          return cachedResponse || Response.error();
+        }
       })
     );
     return;

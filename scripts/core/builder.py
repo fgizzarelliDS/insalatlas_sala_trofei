@@ -15,7 +15,8 @@ from .rules import (
     parse_season_year,
     is_championship,
     create_championship_achievements,
-    create_cup_achievement
+    create_cup_achievement,
+    SPOON_MIN_TEAMS
 )
 
 def build_data(output_file: Optional[str] = None) -> int:
@@ -130,7 +131,7 @@ def build_data(output_file: Optional[str] = None) -> int:
                     mgr['silver'] += 1
                 elif rank == 3:
                     mgr['bronze'] += 1
-                elif rank == last_rank and last_rank >= 8:
+                elif rank == last_rank and last_rank >= SPOON_MIN_TEAMS:
                     mgr['spoon'] += 1
 
             # Check other competitions (cups, supercups, mundialito, playout)

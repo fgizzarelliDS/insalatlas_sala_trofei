@@ -128,8 +128,8 @@ export function computeH2HRecords(
       const mA = managers[i];
       const mB = managers[j];
 
-      const seasonsA = new Set((mA.history || []).filter(h => !h.in_progress && (h as any).status !== 'in_progress').map(h => h.season));
-      const seasonsB = new Set((mB.history || []).filter(h => !h.in_progress && (h as any).status !== 'in_progress').map(h => h.season));
+      const seasonsA = new Set((mA.history || []).filter(h => !h.in_progress && h.status !== 'in_progress').map(h => h.season));
+      const seasonsB = new Set((mB.history || []).filter(h => !h.in_progress && h.status !== 'in_progress').map(h => h.season));
 
       let shared = 0;
       let totalGare = 0;

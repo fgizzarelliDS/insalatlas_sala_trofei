@@ -9,7 +9,7 @@ import json
 import time
 from typing import Optional, Dict, Any, List, Tuple
 
-from .config import get_base_dir, get_scripts_dir, get_public_dir, LEAGUE_ALIAS
+from .config import get_base_dir, get_scripts_dir, get_public_dir, LEAGUE_ALIAS, LEAGUE_RULES
 from .logger import ok, info, warn, error, banner
 from .rules import (
     parse_season_year,
@@ -57,10 +57,11 @@ def extract_data(root_dir: Optional[str] = None) -> int:
     existing_managers = existing_data.get("leagueData") or existing_data.get("managers") or []
     existing_managers_by_id = {m["id"]: m for m in existing_managers}
 
+    excluded_mids = set(LEAGUE_RULES.get("excluded_manager_ids", []))
     managers = {}
     for m in existing_managers:
         mid = m["id"]
-        if mid == "m_sorfra":
+        if mid in excluded_mids:
             continue
         managers[mid] = {
             "id": mid,

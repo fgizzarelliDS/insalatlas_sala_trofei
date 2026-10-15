@@ -353,8 +353,22 @@ export function renderChronologyTab(
     // Seasons View
     const validSeasons = seasonalParity.filter(s => s.hasPointsData && s.stepGap !== null);
     const topCompact = [...validSeasons].sort((a, b) => (a.stepGap ?? 999) - (b.stepGap ?? 999))[0];
+    const secondCompact = [...validSeasons].sort((a, b) => (a.stepGap ?? 999) - (b.stepGap ?? 999))[1];
+    const missingPointsSeasons = seasonalParity.filter(s => !s.hasPointsData);
     const tightestPodium = [...validSeasons].filter(s => s.podiumGap !== null).sort((a, b) => (a.podiumGap ?? 999) - (b.podiumGap ?? 999))[0];
     const tightestSpoon = [...validSeasons].filter(s => s.spoonGap !== null).sort((a, b) => (a.spoonGap ?? 999) - (b.spoonGap ?? 999))[0];
+
+    const recordNoteHTML = topCompact
+      ? `<p class="text-[11px] leading-relaxed">
+            <strong>Record Storico di Compattezza:</strong> La stagione <strong>${topCompact.season}</strong> a ${topCompact.teamCount} squadre detiene il record assoluto di compattezza con soli <strong>${topCompact.stepGap?.toFixed(2)} pt per gradino</strong> (forbice totale di ${topCompact.totalGap} pt spalmata su ${topCompact.teamCount} squadre)${secondCompact ? `, battendo il campionato ${secondCompact.season} a ${secondCompact.teamCount} squadre (${secondCompact.stepGap?.toFixed(2)} pt/gradino)` : ''}.
+          </p>`
+      : '';
+
+    const missingPointsNoteHTML = missingPointsSeasons.length > 0
+      ? `<p class="text-[11px] leading-relaxed">
+            <strong>Archivio Storico (${missingPointsSeasons.map(s => s.season).join(', ')}):</strong> Per ${missingPointsSeasons.length === 1 ? `la stagione ${missingPointsSeasons[0].season}` : `le stagioni ${missingPointsSeasons.map(s => s.season).join(', ')}`} i punti di classifica non sono stati registrati nella banca dati; l'applicazione preserva la coerenza mostrando i verdetti ufficiali (Campione e Cucchiaio) con un'indicazione esplicita senza inficiare i calcoli degli altri anni.
+          </p>`
+      : '';
 
     let seasonRowsHTML = '';
     sortedSeasons.forEach(s => {
@@ -517,12 +531,8 @@ export function renderChronologyTab(
           <p class="text-[11px] leading-relaxed">
             <strong>Gradino Medio di Classifica (pt/posizione):</strong> Divide la forbice totale (1° - Ultimo) per il numero di salti di classifica (N - 1). Questo parametro rende perfettamente confrontabili campionati a 8 squadre (7 salti), 10 squadre (9 salti) e 12 squadre (11 salti): un gradino più basso indica che ogni posizione era contesa punto su punto.
           </p>
-          <p class="text-[11px] leading-relaxed">
-            <strong>Record Storico Decennale:</strong> La stagione 2022/23 a 12 squadre detiene il record assoluto di compattezza con soli <strong>1.91 pt per gradino</strong> (forbice totale di 21 pt spalmata su 12 squadre), battendo il campionato 2018/19 a 10 squadre (2.22 pt/gradino).
-          </p>
-          <p class="text-[11px] leading-relaxed">
-            <strong>Archivio Storico 2020/21:</strong> Per la stagione 2020/21 i punti di classifica non sono stati registrati nella banca dati; l'applicazione preserva la coerenza mostrando i verdetti ufficiali (Campione e Cucchiaio) con un'indicazione esplicita senza inficiare i calcoli degli altri anni.
-          </p>
+          ${recordNoteHTML}
+          ${missingPointsNoteHTML}
         </div>
       </div>
     `;

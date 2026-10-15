@@ -2,6 +2,7 @@ import type { CompetitionRecord } from '@/types';
 import { state } from '@/state';
 import { renderTrophySVG } from '@/trophies';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
+import { LEAGUE } from '@/config';
 
 /**
  * Renders the Championship Standings table for a season
@@ -17,7 +18,7 @@ export function renderChampionshipTable(championship: CompetitionRecord): string
     .map(r => r.rank)
     .filter((rk): rk is number => typeof rk === 'number' && rk > 0);
   const lastRank = numericRanks.length > 0 ? Math.max(...numericRanks) : 0;
-  const isSpoonCompetition = lastRank >= 8;
+  const isSpoonCompetition = LEAGUE.features.spoon && lastRank >= (LEAGUE.rules.spoonMinTeams || 8);
 
   const sortedRanking = [...championship.ranking].sort((a, b) => {
     const getWeight = (r: typeof a) => {

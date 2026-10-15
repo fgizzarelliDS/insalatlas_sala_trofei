@@ -287,7 +287,7 @@ export function computeTitlesRecords(
 
   managers.forEach(m => {
     if ((m.gold || 0) > 0) {
-      const completed = (m.history || []).filter(h => !h.in_progress && (h as any).status !== 'in_progress').length;
+      const completed = (m.history || []).filter(h => !h.in_progress && h.status !== 'in_progress').length;
       const crest = resolveManagerRecordCrest(m.id, undefined, undefined, managers, competitions);
       allScudettiHolders.push({
         managerId: m.id,
@@ -350,7 +350,7 @@ export function computeTitlesRecords(
     const totalCups = cg + sc + mun;
 
     if (totalCups > 0) {
-      const completed = (m.history || []).filter(h => !h.in_progress && (h as any).status !== 'in_progress').length;
+      const completed = (m.history || []).filter(h => !h.in_progress && h.status !== 'in_progress').length;
       const crest = resolveManagerRecordCrest(m.id, undefined, undefined, managers, competitions);
       const detailParts: string[] = [];
       if (cg > 0) detailParts.push(`${cg} Coppe`);

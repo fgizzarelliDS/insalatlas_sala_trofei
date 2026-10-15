@@ -43,6 +43,52 @@ def load_environment():
 
 load_environment()
 
+LEAGUE_RULES = {
+    "id": "insalatlas",
+    "brand_name": "InsalAtlas",
+    "spoon_min_teams": 8,
+    "excluded_manager_ids": ["m_sorfra"],
+    "features": {
+        "spoon": True,
+        "cup": True,
+        "supercup": True,
+        "mundialito": True,
+        "cartonato": True
+    },
+    "competitions": {
+        "championship": {
+            "category": "Campionato",
+            "name_contains": ["serie"],
+            "title": "Scudetto"
+        },
+        "cup": {
+            "category": "Coppa",
+            "title": "Coppa InsalAtlas",
+            "runner_up_title": "Finalista Coppa InsalAtlas"
+        },
+        "supercup": {
+            "category": "Supercoppa",
+            "title": "Supercoppa InsalAtlas",
+            "runner_up_title": "Finalista Supercoppa"
+        },
+        "mundialito": {
+            "category": "Mundialito",
+            "title": "Mundialito",
+            "runner_up_title": "Finalista Mundialito"
+        },
+        "cartonato": {
+            "category": "Perdenti",
+            "title": "Vincitore Playout (Cartonato)"
+        },
+        "category_id_map": {
+            31666: "Coppa",
+            348809: "Supercoppa",
+            348808: "Mundialito",
+            348805: "Perdenti"
+        }
+    }
+}
+
 LEAGUE_ALIAS = os.getenv("LEAGUE_ALIAS", "")
 APP_KEY = os.getenv("APP_KEY", "")
 BEARER_TOKEN = os.getenv("BEARER_TOKEN", "")

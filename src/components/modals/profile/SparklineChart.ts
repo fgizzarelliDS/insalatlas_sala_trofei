@@ -16,17 +16,14 @@ export function getAllLeagueSeasonsChronological(): string[] {
   if (state.managers) {
     state.managers.forEach(m => {
       m.history?.forEach(h => {
-        if (h.season && !h.in_progress && (h as any).status !== 'in_progress') {
+        if (h.season && !h.in_progress && h.status !== 'in_progress') {
           seasonsSet.add(h.season);
         }
       });
     });
   }
   if (seasonsSet.size === 0) {
-    return [
-      '2016/17', '2017/18', '2018/19', '2019/20', '2020/21',
-      '2021/22', '2022/23', '2023/24', '2024/25', '2025/26'
-    ];
+    return [];
   }
   return Array.from(seasonsSet).sort((a, b) => {
     const yA = parseInt(a.match(/\d{4}/)?.[0] || '0', 10);
@@ -41,11 +38,12 @@ export function getAllLeagueSeasonsChronological(): string[] {
  */
 export function renderRankTrajectorySparkline(history: SeasonRecord[]): string {
   const rankedSeasons = history.filter(
-    s => !s.in_progress && (s as any).status !== 'in_progress' && typeof s.rank === 'number' && (s.rank as number) > 0
+    s => !s.in_progress && s.status !== 'in_progress' && typeof s.rank === 'number' && (s.rank as number) > 0
   );
   if (rankedSeasons.length === 0) return '';
 
   const allSeasons = getAllLeagueSeasonsChronological();
+  if (allSeasons.length === 0) return '';
   const historyMap = new Map<string, SeasonRecord>();
   history.forEach(h => {
     if (h.season) historyMap.set(h.season, h);
@@ -109,7 +107,7 @@ export function renderRankTrajectorySparkline(history: SeasonRecord[]): string {
     const isRanked = Boolean(
       record &&
       !record.in_progress &&
-      (record as any).status !== 'in_progress' &&
+      record.status !== 'in_progress' &&
       typeof record.rank === 'number' &&
       (record.rank as number) > 0
     );

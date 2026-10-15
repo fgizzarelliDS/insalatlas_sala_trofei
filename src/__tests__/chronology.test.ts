@@ -713,7 +713,10 @@ describe('Chronology Analytics Module', () => {
       expect(mockContainer.innerHTML).toContain('🥇 Alfo');
       expect(mockContainer.innerHTML).toContain('🥄 Pippo');
       expect(mockContainer.innerHTML).not.toContain('🥇 alfius91');
-      expect(mockContainer.innerHTML).not.toContain('🥄 Paiden');
+      // Dynamic methodology notes (Bug B4: changes dynamically when data changes)
+      expect(mockContainer.innerHTML).toContain('Record Storico di Compattezza');
+      expect(mockContainer.innerHTML).toContain('La stagione <strong>2025/26</strong>');
+      expect(mockContainer.innerHTML).not.toContain('2022/23');
       // Scrollbar container presence
       expect(mockContainer.innerHTML).toContain('overflow-y-auto');
       expect(mockContainer.innerHTML).toContain('scrollbar-width: thin');

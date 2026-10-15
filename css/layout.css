@@ -33,14 +33,16 @@
 
 .albo-grid-row {
   display: grid;
-  grid-template-columns:
+  grid-template-columns: var(
+    --albo-cols,
     var(--col-manager)
     var(--col-championship)
     var(--col-spoon)
     var(--col-cup)
     var(--col-supercup)
     var(--col-mundialito)
-    var(--col-cartonato);
+    var(--col-cartonato)
+  );
 }
 
 /* Mobile Scroll Hint Pill */

@@ -26,7 +26,7 @@ export function computeBanterRecords(
 
   managers.forEach(m => {
     const rawNames = (m.history || [])
-      .filter(h => !h.in_progress && (h as any).status !== 'in_progress')
+      .filter(h => !h.in_progress && h.status !== 'in_progress')
       .map(h => (h.team || '').trim())
       .filter(t => t.length > 0);
 
@@ -99,7 +99,7 @@ export function computeBanterRecords(
 
   managers.forEach(m => {
     if ((m.spoon || 0) > 0) {
-      const completed = (m.history || []).filter(h => !h.in_progress && (h as any).status !== 'in_progress').length;
+      const completed = (m.history || []).filter(h => !h.in_progress && h.status !== 'in_progress').length;
       const crest = resolveManagerRecordCrest(m.id, undefined, undefined, managers, competitions);
       allSpoonCollectors.push({
         managerId: m.id,
@@ -219,7 +219,7 @@ export function computeBanterRecords(
     const totalCupSilvers = cs + scs + ms;
 
     if (totalCupSilvers > 0) {
-      const completed = (m.history || []).filter(h => !h.in_progress && (h as any).status !== 'in_progress').length;
+      const completed = (m.history || []).filter(h => !h.in_progress && h.status !== 'in_progress').length;
       const crest = resolveManagerRecordCrest(m.id, undefined, undefined, managers, competitions);
       const detailParts: string[] = [];
       if (cs > 0) detailParts.push(`${cs} Coppe`);
@@ -431,7 +431,7 @@ export function computeBanterRecords(
   managers.forEach(m => {
     const gold = m.gold || 0;
     // Count ONLY completed championships (excluding active in_progress season)
-    const completed = (m.history || []).filter(h => !h.in_progress && (h as any).status !== 'in_progress').length;
+    const completed = (m.history || []).filter(h => !h.in_progress && h.status !== 'in_progress').length;
     if (gold === 0 && completed > 0) {
       const crest = resolveManagerRecordCrest(m.id, undefined, undefined, managers, competitions);
       allDroughtHolders.push({

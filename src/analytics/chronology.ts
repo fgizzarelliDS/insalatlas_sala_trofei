@@ -20,11 +20,21 @@ export function computeManagerTrajectoryMetrics(
     c => c.category === 'Campionato' || (c.name && c.name.toLowerCase().includes('serie'))
   );
 
-  const latestSeason = championshipComps.reduce((latest, c) => {
+  let latestSeason = championshipComps.reduce((latest, c) => {
     const y = parseInt(c.season?.slice(0, 4) || '0', 10);
     const lY = parseInt(latest?.slice(0, 4) || '0', 10);
     return y > lY ? c.season : latest;
-  }, '2025/26');
+  }, '');
+
+  if (!latestSeason && managers?.length) {
+    managers.forEach(m => {
+      m.history?.forEach(h => {
+        const y = parseInt(h.season?.slice(0, 4) || '0', 10);
+        const lY = parseInt(latestSeason?.slice(0, 4) || '0', 10);
+        if (y > lY && h.season) latestSeason = h.season;
+      });
+    });
+  }
 
   return (managers || []).map(m => {
     const meritList: number[] = [];
@@ -49,7 +59,7 @@ export function computeManagerTrajectoryMetrics(
 
     history.forEach(h => {
       const comp = championshipComps.find(c => c.season === h.season);
-      const isInProgress = Boolean(h.in_progress || (h as any).status === 'in_progress' || comp?.in_progress || comp?.status === 'in_progress');
+      const isInProgress = Boolean(h.in_progress || h.status === 'in_progress' || comp?.in_progress || comp?.status === 'in_progress');
 
       if (!isInProgress && typeof h.rank === 'number' && h.rank > 0) {
         const teamCount = comp?.ranking?.length
@@ -101,7 +111,7 @@ export function computeManagerTrajectoryMetrics(
     });
 
     const seasonsPlayed = meritList.length;
-    const isRookieInProgress = seasonsPlayed === 0 && (history.some(h => Boolean(h.in_progress || (h as any).status === 'in_progress')) || isActive);
+    const isRookieInProgress = seasonsPlayed === 0 && (history.some(h => Boolean(h.in_progress || h.status === 'in_progress')) || isActive);
 
     let avgRank = 0;
     let stdDevRank = 0;

@@ -26,13 +26,14 @@ const AXIS_LABEL_LINES: Record<string, [string, string?]> = {
 export function renderH2HRadarSVG(
   axes: H2HAxisData[],
   nameA: string,
-  nameB: string
+  nameB: string,
+  width = 376,
+  height = 290
 ): string {
-  const width = 376;
-  const height = 290;
+  const isLarge = width >= 500;
   const cx = width / 2;
-  const cy = height / 2 + 5;
-  const rMax = 82;
+  const cy = height / 2 + (isLarge ? 8 : 5);
+  const rMax = Math.round(Math.min(width, height) * 0.31);
   const count = axes.length;
 
   // Compute angle for each axis (0 is top)
@@ -81,7 +82,7 @@ export function renderH2HRadarSVG(
   const labels = axes
     .map((axis, i) => {
       const angle = getAngle(i);
-      const rLabel = rMax + 20;
+      const rLabel = rMax + (isLarge ? 36 : 20);
       const x = cx + rLabel * Math.cos(angle);
       const y = cy + rLabel * Math.sin(angle);
 
@@ -102,21 +103,21 @@ export function renderH2HRadarSVG(
         return `
           <text x="${x.toFixed(1)}" y="${y.toFixed(1)}"
                 text-anchor="${textAnchor}" dominant-baseline="${dominantBaseline}"
-                fill="currentColor" font-size="9" font-weight="700" opacity="0.9">
+                fill="currentColor" font-size="${isLarge ? '12.5' : '9'}" font-weight="700" opacity="0.9">
             ${lines[0]}
           </text>
         `;
       }
 
       // 2-line rendering with baseline adjustment
-      let yStart = y - 5;
-      if (sin < -0.4) yStart = y - 7;
+      let yStart = y - (isLarge ? 7 : 5);
+      if (sin < -0.4) yStart = y - (isLarge ? 10 : 7);
       else if (sin > 0.4) yStart = y;
 
       return `
         <text x="${x.toFixed(1)}" y="${yStart.toFixed(1)}"
               text-anchor="${textAnchor}"
-              fill="currentColor" font-size="9" font-weight="700" opacity="0.9">
+              fill="currentColor" font-size="${isLarge ? '12.5' : '9'}" font-weight="700" opacity="0.9">
           <tspan x="${x.toFixed(1)}" dy="0">${lines[0]}</tspan>
           <tspan x="${x.toFixed(1)}" dy="1.15em">${lines[1]}</tspan>
         </text>
@@ -163,15 +164,17 @@ export function renderH2HRadarSVG(
 
   return `
     <div class="flex flex-col items-center">
-      <svg viewBox="0 0 ${width} ${height}" class="w-full max-w-[360px] h-auto overflow-visible text-[var(--text-main)] select-none">
+      <svg viewBox="0 0 ${width} ${height}" class="w-full ${isLarge ? 'max-w-[620px]' : 'max-w-[360px]'} h-auto overflow-visible text-[var(--text-main)] select-none">
         <!-- Background Grid -->
         ${gridPolygons}
         ${spokes}
         ${scaleMarkers}
 
         <!-- Manager B Polygon -->
+        ${nameB ? `
         <polygon points="${pointsB}" fill="var(--h2h-contender-b, #0284c7)" fill-opacity="0.28" stroke="var(--h2h-contender-b, #0284c7)" stroke-width="2" style="fill: var(--h2h-contender-b, #0284c7); stroke: var(--h2h-contender-b, #0284c7);" />
         ${dotsB}
+        ` : ''}
 
         <!-- Manager A Polygon -->
         <polygon points="${pointsA}" fill="var(--h2h-contender-a, #be123c)" fill-opacity="0.28" stroke="var(--h2h-contender-a, #be123c)" stroke-width="2" style="fill: var(--h2h-contender-a, #be123c); stroke: var(--h2h-contender-a, #be123c);" />
@@ -187,10 +190,12 @@ export function renderH2HRadarSVG(
           <span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color: var(--h2h-contender-a);"></span>
           ${nameA}
         </span>
+        ${nameB ? `
         <span class="flex items-center gap-1.5" style="color: var(--h2h-contender-b);">
           <span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color: var(--h2h-contender-b);"></span>
           ${nameB}
         </span>
+        ` : ''}
       </div>
 
       <!-- Radar Scale Note -->

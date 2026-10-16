@@ -621,13 +621,16 @@ export async function exportH2HDuelStoryHD(managerA: Manager, managerB: Manager)
 /**
  * Renders and downloads high-definition 9:16 vertical Story for Tavolo dei Rivali multi-manager cluster
  */
-export async function exportMultiManagerStoryHD(managers: Manager[]): Promise<void> {
+export async function exportMultiManagerStoryHD(
+  managers: Manager[],
+  tournamentMode: 'ppg' | 'simultaneous' = 'simultaneous'
+): Promise<void> {
   showToast('Generazione Story Tavolo Rivali 9:16 in corso...', 'info');
   const dropdown = document.getElementById('h2h-share-dropdown-menu');
   if (dropdown) dropdown.classList.add('hidden');
 
   try {
-    const canvas = await renderMultiManagerStoryCanvas(managers);
+    const canvas = await renderMultiManagerStoryCanvas(managers, tournamentMode);
     canvas.toBlob((blob) => {
       if (!blob) {
         showToast("Errore durante la creazione della Story", 'error');
@@ -639,6 +642,76 @@ export async function exportMultiManagerStoryHD(managers: Manager[]): Promise<vo
   } catch (err) {
     console.error('Multi-manager Story export failed:', err);
     showToast('Impossibile esportare la Story', 'error');
+  }
+}
+
+
+/**
+ * Captures the Tavolo dei Rivali multi-manager dialog in high definition and downloads PNG directly
+ */
+export async function exportMultiManagerHD(): Promise<void> {
+  const card = document.getElementById('head-to-head-dialog');
+  if (!card) {
+    showToast('Impossibile trovare la scheda del Tavolo dei Rivali', 'error');
+    return;
+  }
+
+  showToast('Generazione Tavolo dei Rivali HD in corso...', 'info');
+
+  const dropdown = document.getElementById('h2h-share-dropdown-menu');
+  if (dropdown) dropdown.classList.add('hidden');
+
+  try {
+    const { renderMultiManagerCanvas } = await import('./renderers/h2h');
+    const canvas = await renderMultiManagerCanvas(card);
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        showToast("Errore durante la creazione dell'immagine", 'error');
+        return;
+      }
+      const filename = `insalatlas_tavolo_rivali_${Date.now()}.png`;
+      downloadBlob(blob, filename);
+    }, 'image/png');
+  } catch (err) {
+    console.error('Multi-manager export failed:', err);
+    showToast('Impossibile esportare il Tavolo dei Rivali', 'error');
+  }
+}
+
+/**
+ * Captures the Tavolo dei Rivali multi-manager dialog in high definition and copies PNG to clipboard
+ */
+export async function copyMultiManagerToClipboard(): Promise<boolean> {
+  const card = document.getElementById('head-to-head-dialog');
+  if (!card) {
+    showToast('Impossibile trovare la scheda del Tavolo dei Rivali', 'error');
+    return false;
+  }
+
+  showToast('Copia immagine Tavolo dei Rivali in corso...', 'info');
+
+  const dropdown = document.getElementById('h2h-share-dropdown-menu');
+  if (dropdown) dropdown.classList.add('hidden');
+
+  try {
+    const { renderMultiManagerCanvas } = await import('./renderers/h2h');
+    const canvas = await renderMultiManagerCanvas(card);
+    return new Promise((resolve) => {
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          showToast("Errore durante la creazione dell'immagine", 'error');
+          resolve(false);
+          return;
+        }
+        const filename = `insalatlas_tavolo_rivali_${Date.now()}.png`;
+        const success = await copyBlobToClipboard(blob, filename);
+        resolve(success);
+      }, 'image/png');
+    });
+  } catch (err) {
+    console.error('Multi-manager clipboard copy failed:', err);
+    showToast('Impossibile copiare il Tavolo dei Rivali', 'error');
+    return false;
   }
 }
 

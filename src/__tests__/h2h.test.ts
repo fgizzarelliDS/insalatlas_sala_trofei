@@ -525,9 +525,13 @@ describe('Head-to-Head (H2H) Engine & Router', () => {
       expect(multiTabHTML).toContain('Tavolo Rivali');
       expect(multiTabHTML).toContain('Radar Multidimensionale');
       expect(multiTabHTML).toContain('Mini-Torneo Incrociato');
-      expect(multiTabHTML).toContain('Confronto Carriera a Colonne Parallele');
-      expect(multiTabHTML).toContain('Condividi Tavolo');
+      expect(multiTabHTML).toContain('Scarica / Condividi');
+      expect(multiTabHTML).toContain('Scarica PNG Scheda');
       expect(multiTabHTML).toContain('Story Instagram (9:16)');
+      expect(multiTabHTML).toContain('Copia per WhatsApp');
+      expect(multiTabHTML).toContain('Invia Link WhatsApp');
+      expect(multiTabHTML).toContain('Tutte le Stagioni (PPG)');
+      expect(multiTabHTML).toContain('Solo Contemporanee');
       expect(multiTabHTML).toContain('exportMultiManagerStoryHD');
     });
   });

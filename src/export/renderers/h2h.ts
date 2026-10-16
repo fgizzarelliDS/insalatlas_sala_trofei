@@ -146,3 +146,92 @@ export async function renderH2HDuelCanvas(card: HTMLElement): Promise<HTMLCanvas
   const computedBg = window.getComputedStyle(card).backgroundColor || '#0f172a';
   return renderNodeToCanvas(clone, targetWidth, computedBg);
 }
+
+/**
+ * Renders an exact off-screen clone of the Tavolo dei Rivali multi-manager modal card into a high-res canvas.
+ * Strips dropdowns, interactive action buttons, and adds InsalAtlas official closing footer.
+ */
+export async function renderMultiManagerCanvas(card: HTMLElement): Promise<HTMLCanvasElement> {
+  const clone = card.cloneNode(true) as HTMLElement;
+  clone.id = 'multi-manager-card-export-clone';
+
+  const cardRect = card.getBoundingClientRect();
+  const naturalWidth = Math.round(cardRect.width) || card.offsetWidth || 760;
+  const targetWidth = Math.max(naturalWidth, 780);
+
+  // 1. Remove top-right header action group (close button + matrix switcher)
+  clone.querySelector('.flex.items-center.gap-2.self-end')?.remove();
+  clone.querySelectorAll('.flex.items-center.p-0\\.5').forEach(el => el.remove());
+
+  // 2. Remove interactive buttons
+  clone.querySelectorAll('button').forEach(btn => {
+    const onclickAttr = btn.getAttribute('onclick') || '';
+    if (
+      onclickAttr.includes('closeHeadToHeadModal') ||
+      onclickAttr.includes('toggleH2HShareDropdown') ||
+      onclickAttr.includes('setH2HTab') ||
+      onclickAttr.includes('addNextMultiManager') ||
+      onclickAttr.includes('removeMultiManager') ||
+      onclickAttr.includes('setMultiTournamentMode') ||
+      btn.id.includes('share') ||
+      btn.id.includes('close')
+    ) {
+      btn.remove();
+    }
+  });
+
+  clone.querySelector('#btn-h2h-share-dropdown')?.closest('.relative')?.remove();
+  clone.querySelector('#h2h-share-dropdown-menu')?.remove();
+
+  // Remove the footer bar completely
+  const footerBar = clone.querySelector('.border-t.px-4.sm\\:px-6.py-3');
+  if (footerBar) footerBar.remove();
+
+  // Replace select dropdowns in manager selector cards with static text
+  clone.querySelectorAll('select').forEach(sel => {
+    const selectedOption = sel.options[sel.selectedIndex];
+    const text = selectedOption ? selectedOption.text.split('(')[0].trim() : '';
+    const span = document.createElement('div');
+    span.className = 'font-bold text-xs truncate py-1 text-center';
+    span.textContent = text;
+    sel.parentNode?.replaceChild(span, sel);
+  });
+
+  // Expand modal content and body to natural full height
+  clone.style.height = 'auto';
+  clone.style.maxHeight = 'none';
+  clone.style.overflow = 'visible';
+
+  const modalContent = clone.querySelector('#head-to-head-modal-content') as HTMLElement | null;
+  if (modalContent) {
+    modalContent.style.height = 'auto';
+    modalContent.style.maxHeight = 'none';
+    modalContent.style.overflow = 'visible';
+  }
+
+  const scrollableBody = clone.querySelector('.overflow-y-auto') as HTMLElement | null;
+  if (scrollableBody) {
+    scrollableBody.classList.remove('overflow-y-auto', 'flex-1');
+    scrollableBody.style.overflow = 'visible';
+    scrollableBody.style.height = 'auto';
+    scrollableBody.style.maxHeight = 'none';
+    scrollableBody.style.scrollbarWidth = 'none';
+  }
+
+  // Add closing footnote
+  const targetParent = scrollableBody || clone;
+  const footer = document.createElement('div');
+  footer.className = 'flex items-center justify-center gap-2 py-4 mt-3 border-t text-xs font-bold tracking-wider uppercase opacity-85';
+  footer.style.borderColor = 'var(--table-border)';
+  footer.style.color = 'var(--text-muted)';
+  footer.innerHTML = `
+    <img src="favicon-64x64.png" alt="InsalAtlas" class="w-4 h-4 object-contain inline-block rounded-full shadow-sm">
+    <span class="font-extrabold tracking-widest text-[11px]" style="color: var(--text-main);">InsalAtlas</span>
+    <span class="opacity-40">•</span>
+    <span class="text-[10px] tracking-wider" style="color: var(--accent-color);">Tavolo dei Rivali Ufficiale</span>
+  `;
+  targetParent.appendChild(footer);
+
+  const computedBg = window.getComputedStyle(card).backgroundColor || '#0f172a';
+  return renderNodeToCanvas(clone, targetWidth, computedBg);
+}

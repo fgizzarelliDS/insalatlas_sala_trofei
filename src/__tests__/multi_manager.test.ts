@@ -200,13 +200,40 @@ describe('Unified Radar Axes & Multi-Manager Analytics Engine', () => {
       expect(topLeader.wins).toBeGreaterThan(topLeader.losses);
     });
 
-    it('identifies shared seasons intersection correctly when managers have different tenures', () => {
-      const analysis = computeMultiManagerAnalysis([managerA, managerB, managerD]);
+    it('identifies shared seasons intersection correctly when managers have different tenures in simultaneous mode', () => {
+      const simAnalysis = computeMultiManagerAnalysis([managerA, managerB, managerD], 'simultaneous');
       // Manager D only played 2023/24 and 2024/25
-      expect(analysis.sharedSeasonsAcrossAll).toEqual(['2024/25', '2023/24']);
-      analysis.miniTournament.forEach(entry => {
+      expect(simAnalysis.sharedSeasonsAcrossAll).toEqual(['2024/25', '2023/24']);
+      expect(simAnalysis.tournamentMode).toBe('simultaneous');
+      simAnalysis.miniTournament.forEach(entry => {
         expect(entry.matches).toBe(4);
       });
+    });
+
+    it('evaluates all historical pairwise duels and computes normalized PPG in ppg mode', () => {
+      const ppgAnalysis = computeMultiManagerAnalysis([managerA, managerB, managerD], 'ppg');
+      expect(ppgAnalysis.tournamentMode).toBe('ppg');
+      expect(ppgAnalysis.totalPairwiseSeasonsCount).toBe(5);
+      expect(ppgAnalysis.sharedSeasonsAcrossAll).toEqual(['2024/25', '2023/24']);
+
+      // Manager A and B played each other in 5 seasons + each played D in 2 seasons = 7 matches
+      const entryA = ppgAnalysis.miniTournament.find(e => e.managerId === 'mA')!;
+      const entryB = ppgAnalysis.miniTournament.find(e => e.managerId === 'mB')!;
+      const entryD = ppgAnalysis.miniTournament.find(e => e.managerId === 'mD')!;
+
+      expect(entryA.matches).toBe(7);
+      expect(entryB.matches).toBe(7);
+      expect(entryD.matches).toBe(4);
+
+      // Verify PPG calculation
+      expect(entryA.ppg).toBe(parseFloat((entryA.points / entryA.matches).toFixed(2)));
+      expect(entryB.ppg).toBe(parseFloat((entryB.points / entryB.matches).toFixed(2)));
+      expect(entryD.ppg).toBe(parseFloat((entryD.points / entryD.matches).toFixed(2)));
+
+      // Mini-tournament in PPG mode is sorted by PPG descending
+      for (let i = 0; i < ppgAnalysis.miniTournament.length - 1; i++) {
+        expect(ppgAnalysis.miniTournament[i].ppg).toBeGreaterThanOrEqual(ppgAnalysis.miniTournament[i + 1].ppg);
+      }
     });
   });
 });

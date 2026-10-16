@@ -9,10 +9,26 @@ let selectedManagerIdA: string | null = null;
 let selectedManagerIdB: string | null = null;
 let multiSelectedManagerIds: string[] = [];
 let hiddenMultiManagerIds: Set<string> = new Set();
+let multiTournamentMode: 'ppg' | 'simultaneous' = 'simultaneous';
 let isChronologyExpanded = false;
 let h2hVisualMode: 'radar' | 'bars' = 'radar';
 let currentH2HTab: H2HTabMode = 'duel';
 let currentNemesisFilter: 'active' | 'veterans' | 'all' = 'active';
+
+/**
+ * Sets multi-manager mini-tournament mode ('ppg' or 'simultaneous')
+ */
+export function setMultiTournamentMode(mode: 'ppg' | 'simultaneous'): void {
+  multiTournamentMode = mode;
+  renderHeadToHeadDOM(true);
+}
+
+/**
+ * Gets current multi-manager mini-tournament mode
+ */
+export function getMultiTournamentMode(): 'ppg' | 'simultaneous' {
+  return multiTournamentMode;
+}
 
 /**
  * Initializes default 3 multi-managers if list is empty
@@ -254,7 +270,8 @@ export function renderHeadToHeadDOM(preserveScroll = false): void {
     currentNemesisFilter,
     profileReturnManagerName,
     multiManagers,
-    hiddenMultiManagerIds
+    hiddenMultiManagerIds,
+    multiTournamentMode
   );
 
   if (preserveScroll && prevScrollTop > 0 && container.querySelector) {
@@ -612,8 +629,24 @@ export async function exportMultiManagerStoryHD(): Promise<void> {
     .filter((m): m is Manager => Boolean(m));
   if (managers.length >= 2) {
     const { exportMultiManagerStoryHD: exportStory } = await import('@/export/share');
-    await exportStory(managers);
+    await exportStory(managers, multiTournamentMode);
   }
+}
+
+/**
+ * Triggers HD snapshot export for the current Tavolo dei Rivali view
+ */
+export async function exportCurrentMultiManagerHD(): Promise<void> {
+  const { exportMultiManagerHD } = await import('@/export/share');
+  await exportMultiManagerHD();
+}
+
+/**
+ * Copies HD snapshot of current Tavolo dei Rivali directly to clipboard
+ */
+export async function copyCurrentMultiManagerToClipboard(): Promise<void> {
+  const { copyMultiManagerToClipboard } = await import('@/export/share');
+  await copyMultiManagerToClipboard();
 }
 
 /**
@@ -659,8 +692,11 @@ if (typeof window !== 'undefined') {
   w.removeMultiManager = removeMultiManager;
   w.toggleMultiManagerVisibility = toggleMultiManagerVisibility;
   w.openMultiManagerModal = openMultiManagerModal;
+  w.setMultiTournamentMode = setMultiTournamentMode;
   w.exportCurrentH2HDuelStoryHD = exportCurrentH2HDuelStoryHD;
   w.exportMultiManagerStoryHD = exportMultiManagerStoryHD;
+  w.exportCurrentMultiManagerHD = exportCurrentMultiManagerHD;
+  w.copyCurrentMultiManagerToClipboard = copyCurrentMultiManagerToClipboard;
   w.shareMultiManagerWhatsApp = shareMultiManagerWhatsApp;
 }
 

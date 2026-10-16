@@ -13,7 +13,8 @@ import { renderMiniTournamentTable, renderCareerComparisonTable } from './MultiM
 export function renderMultiManagerView(
   selectedManagers: Manager[],
   allManagers: Manager[],
-  hiddenManagerIds: Set<string> = new Set()
+  hiddenManagerIds: Set<string> = new Set(),
+  tournamentMode: 'ppg' | 'simultaneous' = 'simultaneous'
 ): string {
   if (!selectedManagers || selectedManagers.length < 2) {
     return `
@@ -23,7 +24,7 @@ export function renderMultiManagerView(
     `;
   }
 
-  const analysis: MultiManagerAnalysis = computeMultiManagerAnalysis(selectedManagers, allManagers);
+  const analysis: MultiManagerAnalysis = computeMultiManagerAnalysis(selectedManagers, allManagers, tournamentMode);
 
   // Manager selector dropdowns and visibility toggle chips
   const selectorCards = selectedManagers
@@ -79,8 +80,8 @@ export function renderMultiManagerView(
   const gridColsClass = selectedManagers.length === 4
     ? 'lg:grid-cols-4'
     : selectedManagers.length >= 5
-    ? 'lg:grid-cols-5'
-    : 'lg:grid-cols-3';
+      ? 'lg:grid-cols-5'
+      : 'lg:grid-cols-3';
 
   return `
     <div class="space-y-4">
@@ -117,7 +118,7 @@ export function renderMultiManagerView(
             <div class="flex items-center gap-2">
               <i class="fa-solid fa-chart-pie text-amber-400 text-xs"></i>
               <h3 class="font-bold text-xs uppercase tracking-wider" style="color: var(--text-main);">
-                Radar Multidimensionale (6 Assi)
+                Radar - 6 Assi
               </h3>
             </div>
             <span class="text-[10px] opacity-60">Scala normalizzata [0-100]</span>
@@ -147,7 +148,12 @@ export function renderMultiManagerView(
 
         <!-- Right Column: Mini-Torneo Incrociato -->
         <div class="lg:col-span-6 space-y-3">
-          ${renderMiniTournamentTable(analysis.miniTournament, analysis.sharedSeasonsAcrossAll.length)}
+          ${renderMiniTournamentTable(
+        analysis.miniTournament,
+        analysis.sharedSeasonsAcrossAll.length,
+        tournamentMode,
+        analysis.totalPairwiseSeasonsCount
+      )}
 
           <!-- Quick Tip Banner -->
           <div class="p-3 rounded-xl border flex items-center gap-2.5 text-xs font-semibold"
@@ -156,7 +162,7 @@ export function renderMultiManagerView(
               <i class="fa-solid fa-lightbulb text-xs"></i>
             </div>
             <p class="text-[11px] opacity-80" style="color: var(--text-muted);">
-              Usa i pulsanti <i class="fa-solid fa-eye text-emerald-400"></i> per isolare il confronto tra 2 manager sul radar, o esporta la Story 9:16 per condividere la rivalità!
+              Usa il selettore in alto per alternare tra classifica per <strong>Media Punti (PPG)</strong> su tutti gli scontri o <strong>Solo Contemporanee</strong> a pari partite!
             </p>
           </div>
         </div>

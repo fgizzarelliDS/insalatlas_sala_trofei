@@ -41,6 +41,8 @@ export interface MultiManagerProfileData {
   };
 }
 
+export type MiniTournamentMode = 'ppg' | 'simultaneous';
+
 export interface MiniTournamentEntry {
   managerId: string;
   managerName: string;
@@ -52,12 +54,15 @@ export interface MiniTournamentEntry {
   points: number;
   pointsDiff: number;
   winRate: number;
+  ppg: number;
 }
 
 export interface MultiManagerAnalysis {
   managers: MultiManagerProfileData[];
   miniTournament: MiniTournamentEntry[];
   sharedSeasonsAcrossAll: string[];
+  totalPairwiseSeasonsCount: number;
+  tournamentMode: MiniTournamentMode;
 }
 
 /**
@@ -135,18 +140,32 @@ export function computeManagerAxes(
 /**
  * Computes the complete multi-manager comparison analysis for 3 or more managers:
  * 1. Normalized 6-axis radar profiles with designated palette colors
- * 2. Cross-table mini-tournament of pairwise direct duels among selected managers
+ * 2. Cross-table mini-tournament with dual modes ('ppg' normalized across all seasons, or 'simultaneous' across shared seasons)
  * 3. Shared seasons set across all selected contenders
  */
 export function computeMultiManagerAnalysis(
   selectedManagers: Manager[],
-  allManagers: Manager[] = []
+  allManagersOrMode: Manager[] | MiniTournamentMode = [],
+  tournamentMode: MiniTournamentMode = 'simultaneous'
 ): MultiManagerAnalysis {
+  let allManagers: Manager[] = [];
+  let effectiveMode: MiniTournamentMode = 'simultaneous';
+
+  if (typeof allManagersOrMode === 'string') {
+    effectiveMode = allManagersOrMode;
+    allManagers = [];
+  } else if (Array.isArray(allManagersOrMode)) {
+    allManagers = allManagersOrMode;
+    effectiveMode = tournamentMode;
+  }
+
   if (!selectedManagers || selectedManagers.length === 0) {
     return {
       managers: [],
       miniTournament: [],
-      sharedSeasonsAcrossAll: []
+      sharedSeasonsAcrossAll: [],
+      totalPairwiseSeasonsCount: 0,
+      tournamentMode: effectiveMode
     };
   }
 
@@ -184,7 +203,7 @@ export function computeMultiManagerAnalysis(
     sharedSeasonsAcrossAll = Array.from(firstSeasons).sort((a, b) => b.localeCompare(a));
   }
 
-  // 4. Compute Mini-Tournament (round-robin among selected managers strictly on sharedSeasonsAcrossAll)
+  // 4. Compute Mini-Tournament
   const miniTournamentMap = new Map<string, MiniTournamentEntry>();
 
   selectedManagers.forEach((m, idx) => {
@@ -199,20 +218,41 @@ export function computeMultiManagerAnalysis(
       losses: 0,
       points: 0,
       pointsDiff: 0,
-      winRate: 0
+      winRate: 0,
+      ppg: 0
     });
   });
 
-  // Calculate direct duels strictly across the simultaneous shared seasons
-  for (const season of sharedSeasonsAcrossAll) {
-    for (let i = 0; i < selectedManagers.length; i++) {
-      for (let j = i + 1; j < selectedManagers.length; j++) {
-        const mA = selectedManagers[i];
-        const mB = selectedManagers[j];
-        const recA = (mA.history || []).find(h => h.season === season);
-        const recB = (mB.history || []).find(h => h.season === season);
+  const totalPairwiseSeasonsSet = new Set<string>();
+  const simultaneousSeasonsSet = new Set(sharedSeasonsAcrossAll);
 
-        if (recA && recB && typeof recA.rank === 'number' && typeof recB.rank === 'number') {
+  // Iterate over all unique manager pairs
+  for (let i = 0; i < selectedManagers.length; i++) {
+    for (let j = i + 1; j < selectedManagers.length; j++) {
+      const mA = selectedManagers[i];
+      const mB = selectedManagers[j];
+
+      const seasonsA = new Map(
+        (mA.history || [])
+          .filter(h => !h.in_progress && h.status !== 'in_progress' && typeof h.rank === 'number' && h.rank > 0)
+          .map(h => [h.season, h])
+      );
+      const seasonsB = new Map(
+        (mB.history || [])
+          .filter(h => !h.in_progress && h.status !== 'in_progress' && typeof h.rank === 'number' && h.rank > 0)
+          .map(h => [h.season, h])
+      );
+
+      for (const [season, recA] of seasonsA.entries()) {
+        const recB = seasonsB.get(season);
+        if (recB && typeof recA.rank === 'number' && typeof recB.rank === 'number') {
+          totalPairwiseSeasonsSet.add(season);
+
+          // In 'simultaneous' mode, only process seasons shared by ALL managers
+          if (effectiveMode === 'simultaneous' && !simultaneousSeasonsSet.has(season)) {
+            continue;
+          }
+
           const entryA = miniTournamentMap.get(mA.id);
           const entryB = miniTournamentMap.get(mB.id);
 
@@ -248,24 +288,36 @@ export function computeMultiManagerAnalysis(
 
   const miniTournament: MiniTournamentEntry[] = Array.from(miniTournamentMap.values()).map(entry => {
     const winRate = entry.matches > 0 ? parseFloat(((entry.wins / entry.matches) * 100).toFixed(1)) : 0;
+    const ppg = entry.matches > 0 ? parseFloat((entry.points / entry.matches).toFixed(2)) : 0;
     return {
       ...entry,
       pointsDiff: Math.round(entry.pointsDiff * 10) / 10,
-      winRate
+      winRate,
+      ppg
     };
   });
 
-  // Sort mini-tournament: points DESC, then wins DESC, then pointsDiff DESC, then alphabetical
+  // Sort mini-tournament based on mode
   miniTournament.sort((a, b) => {
-    if (b.points !== a.points) return b.points - a.points;
-    if (b.wins !== a.wins) return b.wins - a.wins;
-    if (b.pointsDiff !== a.pointsDiff) return b.pointsDiff - a.pointsDiff;
-    return a.managerName.localeCompare(b.managerName);
+    if (effectiveMode === 'ppg') {
+      if (b.ppg !== a.ppg) return b.ppg - a.ppg;
+      if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+      if (b.points !== a.points) return b.points - a.points;
+      if (b.pointsDiff !== a.pointsDiff) return b.pointsDiff - a.pointsDiff;
+      return a.managerName.localeCompare(b.managerName);
+    } else {
+      if (b.points !== a.points) return b.points - a.points;
+      if (b.wins !== a.wins) return b.wins - a.wins;
+      if (b.pointsDiff !== a.pointsDiff) return b.pointsDiff - a.pointsDiff;
+      return a.managerName.localeCompare(b.managerName);
+    }
   });
 
   return {
     managers: profiles,
     miniTournament,
-    sharedSeasonsAcrossAll
+    sharedSeasonsAcrossAll,
+    totalPairwiseSeasonsCount: totalPairwiseSeasonsSet.size,
+    tournamentMode: effectiveMode
   };
 }

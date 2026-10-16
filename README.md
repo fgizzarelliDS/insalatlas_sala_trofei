@@ -2,11 +2,11 @@
 
 [![Deploy to GitHub Pages](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/deploy.yml/badge.svg)](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/deploy.yml)
 [![Continuous Integration](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/ci.yml/badge.svg)](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/ci.yml)
-[![Version: 1.5.0](https://img.shields.io/badge/version-1.5.0-emerald.svg)](package.json)
+[![Version: 1.5.3](https://img.shields.io/badge/version-1.5.3-emerald.svg)](package.json)
 [![TypeScript Strict](https://img.shields.io/badge/TypeScript-5.x_Strict-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> Albo d'oro interattivo, motore league-agnostic, analisi econometrica di competitività, dinamica storica, record all-time, H2H e schede manager per leghe Fantacalcio.
+> Albo d'oro interattivo, motore league-agnostic, analisi econometrica di competitività, dinamica storica, record all-time, H2H, Tavolo dei Rivali (fino a 6 manager), export Social Story 9:16 e schede manager per leghe Fantacalcio.
 
 ---
 
@@ -18,8 +18,12 @@ L'applicazione offre un'interfaccia interattiva per desktop e mobile:
 
 - **Architettura League-Agnostic**: Configurazione centralizzata (`src/config.ts`), colonne del tabellone dinamiche con griglia CSS reattiva, isolamento multi-tenant in local storage e supporto chiavi in mano per leghe arbitrarie (cfr. `specs/13-second-league-setup-guide.md`).
 - **Albo d'Oro Storico Decennale**: Bacheca trofei consolidata, rating storico e schede manager ad alta risoluzione (HD) condivisibili.
-- **Bacheca Record Storici (Hall of Fame & Primati)**: 25 record certificati su 5 categorie storiche (Punti & Podi, Dominio & Coppe, Rivalità H2H, Strisce & Fedeltà, Disonori & Curiosità) con navigazione contestuale duale (scheda manager e archivio classifica di stagione), gestione ex-aequo ed export Poster HD all-in-one.
-- **Head-to-Head (H2H) & Nemesis Matrix**: Motore di confronto diretto 1vs1, grafici radar a 5 assi, barre duello con preservazione dello scroll, tabellino annate a 3 colonne ed esportazione ad alta definizione per WhatsApp.
+- **Bacheca Record Storici (Hall of Fame & Primati)**: **28 record certificati** su 5 categorie storiche (Punti & Podi, Dominio & Coppe, Rivalità H2H, Strisce & Fedeltà, Disonori & Curiosità) con navigazione contestuale duale (scheda manager e archivio classifica di stagione), inclusi i 3 record per debuttanti e matricole, gestione ex-aequo ed export Poster Panoramico HD + Story 9:16.
+- **Head-to-Head (H2H), Tavolo dei Rivali (6 Manager) & Matrice Nemesi**:
+  - *Duello 1vs1*: **Radar - 6 Assi**, barre duello a specchio e tabellino annate.
+  - *Tavolo dei Rivali (Multi-Manager)*: confronto fino a **6 manager contemporanei** con multi-radar cromatico, mini-torneo incrociato a punti o PPG (con switch Contemporanee/Tutte) e tabella comparativa a colonne parallele (ottimizzata mobile con colonna metrica fissa e zero scroll su desktop).
+  - *Matrice Nemesi N×N*: mappa globale delle bestie nere e vittime preferite con filtri di confidenza.
+- **Social Story Engine (9:16 HD)**: Generazione istantanea di schede verticali 1080×1920 con safe-zone Instagram & WhatsApp per Profilo Manager, Duello H2H, Tavolo dei Rivali, singolo Record Storico (con stemmi e medaglie nel Podio Storico) e Top Primati Marquee Poster.
 - **Archivio Stagioni & Classifiche**: Consultazione cronologica delle singole annate con classifiche ufficiali e finaliste delle coppe.
 - **Dinamica Storica & Cronologia (Tab 4)**: Analisi longitudinale delle carriere (piazzamento medio storico, fasce di rendimento a 4 livelli, baricentro e oscillazione) ed evoluzione dell'equilibrio competitivo stagionale (compattezza, step gap e verdetti chiave).
 - **Gestione Stagioni In Corso & Debuttanti**: Isolamento delle annate attive dalle valutazioni consolidate di carriera per non penalizzare l'efficienza dei veterani e gestione asintotica dei debuttanti.

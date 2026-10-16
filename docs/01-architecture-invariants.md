@@ -7,7 +7,7 @@
 - **Vector Icons & Trophy Engine**: FontAwesome 6 affiancato da generatori SVG vettoriali nativi (`src/trophies.ts`) per trofei, coppe e stemmi.
 - **Vector Crest Fallback Engine**: Catalogo di 20 stemmi vettoriali geometrici (`public/assets/crests/`) accoppiato a un motore deterministico basato su hashing DJB2 (`src/crests.ts`) per club privi di stemma personalizzato (`public/assets/teams/`).
 - **Single Source of Truth & Build Pipeline**: Plugin Vite (`vite.config.ts`) che propaga automaticamente la versione semantica da `package.json` (SSOT) al footer HTML (`index.html`), al Service Worker PWA (`public/sw.js`) e alla costante compile-time TypeScript (`__APP_VERSION__`).
-- **Export & Sharing**: `html-to-image` per la cattura HD nativa delle bacheche, delle schede manager, dei record e dei confronti H2H a risoluzione 2.2×; copia istantanea negli appunti e condivisione formattata su WhatsApp.
+- **Export & Sharing**: `html-to-image` per la cattura HD nativa delle bacheche, delle schede manager, dei record e dei confronti H2H a risoluzione 2.2×; modulo dedicato **Social Story 9:16 (1080×1920)** con safe-zone Instagram & WhatsApp per profili, duelli, rivali a 6 e primati; copia istantanea negli appunti e condivisione formattata su WhatsApp.
 - **Testing & Quality Assurance**: Vitest per test unitari e suite di regressione analitica.
 - **Hosting & CI/CD**: GitHub Actions con pipeline integrata di test e validazione (`ci.yml`) e compilazione con deploy su GitHub Pages (`deploy.yml`).
 
@@ -60,12 +60,14 @@ insalatlas_sala_trofei/
 
 ---
 
-## 2. La Griglia a 7 Colonne
+## 2. La Griglia del Tabellone & Motore League-Agnostic
 
-La tabella palmarès (`.albo-grid-row`) adotta una struttura a griglia CSS nativa definita in `css/layout.css`:
+La tabella palmarès (`.albo-grid-row`) adotta una struttura a griglia CSS nativa definita in `css/layout.css` e pilotata dinamicamente dall'array `ALBO_COLUMNS` in `src/config.ts` (`buildAlboColumns(LEAGUE.features)`).
+
+Nella configurazione predefinita di InsalAtlas (tutte le feature attive), la griglia espone esattamente 7 colonne:
 
 ```text
-.albo-grid-row
+.albo-grid-row (InsalAtlas: 7 colonne)
 ├── 1. col-manager      (--col-manager)     : Mister & Presenze (sticky a sinistra)
 ├── 2. col-championship (--col-championship): Scudetti (Oro, Argento, Bronzo)
 ├── 3. col-cup          (--col-cup)         : Coppe di Lega (Vittorie & Finali)
@@ -75,8 +77,10 @@ La tabella palmarès (`.albo-grid-row`) adotta una struttura a griglia CSS nativ
 └── 7. col-cartonato    (--col-cartonato)   : Trofeo Cartonato & Bacheca Allenatori
 ```
 
+In caso di leghe terze con feature disabilitate (es. Mundialito e Cartonato spenti), il motore ricalcola la proprietà CSS `--albo-cols` adattando la larghezza a $N$ colonne in modo automatico e proporzionale.
+
 > [!CAUTION]
-> **Regola Architetturale Invariante**: Non inserire mai wrapper intermedi (`div`, `span`, o contenitori flex) attorno alle colonne dei trofei. La rottura dei 7 nodi figli disallinea le colonne su layout responsive desktop e mobile e corrompe l'allineamento delle mensole trofei.
+> **Regola Architetturale Invariante**: Non inserire mai wrapper intermedi (`div`, `span`, o contenitori flex) attorno alle colonne dei trofei. I nodi figli della riga devono corrispondere esattamente a quelli definiti in `ALBO_COLUMNS`. L'inserimento di nodi non previsti disallinea le colonne su layout responsive desktop e mobile e corrompe l'allineamento delle mensole trofei.
 
 ---
 

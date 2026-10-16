@@ -118,15 +118,14 @@ L'applicazione integra un generatore di messaggi di condivisione (`src/export/sh
 
 ---
 
-## 7. Modulo di Confronto Diretto Head-to-Head (H2H)
+## 7. Modulo di Confronto Diretto Head-to-Head (H2H), Tavolo dei Rivali & Matrice Nemesi
 
-L'applicazione include un modulo dedicato per il confronto diretto testa a testa tra due qualsiasi fantallenatori della lega (`src/components/modals/h2h/` & `src/analytics/headToHead.ts`):
+L'applicazione include un hub completo per lo studio delle rivalità storiche (`src/components/modals/h2h/` & `src/analytics/headToHead.ts`), articolato su 3 viste principali:
 
+### 7.1 Duello Testa a Testa 1vs1
 - **Punti di Accesso Integrati**:
   - Pulsante `[⚔️ H2H]` nella Top Toolbar principale della schermata iniziale.
   - Pulsante `[⚔️ Confronta]` all'interno della Scheda Profilo (`ProfileModal`), che pre-seleziona istantaneamente il manager corrente come Contendente A.
-- **Selettori Dinamici**:
-  - Menu a tendina speculari per la scelta indipendente di Contendente A e Contendente B, con gestione intelligente e inversione automatica in caso di selezione incrociata dello stesso manager.
 - **Scoreboard Scontri Diretti in Campionato**:
   - Conteggio delle stagioni disputate insieme escludendo le annate in corso.
   - Box a tre indicatori (*Vittorie A, Pareggi, Vittorie B*) con barra proporzionale tricolore.
@@ -134,41 +133,48 @@ L'applicazione include un modulo dedicato per il confronto diretto testa a testa
 - **Bacheca Trofei a Specchio**:
   - Confronto diretto su Scudetti, Coppe di Lega, Supercoppe, Mundialito, Totale Titoli Major, Secondi/Terzi Posti, Cucchiai, Cartonati e Rating Storico con evidenziazione del leader.
 - **Doppia Visualizzazione Comparativa (Dual-Mode: Radar vs Barre)**:
-  - **Radar Chart Poligonale SVG a 6 assi**: calcolo vettoriale puro a 6 dimensioni (*Prestigio*, *Freddezza GCI*, *Killer Instinct*, *Conversione Coppe*, *Stabilità*, *Sicurezza Anti-Baratro*) scalate e normalizzate in $[0, 100]$ con poligoni semi-trasparenti per Mister A (Verde Smeraldo) e Mister B (Ambra/Oro).
+  - **Radar - 6 Assi**: calcolo vettoriale puro a 6 dimensioni (*Prestigio*, *Freddezza GCI*, *Killer Instinct*, *Conversione Coppe*, *Stabilità*, *Sicurezza Anti-Baratro*) scalate e normalizzate in $[0, 100]$ con poligoni semi-trasparenti per Mister A e Mister B.
   - **Barre Orizzontali Comparative (Stile Duello)**: barre contrapposte a specchio che si espandono dal centro con valori numerici e corona di vittoria per l'attributo migliore.
   - **Toggle Switcher Integrato**: selettore compatto `[🕸️ Radar]` / `[📊 Barre]` per alternare istantaneamente le due modalità visive.
-- **Indicatori di Performance Avanzati & Contrasto Tematico**:
-  - Comparazione fianco a fianco di Freddezza ($GCI$ e Tier), Killer Instinct podio ($KI\%$), Conversione finali coppe ($CR\%$), Rischio di Coda ($NTI$ e Polarità) e Stabilità posizionale ($\sigma_R$).
-  - Palette 100% conforme alle variabili CSS dei 4 temi di lega (`var(--text-main)`, `var(--modal-bg)`, `var(--table-surface)`, `var(--table-border)`), garantendo leggibilità ottimale sia su sfondi scuri sia su *Gazzetta Rosa Vintage* e *Clean Studio White*.
 - **Verdetto Narrativo Automatico**:
   - Algoritmo che analizza l'esito degli scontri diretti e i differenziali di cinismo generando una diagnosi sintetica della rivalità sportiva.
-- **Deep Linking & Condivisione WhatsApp**:
-  - Parametro URL bidirezionale `?h2h=idA:idB` per la condivisione diretta di specifici duelli storici.
-  - Pulsante per esportare e inviare su WhatsApp il testo formattato del duello con punteggio, palmarès e link di visualizzazione rapida.
+
+### 7.2 Tavolo dei Rivali (Multi-Manager fino a 6 Contendenti)
+- **Selezione Multipla Flessibile**: Confronto simultaneo da 3 a **6 manager**, identificati da una palette cromaticamente distinta a 6 colori (Ambra, Ciano, Rosa, Smeraldo, Viola, Blu).
+- **Multi-Radar Sovrapposto a 6 Assi**: Tracciamento simultaneo di tutti i manager selezionati sullo stesso grafico radar a 6 dimensioni.
+- **Mini-Torneo Incrociato**: Classifica interna al gruppo dei rivali con switch `[Solo Contemporanee]` (calcolo rigoroso sulle sole annate in cui tutti i selezionati erano presenti) e `[Tutte le Stagioni (PPG)]` (normalizzazione per punti a partita).
+- **Tabella di Confronto Carriera a Colonne Parallele**: Prospetto dettagliato metrica per metrica con:
+  - *Mobile*: Colonna fissa `Metrica` con sfondo opaco solido (`var(--modal-bg)`) per evitare ghosting e larghezza compattata per visualizzare almeno 2 manager affiancati senza troncamenti.
+  - *Desktop*: Disattivazione dello sticky (`md:static`, `md:table-fixed`) per una fruizione fluida con zero barre di scorrimento orizzontale.
+
+### 7.3 Matrice Nemesi N×N
+- Griglia bidimensionale di tutte le rivalità della lega che mappa istantaneamente la *Bestia Nera* e la *Vittima Preferita* di ciascun allenatore con filtri per confidenza e stagioni condivise.
+
+### 7.4 Esportazione HD e Social Story 9:16
+- **Scheda Grafica Panoramica (HD)**: Salvataggio PNG via `html-to-image`.
+- **Social Story 9:16 (1080×1920)**: Pulsante `Story (9:16)` per esportare una card verticale pronta per Instagram e WhatsApp, completa di safe-zone, radar ad alta leggibilità e tabellino.
+- **Deep Linking**: Parametro URL bidirezionale `?h2h=idA:idB` per condividere direttamente i duelli.
 
 ---
 
 ## 8. Hall of Fame — Bacheca Record & Primati Storici
 
 - **Tab Principale Dedicato**: Navigazione contestuale integrata nella schermata primaria (*Albo d'Oro*, *Stagioni*, *Record & Primati*, *Dinamica Storica*).
-- **25 Record Certificati su 5 Categorie Storiche**:
-  - **Punti & Podi**: Record assoluti di punteggio stagionale, minima quota salvezza/scudetto, miglior e peggior media gara (`pt/g`).
-  - **Dominio & Coppe**: Massimo e minimo distacco scudetto, volata podio serrata, multi-trofeo solare (*Triplete*), re dei campionati, signore delle coppe, abbonato al podio e *L’Imbattibile (Back-to-Back Scudetti)*.
+- **28 Record Certificati su 5 Categorie Storiche**:
+  - **Punti & Podi**: Record assoluti di punteggio stagionale, minima quota salvezza/scudetto, miglior e peggior media gara (`pt/g`), e **Miglior Rendimento da Matricola** (`debut_best_ppg`).
+  - **Dominio & Coppe**: Massimo e minimo distacco scudetto, volata podio serrata, multi-trofeo solare (*Triplete*), re dei campionati, signore delle coppe, abbonato al podio, *L’Imbattibile (Back-to-Back Scudetti)*, e **Miglior Piazzamento da Matricola** (`debut_best_rank`).
   - **Rivalità Head-to-Head**: Vittime preferite, bestie nere storiche e duelli scudetto di cartello.
   - **Strisce & Fedeltà**: Continuità a podio, fedeltà e presenze all-time, e *La Grande Rimonta (Scalata Stagionale)* (+10 posizioni).
-  - **Disonori & Curiosità**: Mister Camaleonte, cucchiai di legno, eterni secondi (campionato e coppe), re del cartonato, *Il Crollo del Campione (Flop Post-Scudetto)* e *Il Purgatorio della Serie Atlas* (stagioni senza scudetto).
+  - **Disonori & Curiosità**: Mister Camaleonte, cucchiai di legno, eterni secondi (campionato e coppe), re del cartonato, *Il Crollo del Campione (Flop Post-Scudetto)*, *Il Purgatorio della Serie Atlas* (stagioni senza scudetto), e **Debutto da Incubo: Cucchiaio / Cartonato** (`debut_disaster`).
 - **Navigazione Contestuale Dual-Target**:
   - **Click sul Box o Badge Stagione (`[📅 YYYY/YY ➔]`)**: Naviga istantaneamente alla classifica ufficiale di quella specifica annata nell'Archivio Stagioni con smooth scroll ed effetto pulse dorato sulla riga del primatista.
   - **Click sul Nome/Avatar del Manager**: Apre la scheda profilo del fantallenatore con palmarès completo, archetipo e statistiche.
 - **Normalizzazione Storica**: Ponderazione su base media partita (`pt/g`) per armonizzare campionati storici disputati su 33, 35 e 36 giornate.
 - **Card Vettoriali con Stemmi d'Epoca & Filigrane**: Ogni record espone il valore primato, il primatista (o co-primatisti ex-aequo), piazzamenti d'onore e filigrana grafica tematica.
-- **Poster Celebrativo All-in-One HD**: Esportazione grafica panoramica in altissima definizione a 1400px con griglia a 2/3 colonne per tutte le 5 categorie, badge tematici e intestazione ufficiale della Serie Atlas.
-- **Menu di Condivisione Rapido**:
-  - **Copia per WhatsApp**: Incolla direttamente l'immagine ad alta risoluzione negli appunti (`navigator.clipboard.write`).
-  - **Invia Link WhatsApp**: Apertura immediata della chat con messaggio banter precompilato e deep-link di puntamento diretto (`?record=<id>`).
-  - **Scarica PNG HD**: Salvataggio del file grafico generato via `html-to-image`.
-- **Deep Linking con Animazione**: L'URL `?record=<id>` seleziona automaticamente la tab, centra il record nello schermo e ne illumina i bordi per 2.5 secondi.
-- **Navigazione Rapida Home**: Il click sul trofeo, sul titolo o sulla favicon riporta immediatamente alla vista principale dell'Albo d'Oro, chiudendo eventuali modali e ripristinando l'URL.
+- **Esportazione Multi-Formato**:
+  - **Poster Celebrativo All-in-One HD**: Esportazione grafica panoramica a 1400px con griglia per tutte le 5 categorie.
+  - **Social Story Singolo Record (9:16)**: Scheda verticale 1080×1920 con stemma primatista gigante, valore mono in stile sportivo e box *Podio Storico* arricchito con stemmi club, medaglie (🥈/🥉), nome squadra in corsivo, punteggi e annate.
+  - **Story Top Primati (Poster Riassuntivo 9:16)**: Sintesi grafica verticale dei 6 primati più prestigiosi della lega.
 
 
 ---

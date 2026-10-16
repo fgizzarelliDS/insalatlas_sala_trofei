@@ -187,7 +187,7 @@ export function getProfileModalShellHTML(): string {
             <button onclick="window.exportCurrentProfileStoryHD && window.exportCurrentProfileStoryHD(); closeShareDropdown();"
               class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition">
               <i class="fa-solid fa-mobile-screen text-indigo-400"></i>
-              <span>📱 Story Instagram (9:16)</span>
+              <span>Story (9:16)</span>
             </button>
             <button onclick="copyCurrentProfileModalToClipboard(); closeShareDropdown();"
               class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition">

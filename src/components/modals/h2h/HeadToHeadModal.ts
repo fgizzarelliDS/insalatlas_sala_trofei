@@ -1,3 +1,4 @@
+import type { Manager } from '@/types';
 import { state } from '@/state';
 import { computeHeadToHead } from '@/analytics';
 import { formatScore } from '@/score';
@@ -6,10 +7,32 @@ import { closeProfileModal } from '@/components/modals/ProfileModal';
 
 let selectedManagerIdA: string | null = null;
 let selectedManagerIdB: string | null = null;
+let multiSelectedManagerIds: string[] = [];
+let hiddenMultiManagerIds: Set<string> = new Set();
 let isChronologyExpanded = false;
 let h2hVisualMode: 'radar' | 'bars' = 'radar';
 let currentH2HTab: H2HTabMode = 'duel';
 let currentNemesisFilter: 'active' | 'veterans' | 'all' = 'active';
+
+/**
+ * Initializes default 3 multi-managers if list is empty
+ */
+function initDefaultMultiManagers(): void {
+  const chosen: string[] = [];
+  if (selectedManagerIdA && state.managers.some(m => m.id === selectedManagerIdA)) {
+    chosen.push(selectedManagerIdA);
+  }
+  if (selectedManagerIdB && state.managers.some(m => m.id === selectedManagerIdB) && !chosen.includes(selectedManagerIdB)) {
+    chosen.push(selectedManagerIdB);
+  }
+  for (const m of state.managers) {
+    if (chosen.length >= 3) break;
+    if (!chosen.includes(m.id)) {
+      chosen.push(m.id);
+    }
+  }
+  multiSelectedManagerIds = chosen;
+}
 
 /**
  * Sets visual comparison mode: 'radar' or 'bars'
@@ -27,11 +50,15 @@ export function getH2HVisualMode(): 'radar' | 'bars' {
 }
 
 /**
- * Sets active sub-tab: 'duel' (1vs1 face-off) or 'matrix' (N x N cross-table)
+ * Sets active sub-tab: 'duel' (1vs1 face-off), 'multi' (Tavolo Rivali 3+), or 'matrix' (N x N cross-table)
  */
 export function setH2HTab(tab: H2HTabMode): void {
   currentH2HTab = tab;
+  if (tab === 'multi' && multiSelectedManagerIds.length < 3) {
+    initDefaultMultiManagers();
+  }
   renderHeadToHeadDOM();
+  updateURL();
 }
 
 /**
@@ -84,29 +111,45 @@ export {
 };
 
 /**
- * Updates URL search parameter with ?h2h=idA:idB
+ * Updates URL search parameter with ?h2h=idA:idB, ?h2h=multi&m=..., or ?h2h=matrix
  */
-function updateURL(idA: string, idB: string, pushState = false): void {
+function updateURL(idA?: string, idB?: string, pushState = false): void {
   if (typeof window !== 'undefined' && window.history && window.location) {
     const url = new URL(window.location.href);
     url.searchParams.delete('manager');
-    url.searchParams.set('h2h', `${idA}:${idB}`);
-    if (pushState) {
-      window.history.pushState({ h2h: `${idA}:${idB}` }, '', url.toString());
+    if (currentH2HTab === 'matrix') {
+      url.searchParams.set('h2h', 'matrix');
+      url.searchParams.delete('m');
+    } else if (currentH2HTab === 'multi') {
+      url.searchParams.set('h2h', 'multi');
+      if (multiSelectedManagerIds.length > 0) {
+        url.searchParams.set('m', multiSelectedManagerIds.join(':'));
+      }
     } else {
-      window.history.replaceState({ h2h: `${idA}:${idB}` }, '', url.toString());
+      const effectiveA = idA || selectedManagerIdA;
+      const effectiveB = idB || selectedManagerIdB;
+      if (effectiveA && effectiveB) {
+        url.searchParams.set('h2h', `${effectiveA}:${effectiveB}`);
+        url.searchParams.delete('m');
+      }
+    }
+    if (pushState) {
+      window.history.pushState({ h2h: url.searchParams.get('h2h') }, '', url.toString());
+    } else {
+      window.history.replaceState({ h2h: url.searchParams.get('h2h') }, '', url.toString());
     }
   }
 }
 
 /**
- * Removes ?h2h search parameter from URL
+ * Removes ?h2h and ?m search parameters from URL
  */
 function cleanURL(): void {
   if (typeof window !== 'undefined' && window.history && window.location) {
     const url = new URL(window.location.href);
-    if (url.searchParams.has('h2h')) {
+    if (url.searchParams.has('h2h') || url.searchParams.has('m')) {
       url.searchParams.delete('h2h');
+      url.searchParams.delete('m');
       window.history.replaceState({}, '', url.toString());
     }
   }
@@ -171,17 +214,28 @@ export function renderHeadToHeadDOM(preserveScroll = false): void {
 
   if (!managerA || !managerB) return;
 
-  // Dynamically adjust modal container width: max-w-2xl for duel, max-w-5xl for matrix
+  // Dynamically adjust modal container width: max-w-2xl for duel, max-w-4xl for multi, max-w-5xl for matrix
   const dialog = document.getElementById('head-to-head-dialog');
   if (dialog) {
     if (currentH2HTab === 'matrix') {
-      dialog.classList.remove('max-w-2xl');
+      dialog.classList.remove('max-w-2xl', 'max-w-4xl');
       dialog.classList.add('max-w-5xl');
+    } else if (currentH2HTab === 'multi') {
+      dialog.classList.remove('max-w-2xl', 'max-w-5xl');
+      dialog.classList.add('max-w-4xl');
     } else {
-      dialog.classList.remove('max-w-5xl');
+      dialog.classList.remove('max-w-4xl', 'max-w-5xl');
       dialog.classList.add('max-w-2xl');
     }
   }
+
+  if (currentH2HTab === 'multi' && multiSelectedManagerIds.length < 3) {
+    initDefaultMultiManagers();
+  }
+
+  const multiManagers = multiSelectedManagerIds
+    .map(id => state.managers.find(m => m.id === id))
+    .filter((m): m is Manager => Boolean(m));
 
   const profileReturnContext = getProfileReturnContext();
   let profileReturnManagerName: string | null = null;
@@ -198,7 +252,9 @@ export function renderHeadToHeadDOM(preserveScroll = false): void {
     h2hVisualMode,
     currentH2HTab,
     currentNemesisFilter,
-    profileReturnManagerName
+    profileReturnManagerName,
+    multiManagers,
+    hiddenMultiManagerIds
   );
 
   if (preserveScroll && prevScrollTop > 0 && container.querySelector) {
@@ -443,5 +499,168 @@ export async function copyCurrentH2HDuelToClipboard(): Promise<void> {
     const { copyH2HDuelToClipboard } = await import('@/export/share');
     await copyH2HDuelToClipboard(managerA, managerB);
   }
+}
+
+/**
+ * Exports current 1vs1 H2H Duel as high-definition 9:16 Instagram/WhatsApp Story
+ */
+export async function exportCurrentH2HDuelStoryHD(): Promise<void> {
+  if (!selectedManagerIdA || !selectedManagerIdB) return;
+  const managerA = state.managers.find(m => m.id === selectedManagerIdA);
+  const managerB = state.managers.find(m => m.id === selectedManagerIdB);
+  if (managerA && managerB) {
+    const { exportH2HDuelStoryHD } = await import('@/export/share');
+    await exportH2HDuelStoryHD(managerA, managerB);
+  }
+}
+
+/**
+ * Changes a manager at a specific index in the multi-manager comparison
+ */
+export function changeMultiManager(index: number, newId: string): void {
+  if (index >= 0 && index < multiSelectedManagerIds.length) {
+    const existingIdx = multiSelectedManagerIds.indexOf(newId);
+    if (existingIdx !== -1) {
+      multiSelectedManagerIds[existingIdx] = multiSelectedManagerIds[index];
+    }
+    multiSelectedManagerIds[index] = newId;
+    renderHeadToHeadDOM();
+    updateURL();
+  }
+}
+
+/**
+ * Adds next available manager to the multi-manager comparison (max 5)
+ */
+export function addNextMultiManager(): void {
+  if (multiSelectedManagerIds.length >= 5) return;
+  const next = state.managers.find(m => !multiSelectedManagerIds.includes(m.id));
+  if (next) {
+    multiSelectedManagerIds.push(next.id);
+    renderHeadToHeadDOM();
+    updateURL();
+  }
+}
+
+/**
+ * Removes a manager from the multi-manager comparison (min 3)
+ */
+export function removeMultiManager(id: string): void {
+  if (multiSelectedManagerIds.length <= 3) return;
+  multiSelectedManagerIds = multiSelectedManagerIds.filter(mId => mId !== id);
+  hiddenMultiManagerIds.delete(id);
+  renderHeadToHeadDOM();
+  updateURL();
+}
+
+/**
+ * Toggles visibility of a manager's polygon on the multi-manager radar
+ */
+export function toggleMultiManagerVisibility(id: string): void {
+  if (hiddenMultiManagerIds.has(id)) {
+    hiddenMultiManagerIds.delete(id);
+  } else {
+    if (hiddenMultiManagerIds.size < multiSelectedManagerIds.length - 1) {
+      hiddenMultiManagerIds.add(id);
+    }
+  }
+  renderHeadToHeadDOM(true);
+}
+
+/**
+ * Gets currently selected multi-manager IDs
+ */
+export function getMultiSelectedManagerIds(): string[] {
+  return [...multiSelectedManagerIds];
+}
+
+/**
+ * Sets multi-manager selection IDs
+ */
+export function setMultiSelectedManagerIds(ids: string[]): void {
+  multiSelectedManagerIds = ids.filter(id => state.managers.some(m => m.id === id));
+  if (multiSelectedManagerIds.length < 3) {
+    initDefaultMultiManagers();
+  }
+  renderHeadToHeadDOM();
+  updateURL();
+}
+
+/**
+ * Opens H2H modal directly into the multi-manager "Tavolo dei Rivali" tab
+ */
+export function openMultiManagerModal(
+  managerIds?: string[],
+  pushState = false
+): void {
+  if (state.managers.length < 2) return;
+  if (managerIds && managerIds.length >= 2) {
+    multiSelectedManagerIds = managerIds.filter(id => state.managers.some(m => m.id === id));
+  }
+  if (multiSelectedManagerIds.length < 3) {
+    initDefaultMultiManagers();
+  }
+  openHeadToHeadModal(undefined, undefined, 'multi', pushState);
+}
+
+/**
+ * Exports current Tavolo dei Rivali cluster as high-definition 9:16 Story
+ */
+export async function exportMultiManagerStoryHD(): Promise<void> {
+  const managers = multiSelectedManagerIds
+    .map(id => state.managers.find(m => m.id === id))
+    .filter((m): m is Manager => Boolean(m));
+  if (managers.length >= 2) {
+    const { exportMultiManagerStoryHD: exportStory } = await import('@/export/share');
+    await exportStory(managers);
+  }
+}
+
+/**
+ * Generates WhatsApp share link and text for Tavolo dei Rivali
+ */
+export function shareMultiManagerWhatsApp(): void {
+  if (multiSelectedManagerIds.length < 3) return;
+  const managers = multiSelectedManagerIds
+    .map(id => state.managers.find(m => m.id === id))
+    .filter((m): m is Manager => Boolean(m));
+  if (managers.length < 3) return;
+
+  const names = managers.map(m => m.name.toUpperCase()).join(' vs ');
+  let baseUrl = 'https://fgizzarellids.github.io/insalatlas_sala_trofei/';
+  if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!isLocal) {
+      baseUrl = `${window.location.origin}${window.location.pathname}`;
+    }
+  }
+
+  const shareUrl = `${baseUrl}?h2h=multi&m=${encodeURIComponent(multiSelectedManagerIds.join(':'))}`;
+  const text = `🕸️ *InsalAtlas • Tavolo dei Rivali*
+⚔️ *${names}*
+
+📊 Confronto radar multidimensionale a 6 assi e mini-torneo incrociato tra rivali storici.
+
+👉 Guarda il tavolo completo:
+${shareUrl}`;
+
+  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+  if (typeof window !== 'undefined') {
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  }
+}
+
+// Window bindings for inline HTML onclick handlers
+if (typeof window !== 'undefined') {
+  const w = window as any;
+  w.setH2HTab = setH2HTab;
+  w.changeMultiManager = changeMultiManager;
+  w.addNextMultiManager = addNextMultiManager;
+  w.removeMultiManager = removeMultiManager;
+  w.toggleMultiManagerVisibility = toggleMultiManagerVisibility;
+  w.openMultiManagerModal = openMultiManagerModal;
+  w.exportCurrentH2HDuelStoryHD = exportCurrentH2HDuelStoryHD;
+  w.exportMultiManagerStoryHD = exportMultiManagerStoryHD;
+  w.shareMultiManagerWhatsApp = shareMultiManagerWhatsApp;
 }
 

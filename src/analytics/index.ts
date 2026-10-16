@@ -5,4 +5,6 @@ export * from './chronology';
 export * from './badges';
 export * from './headToHead';
 export * from './nemesis';
+export * from './radarAxes';
+export * from './multiManager';
 export * from './records';

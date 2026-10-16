@@ -5,3 +5,4 @@ export * from './record';
 export * from './albo';
 export * from './poster';
 export * from './trophy';
+export * from './story';

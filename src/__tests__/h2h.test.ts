@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { computeHeadToHead } from '@/analytics/headToHead';
-import { getH2HParamFromURL, findManagerByParam } from '@/router';
+import { getH2HParamFromURL, getMultiH2HParamFromURL, findManagerByParam } from '@/router';
 import type { Manager } from '@/types';
 import { createTestManager } from './test-utils';
 
@@ -215,6 +215,38 @@ describe('Head-to-Head (H2H) Engine & Router', () => {
 
       expect(foundA?.id).toBe('m_alfo');
       expect(foundB?.id).toBe('m_vannico');
+    });
+  });
+
+  describe('getMultiH2HParamFromURL', () => {
+    beforeEach(() => {
+      (globalThis as any).window = {
+        location: {
+          search: '',
+          hash: ''
+        }
+      };
+    });
+
+    it('returns null when no multi params present', () => {
+      expect(getMultiH2HParamFromURL()).toBeNull();
+    });
+
+    it('parses valid ?h2h=multi&m=id1:id2:id3 parameter', () => {
+      (globalThis as any).window.location.search = '?h2h=multi&m=m_alfo:m_vannico:m_peppe';
+      const result = getMultiH2HParamFromURL();
+      expect(result).toEqual(['m_alfo', 'm_vannico', 'm_peppe']);
+    });
+
+    it('parses valid ?compare=id1:id2:id3 parameter', () => {
+      (globalThis as any).window.location.search = '?compare=m_alfo:m_vannico:m_peppe';
+      const result = getMultiH2HParamFromURL();
+      expect(result).toEqual(['m_alfo', 'm_vannico', 'm_peppe']);
+    });
+
+    it('returns null if fewer than 2 managers are provided in m param', () => {
+      (globalThis as any).window.location.search = '?h2h=multi&m=m_alfo';
+      expect(getMultiH2HParamFromURL()).toBeNull();
     });
   });
 
@@ -467,11 +499,36 @@ describe('Head-to-Head (H2H) Engine & Router', () => {
       expect(duelHTML).toContain('h2h-share-dropdown-menu');
 
       const matrixTabHTML = renderHeadToHeadModalHTML(stats, [managerA, managerB], false, 'radar', 'matrix');
-      expect(matrixTabHTML).toContain('Matrice Globale');
+      expect(matrixTabHTML).toContain('Matrice Nemesi');
       expect(matrixTabHTML).toContain('Mister A');
       expect(matrixTabHTML).toContain('Mister B');
       // Matrix tab should not contain the duel share dropdown
       expect(matrixTabHTML).not.toContain('h2h-share-dropdown-menu');
+
+      // 7. Multi-Manager tab ("Tavolo Rivali") in Shell
+      const multiManagers: Manager[] = [
+        managerA,
+        managerB,
+        createTestManager({ id: 'm3', name: 'Peppe', years: 3 })
+      ];
+      const multiTabHTML = renderHeadToHeadModalHTML(
+        stats,
+        multiManagers,
+        false,
+        'radar',
+        'multi',
+        'active',
+        null,
+        multiManagers,
+        new Set<string>()
+      );
+      expect(multiTabHTML).toContain('Tavolo Rivali');
+      expect(multiTabHTML).toContain('Radar Multidimensionale');
+      expect(multiTabHTML).toContain('Mini-Torneo Incrociato');
+      expect(multiTabHTML).toContain('Confronto Carriera a Colonne Parallele');
+      expect(multiTabHTML).toContain('Condividi Tavolo');
+      expect(multiTabHTML).toContain('Story Instagram (9:16)');
+      expect(multiTabHTML).toContain('exportMultiManagerStoryHD');
     });
   });
 

@@ -73,6 +73,15 @@ import {
   closeH2HShareDropdown,
   exportCurrentH2HDuelHD,
   copyCurrentH2HDuelToClipboard,
+  exportCurrentH2HDuelStoryHD,
+  openMultiManagerModal,
+  changeMultiManager,
+  addNextMultiManager,
+  removeMultiManager,
+  toggleMultiManagerVisibility,
+  exportMultiManagerStoryHD,
+  shareMultiManagerWhatsApp,
+  exportCurrentProfileStoryHD,
   openTrophyModal,
   closeTrophyModal,
   switchTrophyModalTab,
@@ -136,6 +145,7 @@ import {
   findManagerByParam,
   getManagerParamFromURL,
   getH2HParamFromURL,
+  getMultiH2HParamFromURL,
   getRecordParamFromURL,
   getSearchParamFromURL,
   getMainTabParamFromURL,
@@ -150,6 +160,8 @@ export {
   findManagerByParam,
   getManagerParamFromURL,
   getH2HParamFromURL,
+  getMultiH2HParamFromURL,
+  openMultiManagerModal,
   getRecordParamFromURL,
   getMainTabParamFromURL,
   getSeasonParamFromURL,
@@ -290,6 +302,15 @@ declare global {
     closeH2HShareDropdown: typeof closeH2HShareDropdown;
     exportCurrentH2HDuelHD: typeof exportCurrentH2HDuelHD;
     copyCurrentH2HDuelToClipboard: typeof copyCurrentH2HDuelToClipboard;
+    exportCurrentH2HDuelStoryHD: typeof exportCurrentH2HDuelStoryHD;
+    openMultiManagerModal: typeof openMultiManagerModal;
+    changeMultiManager: typeof changeMultiManager;
+    addNextMultiManager: typeof addNextMultiManager;
+    removeMultiManager: typeof removeMultiManager;
+    toggleMultiManagerVisibility: typeof toggleMultiManagerVisibility;
+    exportMultiManagerStoryHD: typeof exportMultiManagerStoryHD;
+    shareMultiManagerWhatsApp: typeof shareMultiManagerWhatsApp;
+    exportCurrentProfileStoryHD: typeof exportCurrentProfileStoryHD;
     toggleRecordShareDropdown: typeof toggleRecordShareDropdown;
     closeAllRecordShareDropdowns: typeof closeAllRecordShareDropdowns;
     exportRecordCard: typeof exportRecordCard;
@@ -346,13 +367,23 @@ export async function initApp(): Promise<void> {
     }
   }
 
-  // Deep-linking: auto-open H2H comparison if ?h2h=... in URL
-  const h2hParam = getH2HParamFromURL();
-  if (h2hParam) {
-    const foundA = findManagerByParam(h2hParam.managerA);
-    const foundB = findManagerByParam(h2hParam.managerB);
-    if (foundA && foundB) {
-      openHeadToHeadModal(foundA.id, foundB.id);
+  // Deep-linking: auto-open multi-manager or H2H comparison
+  const multiH2HParam = getMultiH2HParamFromURL();
+  if (multiH2HParam) {
+    const validIds = multiH2HParam
+      .map(p => findManagerByParam(p)?.id)
+      .filter((id): id is string => Boolean(id));
+    if (validIds.length >= 2) {
+      openMultiManagerModal(validIds);
+    }
+  } else {
+    const h2hParam = getH2HParamFromURL();
+    if (h2hParam) {
+      const foundA = findManagerByParam(h2hParam.managerA);
+      const foundB = findManagerByParam(h2hParam.managerB);
+      if (foundA && foundB) {
+        openHeadToHeadModal(foundA.id, foundB.id);
+      }
     }
   }
 
@@ -520,6 +551,15 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     closeH2HShareDropdown,
     exportCurrentH2HDuelHD,
     copyCurrentH2HDuelToClipboard,
+    exportCurrentH2HDuelStoryHD,
+    openMultiManagerModal,
+    changeMultiManager,
+    addNextMultiManager,
+    removeMultiManager,
+    toggleMultiManagerVisibility,
+    exportMultiManagerStoryHD,
+    shareMultiManagerWhatsApp,
+    exportCurrentProfileStoryHD,
     toggleRecordShareDropdown,
     closeAllRecordShareDropdowns,
     exportRecordCard,

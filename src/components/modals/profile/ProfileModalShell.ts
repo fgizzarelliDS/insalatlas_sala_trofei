@@ -177,12 +177,17 @@ export function getProfileModalShellHTML(): string {
 
           <!-- Dropdown Popover Menu (opens upward) -->
           <div id="share-dropdown-menu"
-            class="hidden absolute bottom-full left-0 mb-2 w-52 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
+            class="hidden absolute bottom-full left-0 mb-2 w-56 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
             style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--modal-text);">
             <button onclick="exportCurrentProfileModalHD(); closeShareDropdown();"
               class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition">
               <i class="fa-solid fa-download text-amber-500"></i>
-              <span>Scarica PNG</span>
+              <span>Scarica PNG Scheda</span>
+            </button>
+            <button onclick="window.exportCurrentProfileStoryHD && window.exportCurrentProfileStoryHD(); closeShareDropdown();"
+              class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition">
+              <i class="fa-solid fa-mobile-screen text-indigo-400"></i>
+              <span>📱 Story Instagram (9:16)</span>
             </button>
             <button onclick="copyCurrentProfileModalToClipboard(); closeShareDropdown();"
               class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition">

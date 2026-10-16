@@ -11,6 +11,9 @@ import {
   renderH2HDuelCanvas,
   renderRecordCardCanvas,
   renderHallOfFamePosterCanvas,
+  renderManagerStoryCanvas,
+  renderH2HDuelStoryCanvas,
+  renderMultiManagerStoryCanvas,
   downloadBlob,
   copyBlobToClipboard
 } from './canvas';
@@ -565,6 +568,78 @@ export function shareAlboWhatsApp(): void {
 export async function exportAlboHD(): Promise<void> {
   const { exportGraphicHD } = await import('./canvas');
   await exportGraphicHD();
+}
+
+/**
+ * Renders and downloads high-definition 9:16 vertical Instagram/WhatsApp Story for a manager profile
+ */
+export async function exportProfileStoryHD(manager: Manager): Promise<void> {
+  showToast('Generazione Story 9:16 in corso...', 'info');
+  const dropdown = document.getElementById('share-dropdown-menu');
+  if (dropdown) dropdown.classList.add('hidden');
+
+  try {
+    const canvas = await renderManagerStoryCanvas(manager);
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        showToast("Errore durante la creazione della Story", 'error');
+        return;
+      }
+      const filename = `insalatlas_story_${manager.id}_${Date.now()}.png`;
+      downloadBlob(blob, filename);
+    }, 'image/png');
+  } catch (err) {
+    console.error('Story export failed:', err);
+    showToast('Impossibile esportare la Story', 'error');
+  }
+}
+
+/**
+ * Renders and downloads high-definition 9:16 vertical Instagram/WhatsApp Story for a 1vs1 H2H Duel
+ */
+export async function exportH2HDuelStoryHD(managerA: Manager, managerB: Manager): Promise<void> {
+  showToast('Generazione Story Duello 9:16 in corso...', 'info');
+  const dropdown = document.getElementById('h2h-share-dropdown-menu');
+  if (dropdown) dropdown.classList.add('hidden');
+
+  try {
+    const canvas = await renderH2HDuelStoryCanvas(managerA, managerB);
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        showToast("Errore durante la creazione della Story", 'error');
+        return;
+      }
+      const filename = `insalatlas_duel_story_${managerA.id}_vs_${managerB.id}_${Date.now()}.png`;
+      downloadBlob(blob, filename);
+    }, 'image/png');
+  } catch (err) {
+    console.error('H2H Duel Story export failed:', err);
+    showToast('Impossibile esportare la Story', 'error');
+  }
+}
+
+/**
+ * Renders and downloads high-definition 9:16 vertical Story for Tavolo dei Rivali multi-manager cluster
+ */
+export async function exportMultiManagerStoryHD(managers: Manager[]): Promise<void> {
+  showToast('Generazione Story Tavolo Rivali 9:16 in corso...', 'info');
+  const dropdown = document.getElementById('h2h-share-dropdown-menu');
+  if (dropdown) dropdown.classList.add('hidden');
+
+  try {
+    const canvas = await renderMultiManagerStoryCanvas(managers);
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        showToast("Errore durante la creazione della Story", 'error');
+        return;
+      }
+      const filename = `insalatlas_rivals_story_${Date.now()}.png`;
+      downloadBlob(blob, filename);
+    }, 'image/png');
+  } catch (err) {
+    console.error('Multi-manager Story export failed:', err);
+    showToast('Impossibile esportare la Story', 'error');
+  }
 }
 
 

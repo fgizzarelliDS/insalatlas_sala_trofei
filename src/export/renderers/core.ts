@@ -52,7 +52,8 @@ export async function renderNodeToCanvas(
   element: HTMLElement,
   targetWidth: number,
   backgroundColor: string,
-  pixelRatio = 2.2
+  pixelRatio = 2.2,
+  targetHeight?: number
 ): Promise<HTMLCanvasElement> {
   // 1. Ensure all live images inside element are fully loaded
   const origImages = Array.from(element.querySelectorAll<HTMLImageElement>('img'));
@@ -81,9 +82,16 @@ export async function renderNodeToCanvas(
 
   element.style.width = `${targetWidth}px`;
   element.style.maxWidth = `${targetWidth}px`;
-  element.style.height = 'auto';
-  element.style.maxHeight = 'none';
-  element.style.overflow = 'visible';
+  if (targetHeight) {
+    element.style.height = `${targetHeight}px`;
+    element.style.maxHeight = `${targetHeight}px`;
+    element.style.minHeight = `${targetHeight}px`;
+    element.style.overflow = 'hidden';
+  } else {
+    element.style.height = 'auto';
+    element.style.maxHeight = 'none';
+    element.style.overflow = 'visible';
+  }
   element.style.margin = '0';
   element.style.boxShadow = 'none';
 
@@ -112,7 +120,7 @@ export async function renderNodeToCanvas(
       console.warn('Font embedding notice:', e);
     }
 
-    const opts = {
+    const opts: Record<string, unknown> = {
       pixelRatio,
       backgroundColor,
       width: targetWidth,
@@ -120,6 +128,9 @@ export async function renderNodeToCanvas(
       fontEmbedCSS,
       style: { margin: '0', transform: 'none' }
     };
+    if (targetHeight) {
+      opts.height = targetHeight;
+    }
 
     // Warm-up pass for image decoders (Safari/iOS)
     await toCanvas(element, opts);

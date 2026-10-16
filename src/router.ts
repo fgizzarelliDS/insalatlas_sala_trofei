@@ -120,6 +120,51 @@ export function getH2HParamFromURL(customUrl?: string): { managerA: string; mana
 }
 
 /**
+ * Extracts multi-manager comparison parameters (?h2h=multi&m=id1:id2:id3 or ?compare=id1:id2:id3)
+ */
+export function getMultiH2HParamFromURL(customUrl?: string): string[] | null {
+  const parse = (params: URLSearchParams): string[] | null => {
+    const isMultiH2H = params.get('h2h')?.toLowerCase() === 'multi';
+    const mRaw = params.get('m');
+    const compareRaw = params.get('compare');
+    const raw = (isMultiH2H && mRaw) ? mRaw : compareRaw;
+    if (!raw) return null;
+    const parts = decodeURIComponent(raw)
+      .split(/[:,-]/)
+      .map(p => p.trim())
+      .filter(Boolean);
+    return parts.length >= 2 ? parts : null;
+  };
+
+  if (customUrl) {
+    try {
+      const url = new URL(customUrl, 'https://example.com');
+      const fromSearch = parse(url.searchParams);
+      if (fromSearch) return fromSearch;
+      if (url.hash && url.hash.includes('?')) {
+        const hashParams = new URLSearchParams(url.hash.slice(url.hash.indexOf('?')));
+        return parse(hashParams);
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  if (typeof window === 'undefined') return null;
+  const searchParams = new URLSearchParams(window.location.search);
+  const fromSearch = parse(searchParams);
+  if (fromSearch) return fromSearch;
+
+  if (window.location && window.location.hash && window.location.hash.includes('?')) {
+    const hashParams = new URLSearchParams(window.location.hash.slice(window.location.hash.indexOf('?')));
+    return parse(hashParams);
+  }
+
+  return null;
+}
+
+/**
  * Extracts ?record=id query parameter from search or hash for Hall of Fame deep-linking
  */
 export function getRecordParamFromURL(customUrl?: string): string | null {

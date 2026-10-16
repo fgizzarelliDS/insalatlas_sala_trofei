@@ -1,96 +1,12 @@
-import type { HeadToHeadStats } from '@/types';
-import { formatScore } from '@/score';
+import {
+  computeH2HAxes,
+  type H2HAxisData,
+  RADAR_CANONICAL_AXES,
+  type RadarAxisMetadata
+} from '@/analytics/radarAxes';
 
-export interface H2HAxisData {
-  key: string;
-  label: string;
-  shortTitle: string;
-  acronym: string;
-  valA: number; // 0..100
-  valB: number; // 0..100
-  rawA: string;
-  rawB: string;
-}
-
-/**
- * Computes the 6 normalized axes for comparative visualization
- */
-export function computeH2HAxes(stats: HeadToHeadStats, maxLeagueScore = 40): H2HAxisData[] {
-  const { metricsA, metricsB } = stats;
-
-  const benchmarkScore = Math.max(metricsA.score, metricsB.score, maxLeagueScore, 10);
-  const prestigeValA = Math.min(100, Math.max(0, Math.round((metricsA.score / benchmarkScore) * 100)));
-  const prestigeValB = Math.min(100, Math.max(0, Math.round((metricsB.score / benchmarkScore) * 100)));
-
-  const stabilityValA = Math.min(100, Math.max(0, Math.round(Math.max(0, 100 - metricsA.stdDevRank * 18))));
-  const stabilityValB = Math.min(100, Math.max(0, Math.round(Math.max(0, 100 - metricsB.stdDevRank * 18))));
-
-  const ntiValA = Math.min(100, Math.max(0, Math.round(50 + metricsA.nti * 50)));
-  const ntiValB = Math.min(100, Math.max(0, Math.round(50 + metricsB.nti * 50)));
-
-  return [
-    {
-      key: 'prestige',
-      label: 'Prestigio',
-      shortTitle: 'PRESTIGIO',
-      acronym: 'PT',
-      valA: prestigeValA,
-      valB: prestigeValB,
-      rawA: `${formatScore(metricsA.score)} PT`,
-      rawB: `${formatScore(metricsB.score)} PT`
-    },
-    {
-      key: 'gci',
-      label: 'Freddezza (GCI)',
-      shortTitle: 'FREDDEZZA',
-      acronym: 'GCI',
-      valA: Math.min(100, Math.max(0, Math.round(metricsA.gci))),
-      valB: Math.min(100, Math.max(0, Math.round(metricsB.gci))),
-      rawA: `${metricsA.clutchLabel} (${Math.round(metricsA.gci)})`,
-      rawB: `${metricsB.clutchLabel} (${Math.round(metricsB.gci)})`
-    },
-    {
-      key: 'ki',
-      label: 'Killer Instinct',
-      shortTitle: 'KILLER INST.',
-      acronym: 'KI',
-      valA: Math.min(100, Math.max(0, Math.round(metricsA.kiPct))),
-      valB: Math.min(100, Math.max(0, Math.round(metricsB.kiPct))),
-      rawA: `${metricsA.kiPct}%`,
-      rawB: `${metricsB.kiPct}%`
-    },
-    {
-      key: 'cr',
-      label: 'Conversione Coppe',
-      shortTitle: 'CONV. COPPE',
-      acronym: 'FINALI',
-      valA: Math.min(100, Math.max(0, Math.round(metricsA.crPct))),
-      valB: Math.min(100, Math.max(0, Math.round(metricsB.crPct))),
-      rawA: `${metricsA.crPct}%`,
-      rawB: `${metricsB.crPct}%`
-    },
-    {
-      key: 'stability',
-      label: 'Stabilità Classifica',
-      shortTitle: 'STABILITÀ',
-      acronym: 'RANK',
-      valA: stabilityValA,
-      valB: stabilityValB,
-      rawA: `${metricsA.stabilityCategory}`,
-      rawB: `${metricsB.stabilityCategory}`
-    },
-    {
-      key: 'nti',
-      label: 'Sicurezza (Anti-Baratro)',
-      shortTitle: 'RISCHIO CODA',
-      acronym: 'NTI',
-      valA: ntiValA,
-      valB: ntiValB,
-      rawA: `${metricsA.polarityLabel}`,
-      rawB: `${metricsB.polarityLabel}`
-    }
-  ];
-}
+export { computeH2HAxes, RADAR_CANONICAL_AXES };
+export type { H2HAxisData, RadarAxisMetadata };
 
 /**
  * Mapping of axis keys to multi-line label configurations to prevent text clipping

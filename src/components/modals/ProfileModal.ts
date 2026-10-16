@@ -4,7 +4,8 @@ import { populateProfileModalDOM } from './profile';
 import {
   shareViaWhatsApp,
   exportProfileModalHD,
-  copyProfileModalToClipboard
+  copyProfileModalToClipboard,
+  exportProfileStoryHD
 } from '@/export';
 import { getH2HReturnContext, clearH2HReturnContext } from './h2h/HeadToHeadContext';
 
@@ -305,8 +306,21 @@ export function toggleCompetitionDrawer(competitionId: number, season?: string):
   drawer.classList.remove('hidden');
 }
 
+/**
+ * Exports currently opened manager profile as 9:16 Instagram/WhatsApp Story
+ */
+export async function exportCurrentProfileStoryHD(): Promise<void> {
+  const currentId = state.selectedManagerId;
+  if (!currentId) return;
+  const m = state.managers.find(item => item.id === currentId);
+  if (m) {
+    await exportProfileStoryHD(m);
+  }
+}
+
 // Bind to window for inline HTML onclick handlers
 if (typeof window !== 'undefined') {
   (window as unknown as { toggleCompetitionDrawer?: typeof toggleCompetitionDrawer }).toggleCompetitionDrawer = toggleCompetitionDrawer;
   (window as unknown as { switchProfileModalTab?: typeof switchProfileModalTab }).switchProfileModalTab = switchProfileModalTab;
+  (window as unknown as { exportCurrentProfileStoryHD?: typeof exportCurrentProfileStoryHD }).exportCurrentProfileStoryHD = exportCurrentProfileStoryHD;
 }

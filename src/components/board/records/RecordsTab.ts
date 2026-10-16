@@ -419,7 +419,7 @@ export function renderRecordCard(record: LeagueRecord): string {
               <button onclick="window.exportRecordStoryHD && window.exportRecordStoryHD('${record.id}'); closeAllRecordShareDropdowns();"
                 class="w-full px-2.5 py-1.5 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
                 <i class="fa-solid fa-mobile-screen text-indigo-400"></i>
-                <span>📱 Story (9:16)</span>
+                <span>Story (9:16)</span>
               </button>
               <button onclick="copyRecordCard('${record.id}', event)"
                 class="w-full px-2.5 py-1.5 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer mt-0.5">
@@ -571,7 +571,7 @@ export function renderRecordsContentHTML(
                 class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer"
               >
                 <i class="fa-solid fa-mobile-screen text-indigo-400"></i>
-                <span>📱 Story Top Primati (9:16)</span>
+                <span>Story Top Primati (9:16)</span>
               </button>
               <button 
                 type="button"

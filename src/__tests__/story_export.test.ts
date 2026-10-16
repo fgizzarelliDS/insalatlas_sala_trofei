@@ -216,13 +216,25 @@ describe('Social Story Export (9:16) Format Engine', () => {
           value: 67,
           formattedValue: '67.0 pt'
         }],
-        runnerUps: [{
-          managerId: 'm_alfo',
-          managerName: 'Alfo',
-          season: '2023/24',
-          value: 65,
-          formattedValue: '65.0 pt'
-        }],
+        runnerUps: [
+          {
+            managerId: 'm_alfo',
+            managerName: 'Alfo',
+            teamName: 'Real Alfo',
+            logo: 'https://example.com/alfo.png',
+            season: '2023/24',
+            value: 65,
+            formattedValue: '65.0 pt'
+          },
+          {
+            managerId: 'm_erboro',
+            managerName: 'ErBoro',
+            teamName: 'Boro FC',
+            season: '2022/23',
+            value: 64,
+            formattedValue: '64.0 pt'
+          }
+        ],
         description: 'Miglior punteggio assoluto registrato in Serie Atlas.'
       };
 

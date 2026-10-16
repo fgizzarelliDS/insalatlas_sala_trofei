@@ -527,7 +527,7 @@ describe('Head-to-Head (H2H) Engine & Router', () => {
       expect(multiTabHTML).toContain('Mini-Torneo Incrociato');
       expect(multiTabHTML).toContain('Scarica / Condividi');
       expect(multiTabHTML).toContain('Scarica PNG Scheda');
-      expect(multiTabHTML).toContain('Story Instagram (9:16)');
+      expect(multiTabHTML).toContain('Story (9:16)');
       expect(multiTabHTML).toContain('Copia per WhatsApp');
       expect(multiTabHTML).toContain('Invia Link WhatsApp');
       expect(multiTabHTML).toContain('Tutte le Stagioni (PPG)');

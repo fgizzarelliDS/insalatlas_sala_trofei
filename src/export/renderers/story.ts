@@ -16,7 +16,7 @@ import {
 } from '@/analytics/multiManager';
 import { renderMultiManagerRadarSVG } from '@/components/modals/h2h/MultiManagerRadar';
 import { computeH2HAxes, renderH2HRadarSVG } from '@/components/modals/h2h/HeadToHeadRadar';
-import { resolveTeamLogo } from '@/crests';
+import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
 import { renderNodeToCanvas } from './core';
 
 const STORY_WIDTH = 1080;
@@ -510,14 +510,31 @@ export async function renderRecordStoryCanvas(record: LeagueRecord): Promise<HTM
         🏆 Podio Storico
       </div>
       <div class="flex items-center justify-around divide-x divide-slate-800">
-        ${record.runnerUps.slice(0, 3).map((r, i) => `
-          <div class="flex-1 px-3 text-center">
-            <span class="text-xs font-bold text-slate-500">${i + 2}° Classificato</span>
-            <div class="font-bold text-sm text-slate-200 mt-0.5 truncate">${r.managerName}</div>
-            <div class="text-xs text-amber-400 font-mono font-bold mt-0.5">${r.formattedValue || r.value}</div>
-            ${r.season ? `<div class="text-[10px] text-slate-500">${r.season}</div>` : ''}
-          </div>
-        `).join('')}
+        ${record.runnerUps.slice(0, 3).map((r, i) => {
+          const medal = i === 0 ? '🥈' : i === 1 ? '🥉' : '🎖️';
+          const posLabel = `${i + 2}° Classificato`;
+          const logo = r.logo || (r.teamName ? resolveTeamLogo(r.teamName) : null);
+          const fallback = r.fallbackCrest || (r.teamName ? getTeamFallbackCrest(r.teamName) : null);
+          const crestImg = logo
+            ? `<img src="${logo}" class="w-10 h-10 object-contain drop-shadow-md rounded-full bg-slate-800/50 p-0.5">`
+            : fallback
+              ? `<img src="${fallback}" class="w-10 h-10 object-contain drop-shadow-md rounded-full bg-slate-800/50 p-0.5">`
+              : `<div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 text-slate-300 flex items-center justify-center font-bold text-sm shadow">${r.managerName.charAt(0)}</div>`;
+
+          return `
+            <div class="flex-1 px-3 flex flex-col items-center text-center">
+              <span class="text-[11px] font-bold text-slate-400 mb-1.5">${posLabel}</span>
+              <div class="relative inline-flex mb-1.5">
+                ${crestImg}
+                <span class="absolute -bottom-1 -right-1.5 text-xs drop-shadow">${medal}</span>
+              </div>
+              <div class="font-bold text-sm text-slate-200 truncate max-w-full">${r.managerName}</div>
+              ${r.teamName ? `<div class="text-[10px] text-slate-400 italic truncate max-w-full mt-0.5">${r.teamName}</div>` : ''}
+              <div class="text-xs text-amber-400 font-mono font-bold mt-1">${r.formattedValue || r.value}</div>
+              ${r.season ? `<div class="text-[10px] text-slate-500 font-medium mt-0.5">${r.season}</div>` : ''}
+            </div>
+          `;
+        }).join('')}
       </div>
     </div>
   ` : '';

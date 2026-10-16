@@ -5,13 +5,13 @@
 
 /* --- PALMARES - COLONNE VARIABILI --- */
 :root {
-  --col-manager: minmax(280px, 1.2fr);
-  --col-championship: minmax(270px, 1.4fr);
-  --col-spoon: 90px;
-  --col-cup: 150px;
-  --col-supercup: 120px;
-  --col-mundialito: 120px;
-  --col-cartonato: minmax(220px, 1.2fr);
+  --col-manager: minmax(200px, 1.2fr);
+  --col-championship: minmax(180px, 1.4fr);
+  --col-spoon: minmax(65px, 0.5fr);
+  --col-cup: minmax(100px, 0.8fr);
+  --col-supercup: minmax(90px, 0.7fr);
+  --col-mundialito: minmax(90px, 0.7fr);
+  --col-cartonato: minmax(150px, 1.1fr);
 }
 
 /* Mobile responsive columns (< 768px) */

@@ -340,35 +340,36 @@
         </div>
 
         <!-- Quick Summary Cards (Interactive Roll of Honor Triggers) -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 max-w-5xl mx-auto">
           <!-- Card 0: Stagioni Totali -->
           <div onclick="window.openTrophyModal && window.openTrophyModal('seasons')"
             title="Clicca per visualizzare la cronologia e i verdetti di tutte le stagioni"
-            class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
+            class="h-[76px] sm:h-[82px] px-3 py-2.5 rounded-2xl albo-table-wrap flex items-center gap-2.5 sm:gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
             <div
-              class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg font-black shrink-0 transition-transform group-hover:scale-110">
+              class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-base sm:text-lg font-black shrink-0 transition-transform group-hover:scale-110">
               📅</div>
-            <div class="min-w-0">
-              <div id="stat-total-seasons" class="font-sport font-extrabold text-xl leading-none"
+            <div class="min-w-0 flex-1 flex flex-col justify-center text-center">
+              <div id="stat-total-seasons" class="font-sport font-extrabold text-lg sm:text-xl leading-none"
                 style="color: var(--text-main);">0</div>
-              <div class="text-[11px] font-bold uppercase tracking-wider mt-1 leading-tight"
+              <div class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mt-1 leading-tight"
                 style="color: var(--text-muted);">
-                Stagioni <span id="stat-seasons-detail" class="text-[9px] font-semibold lowercase opacity-75 block sm:inline"></span>
+                STAGIONI
               </div>
+              <div id="stat-seasons-detail" class="text-[9px] font-semibold lowercase opacity-75 mt-0.5 leading-tight"></div>
             </div>
           </div>
 
           <!-- Card 1: Scudetti -->
           <div onclick="window.openTrophyModal && window.openTrophyModal('scudetti')"
             title="Clicca per visualizzare l'Albo d'Oro e i podi storici dei Campionati"
-            class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
+            class="h-[76px] sm:h-[82px] px-3 py-2.5 rounded-2xl albo-table-wrap flex items-center gap-2.5 sm:gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
             <div
-              class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg font-black shrink-0 transition-transform group-hover:scale-110">
+              class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-base sm:text-lg font-black shrink-0 transition-transform group-hover:scale-110">
               🥇</div>
-            <div class="min-w-0">
-              <div id="stat-total-scudetti" class="font-sport font-extrabold text-xl leading-none"
+            <div class="min-w-0 flex-1 flex flex-col justify-center text-center">
+              <div id="stat-total-scudetti" class="font-sport font-extrabold text-lg sm:text-xl leading-none"
                 style="color: var(--text-main);">0</div>
-              <div class="text-[11px] font-bold uppercase tracking-wider mt-1"
+              <div class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mt-1 leading-tight"
                 style="color: var(--text-muted);">
                 Scudetti
               </div>
@@ -378,16 +379,16 @@
           <!-- Card 2: Coppe & Supercoppe -->
           <div onclick="window.openTrophyModal && window.openTrophyModal('cups')"
             title="Clicca per visualizzare l'Albo d'Oro e le finali di Coppa e Supercoppa"
-            class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
+            class="h-[76px] sm:h-[82px] px-3 py-2.5 rounded-2xl albo-table-wrap flex items-center gap-2.5 sm:gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
             <div
-              class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-lg font-black shrink-0 transition-transform group-hover:scale-110">
+              class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-base sm:text-lg font-black shrink-0 transition-transform group-hover:scale-110">
               🏆</div>
-            <div class="min-w-0">
-              <div id="stat-total-cups" class="font-sport font-extrabold text-xl leading-none"
+            <div class="min-w-0 flex-1 flex flex-col justify-center text-center">
+              <div id="stat-total-cups" class="font-sport font-extrabold text-lg sm:text-xl leading-none"
                 style="color: var(--text-main);">0</div>
-              <div class="text-[11px] font-bold uppercase tracking-wider mt-1"
+              <div class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mt-1 leading-tight"
                 style="color: var(--text-muted);">
-                Coppe &amp; Superc.
+                Coppe &amp;<br>Supercoppe
               </div>
             </div>
           </div>
@@ -395,14 +396,14 @@
           <!-- Card 3: Mundialito -->
           <div onclick="window.openTrophyModal && window.openTrophyModal('mundialito')"
             title="Clicca per visualizzare l'Albo d'Oro e i finalisti del Mundialito"
-            class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
+            class="h-[76px] sm:h-[82px] px-3 py-2.5 rounded-2xl albo-table-wrap flex items-center gap-2.5 sm:gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
             <div
-              class="w-10 h-10 rounded-xl bg-amber-700/20 text-amber-500 flex items-center justify-center text-lg font-black shrink-0 transition-transform group-hover:scale-110">
+              class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-700/20 text-amber-500 flex items-center justify-center text-base sm:text-lg font-black shrink-0 transition-transform group-hover:scale-110">
               🌍</div>
-            <div class="min-w-0">
-              <div id="stat-total-mundialito" class="font-sport font-extrabold text-xl leading-none"
+            <div class="min-w-0 flex-1 flex flex-col justify-center text-center">
+              <div id="stat-total-mundialito" class="font-sport font-extrabold text-lg sm:text-xl leading-none"
                 style="color: var(--text-main);">0</div>
-              <div class="text-[11px] font-bold uppercase tracking-wider mt-1"
+              <div class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mt-1 leading-tight"
                 style="color: var(--text-muted);">
                 Mundialito
               </div>
@@ -412,14 +413,14 @@
           <!-- Card 4: Cucchiai di Legno -->
           <div onclick="window.openTrophyModal && window.openTrophyModal('spoons')"
             title="Clicca per visualizzare il Muro dei Cucchiai di Legno (ultimi posti)"
-            class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
+            class="h-[76px] sm:h-[82px] px-3 py-2.5 rounded-2xl albo-table-wrap flex items-center gap-2.5 sm:gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
             <div
-              class="w-10 h-10 rounded-xl bg-amber-800/20 text-amber-500 flex items-center justify-center text-lg font-black shrink-0 transition-transform group-hover:scale-110">
+              class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-800/20 text-amber-500 flex items-center justify-center text-base sm:text-lg font-black shrink-0 transition-transform group-hover:scale-110">
               🥄</div>
-            <div class="min-w-0">
-              <div id="stat-total-spoons" class="font-sport font-extrabold text-xl leading-none"
+            <div class="min-w-0 flex-1 flex flex-col justify-center text-center">
+              <div id="stat-total-spoons" class="font-sport font-extrabold text-lg sm:text-xl leading-none"
                 style="color: var(--text-main);">0</div>
-              <div class="text-[11px] font-bold uppercase tracking-wider mt-1"
+              <div class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mt-1 leading-tight"
                 style="color: var(--text-muted);">
                 Cucchiai Legno
               </div>
@@ -429,14 +430,14 @@
           <!-- Card 5: Banner Cartonato -->
           <div onclick="window.openTrophyModal && window.openTrophyModal('cartonato')"
             title="Clicca per visualizzare l'Albo dei Cartonati e Playout"
-            class="p-3.5 rounded-2xl albo-table-wrap flex items-center gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
+            class="h-[76px] sm:h-[82px] px-3 py-2.5 rounded-2xl albo-table-wrap flex items-center gap-2.5 sm:gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
             <div
-              class="w-10 h-10 rounded-xl bg-blue-900/30 text-blue-400 flex items-center justify-center text-lg font-black shrink-0 transition-transform group-hover:scale-110">
+              class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-900/30 text-blue-400 flex items-center justify-center text-base sm:text-lg font-black shrink-0 transition-transform group-hover:scale-110">
               📦</div>
-            <div class="min-w-0">
-              <div id="stat-total-cartonati" class="font-sport font-extrabold text-xl leading-none"
+            <div class="min-w-0 flex-1 flex flex-col justify-center text-center">
+              <div id="stat-total-cartonati" class="font-sport font-extrabold text-lg sm:text-xl leading-none"
                 style="color: var(--text-main);">0</div>
-              <div class="text-[11px] font-bold uppercase tracking-wider mt-1 leading-tight"
+              <div class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mt-1 leading-tight"
                 style="color: var(--text-muted);">
                 Banner Cartonato
               </div>
@@ -461,7 +462,7 @@
         <!-- UNIFIED TABLE CONTAINER -->
         <div class="albo-table-wrap rounded-2xl overflow-hidden border">
           <div id="table-scroll-container" class="overflow-x-auto">
-            <div class="min-w-[695px] md:min-w-[1280px]">
+            <div class="min-w-[695px] lg:min-w-0 w-full">
 
               <!-- Table Header Bar -->
               <div id="albo-table-header" class="albo-grid-row py-3 font-sport font-bold text-xs uppercase tracking-wider items-center"
@@ -486,7 +487,7 @@
                   class="text-center transition text-[11px] sm:text-xs">
                   Cucchiaio</div>
                 <div id="th-col-7" data-title-key="col7" onblur="handleTitleBlur(this)"
-                  class="text-right pr-2 sm:pr-4 transition text-[11px] sm:text-xs">Cartonato</div>
+                  class="text-center transition text-[11px] sm:text-xs">Cartonato</div>
               </div>
 
               <!-- Dynamic Table Shelf Rows Target -->

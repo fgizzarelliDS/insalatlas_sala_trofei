@@ -842,13 +842,33 @@ describe('Historical Rankings & Career Visualizations', () => {
       try {
         updateStatistics();
 
-        expect(elements['stat-total-seasons'].textContent).toBe('11');
-        expect(elements['stat-seasons-detail'].textContent).toBe('(10 + 1 in corso)');
-        expect(elements['stat-total-scudetti'].textContent).toBe('10');
-        expect(elements['stat-total-cups'].textContent).toBe('15');
-        expect(elements['stat-total-mundialito'].textContent).toBe('3');
-        expect(elements['stat-total-spoons'].textContent).toBe('10');
-        expect(elements['stat-total-cartonati'].textContent).toBe('5');
+        // Dynamically compute expected values from the dataset so test is agnostic to data updates
+        const allSeasons = Array.from(new Set((dataJson.competitions as { season: string }[]).map(c => c.season)));
+        const expectedTotalSeasons = allSeasons.length;
+        const expectedInProgressSeasons = allSeasons.filter(s =>
+          (dataJson.competitions as { season: string; in_progress?: boolean; status?: string }[]).some(
+            c => c.season === s && (c.in_progress || c.status === 'in_progress')
+          )
+        ).length;
+        const expectedCompletedSeasons = expectedTotalSeasons - expectedInProgressSeasons;
+        const expectedDetail = expectedInProgressSeasons > 0
+          ? `(${expectedCompletedSeasons} + ${expectedInProgressSeasons} in corso)`
+          : '';
+
+        const managers = dataJson.leagueData as Manager[];
+        const expectedScudetti = managers.reduce((acc, m) => acc + (m.gold || 0), 0);
+        const expectedCups = managers.reduce((acc, m) => acc + (m.cup_gold || 0) + (m.supercup || 0), 0);
+        const expectedMundialito = managers.reduce((acc, m) => acc + (m.mundialito || 0), 0);
+        const expectedSpoons = managers.reduce((acc, m) => acc + (m.spoon || 0), 0);
+        const expectedCartonati = managers.reduce((acc, m) => acc + (m.cartonato || 0), 0);
+
+        expect(elements['stat-total-seasons'].textContent).toBe(String(expectedTotalSeasons));
+        expect(elements['stat-seasons-detail'].textContent).toBe(expectedDetail);
+        expect(elements['stat-total-scudetti'].textContent).toBe(String(expectedScudetti));
+        expect(elements['stat-total-cups'].textContent).toBe(String(expectedCups));
+        expect(elements['stat-total-mundialito'].textContent).toBe(String(expectedMundialito));
+        expect(elements['stat-total-spoons'].textContent).toBe(String(expectedSpoons));
+        expect(elements['stat-total-cartonati'].textContent).toBe(String(expectedCartonati));
       } finally {
         (globalThis as unknown as { document?: unknown }).document = originalDoc;
       }

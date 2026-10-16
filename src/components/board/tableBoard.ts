@@ -149,7 +149,7 @@ export function renderBoardHeader(): void {
       case 'spoon':
         return `<div id="th-col-6" data-title-key="col6" onblur="handleTitleBlur(this)" class="text-center transition text-[11px] sm:text-xs">${title}</div>`;
       case 'cartonato':
-        return `<div id="th-col-7" data-title-key="col7" onblur="handleTitleBlur(this)" class="text-right pr-2 sm:pr-4 transition text-[11px] sm:text-xs">${title}</div>`;
+        return `<div id="th-col-7" data-title-key="col7" onblur="handleTitleBlur(this)" class="text-center transition text-[11px] sm:text-xs">${title}</div>`;
       default:
         return '';
     }
@@ -282,7 +282,7 @@ export function renderBoard(): void {
       } else {
         for (let i = 0; i < count; i++) bannersHTML.push(renderCoachBanner('CARTONATO'));
       }
-      cartonatoHTML = `<div class="flex items-center justify-end gap-1.5 flex-nowrap overflow-visible pb-2">${bannersHTML.join('')}</div>`;
+      cartonatoHTML = `<div class="flex items-center justify-center gap-1.5 flex-nowrap overflow-visible pb-2">${bannersHTML.join('')}</div>`;
     }
 
     const columnCells: Record<string, string> = {
@@ -342,7 +342,7 @@ export function renderBoard(): void {
         </div>
       `,
       cartonato: `
-        <div class="flex items-center justify-end pr-2 sm:pr-4 self-center pb-2 min-h-[38px]">
+        <div class="flex items-center justify-center self-center pb-2 min-h-[38px]">
           ${cartonatoHTML}
         </div>
       `

@@ -188,6 +188,61 @@ describe('Social Story Export (9:16) Format Engine', () => {
     });
   });
 
+  describe('renderRecordStoryCanvas', () => {
+    it('renders an individual Hall of Fame Record Story at 1080x1920', async () => {
+      const { renderRecordStoryCanvas } = await import('@/export/renderers/story');
+      const mockRecord: any = {
+        id: 'max_single_season_points',
+        title: 'Record Punti Singola Stagione',
+        category: 'points',
+        icon: 'fa-solid fa-bolt',
+        watermark: '⚡',
+        badgeLabel: 'Punti Assoluti',
+        badgeColor: 'amber',
+        primaryHolder: {
+          managerId: 'm_makako',
+          managerName: 'Makako',
+          teamName: 'Makako Antwerpen',
+          season: '2017/18',
+          value: 67,
+          formattedValue: '67.0 pt',
+          normalizedDetail: '1.91 pt/g'
+        },
+        primaryHolders: [{
+          managerId: 'm_makako',
+          managerName: 'Makako',
+          teamName: 'Makako Antwerpen',
+          season: '2017/18',
+          value: 67,
+          formattedValue: '67.0 pt'
+        }],
+        runnerUps: [{
+          managerId: 'm_alfo',
+          managerName: 'Alfo',
+          season: '2023/24',
+          value: 65,
+          formattedValue: '65.0 pt'
+        }],
+        description: 'Miglior punteggio assoluto registrato in Serie Atlas.'
+      };
+
+      const canvas = await renderRecordStoryCanvas(mockRecord);
+      expect(canvas).toBeDefined();
+      expect(canvas.width).toBe(1080);
+      expect(canvas.height).toBe(1920);
+    });
+  });
+
+  describe('renderRecordsSummaryStoryCanvas', () => {
+    it('renders marquee records summary poster story at 1080x1920', async () => {
+      const { renderRecordsSummaryStoryCanvas } = await import('@/export/renderers/story');
+      const canvas = await renderRecordsSummaryStoryCanvas();
+      expect(canvas).toBeDefined();
+      expect(canvas.width).toBe(1080);
+      expect(canvas.height).toBe(1920);
+    });
+  });
+
   describe('Share Facade Functions', () => {
     it('exports profile story without throwing errors', async () => {
       const { exportProfileStoryHD } = await import('@/export/share');
@@ -202,6 +257,12 @@ describe('Social Story Export (9:16) Format Engine', () => {
     it('exports multi-manager story without throwing errors', async () => {
       const { exportMultiManagerStoryHD } = await import('@/export/share');
       await expect(exportMultiManagerStoryHD([managerA, managerB, managerC])).resolves.not.toThrow();
+    });
+
+    it('exports record story and records summary story without throwing errors', async () => {
+      const { exportRecordStoryHD, exportRecordsSummaryStoryHD } = await import('@/export/share');
+      await expect(exportRecordStoryHD('max_single_season_points')).resolves.not.toThrow();
+      await expect(exportRecordsSummaryStoryHD()).resolves.not.toThrow();
     });
   });
 });

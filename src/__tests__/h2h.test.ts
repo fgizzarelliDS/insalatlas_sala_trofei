@@ -523,7 +523,7 @@ describe('Head-to-Head (H2H) Engine & Router', () => {
         new Set<string>()
       );
       expect(multiTabHTML).toContain('Tavolo Rivali');
-      expect(multiTabHTML).toContain('Radar Multidimensionale');
+      expect(multiTabHTML).toContain('Radar - 6 Assi');
       expect(multiTabHTML).toContain('Mini-Torneo Incrociato');
       expect(multiTabHTML).toContain('Scarica / Condividi');
       expect(multiTabHTML).toContain('Scarica PNG Scheda');

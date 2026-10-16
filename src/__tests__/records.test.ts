@@ -246,9 +246,44 @@ describe('All-Time League Records Engine', () => {
       expect(droughtRec!.runnerUps[1].value).toBe(6);
     });
 
-    it('computes exactly 25 official league records across all 5 categories', () => {
+    it('computes exactly 28 official league records across all 5 categories', () => {
       const records = computeAllLeagueRecords(managers, competitions);
-      expect(records.length).toBe(25);
+      expect(records.length).toBe(28);
+    });
+
+    it('identifies Lucchetto as Miglior Rendimento da Matricola (1.63 pt/g in 2017/18)', () => {
+      const records = computeAllLeagueRecords(managers, competitions);
+      const rec = records.find(r => r.id === 'debut_best_ppg');
+      expect(rec).toBeDefined();
+      expect(rec!.category).toBe('points');
+      expect(rec!.primaryHolder.managerName).toBe('Lucchetto');
+      expect(Number(rec!.primaryHolder.value)).toBeCloseTo(1.629, 2);
+      expect(rec!.primaryHolder.formattedValue).toBe('1.63 pt/g');
+      expect(rec!.primaryHolder.season).toBe('2017/18');
+      expect(rec!.runnerUps.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('identifies Makako&Compagno and Lucchetto as co-holders for Miglior Piazzamento da Matricola (2° posto)', () => {
+      const records = computeAllLeagueRecords(managers, competitions);
+      const rec = records.find(r => r.id === 'debut_best_rank');
+      expect(rec).toBeDefined();
+      expect(rec!.category).toBe('titles');
+      expect(rec!.primaryHolders.length).toBe(2);
+      const names = rec!.primaryHolders.map(h => h.managerName);
+      expect(names).toContain('Makako&Compagno');
+      expect(names).toContain('Lucchetto');
+      expect(rec!.primaryHolder.value).toBe(2);
+    });
+
+    it('identifies ErBoro and Vannico&Sebbi as holders of Debutto da Incubo (Cucchiaio / Cartonato)', () => {
+      const records = computeAllLeagueRecords(managers, competitions);
+      const rec = records.find(r => r.id === 'debut_disaster');
+      expect(rec).toBeDefined();
+      expect(rec!.category).toBe('banter');
+      expect(rec!.primaryHolders.length).toBe(2);
+      const names = rec!.primaryHolders.map(h => h.managerName);
+      expect(names).toContain('ErBoro');
+      expect(names).toContain('Vannico&Sebbi');
     });
 
     it('resolves pertinent crests and team names for both single-season and career records', async () => {

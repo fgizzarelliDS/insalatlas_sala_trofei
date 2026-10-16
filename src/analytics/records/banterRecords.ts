@@ -477,6 +477,81 @@ export function computeBanterRecords(
     });
   }
 
+  // -------------------------------------------------------------
+  // Record 5.8: Debutto da Incubo (Cucchiaio / Cartonato all'Esordio)
+  // -------------------------------------------------------------
+  const allSeasons = Array.from(new Set(competitions.map(c => c.season))).sort();
+  const inauguralSeason = allSeasons.length > 0 ? allSeasons[0] : '';
+  const completedChampionships = getCompletedChampionships(competitions);
+
+  const debutDisasters: {
+    managerId: string;
+    season: string;
+    type: 'spoon' | 'cartonato';
+    detail: string;
+    holder: RecordHolder;
+  }[] = [];
+
+  managers.forEach(m => {
+    const history = (m.history || []).filter(h => !h.in_progress && h.status !== 'in_progress');
+    if (history.length === 0) return;
+    const sorted = [...history].sort((a, b) => a.season.localeCompare(b.season));
+    const debut = sorted[0];
+    if (debut.season === inauguralSeason) return;
+
+    const comp = completedChampionships.find(c => c.season === debut.season);
+    const totalTeams = comp?.ranking?.length || 10;
+    const isLastPlace = typeof debut.rank === 'number' && debut.rank === totalTeams;
+    const hasSpoon = Boolean(debut.achievements?.some(a => a.badge === 'spoon' || a.title?.toLowerCase().includes('cucchiaio')) || isLastPlace);
+    const hasCartonato = Boolean(
+      debut.achievements?.some(a => a.badge === 'cartonato' || a.title?.toLowerCase().includes('cartonato')) ||
+      (m.cartonato_coaches && m.cartonato_coaches.includes(debut.season))
+    );
+
+    if (hasSpoon || hasCartonato) {
+      const crest = resolveManagerRecordCrest(m.id, debut.season, debut.team || undefined, managers, competitions);
+      const label = hasSpoon ? 'Cucchiaio di Legno' : 'Trofeo Cartonato';
+      const iconEmoji = hasSpoon ? '🥄' : '⚠️';
+      const pointsText = typeof debut.points === 'number' ? `${debut.points.toFixed(1)} pt` : '';
+
+      debutDisasters.push({
+        managerId: m.id,
+        season: debut.season,
+        type: hasSpoon ? 'spoon' : 'cartonato',
+        detail: `${debut.rank}° su ${totalTeams} ${pointsText ? `(${pointsText})` : ''}`.trim(),
+        holder: {
+          managerId: m.id,
+          managerName: m.name,
+          teamName: crest.teamName,
+          logo: crest.logo,
+          fallbackCrest: crest.fallbackCrest,
+          season: debut.season,
+          value: debut.rank || totalTeams,
+          formattedValue: `${iconEmoji} ${label}`,
+          normalizedDetail: `${debut.rank}° su ${totalTeams} ${pointsText ? `· ${pointsText}` : ''} all'esordio`.trim()
+        }
+      });
+    }
+  });
+
+  if (debutDisasters.length > 0) {
+    const primaryHolders = debutDisasters.map(d => d.holder);
+
+    records.push({
+      id: 'debut_disaster',
+      title: 'Debutto da Incubo (Cucchiaio / Cartonato)',
+      category: 'banter',
+      icon: 'fa-solid fa-skull-crossbones',
+      watermark: '☠️',
+      badgeLabel: 'Incubo Matricola',
+      badgeColor: 'rose',
+      primaryHolders,
+      primaryHolder: primaryHolders[0],
+      runnerUps: [],
+      description: 'I disonori all’esordio: fantallenatori incappati nel Cucchiaio di Legno (ultimo posto) o nel Trofeo Cartonato nella loro primissima stagione in Serie Atlas.'
+    });
+  }
+
   return records;
 }
 

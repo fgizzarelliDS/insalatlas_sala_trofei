@@ -150,13 +150,13 @@ export function renderCareerComparisonTable(profiles: MultiManagerProfileData[])
 
   const headers = profiles
     .map(p => `
-      <th class="py-2 px-2 text-center border-l min-w-[115px] sm:min-w-[125px] md:min-w-0 md:w-[${colWidthPct}%]" style="border-color: var(--table-border);">
-        <div class="flex flex-col items-center gap-1">
-          <div class="flex items-center gap-1.5">
+      <th class="py-1.5 sm:py-2 px-1 sm:px-2 text-center border-l min-w-[105px] sm:min-w-[120px] md:min-w-0 md:w-[${colWidthPct}%]" style="border-color: var(--table-border);">
+        <div class="flex flex-col items-center gap-0.5 sm:gap-1">
+          <div class="flex items-center gap-1.5 max-w-[95px] sm:max-w-none">
             <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${p.color}; box-shadow: 0 0 6px ${p.color}80;"></span>
-            <span class="font-sport font-black text-xs uppercase whitespace-nowrap" style="color: var(--text-main);">${p.manager.name}</span>
+            <span class="font-sport font-black text-[11px] sm:text-xs uppercase truncate" style="color: var(--text-main);">${p.manager.name}</span>
           </div>
-          <span class="text-[9px] px-2 py-0.5 rounded-full font-bold border whitespace-nowrap max-w-full" style="color: ${p.metrics.archetypeColor}; border-color: ${p.metrics.archetypeColor}40; background-color: ${p.metrics.archetypeColor}15;">
+          <span class="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-full font-bold border truncate max-w-[95px] sm:max-w-none" style="color: ${p.metrics.archetypeColor}; border-color: ${p.metrics.archetypeColor}40; background-color: ${p.metrics.archetypeColor}15;">
             ${p.metrics.archetypeTag}
           </span>
         </div>
@@ -174,55 +174,55 @@ export function renderCareerComparisonTable(profiles: MultiManagerProfileData[])
     {
       label: 'Rating All-Time',
       icon: 'fa-solid fa-star text-amber-400',
-      getValue: p => `<span class="font-black font-mono text-amber-400">${formatScore(p.metrics.score)} PT</span>`
+      getValue: p => `<span class="font-black font-mono text-amber-400 text-xs sm:text-sm">${formatScore(p.metrics.score)} PT</span>`
     },
     {
       label: 'Presenze (Anni)',
       icon: 'fa-regular fa-calendar text-slate-400',
-      getValue: p => `<span class="font-mono font-bold">${p.metrics.completedYears}</span>`
+      getValue: p => `<span class="font-mono font-bold text-xs sm:text-sm">${p.metrics.completedYears}</span>`
     },
     {
       label: 'Scudetti 🥇',
       icon: 'fa-solid fa-award text-amber-400',
-      getValue: p => `<span class="font-mono font-bold ${p.manager.gold ? 'text-amber-400 font-black' : 'opacity-40'}">${p.manager.gold || 0}</span>`
+      getValue: p => `<span class="font-mono font-bold text-xs sm:text-sm ${p.manager.gold ? 'text-amber-400 font-black' : 'opacity-40'}">${p.manager.gold || 0}</span>`
     },
     {
       label: 'Coppe di Lega 🏆',
       icon: 'fa-solid fa-trophy text-amber-500',
-      getValue: p => `<span class="font-mono font-bold ${p.manager.cup_gold ? 'text-amber-300 font-black' : 'opacity-40'}">${p.manager.cup_gold || 0}</span>`
+      getValue: p => `<span class="font-mono font-bold text-xs sm:text-sm ${p.manager.cup_gold ? 'text-amber-300 font-black' : 'opacity-40'}">${p.manager.cup_gold || 0}</span>`
     },
     {
       label: 'Supercoppe ⭐',
       icon: 'fa-solid fa-bolt text-yellow-400',
-      getValue: p => `<span class="font-mono font-bold ${p.manager.supercup ? 'text-yellow-400 font-black' : 'opacity-40'}">${p.manager.supercup || 0}</span>`
+      getValue: p => `<span class="font-mono font-bold text-xs sm:text-sm ${p.manager.supercup ? 'text-yellow-400 font-black' : 'opacity-40'}">${p.manager.supercup || 0}</span>`
     },
     {
       label: 'Mundialito 🌍',
       icon: 'fa-solid fa-earth-americas text-emerald-400',
-      getValue: p => `<span class="font-mono font-bold ${p.manager.mundialito ? 'text-emerald-400 font-black' : 'opacity-40'}">${p.manager.mundialito || 0}</span>`
+      getValue: p => `<span class="font-mono font-bold text-xs sm:text-sm ${p.manager.mundialito ? 'text-emerald-400 font-black' : 'opacity-40'}">${p.manager.mundialito || 0}</span>`
     },
     {
       label: 'Cucchiai 🥄',
       icon: 'fa-solid fa-utensils text-rose-400',
-      getValue: p => `<span class="font-mono font-bold ${p.manager.spoon ? 'text-rose-400 font-black' : 'opacity-40'}">${p.manager.spoon || 0}</span>`
+      getValue: p => `<span class="font-mono font-bold text-xs sm:text-sm ${p.manager.spoon ? 'text-rose-400 font-black' : 'opacity-40'}">${p.manager.spoon || 0}</span>`
     },
     {
       label: 'Miglior Posto',
       icon: 'fa-solid fa-chart-line text-cyan-400',
-      getValue: p => p.metrics.bestRank ? `<span class="font-mono font-bold">${p.metrics.bestRank}°</span>` : '<span class="opacity-40">-</span>'
+      getValue: p => p.metrics.bestRank ? `<span class="font-mono font-bold text-xs sm:text-sm">${p.metrics.bestRank}°</span>` : '<span class="opacity-40">-</span>'
     },
     {
       label: 'Freddezza (GCI)',
       icon: 'fa-solid fa-snowflake text-cyan-400',
-      getValue: p => `<span class="font-bold text-[11px] inline-flex items-center justify-center gap-1.5 whitespace-nowrap">${p.metrics.clutchIcon} <span>${p.metrics.clutchLabel}</span></span>`
+      getValue: p => `<span class="font-bold text-[10px] sm:text-[11px] inline-flex items-center justify-center gap-1">${p.metrics.clutchIcon} <span class="truncate max-w-[85px] sm:max-w-none">${p.metrics.clutchLabel}</span></span>`
     },
     {
       label: 'Anti-Baratro (NTI)',
       icon: 'fa-solid fa-shield-halved text-emerald-400',
       getValue: p => `
-        <span class="font-bold text-[11px] inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
-          <i class="fa-solid ${p.metrics.polarityIcon.replace(/^fa-solid\s+/, '')} text-[10px]" style="color: ${p.metrics.polarityColor};"></i>
-          <span>${p.metrics.polarityLabel}</span>
+        <span class="font-bold text-[9.5px] sm:text-[11px] inline-flex items-center justify-center gap-1">
+          <i class="fa-solid ${p.metrics.polarityIcon.replace(/^fa-solid\s+/, '')} text-[9px] sm:text-[10px] shrink-0" style="color: ${p.metrics.polarityColor};"></i>
+          <span class="truncate max-w-[85px] sm:max-w-none" title="${p.metrics.polarityLabel}">${p.metrics.polarityLabel}</span>
         </span>
       `
     }
@@ -231,17 +231,17 @@ export function renderCareerComparisonTable(profiles: MultiManagerProfileData[])
   const bodyRows = metricRows
     .map(row => `
       <tr class="border-b transition hover:bg-white/5" style="border-color: var(--table-border);">
-        <td class="py-2 px-2.5 font-semibold text-xs opacity-90 sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)] border-r"
-            style="background-color: var(--table-surface); border-color: var(--table-border); min-width: 140px; width: 140px;">
+        <td class="py-1.5 sm:py-2 px-1.5 sm:px-2.5 font-semibold text-[10px] sm:text-xs opacity-90 sticky left-0 md:static z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)] md:shadow-none border-r md:border-r-0 min-w-[95px] w-[95px] sm:min-w-[120px] sm:w-[120px] md:min-w-0 md:w-[24%]"
+            style="background-color: var(--modal-bg); border-color: var(--table-border);">
           <div class="flex items-center gap-1.5 whitespace-nowrap">
-            <i class="${row.icon} w-3.5 text-center text-xs shrink-0"></i>
+            <i class="${row.icon} w-3 sm:w-3.5 text-center text-[10px] sm:text-xs shrink-0"></i>
             <span>${row.label}</span>
           </div>
         </td>
         ${profiles
           .map(
             p => `
-          <td class="py-2 px-2 text-center border-l text-xs min-w-[115px] sm:min-w-[125px] md:min-w-0" style="border-color: var(--table-border);">
+          <td class="py-1.5 sm:py-2 px-1 sm:px-2 text-center border-l text-xs min-w-[105px] sm:min-w-[120px] md:min-w-0" style="border-color: var(--table-border);">
             ${row.getValue(p)}
           </td>
         `
@@ -263,12 +263,12 @@ export function renderCareerComparisonTable(profiles: MultiManagerProfileData[])
         <span class="text-[10px] font-semibold opacity-60">Metriche All-Time di Lega</span>
       </div>
 
-      <div class="w-full overflow-x-auto scrollbar-thin">
-        <table class="w-full text-xs min-w-[580px] md:min-w-0 md:table-fixed">
+      <div class="w-full overflow-x-auto md:overflow-x-visible scrollbar-thin">
+        <table class="w-full text-xs md:table-fixed">
           <thead>
             <tr class="border-b uppercase text-[9px] tracking-wider font-bold" style="border-color: var(--table-border); background-color: var(--table-header-bg);">
-              <th class="py-2 px-2.5 text-left sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)] border-r md:w-[24%]"
-                  style="background-color: var(--table-surface); border-color: var(--table-border); min-width: 140px; width: 140px;">Metrica</th>
+              <th class="py-1.5 sm:py-2 px-1.5 sm:px-2.5 text-left sticky left-0 md:static z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)] md:shadow-none border-r md:border-r-0 min-w-[95px] w-[95px] sm:min-w-[120px] sm:w-[120px] md:min-w-0 md:w-[24%]"
+                  style="background-color: var(--modal-bg); border-color: var(--table-border);">Metrica</th>
               ${headers}
             </tr>
           </thead>

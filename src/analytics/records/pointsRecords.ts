@@ -331,5 +331,85 @@ export function computePointsRecords(
     });
   }
 
+  // -------------------------------------------------------------
+  // Record 1.6: Miglior Rendimento da Matricola (PPG al Debutto)
+  // -------------------------------------------------------------
+  const allSeasons = Array.from(new Set(competitions.map(c => c.season))).sort();
+  const inauguralSeason = allSeasons.length > 0 ? allSeasons[0] : '';
+
+  const debutPpgList: {
+    managerId: string;
+    season: string;
+    points: number;
+    ppg: number;
+    matchdays: number;
+    rank: number;
+    holder: RecordHolder;
+  }[] = [];
+
+  managers.forEach(m => {
+    const history = (m.history || []).filter(h => !h.in_progress && h.status !== 'in_progress');
+    if (history.length === 0) return;
+    const sorted = [...history].sort((a, b) => a.season.localeCompare(b.season));
+    const debut = sorted[0];
+    if (debut.season === inauguralSeason) return;
+
+    const comp = completedChampionships.find(c => c.season === debut.season);
+    const teamCount = comp?.ranking?.length || 12;
+    const matchdays = getSeasonMatchdays(debut.season, teamCount);
+
+    if (typeof debut.points === 'number' && debut.points > 0 && matchdays > 0) {
+      const ppg = Number((debut.points / matchdays).toFixed(3));
+      const crest = resolveManagerRecordCrest(m.id, debut.season, debut.team || undefined, managers, competitions);
+      const rankText = typeof debut.rank === 'number' ? `${debut.rank}° Posto` : '';
+
+      debutPpgList.push({
+        managerId: m.id,
+        season: debut.season,
+        points: debut.points,
+        ppg,
+        matchdays,
+        rank: debut.rank || 99,
+        holder: {
+          managerId: m.id,
+          managerName: m.name,
+          teamName: crest.teamName,
+          logo: crest.logo,
+          fallbackCrest: crest.fallbackCrest,
+          season: debut.season,
+          value: ppg,
+          formattedValue: `${ppg.toFixed(2)} pt/g`,
+          normalizedDetail: `${debut.points.toFixed(1)} pt (${matchdays} g.) ${rankText ? `· ${rankText}` : ''}`.trim()
+        }
+      });
+    }
+  });
+
+  debutPpgList.sort((a, b) => b.ppg - a.ppg || b.points - a.points);
+
+  if (debutPpgList.length > 0) {
+    const maxPpg = debutPpgList[0].ppg;
+    const topTied = debutPpgList.filter(p => p.ppg === maxPpg);
+    const primaryHolders = topTied.map(t => t.holder);
+    const runnerUps = debutPpgList
+      .filter(p => p.ppg < maxPpg)
+      .slice(0, 2)
+      .map(p => p.holder);
+
+    records.push({
+      id: 'debut_best_ppg',
+      title: 'Miglior Rendimento da Matricola',
+      category: 'points',
+      icon: 'fa-solid fa-graduation-cap',
+      watermark: '🎓',
+      badgeLabel: 'Esordio d\'Oro',
+      badgeColor: 'emerald',
+      primaryHolders,
+      primaryHolder: primaryHolders[0],
+      runnerUps,
+      description: 'La media punti più alta mai realizzata da un fantallenatore nella sua primissima stagione in Serie Atlas (esclusa la stagione inaugurale della lega).'
+    });
+  }
+
   return records;
 }

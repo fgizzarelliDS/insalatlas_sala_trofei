@@ -581,6 +581,77 @@ export function computeTitlesRecords(
     });
   }
 
+  // -------------------------------------------------------------
+  // Record 2.9: Miglior Piazzamento da Matricola (Rank al Debutto)
+  // -------------------------------------------------------------
+  const allSeasons = Array.from(new Set(competitions.map(c => c.season))).sort();
+  const inauguralSeason = allSeasons.length > 0 ? allSeasons[0] : '';
+
+  const debutRankList: {
+    managerId: string;
+    season: string;
+    rank: number;
+    points: number;
+    holder: RecordHolder;
+  }[] = [];
+
+  managers.forEach(m => {
+    const history = (m.history || []).filter(h => !h.in_progress && h.status !== 'in_progress');
+    if (history.length === 0) return;
+    const sorted = [...history].sort((a, b) => a.season.localeCompare(b.season));
+    const debut = sorted[0];
+    if (debut.season === inauguralSeason) return;
+
+    if (typeof debut.rank === 'number' && debut.rank > 0) {
+      const crest = resolveManagerRecordCrest(m.id, debut.season, debut.team || undefined, managers, competitions);
+      const pointsText = typeof debut.points === 'number' ? `${debut.points.toFixed(1)} pt` : '';
+
+      debutRankList.push({
+        managerId: m.id,
+        season: debut.season,
+        rank: debut.rank,
+        points: debut.points || 0,
+        holder: {
+          managerId: m.id,
+          managerName: m.name,
+          teamName: crest.teamName,
+          logo: crest.logo,
+          fallbackCrest: crest.fallbackCrest,
+          season: debut.season,
+          value: debut.rank,
+          formattedValue: `${debut.rank}° Posto`,
+          normalizedDetail: `${debut.rank === 1 ? '🥇 Campione' : debut.rank === 2 ? '🥈 Vice-Campione' : debut.rank === 3 ? '🥉 Podio' : `${debut.rank}° Classificato`} (${pointsText})`.trim()
+        }
+      });
+    }
+  });
+
+  debutRankList.sort((a, b) => a.rank - b.rank || b.points - a.points);
+
+  if (debutRankList.length > 0) {
+    const bestRank = debutRankList[0].rank;
+    const topTied = debutRankList.filter(p => p.rank === bestRank);
+    const primaryHolders = topTied.map(t => t.holder);
+    const runnerUps = debutRankList
+      .filter(p => p.rank > bestRank)
+      .slice(0, 2)
+      .map(p => p.holder);
+
+    records.push({
+      id: 'debut_best_rank',
+      title: 'Miglior Piazzamento da Matricola',
+      category: 'titles',
+      icon: 'fa-solid fa-medal',
+      watermark: '🥈',
+      badgeLabel: 'Argento al Debutto',
+      badgeColor: 'amber',
+      primaryHolders,
+      primaryHolder: primaryHolders[0],
+      runnerUps,
+      description: 'Il miglior piazzamento finale mai raggiunto da un fantallenatore nella sua stagione d\'esordio (esclusa la stagione inaugurale della lega).'
+    });
+  }
+
   return records;
 }
 

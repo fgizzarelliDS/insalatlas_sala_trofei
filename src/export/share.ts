@@ -14,6 +14,8 @@ import {
   renderManagerStoryCanvas,
   renderH2HDuelStoryCanvas,
   renderMultiManagerStoryCanvas,
+  renderRecordStoryCanvas,
+  renderRecordsSummaryStoryCanvas,
   downloadBlob,
   copyBlobToClipboard
 } from './canvas';
@@ -714,5 +716,61 @@ export async function copyMultiManagerToClipboard(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Renders and downloads high-definition 9:16 vertical Story for an individual Hall of Fame Record
+ */
+export async function exportRecordStoryHD(recordId: string): Promise<void> {
+  const records = computeAllLeagueRecords(state.managers, state.competitions);
+  const record = records.find(r => r.id === recordId);
+  if (!record) {
+    showToast('Impossibile trovare il record selezionato', 'error');
+    return;
+  }
+
+  showToast('Generazione Story Record 9:16 in corso...', 'info');
+  const dropdown = document.getElementById(`record-share-dropdown-${recordId}`);
+  if (dropdown) dropdown.classList.add('hidden');
+
+  try {
+    const canvas = await renderRecordStoryCanvas(record);
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        showToast("Errore durante la creazione della Story", 'error');
+        return;
+      }
+      const filename = `insalatlas_record_story_${recordId}_${Date.now()}.png`;
+      downloadBlob(blob, filename);
+    }, 'image/png');
+  } catch (err) {
+    console.error('Record Story export failed:', err);
+    showToast('Impossibile esportare la Story del record', 'error');
+  }
+}
+
+/**
+ * Renders and downloads high-definition 9:16 vertical Story for the Top Primati Summary Poster
+ */
+export async function exportRecordsSummaryStoryHD(): Promise<void> {
+  showToast('Generazione Story Top Primati 9:16 in corso...', 'info');
+  const dropdown = document.getElementById('poster-share-dropdown-menu');
+  if (dropdown) dropdown.classList.add('hidden');
+
+  try {
+    const canvas = await renderRecordsSummaryStoryCanvas();
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        showToast("Errore durante la creazione della Story", 'error');
+        return;
+      }
+      const filename = `insalatlas_top_primati_story_${Date.now()}.png`;
+      downloadBlob(blob, filename);
+    }, 'image/png');
+  } catch (err) {
+    console.error('Records Summary Story export failed:', err);
+    showToast('Impossibile esportare la Story dei primati', 'error');
+  }
+}
+
 
 

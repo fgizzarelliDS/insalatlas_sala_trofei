@@ -547,10 +547,10 @@ export function changeMultiManager(index: number, newId: string): void {
 }
 
 /**
- * Adds next available manager to the multi-manager comparison (max 5)
+ * Adds next available manager to the multi-manager comparison (max 6)
  */
 export function addNextMultiManager(): void {
-  if (multiSelectedManagerIds.length >= 5) return;
+  if (multiSelectedManagerIds.length >= 6) return;
   const next = state.managers.find(m => !multiSelectedManagerIds.includes(m.id));
   if (next) {
     multiSelectedManagerIds.push(next.id);

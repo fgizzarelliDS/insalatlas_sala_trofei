@@ -76,12 +76,14 @@ export function renderMultiManagerView(
     })
     .join('');
 
-  const canAddMore = selectedManagers.length < 5 && allManagers.length > selectedManagers.length;
+  const canAddMore = selectedManagers.length < 6 && allManagers.length > selectedManagers.length;
   const gridColsClass = selectedManagers.length === 4
     ? 'lg:grid-cols-4'
-    : selectedManagers.length >= 5
+    : selectedManagers.length === 5
       ? 'lg:grid-cols-5'
-      : 'lg:grid-cols-3';
+      : selectedManagers.length >= 6
+        ? 'lg:grid-cols-6'
+        : 'lg:grid-cols-3';
 
   return `
     <div class="space-y-4">
@@ -91,7 +93,7 @@ export function renderMultiManagerView(
           <div class="flex items-center gap-2">
             <i class="fa-solid fa-users text-amber-400 text-xs"></i>
             <span class="font-bold text-xs uppercase tracking-wider" style="color: var(--text-main);">
-              Rivali al Tavolo (${selectedManagers.length}/5)
+              Rivali al Tavolo (${selectedManagers.length}/6)
             </span>
           </div>
           ${canAddMore ? `

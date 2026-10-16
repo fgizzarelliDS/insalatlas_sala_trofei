@@ -111,11 +111,11 @@ export function renderHeadToHeadModalHTML(
             ${renderHeadToHeadMetrics(stats, managerA, managerB, visualMode)}
           `
       : activeTab === 'multi'
-      ? `
+        ? `
             <!-- 3+ Managers "Tavolo dei Rivali" Multi-Radar & Mini-Tournament -->
             ${renderMultiManagerView(multiManagers, allManagers, hiddenMultiManagerIds, multiTournamentMode)}
           `
-      : `
+        : `
             <!-- Full N x N Nemesis Cross-Table Matrix View -->
             ${renderNemesisMatrixView(allManagers, nemesisFilter)}
           `
@@ -148,7 +148,7 @@ export function renderHeadToHeadModalHTML(
                   <button onclick="window.exportCurrentH2HDuelStoryHD && window.exportCurrentH2HDuelStoryHD(); closeH2HShareDropdown();"
                     class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition">
                     <i class="fa-solid fa-mobile-screen text-indigo-400"></i>
-                    <span>📱 Story Instagram (9:16)</span>
+                    <span>Story (9:16)</span>
                   </button>
                   <button onclick="copyCurrentH2HDuelToClipboard(); closeH2HShareDropdown();"
                     class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition">
@@ -165,7 +165,7 @@ export function renderHeadToHeadModalHTML(
               </div>
             `
       : activeTab === 'multi'
-      ? `
+        ? `
               <!-- Dropdown Popover Menu for Tavolo Rivali Multi-Manager -->
               <div class="relative">
                 <button id="btn-h2h-share-dropdown" onclick="toggleH2HShareDropdown(event)"
@@ -187,7 +187,7 @@ export function renderHeadToHeadModalHTML(
                   <button onclick="window.exportMultiManagerStoryHD && window.exportMultiManagerStoryHD(); closeH2HShareDropdown();"
                     class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition">
                     <i class="fa-solid fa-mobile-screen text-indigo-400"></i>
-                    <span>📱 Story Instagram (9:16)</span>
+                    <span>Story (9:16)</span>
                   </button>
                   <button onclick="window.copyCurrentMultiManagerToClipboard && window.copyCurrentMultiManagerToClipboard(); closeH2HShareDropdown();"
                     class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition">
@@ -203,7 +203,7 @@ export function renderHeadToHeadModalHTML(
                 </div>
               </div>
             `
-      : ''
+        : ''
     }
       </div>
 

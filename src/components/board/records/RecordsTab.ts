@@ -416,8 +416,13 @@ export function renderRecordCard(record: LeagueRecord): string {
             <div id="record-share-dropdown-${record.id}"
               class="hidden absolute bottom-full right-0 mb-2 w-52 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
               style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--modal-text);">
-              <button onclick="copyRecordCard('${record.id}', event)"
+              <button onclick="window.exportRecordStoryHD && window.exportRecordStoryHD('${record.id}'); closeAllRecordShareDropdowns();"
                 class="w-full px-2.5 py-1.5 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
+                <i class="fa-solid fa-mobile-screen text-indigo-400"></i>
+                <span>📱 Story (9:16)</span>
+              </button>
+              <button onclick="copyRecordCard('${record.id}', event)"
+                class="w-full px-2.5 py-1.5 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer mt-0.5">
                 <i class="fa-solid fa-copy text-emerald-500"></i>
                 <span>Copia per WhatsApp</span>
               </button>
@@ -562,8 +567,16 @@ export function renderRecordsContentHTML(
             >
               <button 
                 type="button"
-                onclick="window.exportHallOfFamePosterHD && window.exportHallOfFamePosterHD(); window.closePosterShareDropdown && window.closePosterShareDropdown();"
+                onclick="window.exportRecordsSummaryStoryHD && window.exportRecordsSummaryStoryHD(); window.closePosterShareDropdown && window.closePosterShareDropdown();"
                 class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer"
+              >
+                <i class="fa-solid fa-mobile-screen text-indigo-400"></i>
+                <span>📱 Story Top Primati (9:16)</span>
+              </button>
+              <button 
+                type="button"
+                onclick="window.exportHallOfFamePosterHD && window.exportHallOfFamePosterHD(); window.closePosterShareDropdown && window.closePosterShareDropdown();"
+                class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer mt-0.5"
               >
                 <i class="fa-solid fa-download text-amber-500"></i>
                 <span>Scarica Poster PNG (HD)</span>
@@ -721,4 +734,49 @@ export async function copyRecordCard(recordId: string, event?: Event): Promise<v
   const { copyRecordCardToClipboard } = await import('@/export/share');
   await copyRecordCardToClipboard(recordId);
 }
+
+/**
+ * Triggers export of an individual record card to 9:16 Instagram/WhatsApp Story
+ */
+export async function exportRecordStory(recordId: string, event?: Event): Promise<void> {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  closeAllRecordShareDropdowns();
+  const { exportRecordStoryHD } = await import('@/export/share');
+  await exportRecordStoryHD(recordId);
+}
+
+/**
+ * Triggers export of the Top Primati Hall of Fame Summary Poster to 9:16 Story
+ */
+export async function exportRecordsSummaryStory(event?: Event): Promise<void> {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  closePosterShareDropdown();
+  const { exportRecordsSummaryStoryHD } = await import('@/export/share');
+  await exportRecordsSummaryStoryHD();
+}
+
+// Global window registrations for inline onclick handlers
+if (typeof window !== 'undefined') {
+  const w = window as any;
+  w.toggleRecordShareDropdown = toggleRecordShareDropdown;
+  w.closeAllRecordShareDropdowns = closeAllRecordShareDropdowns;
+  w.togglePosterShareDropdown = togglePosterShareDropdown;
+  w.closePosterShareDropdown = closePosterShareDropdown;
+  w.exportHallOfFamePoster = exportHallOfFamePoster;
+  w.copyHallOfFamePoster = copyHallOfFamePoster;
+  w.shareHallOfFamePosterWhatsApp = shareHallOfFamePosterWhatsApp;
+  w.exportRecordCard = exportRecordCard;
+  w.copyRecordCard = copyRecordCard;
+  w.exportRecordStory = exportRecordStory;
+  w.exportRecordsSummaryStory = exportRecordsSummaryStory;
+  w.exportRecordStoryHD = exportRecordStory;
+  w.exportRecordsSummaryStoryHD = exportRecordsSummaryStory;
+}
+
 

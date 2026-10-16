@@ -57,13 +57,13 @@ export function buildAlboColumns(features: LeagueFeatures): AlboColumnDef[] {
   const allColumns: AlboColumnDef[] = [
     { key: 'manager', cssVar: '--col-manager', titleKey: 'col1', defaultTitle: 'Allenatore (Presenze)', enabled: true, order: 1 },
     { key: 'championship', cssVar: '--col-championship', titleKey: 'col2', defaultTitle: 'Campionato', enabled: true, order: 2 },
-    { key: 'spoon', cssVar: '--col-spoon', titleKey: 'col3', defaultTitle: 'Cucchiaio', enabled: features.spoon, order: 3 },
-    { key: 'cup', cssVar: '--col-cup', titleKey: 'col4', defaultTitle: 'Coppa di Lega', enabled: features.cup, order: 4 },
-    { key: 'supercup', cssVar: '--col-supercup', titleKey: 'col5', defaultTitle: 'Supercoppa', enabled: features.supercup, order: 5 },
-    { key: 'mundialito', cssVar: '--col-mundialito', titleKey: 'col6', defaultTitle: 'Mundialito', enabled: features.mundialito, order: 6 },
+    { key: 'cup', cssVar: '--col-cup', titleKey: 'col3', defaultTitle: 'Coppa di Lega', enabled: features.cup, order: 3 },
+    { key: 'supercup', cssVar: '--col-supercup', titleKey: 'col4', defaultTitle: 'Supercoppa', enabled: features.supercup, order: 4 },
+    { key: 'mundialito', cssVar: '--col-mundialito', titleKey: 'col5', defaultTitle: 'Mundialito', enabled: features.mundialito, order: 5 },
+    { key: 'spoon', cssVar: '--col-spoon', titleKey: 'col6', defaultTitle: 'Cucchiaio', enabled: features.spoon, order: 6 },
     { key: 'cartonato', cssVar: '--col-cartonato', titleKey: 'col7', defaultTitle: 'Cartonato', enabled: features.cartonato, order: 7 }
   ];
-  return allColumns.filter(c => c.enabled);
+  return allColumns.filter(c => c.enabled).sort((a, b) => a.order - b.order);
 }
 
 export const ALBO_COLUMNS: AlboColumnDef[] = buildAlboColumns(LEAGUE.features);
@@ -89,10 +89,10 @@ export const DEFAULT_TITLES: TitlesConfig = {
   leagueCaption: "ALBO D'ORO STORICO",
   col1: 'Allenatore (Presenze)',
   col2: 'Campionato',
-  col3: 'Cucchiaio',
-  col4: 'Coppa di Lega',
-  col5: 'Supercoppa',
-  col6: 'Mundialito',
+  col3: 'Coppa di Lega',
+  col4: 'Supercoppa',
+  col5: 'Mundialito',
+  col6: 'Cucchiaio',
   col7: 'Cartonato'
 };
 

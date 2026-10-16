@@ -128,27 +128,28 @@ export function renderBoardHeader(): void {
   if (!header) return;
 
   header.innerHTML = ALBO_COLUMNS.map(col => {
+    const title = state.titles[col.titleKey] || col.defaultTitle;
     switch (col.key) {
       case 'manager':
         return `
           <div id="th-col-1" data-title-key="col1" onblur="handleTitleBlur(this)"
             class="sticky left-0 z-20 px-2 sm:pl-4 sm:pr-3 transition border-r shadow-[3px_0_6px_-2px_rgba(0,0,0,0.25)] text-[11px] sm:text-xs truncate self-stretch flex items-center"
             style="background-color: var(--header-bg); border-color: rgba(255, 255, 255, 0.15);">
-            ${state.titles.col1 || col.defaultTitle}
+            ${title}
           </div>
         `;
       case 'championship':
-        return `<div id="th-col-2" data-title-key="col2" onblur="handleTitleBlur(this)" class="text-center px-1 sm:px-3 transition text-[11px] sm:text-xs">${state.titles.col2 || col.defaultTitle}</div>`;
-      case 'spoon':
-        return `<div id="th-col-3" data-title-key="col3" onblur="handleTitleBlur(this)" class="text-center transition text-[11px] sm:text-xs">${state.titles.col3 || col.defaultTitle}</div>`;
+        return `<div id="th-col-2" data-title-key="col2" onblur="handleTitleBlur(this)" class="text-center px-1 sm:px-3 transition text-[11px] sm:text-xs">${title}</div>`;
       case 'cup':
-        return `<div id="th-col-4" data-title-key="col4" onblur="handleTitleBlur(this)" class="text-center transition text-[11px] sm:text-xs">${state.titles.col4 || col.defaultTitle}</div>`;
+        return `<div id="th-col-3" data-title-key="col3" onblur="handleTitleBlur(this)" class="text-center transition text-[11px] sm:text-xs">${title}</div>`;
       case 'supercup':
-        return `<div id="th-col-5" data-title-key="col5" onblur="handleTitleBlur(this)" class="text-center px-1 transition text-[10px] sm:text-xs tracking-tight sm:tracking-wider truncate">${state.titles.col5 || col.defaultTitle}</div>`;
+        return `<div id="th-col-4" data-title-key="col4" onblur="handleTitleBlur(this)" class="text-center px-1 transition text-[10px] sm:text-xs tracking-tight sm:tracking-wider truncate">${title}</div>`;
       case 'mundialito':
-        return `<div id="th-col-6" data-title-key="col6" onblur="handleTitleBlur(this)" class="text-center px-1 transition text-[10px] sm:text-xs tracking-tight sm:tracking-wider truncate">${state.titles.col6 || col.defaultTitle}</div>`;
+        return `<div id="th-col-5" data-title-key="col5" onblur="handleTitleBlur(this)" class="text-center px-1 transition text-[10px] sm:text-xs tracking-tight sm:tracking-wider truncate">${title}</div>`;
+      case 'spoon':
+        return `<div id="th-col-6" data-title-key="col6" onblur="handleTitleBlur(this)" class="text-center transition text-[11px] sm:text-xs">${title}</div>`;
       case 'cartonato':
-        return `<div id="th-col-7" data-title-key="col7" onblur="handleTitleBlur(this)" class="text-right pr-2 sm:pr-4 transition text-[11px] sm:text-xs">${state.titles.col7 || col.defaultTitle}</div>`;
+        return `<div id="th-col-7" data-title-key="col7" onblur="handleTitleBlur(this)" class="text-right pr-2 sm:pr-4 transition text-[11px] sm:text-xs">${title}</div>`;
       default:
         return '';
     }

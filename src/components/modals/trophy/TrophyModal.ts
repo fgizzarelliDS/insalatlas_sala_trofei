@@ -1,4 +1,5 @@
 import { state } from '@/state';
+import { LEAGUE } from '@/config';
 import { showToast } from '@/ui';
 import type { TrophyModalKey, CupSubTab } from './TrophyModalTypes';
 import { renderTrophyModalShellHTML } from './TrophyModalShell';
@@ -189,7 +190,7 @@ export async function exportTrophyModalHD(): Promise<void> {
         showToast("Errore durante la creazione dell'immagine", 'error');
         return;
       }
-      const filename = `InsalAtlas_Albo_${currentTrophyKey || 'trofeo'}_${Date.now()}.png`;
+      const filename = `${LEAGUE.brand.name}_Albo_${currentTrophyKey || 'trofeo'}_${Date.now()}.png`;
       downloadBlob(blob, filename);
     }, 'image/png');
   } catch (err) {
@@ -227,7 +228,7 @@ export async function copyTrophyModalToClipboard(): Promise<boolean> {
           resolve(false);
           return;
         }
-        const filename = `InsalAtlas_Albo_${currentTrophyKey || 'trofeo'}_${Date.now()}.png`;
+        const filename = `${LEAGUE.brand.name}_Albo_${currentTrophyKey || 'trofeo'}_${Date.now()}.png`;
         const success = await copyBlobToClipboard(blob, filename);
         resolve(success);
       }, 'image/png');
@@ -270,7 +271,7 @@ export function switchTrophyModalTab(subTab: CupSubTab): void {
  * Generates and opens WhatsApp share text for the active trophy
  */
 export function shareTrophyWhatsApp(key: TrophyModalKey, subTab?: CupSubTab): void {
-  let baseUrl = 'https://fgizzarellids.github.io/insalatlas_sala_trofei/';
+  let baseUrl = LEAGUE.siteUrl;
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     if (!isLocal) {
@@ -282,16 +283,16 @@ export function shareTrophyWhatsApp(key: TrophyModalKey, subTab?: CupSubTab): vo
   const shareUrl = `${baseUrl}?trophy=${key}${subQuery}`;
 
   let title = "Albo d'Oro";
-  if (key === 'scudetti') title = "🥇 Albo d'Oro Scudetti Serie Atlas";
-  else if (key === 'cups' && subTab === 'supercoppa') title = "⭐ Albo d'Oro Supercoppa InsalAtlas";
-  else if (key === 'cups') title = "🏆 Albo d'Oro Coppa InsalAtlas";
+  if (key === 'scudetti') title = `🥇 Albo d'Oro Scudetti ${LEAGUE.brand.championshipLabel}`;
+  else if (key === 'cups' && subTab === 'supercoppa') title = `⭐ Albo d'Oro ${LEAGUE.competitions.supercup.title}`;
+  else if (key === 'cups') title = `🏆 Albo d'Oro ${LEAGUE.competitions.cup.title}`;
   else if (key === 'mundialito') title = "🌍 Albo d'Oro Mundialito";
-  else if (key === 'spoons') title = "🥄 Muro dei Cucchiai di Legno (Ultimi Posti)";
+  else if (key === 'spoons') title = `🥄 Muro dei Cucchiai di Legno (${LEAGUE.brand.championshipLabel})`;
   else if (key === 'cartonato') title = "📦 Albo Playout & Banner Cartonato";
   else if (key === 'seasons') title = "📅 Cronologia Storica delle Stagioni";
 
   const message = `${title}
-📜 Consulta l'albo ufficiale, i podi e le finali storiche su InsalAtlas:
+📜 Consulta l'albo ufficiale, i podi e le finali storiche su ${LEAGUE.brand.name}:
 👉 ${shareUrl}`;
 
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;

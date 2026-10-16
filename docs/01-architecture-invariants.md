@@ -68,10 +68,10 @@ La tabella palmarès (`.albo-grid-row`) adotta una struttura a griglia CSS nativ
 .albo-grid-row
 ├── 1. col-manager      (--col-manager)     : Mister & Presenze (sticky a sinistra)
 ├── 2. col-championship (--col-championship): Scudetti (Oro, Argento, Bronzo)
-├── 3. col-spoon        (--col-spoon)       : Cucchiai di Legno
-├── 4. col-cup          (--col-cup)         : Coppe di Lega (Vittorie & Finali)
-├── 5. col-supercup     (--col-supercup)    : Supercoppe di Lega
-├── 6. col-mundialito   (--col-mundialito)  : Trofeo Mundialito
+├── 3. col-cup          (--col-cup)         : Coppe di Lega (Vittorie & Finali)
+├── 4. col-supercup     (--col-supercup)    : Supercoppe di Lega
+├── 5. col-mundialito   (--col-mundialito)  : Trofeo Mundialito
+├── 6. col-spoon        (--col-spoon)       : Cucchiai di Legno
 └── 7. col-cartonato    (--col-cartonato)   : Trofeo Cartonato & Bacheca Allenatori
 ```
 

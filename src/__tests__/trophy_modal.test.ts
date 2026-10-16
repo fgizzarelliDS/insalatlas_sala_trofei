@@ -185,11 +185,11 @@ describe('Interactive Trophy Modals & Roll of Honor Suite', () => {
       expect(html).not.toContain('<span class="text-[9px] font-normal opacity-70">pt</span>');
     });
 
-    it('renders Cucchiai di Legno wall of shame without in-progress and without unnecessary points', () => {
+    it('renders Cucchiai di Legno wall of shame without in-progress, without redundant Ultimo Posto label and without unnecessary points', () => {
       const html = renderSpoonsContent(state.competitions, state.managers);
       expect(html).toContain('🥄');
       expect(html).toContain('Cucchiaio');
-      expect(html).toContain('Ultimo Posto');
+      expect(html).not.toContain('Ultimo Posto');
       expect(html).not.toContain('In Corso');
       expect(html).not.toContain('<span class="text-[9px] font-normal opacity-70">pt</span>');
     });
@@ -288,20 +288,58 @@ describe('Interactive Trophy Modals & Roll of Honor Suite', () => {
       expect(cupsHTML).toContain('title="Apri scheda profilo di');
     });
 
-    it('provides both sleek mobile layout with team name in middle and exact desktop layout', () => {
+    it('provides both sleek compact mobile layout with manager & team stacked next to crest and exact desktop layout', () => {
       const scudettiHTML = renderScudettiRollHTML(state.competitions, state.managers);
       // Mobile sleek container
       expect(scudettiHTML).toContain('flex sm:hidden items-center justify-between');
       // Desktop preserved container
       expect(scudettiHTML).toContain('hidden sm:flex flex-col justify-between');
-      // Centered team name on mobile
-      expect(scudettiHTML).toContain('text-center flex-1 min-w-0 px-1');
+      // Compact stacked 2-line layout without max-w-[85px]
+      expect(scudettiHTML).toContain('leading-tight');
+      expect(scudettiHTML).not.toContain('max-w-[85px]');
     });
 
     it('ensures manager profile modal has z-[90] to layer in front of trophy modal z-[80]', async () => {
       const { getProfileModalShellHTML } = await import('@/components/modals/profile/ProfileModalShell');
       const html = getProfileModalShellHTML();
       expect(html).toContain('z-[90]');
+    });
+
+    it('verifies ALBO_COLUMNS order with Cucchiaio at Column 6 between Mundialito and Cartonato', async () => {
+      const { ALBO_COLUMNS } = await import('@/config');
+      const keys = ALBO_COLUMNS.map(c => c.key);
+      expect(keys).toEqual([
+        'manager',
+        'championship',
+        'cup',
+        'supercup',
+        'mundialito',
+        'spoon',
+        'cartonato'
+      ]);
+      const spoonCol = ALBO_COLUMNS.find(c => c.key === 'spoon');
+      expect(spoonCol?.order).toBe(6);
+      expect(spoonCol?.titleKey).toBe('col6');
+    });
+
+    it('computes dynamic badgeLabels in getTrophyHeaderConfig based on real completed data', () => {
+      const scudetti = getTrophyHeaderConfig('scudetti');
+      expect(scudetti.badgeLabel).toBe('10 Edizioni Concluse');
+
+      const coppa = getTrophyHeaderConfig('cups', 'coppa');
+      expect(coppa.badgeLabel).toBe('8 Coppe Assegnate');
+
+      const supercoppa = getTrophyHeaderConfig('cups', 'supercoppa');
+      expect(supercoppa.badgeLabel).toBe('7 Supercoppe Assegnate');
+
+      const mundialito = getTrophyHeaderConfig('mundialito');
+      expect(mundialito.badgeLabel).toBe('3 Edizioni Concluse');
+
+      const spoons = getTrophyHeaderConfig('spoons');
+      expect(spoons.badgeLabel).toBe('10 Cucchiai Assegnati');
+
+      const cartonato = getTrophyHeaderConfig('cartonato');
+      expect(cartonato.badgeLabel).toBe('5 Cartonati Assegnati');
     });
   });
 });

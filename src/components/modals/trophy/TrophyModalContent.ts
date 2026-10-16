@@ -53,22 +53,23 @@ function renderParticipantRow(
     <div ${cardClick} ${cardTitle} class="p-2 sm:p-2.5 rounded-xl border transition min-w-0 ${cardCursor}"
       style="background-color: var(--input-bg, rgba(255,255,255,0.02)); border-color: var(--table-border);">
       
-      <!-- MOBILE VIEW (< sm): Sleek single row with team name in the middle -->
+      <!-- MOBILE VIEW (< sm): Sleek compact row with manager and team name stacked next to crest -->
       <div class="flex sm:hidden items-center justify-between gap-2 w-full min-w-0">
-        <div class="flex items-center gap-1.5 min-w-0 shrink-0">
+        <div class="flex items-center gap-2 min-w-0 flex-1">
           <span class="px-1.5 py-0.5 rounded-md text-[10px] font-black shrink-0 ${badgeClasses}">
             ${badgeText}
           </span>
           <img src="${p.logo || p.fallbackCrest}" alt="${p.teamName}"
-            class="w-6 h-6 rounded-full object-contain shrink-0 border border-white/10 bg-white/5"
+            class="w-7 h-7 rounded-full object-contain shrink-0 border border-white/10 bg-white/5"
             onerror="this.onerror=null; this.src='${p.fallbackCrest}';" />
-          <div class="font-bold text-xs truncate max-w-[85px]" style="color: var(--text-main);">
-            ${p.managerName}
+          <div class="min-w-0 flex-1">
+            <div class="font-bold text-xs leading-tight" style="color: var(--text-main);">
+              ${p.managerName}
+            </div>
+            <div class="text-[10px] leading-tight opacity-75 truncate" style="color: var(--text-muted);">
+              ${p.teamName || 'Squadra non specificata'}
+            </div>
           </div>
-        </div>
-
-        <div class="text-[10px] truncate opacity-75 text-center flex-1 min-w-0 px-1 font-medium" style="color: var(--text-muted);">
-          ${p.teamName || 'Squadra non specificata'}
         </div>
 
         <div class="text-right shrink-0">
@@ -79,18 +80,18 @@ function renderParticipantRow(
 
       <!-- DESKTOP VIEW (sm: >= 640px): Standard side-by-side grid card -->
       <div class="hidden sm:flex items-center justify-between gap-3 min-w-0 w-full">
-        <div class="flex items-center gap-2.5 min-w-0">
+        <div class="flex items-center gap-2.5 min-w-0 flex-1">
           <span class="px-2 py-0.5 rounded-md text-[10px] font-black shrink-0 ${badgeClasses}">
             ${badgeText}
           </span>
           <img src="${p.logo || p.fallbackCrest}" alt="${p.teamName}"
             class="w-8 h-8 rounded-full object-contain shrink-0 border border-white/10 bg-white/5"
             onerror="this.onerror=null; this.src='${p.fallbackCrest}';" />
-          <div class="min-w-0">
-            <div class="font-bold text-xs sm:text-sm truncate" style="color: var(--text-main);">
+          <div class="min-w-0 flex-1">
+            <div class="font-bold text-xs sm:text-sm" style="color: var(--text-main);">
               ${p.managerName}
             </div>
-            <div class="text-[10px] sm:text-[11px] truncate opacity-75" style="color: var(--text-muted);">
+            <div class="text-[10px] sm:text-[11px] opacity-75 truncate" style="color: var(--text-muted);">
               ${p.teamName || 'Squadra non specificata'}
             </div>
           </div>
@@ -127,24 +128,25 @@ function renderPodiumCard(
     <div ${cardClick} ${cardTitle} class="p-2.5 sm:p-3 rounded-xl border transition min-w-0 ${cardCursor}"
       style="background-color: var(--input-bg, rgba(255,255,255,0.02)); border-color: var(--table-border);">
       
-      <!-- MOBILE VIEW (< sm): Sleek single horizontal row with team name in the middle -->
+      <!-- MOBILE VIEW (< sm): Sleek compact row with manager and team name stacked next to crest -->
       <div class="flex sm:hidden items-center justify-between gap-2 w-full min-w-0">
-        <div class="flex items-center gap-1.5 min-w-0 shrink-0">
+        <div class="flex items-center gap-2 min-w-0 flex-1">
           <span class="px-1.5 py-0.5 rounded-md text-[10px] font-black shrink-0 ${badgeClasses}">
             ${badgeText}
           </span>
           <img src="${p.logo || p.fallbackCrest}" alt="${p.teamName}"
-            class="w-6 h-6 rounded-full object-contain shrink-0 border border-white/10 bg-white/5"
+            class="w-7 h-7 rounded-full object-contain shrink-0 border border-white/10 bg-white/5"
             onerror="this.onerror=null; this.src='${p.fallbackCrest}';" />
-          <div class="font-bold text-xs truncate max-w-[85px]" style="color: var(--text-main);">
-            ${p.managerName}
+          <div class="min-w-0 flex-1">
+            <div class="font-bold text-xs leading-tight" style="color: var(--text-main);">
+              ${p.managerName}
+            </div>
+            <div class="text-[10px] leading-tight opacity-75 truncate" style="color: var(--text-muted);">
+              ${p.teamName || 'Squadra non specificata'}
+            </div>
           </div>
         </div>
         
-        <div class="text-[10px] truncate opacity-75 text-center flex-1 min-w-0 px-1 font-medium" style="color: var(--text-muted);">
-          ${p.teamName || 'Squadra non specificata'}
-        </div>
-
         <div class="text-right shrink-0">
           ${pointsHTML}
         </div>
@@ -163,10 +165,10 @@ function renderPodiumCard(
             class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-contain shrink-0 border border-white/10 bg-white/5"
             onerror="this.onerror=null; this.src='${p.fallbackCrest}';" />
           <div class="min-w-0 flex-1">
-            <div class="font-bold text-xs sm:text-sm truncate" style="color: var(--text-main);">
+            <div class="font-bold text-xs sm:text-sm" style="color: var(--text-main);">
               ${p.managerName}
             </div>
-            <div class="text-[10px] sm:text-[11px] truncate opacity-75" style="color: var(--text-muted);">
+            <div class="text-[10px] sm:text-[11px] opacity-75 truncate" style="color: var(--text-muted);">
               ${p.teamName || 'Squadra non specificata'}
             </div>
           </div>
@@ -364,7 +366,7 @@ export function renderSpoonsContent(competitions: CompetitionRecord[], managers:
 
         <div class="space-y-1.5">
           ${participant
-        ? renderParticipantRow(participant, `🥄 #${maxRank}° Cucchiaio`, 'bg-rose-500/20 text-rose-400 border border-rose-500/40', 'Ultimo Posto', false)
+        ? renderParticipantRow(participant, `🥄 #${maxRank}° Cucchiaio`, 'bg-rose-500/20 text-rose-400 border border-rose-500/40', undefined, false)
         : `<div class="text-[11px] text-center py-2 opacity-60">Dato non disponibile.</div>`}
         </div>
       </div>

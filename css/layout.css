@@ -37,10 +37,10 @@
     --albo-cols,
     var(--col-manager)
     var(--col-championship)
-    var(--col-spoon)
     var(--col-cup)
     var(--col-supercup)
     var(--col-mundialito)
+    var(--col-spoon)
     var(--col-cartonato)
   );
 }

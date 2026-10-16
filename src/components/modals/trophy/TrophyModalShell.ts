@@ -1,3 +1,6 @@
+import { LEAGUE } from '@/config';
+import { state } from '@/state';
+import type { CompetitionRecord, Manager } from '@/types';
 import type { TrophyModalKey, CupSubTab } from './TrophyModalTypes';
 
 export interface TrophyHeaderConfig {
@@ -7,58 +10,106 @@ export interface TrophyHeaderConfig {
   badgeLabel: string;
 }
 
-export function getTrophyHeaderConfig(key: TrophyModalKey, subTab?: CupSubTab): TrophyHeaderConfig {
+export function getTrophyHeaderConfig(
+  key: TrophyModalKey,
+  subTab?: CupSubTab,
+  competitions: CompetitionRecord[] = state.competitions,
+  managers: Manager[] = state.managers
+): TrophyHeaderConfig {
+  const comps = competitions || [];
+  const mgrs = managers || [];
+
   switch (key) {
-    case 'scudetti':
+    case 'scudetti': {
+      const completedChamps = comps.filter(
+        c => !c.in_progress && c.status !== 'in_progress' && (c.category === 'Campionato' || (c.name && c.name.toLowerCase().includes('serie')))
+      );
+      const count = completedChamps.length || mgrs.reduce((sum, m) => sum + (m.gold || 0), 0);
       return {
         icon: '🥇',
         title: "Albo d'Oro Scudetti",
-        subtitle: 'I campioni della Serie Atlas e i podi storici (1°, 2° e 3° posto) anno per anno.',
-        badgeLabel: '10 Edizioni Concluse'
+        subtitle: `I campioni della ${LEAGUE.brand.championshipLabel} e i podi storici (1°, 2° e 3° posto) anno per anno.`,
+        badgeLabel: `${count} Edizioni Concluse`
       };
-    case 'cups':
-      return subTab === 'supercoppa'
-        ? {
+    }
+    case 'cups': {
+      if (subTab === 'supercoppa') {
+        const completedSuper = comps.filter(
+          c => !c.in_progress && c.status !== 'in_progress' && (c.category === 'Supercoppa' || (c.name && c.name.toLowerCase().includes('supercoppa')))
+        );
+        const count = completedSuper.length || mgrs.reduce((sum, m) => sum + (m.supercup || 0), 0);
+        return {
           icon: '⭐',
-          title: 'Albo d’Oro Supercoppa',
+          title: `Albo d’Oro ${LEAGUE.competitions.supercup.title || 'Supercoppa'}`,
           subtitle: 'La sfida secca tra i vincitori di Campionato e Coppa: albo e finalisti.',
-          badgeLabel: '5 Supercoppe'
-        }
-        : {
-          icon: '🏆',
-          title: 'Albo d’Oro Coppa InsalAtlas',
-          subtitle: 'Il torneo a eliminazione diretta della lega: campioni e finalisti per ogni stagione.',
-          badgeLabel: '10 Coppe Assegnate'
+          badgeLabel: `${count} Supercoppe Assegnate`
         };
-    case 'mundialito':
+      }
+      const completedCups = comps.filter(c => {
+        if (c.in_progress || c.status === 'in_progress') return false;
+        if (c.category === 'Perdenti' || c.category === 'Supercoppa') return false;
+        const name = (c.name || '').toLowerCase();
+        if (name.includes('supercoppa') || name.includes('perdenti')) return false;
+        return c.category === 'Coppa' || name.includes('coppa');
+      });
+      const count = completedCups.length || mgrs.reduce((sum, m) => sum + (m.cup_gold || 0), 0);
+      return {
+        icon: '🏆',
+        title: `Albo d’Oro ${LEAGUE.competitions.cup.title || 'Coppa di Lega'}`,
+        subtitle: 'Il torneo a eliminazione diretta della lega: campioni e finalisti per ogni stagione.',
+        badgeLabel: `${count} Coppe Assegnate`
+      };
+    }
+    case 'mundialito': {
+      const completedMundialito = comps.filter(
+        c => !c.in_progress && c.status !== 'in_progress' && (c.category === 'Mundialito' || (c.name && c.name.toLowerCase().includes('mundialito')))
+      );
+      const count = completedMundialito.length || mgrs.reduce((sum, m) => sum + (m.mundialito || 0), 0);
       return {
         icon: '🌍',
         title: 'Albo d’Oro Mundialito',
         subtitle: 'La competizione globale interleghe: albo d’oro e finalisti di tutte le edizioni.',
-        badgeLabel: '3 Edizioni'
+        badgeLabel: `${count} Edizioni Concluse`
       };
-    case 'spoons':
+    }
+    case 'spoons': {
+      const completedChamps = comps.filter(
+        c => !c.in_progress && c.status !== 'in_progress' && (c.category === 'Campionato' || (c.name && c.name.toLowerCase().includes('serie')))
+      );
+      const count = completedChamps.length || mgrs.reduce((sum, m) => sum + (m.spoon || 0), 0);
       return {
         icon: '🥄',
         title: 'Muro dei Cucchiai di Legno',
-        subtitle: 'Gli ultimi posti ufficiali e le stagioni più tormentate nella storia della Serie Atlas.',
-        badgeLabel: '10 Cucchiai Assegnati'
+        subtitle: `Gli ultimi posti ufficiali e le stagioni più tormentate nella storia della ${LEAGUE.brand.championshipLabel}.`,
+        badgeLabel: `${count} Cucchiai Assegnati`
       };
-    case 'cartonato':
+    }
+    case 'cartonato': {
+      const completedPerdenti = comps.filter(
+        c => !c.in_progress && c.status !== 'in_progress' && (c.category === 'Perdenti' || (c.name && c.name.toLowerCase().includes('perdenti')))
+      );
+      const count = completedPerdenti.length || mgrs.reduce((sum, m) => sum + (m.cartonato || 0), 0);
       return {
         icon: '📦',
         title: 'Albo Playout & Banner Cartonato',
         subtitle: 'I coach finiti sul cartellone dei playout e della Coppa dei Perdenti.',
-        badgeLabel: '5 Cartonati Assegnati'
+        badgeLabel: `${count} Cartonati Assegnati`
       };
+    }
     case 'seasons':
-    default:
+    default: {
+      const distinctSeasons = Array.from(new Set(comps.map(c => c.season).filter(Boolean)));
+      const completedSeasons = distinctSeasons.filter(s =>
+        !comps.some(c => c.season === s && (c.in_progress || c.status === 'in_progress'))
+      );
+      const count = completedSeasons.length || distinctSeasons.length;
       return {
         icon: '📅',
         title: 'Cronologia Generale delle Stagioni',
         subtitle: 'Riepilogo anno per anno di tutti i trofei e link alle classifiche storiche archiviate.',
-        badgeLabel: '11 Stagioni (10+1 in corso)'
+        badgeLabel: `${count} Stagioni Concluse`
       };
+    }
   }
 }
 
@@ -90,7 +141,7 @@ export function renderTrophyModalShellHTML(
       class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[80] flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-fadeIn">
       
       <div id="trophy-history-dialog" onclick="event.stopPropagation()"
-        class="border w-full max-w-2xl min-w-0 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[90vh] transition-colors"
+        class="border w-full max-w-3xl sm:max-w-4xl min-w-0 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[90vh] transition-colors"
         style="background-color: var(--modal-bg); border-color: var(--modal-border); color: var(--modal-text);">
         
         <!-- Header -->

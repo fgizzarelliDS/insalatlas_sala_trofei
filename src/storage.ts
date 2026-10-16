@@ -96,7 +96,20 @@ export function saveData(): void {
 export function loadTitles(): void {
   try {
     const saved = localStorage.getItem(STORAGE_KEY_TITLES);
-    state.titles = saved ? { ...DEFAULT_TITLES, ...(JSON.parse(saved) as TitlesConfig) } : { ...DEFAULT_TITLES };
+    if (saved) {
+      const parsed = JSON.parse(saved) as TitlesConfig;
+      if (parsed.col3 === 'Cucchiaio' || parsed.col6 === 'Mundialito') {
+        parsed.col3 = DEFAULT_TITLES.col3;
+        parsed.col4 = DEFAULT_TITLES.col4;
+        parsed.col5 = DEFAULT_TITLES.col5;
+        parsed.col6 = DEFAULT_TITLES.col6;
+        parsed.col7 = DEFAULT_TITLES.col7;
+      }
+      state.titles = { ...DEFAULT_TITLES, ...parsed };
+      saveTitles();
+    } else {
+      state.titles = { ...DEFAULT_TITLES };
+    }
   } catch (e) {
     state.titles = { ...DEFAULT_TITLES };
   }

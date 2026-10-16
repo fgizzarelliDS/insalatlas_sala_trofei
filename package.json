@@ -5,15 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build:data": "python scripts/build_data.py",
-    "import:data": "python scripts/import_data.py",
-    "fetch:fanta": "python scripts/fetch_fantacalcio.py",
-    "prebuild": "python scripts/build_data.py",
-    "pretest": "python scripts/build_data.py",
+    "build:data": "node scripts/run-python.mjs scripts/build_data.py",
+    "import:data": "node scripts/run-python.mjs scripts/import_data.py",
+    "fetch:fanta": "node scripts/run-python.mjs scripts/fetch_fantacalcio.py",
+    "prebuild": "node scripts/run-python.mjs scripts/build_data.py",
+    "pretest": "node scripts/run-python.mjs scripts/build_data.py",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "type-check": "tsc --noEmit",
-    "validate:data": "python scripts/validate.py",
+    "validate:data": "node scripts/run-python.mjs scripts/validate.py",
     "test": "vitest run"
   },
   "dependencies": {

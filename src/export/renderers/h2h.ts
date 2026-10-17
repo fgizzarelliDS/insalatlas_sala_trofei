@@ -1,8 +1,9 @@
 import { renderNodeToCanvas } from './core';
+import { LEAGUE } from '@/config';
 
 /**
  * Renders an exact off-screen clone of the H2H 1vs1 duel modal card into a high-res canvas.
- * Strips dropdowns, interactive action buttons, and adds InsalAtlas official closing footer.
+ * Strips dropdowns, interactive action buttons, and adds league official closing footer.
  */
 export async function renderH2HDuelCanvas(card: HTMLElement): Promise<HTMLCanvasElement> {
   const clone = card.cloneNode(true) as HTMLElement;
@@ -136,8 +137,8 @@ export async function renderH2HDuelCanvas(card: HTMLElement): Promise<HTMLCanvas
   footer.style.borderColor = 'var(--table-border)';
   footer.style.color = 'var(--text-muted)';
   footer.innerHTML = `
-    <img src="favicon-64x64.png" alt="InsalAtlas" class="w-4 h-4 object-contain inline-block rounded-full shadow-sm">
-    <span class="font-extrabold tracking-widest text-[11px]" style="color: var(--text-main);">InsalAtlas</span>
+    <img src="favicon-64x64.png" alt="${LEAGUE.brand.name}" class="w-4 h-4 object-contain inline-block rounded-full shadow-sm">
+    <span class="font-extrabold tracking-widest text-[11px]" style="color: var(--text-main);">${LEAGUE.brand.name}</span>
     <span class="opacity-40">•</span>
     <span class="text-[10px] tracking-wider" style="color: var(--accent-color);">Head-to-Head Ufficiale</span>
   `;
@@ -149,7 +150,7 @@ export async function renderH2HDuelCanvas(card: HTMLElement): Promise<HTMLCanvas
 
 /**
  * Renders an exact off-screen clone of the Tavolo dei Rivali multi-manager modal card into a high-res canvas.
- * Strips dropdowns, interactive action buttons, and adds InsalAtlas official closing footer.
+ * Strips dropdowns, interactive action buttons, and adds league official closing footer.
  */
 export async function renderMultiManagerCanvas(card: HTMLElement): Promise<HTMLCanvasElement> {
   const clone = card.cloneNode(true) as HTMLElement;
@@ -225,8 +226,8 @@ export async function renderMultiManagerCanvas(card: HTMLElement): Promise<HTMLC
   footer.style.borderColor = 'var(--table-border)';
   footer.style.color = 'var(--text-muted)';
   footer.innerHTML = `
-    <img src="favicon-64x64.png" alt="InsalAtlas" class="w-4 h-4 object-contain inline-block rounded-full shadow-sm">
-    <span class="font-extrabold tracking-widest text-[11px]" style="color: var(--text-main);">InsalAtlas</span>
+    <img src="favicon-64x64.png" alt="${LEAGUE.brand.name}" class="w-4 h-4 object-contain inline-block rounded-full shadow-sm">
+    <span class="font-extrabold tracking-widest text-[11px]" style="color: var(--text-main);">${LEAGUE.brand.name}</span>
     <span class="opacity-40">•</span>
     <span class="text-[10px] tracking-wider" style="color: var(--accent-color);">Tavolo dei Rivali Ufficiale</span>
   `;

@@ -258,7 +258,7 @@ def ingest_fantacalcio(target: Optional[str] = None,
         return 1
 
     season = specified_season or det_season or detect_next_season(seasons_dir)
-    comp_name = specified_comp_name or det_comp or f"Serie Atlas {season.replace('/', '-')}"
+    comp_name = specified_comp_name or det_comp or f"Campionato {season.replace('/', '-')}"
 
     info(f"Season: {season} | Competition: {comp_name} | Rows: {len(parsed_rows)}")
 
@@ -352,7 +352,7 @@ if __name__ == "__main__":
         print("Usage: python scripts/fetch_fantacalcio.py [target] [season] [comp_name]")
         print("  target    : League alias (e.g. 'insalatlas'), URL, or local CSV/HTML file path.")
         print("  season    : Season string in YYYY/YY format (e.g. '2026/27'). Auto-detected if omitted.")
-        print("  comp_name : Championship title (e.g. 'Serie Atlas 2026-2027'). Auto-detected if omitted.")
+        print("  comp_name : Championship title (e.g. 'Campionato 2026-2027'). Auto-detected if omitted.")
         sys.exit(0)
 
     target_arg = sys.argv[1] if len(sys.argv) > 1 else None

@@ -785,6 +785,84 @@ describe('Historical Rankings & Career Visualizations', () => {
       expect(mockSeasonsContent.innerHTML).toContain('Coppa dei Perdenti');
       expect(mockSeasonsContent.innerHTML).toContain('Verdetti finali in definizione');
     });
+
+    it('renders the centered season stepper toolbar with dropdown popover', async () => {
+      const { renderSeasonStepper } = await import('@/components/board/seasons');
+      const seasons = ['2026/27', '2025/26', '2024/25', '2016/17'];
+      const html = renderSeasonStepper(seasons, '2025/26');
+
+      expect(html).toContain('id="btn-season-stepper-dropdown"');
+      expect(html).toContain('Stagione 2025/26');
+      expect(html).toContain('id="season-stepper-dropdown-menu"');
+      expect(html).toContain('Stagione successiva (2026/27)');
+      expect(html).toContain('Stagione precedente (2024/25)');
+      expect(html).toContain('Archivio Stagioni (4)');
+    });
+
+    it('disables left button on newest season and right button on oldest season', async () => {
+      const { renderSeasonStepper } = await import('@/components/board/seasons');
+      const seasons = ['2026/27', '2025/26', '2016/17'];
+
+      // At newest season (index 0): Left button is disabled, Right button moves to 2025/26
+      const newestHtml = renderSeasonStepper(seasons, '2026/27');
+      expect(newestHtml).toContain('title="Nessuna stagione successiva"');
+      expect(newestHtml).toContain('Stagione precedente (2025/26)');
+
+      // At oldest season (last index): Left button moves to 2025/26, Right button is disabled
+      const oldestHtml = renderSeasonStepper(seasons, '2016/17');
+      expect(oldestHtml).toContain('Stagione successiva (2025/26)');
+      expect(oldestHtml).toContain('title="Nessuna stagione precedente"');
+    });
+
+    it('toggles and closes the season stepper dropdown popover menu', async () => {
+      const { toggleSeasonStepperDropdown, closeSeasonStepperDropdown } = await import('@/components/board/seasons');
+      const mockDropdown = {
+        classList: {
+          classes: new Set<string>(['hidden']),
+          add(c: string) { this.classes.add(c); },
+          remove(c: string) { this.classes.delete(c); },
+          toggle(c: string) {
+            if (this.classes.has(c)) { this.classes.delete(c); return false; }
+            this.classes.add(c); return true;
+          },
+          contains(c: string) { return this.classes.has(c); }
+        }
+      };
+      const mockChevron = {
+        classList: {
+          classes: new Set<string>(),
+          add(c: string) { this.classes.add(c); },
+          remove(c: string) { this.classes.delete(c); },
+          contains(c: string) { return this.classes.has(c); }
+        }
+      };
+
+      const prevDoc = (globalThis as unknown as { document: { getElementById: (id: string) => unknown } }).document;
+      (globalThis as unknown as { document: unknown }).document = {
+        getElementById(id: string) {
+          if (id === 'season-stepper-dropdown-menu') return mockDropdown;
+          if (id === 'season-stepper-chevron') return mockChevron;
+          return prevDoc.getElementById(id);
+        }
+      };
+
+      toggleSeasonStepperDropdown();
+      expect(mockDropdown.classList.contains('hidden')).toBe(false);
+      expect(mockChevron.classList.contains('rotate-180')).toBe(true);
+
+      closeSeasonStepperDropdown();
+      expect(mockDropdown.classList.contains('hidden')).toBe(true);
+      expect(mockChevron.classList.contains('rotate-180')).toBe(false);
+
+      (globalThis as unknown as { document: unknown }).document = prevDoc;
+    });
+
+    it('renders season header summary with dynamic league name', async () => {
+      const { renderSeasonHeaderSummary } = await import('@/components/board/seasons');
+      const { LEAGUE } = await import('@/config');
+      const html = renderSeasonHeaderSummary('2024/25', 3, 12, false);
+      expect(html).toContain(`Archivio ufficiale dei piazzamenti, podi e verdetti storici ${LEAGUE.brand.name}`);
+    });
   });
 
   describe('Historical Team Details and Seasons Formatting', () => {

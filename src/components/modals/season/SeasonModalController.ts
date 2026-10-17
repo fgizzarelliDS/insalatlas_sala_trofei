@@ -5,7 +5,7 @@ import type {
   Achievement
 } from '@/types';
 import { state } from '@/state';
-import { verifyAdminPassword } from '@/config';
+import { verifyAdminPassword, LEAGUE } from '@/config';
 import { showToast, enableEditMode } from '@/ui';
 import { saveData } from '@/storage';
 import { renderBoard } from '@/components/board/tableBoard';
@@ -369,7 +369,7 @@ export function saveSeason(e: Event): void {
       return;
     }
     if (!managerId) {
-      showToast(`Posizione #${i} (${teamName}): Seleziona il Mister InsalAtlas.`, 'error');
+      showToast(`Posizione #${i} (${teamName}): Seleziona il Mister ${LEAGUE.brand.name}.`, 'error');
       mgrSelect?.focus();
       mgrSelect?.classList.add('border-rose-500', 'ring-1', 'ring-rose-500/50');
       return;
@@ -439,7 +439,7 @@ export function saveSeason(e: Event): void {
     ];
     newCompetitions.push({
       id: baseCompId + 1,
-      name: `Coppa InsalAtlas ${season}`,
+      name: `Coppa ${LEAGUE.brand.name} ${season}`,
       season,
       category: 'Coppa',
       in_progress: inProgress,
@@ -457,7 +457,7 @@ export function saveSeason(e: Event): void {
     ];
     newCompetitions.push({
       id: baseCompId + 2,
-      name: `Supercoppa InsalAtlas ${season}`,
+      name: `Supercoppa ${LEAGUE.brand.name} ${season}`,
       season,
       category: 'Supercoppa',
       in_progress: inProgress,
@@ -489,7 +489,7 @@ export function saveSeason(e: Event): void {
   if (cartonatoWinnerMgr) {
     newCompetitions.push({
       id: baseCompId + 4,
-      name: `Playout InsalAtlas ${season}`,
+      name: `Playout ${LEAGUE.brand.name} ${season}`,
       season,
       category: 'Playout',
       in_progress: inProgress,
@@ -517,7 +517,7 @@ export function saveSeason(e: Event): void {
       if (r.rank === 1) {
         mgr.gold = (mgr.gold || 0) + 1;
         achievements.push({
-          title: 'Campione InsalAtlas',
+          title: `Campione ${LEAGUE.brand.name}`,
           category: 'Campionato',
           badge: 'gold',
           icon: '🥇',

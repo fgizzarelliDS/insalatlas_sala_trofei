@@ -431,11 +431,28 @@ describe('All-Time League Records Engine', () => {
     });
 
     it('computes the dynamic league year span without hardcoding', () => {
+      // Mock competitions with arbitrary years to verify year-agnostic computation
+      const mockComps: CompetitionRecord[] = [
+        { id: 1, name: 'Campionato 1', season: '1998/99', category: 'championship', ranking: [] },
+        { id: 2, name: 'Campionato 2', season: '2005/06', category: 'championship', ranking: [] },
+      ];
+      const customSpan = getLeagueYearSpan(mockComps);
+      expect(customSpan.startYear).toBe(1998);
+      expect(customSpan.endYear).toBe(2006);
+      expect(customSpan.spanText).toBe('1998-2006');
+      expect(customSpan.completedCount).toBe(2);
+
+      // Empty competitions dynamic fallback
+      const emptySpan = getLeagueYearSpan([]);
+      const currentYear = new Date().getFullYear();
+      expect(emptySpan.startYear).toBe(currentYear);
+      expect(emptySpan.endYear).toBe(currentYear + 1);
+      expect(emptySpan.completedCount).toBe(0);
+
+      // Dynamic check for real dataset
       const span = getLeagueYearSpan(competitions);
-      expect(span.startYear).toBe(2016);
-      expect(span.endYear).toBe(2026);
-      expect(span.spanText).toBe('2016-2026');
-      expect(span.completedCount).toBe(10);
+      expect(span.spanText).toBe(`${span.startYear}-${span.endYear}`);
+      expect(span.completedCount).toBeGreaterThan(0);
     });
   });
 

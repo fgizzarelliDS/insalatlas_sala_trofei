@@ -5,6 +5,7 @@ import {
   getCompletedChampionships,
   resolveManagerRecordCrest
 } from './helpers';
+import { LEAGUE } from '@/config';
 
 /**
  * Computes all records in the 'points' category:
@@ -84,7 +85,7 @@ export function computePointsRecords(
       primaryHolders,
       primaryHolder: primaryHolders[0],
       runnerUps,
-      description: 'Miglior punteggio assoluto registrato in una singola edizione della Serie Atlas.'
+      description: `Miglior punteggio assoluto registrato in una singola edizione della ${LEAGUE.brand.championshipLabel || LEAGUE.brand.name}.`
     });
   }
 
@@ -407,7 +408,7 @@ export function computePointsRecords(
       primaryHolders,
       primaryHolder: primaryHolders[0],
       runnerUps,
-      description: 'La media punti più alta mai realizzata da un fantallenatore nella sua primissima stagione in Serie Atlas (esclusa la stagione inaugurale della lega).'
+      description: `La media punti più alta mai realizzata da un fantallenatore nella sua primissima stagione in ${LEAGUE.brand.championshipLabel || LEAGUE.brand.name} (esclusa la stagione inaugurale della lega).`
     });
   }
 

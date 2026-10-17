@@ -1,4 +1,5 @@
 import { showToast } from '@/ui';
+import { LEAGUE } from '@/config';
 
 // Holds the deferred beforeinstallprompt event
 let deferredPrompt: BeforeInstallPromptEvent | null = null;
@@ -94,7 +95,7 @@ export function initPWA(): void {
       installBtn.classList.add('hidden');
       installBtn.classList.remove('inline-flex');
     }
-    showToast('InsalAtlas installata con successo sulla schermata Home!', 'success');
+    showToast(`${LEAGUE.brand.name} installata con successo sulla schermata Home!`, 'success');
   });
 
   // 4. iOS Safari Detection: Reveal button with iOS guidance if running in mobile Safari (non-standalone)
@@ -118,7 +119,7 @@ export async function promptPWAInstall(): Promise<void> {
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as unknown as { standalone?: boolean }).standalone;
 
   if (isStandalone) {
-    showToast('InsalAtlas è già installata!', 'info');
+    showToast(`${LEAGUE.brand.name} è già installata!`, 'info');
     return;
   }
 

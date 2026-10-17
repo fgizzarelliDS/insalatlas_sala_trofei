@@ -1,3 +1,5 @@
+import { LEAGUE } from '@/config';
+
 /**
  * Template shell for the Manager Profile modal (#manager-profile-modal)
  */
@@ -142,12 +144,12 @@ export function getProfileModalShellHTML(): string {
           <div id="profile-historical-teams-list" class="flex flex-wrap gap-1.5"></div>
         </div>
 
-        <!-- Piazzamenti (Serie InsalAtlas) -->
+        <!-- Piazzamenti -->
         <div id="profile-trajectory-card" class="p-4 rounded-2xl border mb-5 hidden"
           style="background-color: var(--table-surface); border-color: var(--table-border);">
           <div class="text-xs font-bold uppercase tracking-wider mb-2 opacity-80 flex items-center justify-between">
             <span><i class="fa-solid fa-chart-line text-amber-400 mr-1.5"></i> Piazzamenti</span>
-            <span class="text-[10px] opacity-60">Serie A InsalAtlas</span>
+            <span class="text-[10px] opacity-60">${LEAGUE.brand.championshipLabel || LEAGUE.brand.name}</span>
           </div>
           <div id="profile-trajectory-sparkline" class="w-full overflow-x-auto py-1"></div>
         </div>

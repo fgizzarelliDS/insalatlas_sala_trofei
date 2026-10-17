@@ -1,5 +1,6 @@
 import type { Manager, CompetitionRecord, LeagueRecord, RecordHolder } from '@/types';
 import { resolveManagerRecordCrest } from './helpers';
+import { LEAGUE } from '@/config';
 
 /**
  * Computes all records in the 'streaks' category:
@@ -157,7 +158,7 @@ export function computeStreaksRecords(
       primaryHolders,
       primaryHolder: primaryHolders[0],
       runnerUps,
-      description: 'I pilastri della Serie Atlas: gli allenatori con il maggior numero complessivo di partecipazioni ufficiali.'
+      description: `I pilastri della ${LEAGUE.brand.championshipLabel || LEAGUE.brand.name}: gli allenatori con il maggior numero complessivo di partecipazioni ufficiali.`
     });
   }
 
@@ -260,7 +261,7 @@ export function computeStreaksRecords(
       primaryHolders,
       primaryHolder: primaryHolders[0],
       runnerUps,
-      description: 'Il maggior salto in avanti di posizioni in classifica da una stagione all’altra della Serie Atlas.'
+      description: `Il maggior salto in avanti di posizioni in classifica da una stagione all’altra della ${LEAGUE.brand.championshipLabel || LEAGUE.brand.name}.`
     });
   }
 

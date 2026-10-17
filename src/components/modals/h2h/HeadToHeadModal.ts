@@ -1,9 +1,9 @@
 import type { Manager } from '@/types';
 import { state } from '@/state';
 import { computeHeadToHead } from '@/analytics';
-import { formatScore } from '@/score';
 import { renderHeadToHeadModalHTML, type H2HTabMode } from './HeadToHeadTemplate';
 import { closeProfileModal } from '@/components/modals/ProfileModal';
+import { buildH2HWhatsAppShareText, buildMultiManagerWhatsAppShareText } from '@/export/share';
 
 let selectedManagerIdA: string | null = null;
 let selectedManagerIdB: string | null = null;
@@ -431,38 +431,7 @@ export function shareH2HWhatsApp(): void {
   const managerB = state.managers.find(m => m.id === selectedManagerIdB);
   if (!managerA || !managerB) return;
 
-  const stats = computeHeadToHead(managerA, managerB);
-
-  let baseUrl = 'https://fgizzarellids.github.io/insalatlas_sala_trofei/';
-  if (typeof window !== 'undefined' && window.location && window.location.origin) {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    if (!isLocal) {
-      baseUrl = `${window.location.origin}${window.location.pathname}`;
-    }
-  }
-
-  const shareUrl = `${baseUrl}?h2h=${encodeURIComponent(managerA.id)}:${encodeURIComponent(managerB.id)}`;
-
-  const text = `⚔️ *InsalAtlas • Duello Head-to-Head*
-👤 *${managerA.name.toUpperCase()}* vs *${managerB.name.toUpperCase()}*
-
-🏁 *Scontri Diretti in Campionato:*
-${stats.winsA} Vittorie ${managerA.name} • ${stats.ties} Pari • ${stats.winsB} Vittorie ${managerB.name} (${stats.sharedSeasonsCount} campionati condivisi)
-
-🏆 *Palmarès a Confronto:*
-• Scudetti: ${managerA.gold || 0} vs ${managerB.gold || 0}
-• Coppe di Lega: ${managerA.cup_gold || 0} vs ${managerB.cup_gold || 0}
-• Rating Storico: ${formatScore(stats.palmares.ratingScore.a)} PT vs ${formatScore(stats.palmares.ratingScore.b)} PT
-
-📊 *Indice di Freddezza:*
-• ${managerA.name}: ${stats.metricsA.clutchIcon} ${stats.metricsA.clutchLabel}
-• ${managerB.name}: ${stats.metricsB.clutchIcon} ${stats.metricsB.clutchLabel}
-
-📜 *Verdetto:* ${stats.narrativeVerdict}
-
-👉 Guarda il duello completo:
-${shareUrl}`;
-
+  const text = buildH2HWhatsAppShareText(managerA, managerB);
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
   if (typeof window !== 'undefined') {
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
@@ -659,24 +628,7 @@ export function shareMultiManagerWhatsApp(): void {
     .filter((m): m is Manager => Boolean(m));
   if (managers.length < 3) return;
 
-  const names = managers.map(m => m.name.toUpperCase()).join(' vs ');
-  let baseUrl = 'https://fgizzarellids.github.io/insalatlas_sala_trofei/';
-  if (typeof window !== 'undefined' && window.location && window.location.origin) {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    if (!isLocal) {
-      baseUrl = `${window.location.origin}${window.location.pathname}`;
-    }
-  }
-
-  const shareUrl = `${baseUrl}?h2h=multi&m=${encodeURIComponent(multiSelectedManagerIds.join(':'))}`;
-  const text = `🕸️ *InsalAtlas • Tavolo dei Rivali*
-⚔️ *${names}*
-
-📊 Confronto radar multidimensionale a 6 assi e mini-torneo incrociato tra rivali storici.
-
-👉 Guarda il tavolo completo:
-${shareUrl}`;
-
+  const text = buildMultiManagerWhatsAppShareText(managers, multiSelectedManagerIds);
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
   if (typeof window !== 'undefined') {
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');

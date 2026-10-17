@@ -3,9 +3,10 @@ import type { LeagueRecord } from '@/analytics/records';
 import { state } from '@/state';
 import { showToast } from '@/ui';
 import { calculateManagerScore, formatScore } from '@/score';
-import { getManagerArchetype, computeGlobalClutchIndex, getClutchTier } from '@/analytics';
+import { getManagerArchetype, computeGlobalClutchIndex, getClutchTier, computeHeadToHead } from '@/analytics';
 import { computeAllLeagueRecords } from '@/analytics/records';
 import { getLeagueYearSpan } from '@/analytics/records/helpers';
+import { LEAGUE } from '@/config';
 import {
   renderProfileModalCanvas,
   renderH2HDuelCanvas,
@@ -49,7 +50,7 @@ export function buildWhatsAppShareText(manager: Manager, customBaseUrl?: string)
 
   const trophiesStr = trophiesList.length > 0 ? trophiesList.join(' • ') : 'Nessun trofeo';
 
-  let baseUrl = 'https://fgizzarellids.github.io/insalatlas_sala_trofei/';
+  let baseUrl = LEAGUE.siteUrl;
   if (customBaseUrl) {
     baseUrl = customBaseUrl;
   } else if (typeof window !== 'undefined' && window.location && window.location.origin) {
@@ -62,7 +63,7 @@ export function buildWhatsAppShareText(manager: Manager, customBaseUrl?: string)
 
   const shareUrl = `${baseUrl}?manager=${encodeURIComponent(manager.id)}`;
 
-  return `🏆 *InsalAtlas • Scheda Palmarès*\n👤 *${manager.name.toUpperCase()}* (${manager.years} ${manager.years === 1 ? 'Stagione' : 'Stagioni'})\n⭐ *Rating Storico:* ${formatScore(score)} PT\n🏅 *Profilo:* ${arch.tag}\n${clutchLine}\n\n📊 *Bacheca:* ${trophiesStr}\n\n👉 Guarda la scheda e i trofei completi:\n${shareUrl}`;
+  return `🏆 *${LEAGUE.brand.name} • ${LEAGUE.brand.mainTitle}*\n👤 *${manager.name.toUpperCase()}* (${manager.years} ${manager.years === 1 ? 'Stagione' : 'Stagioni'})\n⭐ *Rating Storico:* ${formatScore(score)} PT\n🏅 *Profilo:* ${arch.tag}\n${clutchLine}\n\n📊 *Bacheca:* ${trophiesStr}\n\n👉 Guarda la scheda e i trofei completi:\n${shareUrl}`;
 }
 
 /**
@@ -91,7 +92,7 @@ export async function exportProfileModalHD(manager: Manager): Promise<void> {
         showToast("Errore durante la creazione dell'immagine", 'error');
         return;
       }
-      const filename = `insalatlas_${manager.id}_${Date.now()}.png`;
+      const filename = `${LEAGUE.filePrefix}_${manager.id}_${Date.now()}.png`;
       downloadBlob(blob, filename);
     }, 'image/png');
   } catch (err) {
@@ -128,7 +129,7 @@ export async function copyProfileModalToClipboard(manager: Manager): Promise<boo
           resolve(false);
           return;
         }
-        const filename = `insalatlas_${manager.id}_${Date.now()}.png`;
+        const filename = `${LEAGUE.filePrefix}_${manager.id}_${Date.now()}.png`;
         const success = await copyBlobToClipboard(blob, filename);
         resolve(success);
       }, 'image/png');
@@ -225,7 +226,7 @@ export async function exportH2HDuelHD(managerA: Manager, managerB: Manager): Pro
         showToast("Errore durante la creazione dell'immagine", 'error');
         return;
       }
-      const filename = `insalatlas_h2h_${managerA.id}_vs_${managerB.id}_${Date.now()}.png`;
+      const filename = `${LEAGUE.filePrefix}_h2h_${managerA.id}_vs_${managerB.id}_${Date.now()}.png`;
       downloadBlob(blob, filename);
     }, 'image/png');
   } catch (err) {
@@ -258,7 +259,7 @@ export async function copyH2HDuelToClipboard(managerA: Manager, managerB: Manage
           resolve(false);
           return;
         }
-        const filename = `insalatlas_h2h_${managerA.id}_vs_${managerB.id}_${Date.now()}.png`;
+        const filename = `${LEAGUE.filePrefix}_h2h_${managerA.id}_vs_${managerB.id}_${Date.now()}.png`;
         const success = await copyBlobToClipboard(blob, filename);
         resolve(success);
       }, 'image/png');
@@ -268,6 +269,78 @@ export async function copyH2HDuelToClipboard(managerA: Manager, managerB: Manage
     showToast('Impossibile copiare il duello', 'error');
     return false;
   }
+}
+
+/**
+ * Formats rich banter text and direct link for WhatsApp sharing of a 1vs1 Head-to-Head duel
+ */
+export function buildH2HWhatsAppShareText(
+  managerA: Manager,
+  managerB: Manager,
+  customBaseUrl?: string
+): string {
+  const stats = computeHeadToHead(managerA, managerB);
+
+  let baseUrl = LEAGUE.siteUrl;
+  if (customBaseUrl) {
+    baseUrl = customBaseUrl;
+  } else if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!isLocal) {
+      baseUrl = `${window.location.origin}${window.location.pathname}`;
+    }
+  }
+
+  const shareUrl = `${baseUrl}?h2h=${encodeURIComponent(managerA.id)}:${encodeURIComponent(managerB.id)}`;
+
+  return `⚔️ *${LEAGUE.brand.name} • Duello Head-to-Head*
+👤 *${managerA.name.toUpperCase()}* vs *${managerB.name.toUpperCase()}*
+
+🏁 *Scontri Diretti in Campionato:*
+${stats.winsA} Vittorie ${managerA.name} • ${stats.ties} Pari • ${stats.winsB} Vittorie ${managerB.name} (${stats.sharedSeasonsCount} campionati condivisi)
+
+🏆 *Palmarès a Confronto:*
+• Scudetti: ${managerA.gold || 0} vs ${managerB.gold || 0}
+• Coppe di Lega: ${managerA.cup_gold || 0} vs ${managerB.cup_gold || 0}
+• Rating Storico: ${formatScore(stats.palmares.ratingScore.a)} PT vs ${formatScore(stats.palmares.ratingScore.b)} PT
+
+📊 *Indice di Freddezza:*
+• ${managerA.name}: ${stats.metricsA.clutchIcon} ${stats.metricsA.clutchLabel}
+• ${managerB.name}: ${stats.metricsB.clutchIcon} ${stats.metricsB.clutchLabel}
+
+📜 *Verdetto:* ${stats.narrativeVerdict}
+
+👉 Guarda il duello completo:
+${shareUrl}`;
+}
+
+/**
+ * Formats rich banter text and direct link for WhatsApp sharing of Tavolo dei Rivali multi-manager cluster
+ */
+export function buildMultiManagerWhatsAppShareText(
+  managers: Manager[],
+  multiSelectedIds: string[],
+  customBaseUrl?: string
+): string {
+  const names = managers.map(m => m.name.toUpperCase()).join(' vs ');
+  let baseUrl = LEAGUE.siteUrl;
+  if (customBaseUrl) {
+    baseUrl = customBaseUrl;
+  } else if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!isLocal) {
+      baseUrl = `${window.location.origin}${window.location.pathname}`;
+    }
+  }
+
+  const shareUrl = `${baseUrl}?h2h=multi&m=${encodeURIComponent(multiSelectedIds.join(':'))}`;
+  return `🕸️ *${LEAGUE.brand.name} • Tavolo dei Rivali*
+⚔️ *${names}*
+
+📊 Confronto radar multidimensionale a 6 assi e mini-torneo incrociato tra rivali storici.
+
+👉 Guarda il tavolo completo:
+${shareUrl}`;
 }
 
 /**
@@ -292,7 +365,7 @@ export async function exportRecordCardHD(recordId: string): Promise<void> {
         showToast("Errore durante la creazione dell'immagine", 'error');
         return;
       }
-      const filename = `insalatlas_record_${recordId}_${Date.now()}.png`;
+      const filename = `${LEAGUE.filePrefix}_record_${recordId}_${Date.now()}.png`;
       downloadBlob(blob, filename);
     }, 'image/png');
   } catch (err) {
@@ -325,7 +398,7 @@ export async function copyRecordCardToClipboard(recordId: string): Promise<boole
           resolve(false);
           return;
         }
-        const filename = `insalatlas_record_${recordId}_${Date.now()}.png`;
+        const filename = `${LEAGUE.filePrefix}_record_${recordId}_${Date.now()}.png`;
         const success = await copyBlobToClipboard(blob, filename);
         resolve(success);
       }, 'image/png');
@@ -341,7 +414,7 @@ export async function copyRecordCardToClipboard(recordId: string): Promise<boole
  * Formats rich banter text and direct link for sharing a Hall of Fame record on WhatsApp
  */
 export function buildRecordWhatsAppShareText(record: LeagueRecord, customBaseUrl?: string): string {
-  let baseUrl = 'https://fgizzarellids.github.io/insalatlas_sala_trofei/';
+  let baseUrl = LEAGUE.siteUrl;
   if (customBaseUrl) {
     baseUrl = customBaseUrl;
   } else if (typeof window !== 'undefined' && window.location && window.location.origin) {
@@ -371,7 +444,7 @@ export function buildRecordWhatsAppShareText(record: LeagueRecord, customBaseUrl
   const sub = record.primaryHolder.normalizedDetail || record.primaryHolder.detail;
 
   const lines = [
-    `🏆 *InsalAtlas • Record & Primati Storici*`,
+    `🏆 *${LEAGUE.brand.name} • Record & Primati Storici*`,
     `📜 *${record.title.toUpperCase()}*`,
     `📊 *Valore:* *${val}*${sub ? ` (${sub})` : ''}`,
     holderLine,
@@ -420,7 +493,7 @@ export async function exportHallOfFamePosterHD(): Promise<void> {
         showToast("Errore durante la creazione dell'immagine del poster", 'error');
         return;
       }
-      const filename = `InsalAtlas_Poster_Hall_Of_Fame_${Date.now()}.png`;
+      const filename = `${LEAGUE.filePrefix}_poster_hof_${Date.now()}.png`;
       downloadBlob(blob, filename);
     }, 'image/png');
   } catch (err) {
@@ -452,7 +525,7 @@ export async function copyHallOfFamePosterToClipboard(): Promise<boolean> {
           resolve(false);
           return;
         }
-        const filename = `InsalAtlas_Poster_Hall_Of_Fame_${Date.now()}.png`;
+        const filename = `${LEAGUE.filePrefix}_poster_hof_${Date.now()}.png`;
         const success = await copyBlobToClipboard(blob, filename);
         resolve(success);
       }, 'image/png');
@@ -470,7 +543,7 @@ export async function copyHallOfFamePosterToClipboard(): Promise<boolean> {
  * Formats rich banter text and direct link for sharing the Hall of Fame poster on WhatsApp
  */
 export function buildPosterWhatsAppShareText(customBaseUrl?: string): string {
-  let baseUrl = 'https://fgizzarellids.github.io/insalatlas_sala_trofei/';
+  let baseUrl = LEAGUE.siteUrl;
   if (customBaseUrl) {
     baseUrl = customBaseUrl;
   } else if (typeof window !== 'undefined' && window.location && window.location.origin) {
@@ -484,9 +557,10 @@ export function buildPosterWhatsAppShareText(customBaseUrl?: string): string {
   const leagueSpan = getLeagueYearSpan(state.competitions);
   const allRecords = computeAllLeagueRecords(state.managers, state.competitions);
   const count = allRecords.length > 0 ? allRecords.length : 25;
+  const champLabel = (LEAGUE.brand.championshipLabel || LEAGUE.brand.name).toUpperCase();
 
-  return `🏆 *InsalAtlas • Hall of Fame Ufficiale (${leagueSpan.spanText})*
-📜 *I ${count} RECORD & PRIMATI ALL-TIME DELLA SERIE ATLAS*
+  return `🏆 *${LEAGUE.brand.name} • Hall of Fame Ufficiale (${leagueSpan.spanText})*
+📜 *I ${count} RECORD & PRIMATI ALL-TIME DELLA ${champLabel}*
 
 ⚡ *Punti & Podi* • 🏆 *Dominio & Coppe*
 💀 *Rivalità Head-to-Head* • 🎖️ *Strisce & Fedeltà*
@@ -514,7 +588,7 @@ export function sharePosterWhatsApp(): void {
  * Formats rich banter text and direct link for sharing the Albo d'Oro ranking on WhatsApp
  */
 export function buildAlboWhatsAppShareText(customBaseUrl?: string): string {
-  let baseUrl = 'https://fgizzarellids.github.io/insalatlas_sala_trofei/';
+  let baseUrl = LEAGUE.siteUrl;
   if (customBaseUrl) {
     baseUrl = customBaseUrl;
   } else if (typeof window !== 'undefined' && window.location && window.location.origin) {
@@ -541,7 +615,7 @@ export function buildAlboWhatsAppShareText(customBaseUrl?: string): string {
 
   const leagueSpan = getLeagueYearSpan(state.competitions);
 
-  return `🏆 *InsalAtlas • Albo d'Oro & Sala Trofei (${leagueSpan.spanText})*
+  return `🏆 *${LEAGUE.brand.name} • ${LEAGUE.brand.subtitle} (${leagueSpan.spanText})*
 📜 *CLASSIFICA STORICA DEI PIÙ TITOLATI*
 
 ${top3}
@@ -587,7 +661,7 @@ export async function exportProfileStoryHD(manager: Manager): Promise<void> {
         showToast("Errore durante la creazione della Story", 'error');
         return;
       }
-      const filename = `insalatlas_story_${manager.id}_${Date.now()}.png`;
+      const filename = `${LEAGUE.filePrefix}_story_${manager.id}_${Date.now()}.png`;
       downloadBlob(blob, filename);
     }, 'image/png');
   } catch (err) {
@@ -611,7 +685,7 @@ export async function exportH2HDuelStoryHD(managerA: Manager, managerB: Manager)
         showToast("Errore durante la creazione della Story", 'error');
         return;
       }
-      const filename = `insalatlas_duel_story_${managerA.id}_vs_${managerB.id}_${Date.now()}.png`;
+      const filename = `${LEAGUE.filePrefix}_duel_story_${managerA.id}_vs_${managerB.id}_${Date.now()}.png`;
       downloadBlob(blob, filename);
     }, 'image/png');
   } catch (err) {
@@ -638,7 +712,7 @@ export async function exportMultiManagerStoryHD(
         showToast("Errore durante la creazione della Story", 'error');
         return;
       }
-      const filename = `insalatlas_rivals_story_${Date.now()}.png`;
+      const filename = `${LEAGUE.filePrefix}_rivals_story_${Date.now()}.png`;
       downloadBlob(blob, filename);
     }, 'image/png');
   } catch (err) {
@@ -671,7 +745,7 @@ export async function exportMultiManagerHD(): Promise<void> {
         showToast("Errore durante la creazione dell'immagine", 'error');
         return;
       }
-      const filename = `insalatlas_tavolo_rivali_${Date.now()}.png`;
+      const filename = `${LEAGUE.filePrefix}_tavolo_rivali_${Date.now()}.png`;
       downloadBlob(blob, filename);
     }, 'image/png');
   } catch (err) {
@@ -705,7 +779,7 @@ export async function copyMultiManagerToClipboard(): Promise<boolean> {
           resolve(false);
           return;
         }
-        const filename = `insalatlas_tavolo_rivali_${Date.now()}.png`;
+        const filename = `${LEAGUE.filePrefix}_tavolo_rivali_${Date.now()}.png`;
         const success = await copyBlobToClipboard(blob, filename);
         resolve(success);
       }, 'image/png');
@@ -739,7 +813,7 @@ export async function exportRecordStoryHD(recordId: string): Promise<void> {
         showToast("Errore durante la creazione della Story", 'error');
         return;
       }
-      const filename = `insalatlas_record_story_${recordId}_${Date.now()}.png`;
+      const filename = `${LEAGUE.filePrefix}_record_story_${recordId}_${Date.now()}.png`;
       downloadBlob(blob, filename);
     }, 'image/png');
   } catch (err) {
@@ -763,7 +837,7 @@ export async function exportRecordsSummaryStoryHD(): Promise<void> {
         showToast("Errore durante la creazione della Story", 'error');
         return;
       }
-      const filename = `insalatlas_top_primati_story_${Date.now()}.png`;
+      const filename = `${LEAGUE.filePrefix}_top_primati_story_${Date.now()}.png`;
       downloadBlob(blob, filename);
     }, 'image/png');
   } catch (err) {

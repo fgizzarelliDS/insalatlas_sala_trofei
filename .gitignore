@@ -6,7 +6,7 @@ dist/
 
 # Local env files
 .env
-.env.local
+env.local
 .env.*.local
 specs/*
 scripts/insalatlas*.json

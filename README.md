@@ -6,6 +6,9 @@
 [![TypeScript Strict](https://img.shields.io/badge/TypeScript-5.x_Strict-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+![InsalAtlas Sala Trofei](public/preview.png)
+
+
 > Albo d'oro interattivo, motore league-agnostic, analisi econometrica di competitività, dinamica storica, record all-time, H2H, Tavolo dei Rivali (fino a 6 manager), export Social Story 9:16 e schede manager per leghe Fantacalcio.
 
 ---
@@ -16,7 +19,7 @@
 
 L'applicazione offre un'interfaccia interattiva per desktop e mobile:
 
-- **Architettura League-Agnostic**: Configurazione centralizzata (`src/config.ts`), colonne del tabellone dinamiche con griglia CSS reattiva, isolamento multi-tenant in local storage e supporto chiavi in mano per leghe arbitrarie (cfr. `specs/13-second-league-setup-guide.md`).
+- **Architettura League-Agnostic**: Configurazione centralizzata (`src/config.ts`), colonne del tabellone dinamiche con griglia CSS reattiva, isolamento multi-tenant in local storage e supporto chiavi in mano per leghe arbitrarie.
 - **Albo d'Oro Storico Decennale**: Bacheca trofei consolidata, rating storico e schede manager ad alta risoluzione (HD) condivisibili.
 - **Bacheca Record Storici (Hall of Fame & Primati)**: **28 record certificati** su 5 categorie storiche (Punti & Podi, Dominio & Coppe, Rivalità H2H, Strisce & Fedeltà, Disonori & Curiosità) con navigazione contestuale duale (scheda manager e archivio classifica di stagione), inclusi i 3 record per debuttanti e matricole, gestione ex-aequo ed export Poster Panoramico HD + Story 9:16.
 - **Head-to-Head (H2H), Tavolo dei Rivali (6 Manager) & Matrice Nemesi**:
@@ -31,8 +34,6 @@ L'applicazione offre un'interfaccia interattiva per desktop e mobile:
 - **Econometria & Rischio**: Motore di analisi competitiva basato su teoria economica e modellazione del rischio.
 - **Live Application**: [fgizzarellids.github.io/insalatlas_sala_trofei](https://fgizzarellids.github.io/insalatlas_sala_trofei/)
 - **Database Ufficiale**: `public/data.json`
-
-![InsalAtlas Sala Trofei](public/preview.png)
 
 ---
 

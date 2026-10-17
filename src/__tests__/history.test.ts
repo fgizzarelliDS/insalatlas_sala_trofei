@@ -716,7 +716,7 @@ describe('Historical Rankings & Career Visualizations', () => {
       state.managers = dataJson.leagueData as unknown as Manager[];
 
       selectArchiveSeason('2024/25');
-      expect(mockSeasonsContent.innerHTML).toContain('Classifica Ufficiale');
+      expect(mockSeasonsContent.innerHTML).toContain('2024/25');
       expect(mockSeasonsContent.innerHTML).toContain('🥇 1°');
       expect(mockSeasonsContent.innerHTML).toContain('Scudetto');
       expect(mockSeasonsContent.innerHTML).toContain('🥈 2°');

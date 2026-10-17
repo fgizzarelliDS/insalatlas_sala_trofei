@@ -106,7 +106,7 @@ export function renderChampionshipTable(championship: CompetitionRecord): string
       <div class="px-3.5 sm:px-4 py-2.5 sm:py-3 border-b flex items-center justify-between" style="border-color: var(--table-border); background-color: var(--header-bg); color: var(--header-text);">
         <div class="flex items-center gap-2 font-sport font-bold text-xs sm:text-sm tracking-wide">
           ${renderTrophySVG('gold_cup', 'compact')}
-          <span>${championship.name} (${championship.season}) • Classifica ${isInProgress ? 'Provvisoria' : 'Ufficiale'}</span>
+          <span>${championship.name} (${championship.season})</span>
           ${isInProgress ? `
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-500 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
               <span class="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400 animate-pulse"></span>

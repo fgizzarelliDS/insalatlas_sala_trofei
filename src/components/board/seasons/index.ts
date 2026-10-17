@@ -188,10 +188,7 @@ export function renderSeasonsArchive(): void {
     currentSelectedSeason = seasons[0];
   }
 
-  // 1. Season Stepper Bar
-  const stepperHtml = renderSeasonStepper(seasons, currentSelectedSeason);
-
-  // 2. Competitions in current season
+  // Competitions in current season
   const comps = (state.competitions || []).filter(c => c.season === currentSelectedSeason);
 
   // Separate into Championship vs Other tournaments
@@ -200,10 +197,11 @@ export function renderSeasonsArchive(): void {
   const championship = comps.find(c => c.category === 'championship' || (champRegex && champRegex.test(c.name)) || /campionato|serie/i.test(c.name));
   const otherTournaments = comps.filter(c => c !== championship);
 
-  // Season Header Summary
+  // Unified Season Header & Stepper Summary
   const totalTeams = championship?.ranking?.length || comps[0]?.ranking?.length || 0;
   const isSeasonInProgress = comps.some(c => c.in_progress || c.status === 'in_progress');
-  const seasonSummaryHtml = renderSeasonHeaderSummary(currentSelectedSeason, comps.length, totalTeams, isSeasonInProgress);
+  const stepperHtml = renderSeasonStepper(seasons, currentSelectedSeason);
+  const seasonSummaryHtml = renderSeasonHeaderSummary(currentSelectedSeason, comps.length, totalTeams, isSeasonInProgress, stepperHtml);
 
   // Render Championship Standings Table
   const championshipHtml = championship ? renderChampionshipTable(championship) : '';
@@ -212,10 +210,7 @@ export function renderSeasonsArchive(): void {
   const othersHtml = renderOtherTournamentsSection(otherTournaments);
 
   container.innerHTML = `
-    <!-- Season Stepper Bar -->
-    ${stepperHtml}
-
-    <!-- Season Header -->
+    <!-- Unified Season Header & Stepper -->
     ${seasonSummaryHtml}
 
     <!-- Championship Standings -->

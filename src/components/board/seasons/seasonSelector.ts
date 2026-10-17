@@ -113,72 +113,71 @@ export function renderSeasonStepper(seasons: string[], currentSelectedSeason: st
   });
 
   return `
-    <div class="relative z-30 flex items-center justify-center gap-2 mb-6">
-      <div class="flex items-center gap-1.5 sm:gap-2 p-1.5 rounded-2xl border albo-table-wrap shadow-sm"
-        style="background-color: var(--table-surface);">
-        
-        <!-- Left (Newer Season) Button -->
-        <button type="button"
-          ${leftSeason ? `onclick="selectArchiveSeason('${leftSeason}')" title="Stagione successiva (${leftSeason})"` : 'disabled title="Nessuna stagione successiva"'}
-          class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition border border-transparent ${
-            leftSeason
-              ? 'hover:bg-black/5 dark:hover:bg-white/5 opacity-80 hover:opacity-100 cursor-pointer active:scale-95'
-              : 'opacity-25 cursor-not-allowed'
-          }"
-          style="color: var(--text-main);"
-          aria-label="Stagione successiva">
-          <i class="fa-solid fa-chevron-left text-xs sm:text-sm"></i>
+    <div class="relative z-30 inline-flex items-center gap-0.5 sm:gap-1 p-0.5 sm:p-1 rounded-xl border albo-table-wrap shadow-sm shrink-0"
+      style="background-color: var(--table-surface);">
+      
+      <!-- Left (Newer Season) Button -->
+      <button type="button"
+        ${leftSeason ? `onclick="selectArchiveSeason('${leftSeason}')" title="Stagione successiva (${leftSeason})"` : 'disabled title="Nessuna stagione successiva"'}
+        class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition border border-transparent ${
+          leftSeason
+            ? 'hover:bg-black/5 dark:hover:bg-white/5 opacity-80 hover:opacity-100 cursor-pointer active:scale-95'
+            : 'opacity-25 cursor-not-allowed'
+        }"
+        style="color: var(--text-main);"
+        aria-label="Stagione successiva">
+        <i class="fa-solid fa-chevron-left text-[11px] sm:text-xs"></i>
+      </button>
+
+      <!-- Center Active Season Dropdown Trigger -->
+      <div class="relative z-40">
+        <button type="button" id="btn-season-stepper-dropdown"
+          onclick="toggleSeasonStepperDropdown(event)"
+          title="Stagione ${currentSelectedSeason} ${isCurrentInProgress ? '• In corso' : ''} • Clicca per selezionare dall'archivio"
+          class="h-7 sm:h-8 px-2 sm:px-2.5 rounded-lg flex items-center gap-1.5 transition border border-slate-300/40 dark:border-slate-700/60 hover:border-amber-400/60 shadow-sm active:scale-[0.98] cursor-pointer"
+          style="background-color: var(--table-surface); color: var(--text-main);"
+          aria-expanded="false"
+          aria-haspopup="true"
+          aria-label="Seleziona stagione, attualmente Stagione ${currentSelectedSeason}">
+          <i class="fa-solid fa-calendar-days text-amber-500 text-xs"></i>
+          ${isCurrentInProgress ? `
+            <span class="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-amber-500 dark:text-amber-400">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+              In corso
+            </span>
+          ` : ''}
+          <i id="season-stepper-chevron" class="fa-solid fa-chevron-down text-[9px] opacity-60 transition-transform duration-200"></i>
         </button>
 
-        <!-- Center Active Season Dropdown Trigger -->
-        <div class="relative z-40">
-          <button type="button" id="btn-season-stepper-dropdown"
-            onclick="toggleSeasonStepperDropdown(event)"
-            class="h-9 sm:h-10 px-3 sm:px-4 rounded-xl flex items-center gap-2 sm:gap-2.5 transition border border-slate-300/40 dark:border-slate-700/60 hover:border-amber-400/60 shadow-sm active:scale-[0.98] cursor-pointer"
-            style="background-color: var(--table-surface); color: var(--text-main);"
-            aria-expanded="false"
-            aria-haspopup="true">
-            <i class="fa-solid fa-calendar-days text-amber-500 text-xs sm:text-sm"></i>
-            <span class="text-xs sm:text-sm font-black tracking-tight">Stagione ${currentSelectedSeason}</span>
-            ${isCurrentInProgress ? `
-              <span class="text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded-full flex items-center gap-1 bg-amber-500/20 text-amber-500 dark:text-amber-400 border border-amber-500/30">
-                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                <span class="hidden xs:inline">In corso</span>
-              </span>
-            ` : ''}
-            <i id="season-stepper-chevron" class="fa-solid fa-chevron-down text-[10px] opacity-60 transition-transform duration-200 ml-0.5"></i>
-          </button>
-
-          <!-- Floating Popover Dropdown Menu -->
-          <div id="season-stepper-dropdown-menu"
-            class="hidden absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 sm:w-80 max-h-84 overflow-y-auto rounded-2xl shadow-2xl border z-50 p-1.5 backdrop-blur-xl scrollbar-thin"
-            style="background-color: var(--modal-bg, var(--table-surface, #0f172a)); border-color: var(--table-border, #334155);"
-            role="menu">
-            <div class="px-3 py-2 text-[10px] uppercase font-black tracking-wider opacity-50 border-b border-slate-500/20 mb-1 flex items-center justify-between"
-              style="color: var(--text-muted);">
-              <span>Archivio Stagioni (${seasons.length})</span>
-              <span>Cronologico</span>
-            </div>
-            <div class="space-y-1">
-              ${dropdownItemsHtml}
-            </div>
+        <!-- Floating Popover Dropdown Menu -->
+        <div id="season-stepper-dropdown-menu"
+          class="hidden absolute top-full left-0 sm:left-1/2 sm:-translate-x-1/2 mt-2 w-72 sm:w-80 max-h-84 overflow-y-auto rounded-2xl shadow-2xl border z-50 p-1.5 backdrop-blur-xl scrollbar-thin"
+          style="background-color: var(--modal-bg, var(--table-surface, #0f172a)); border-color: var(--table-border, #334155);"
+          role="menu">
+          <div class="px-3 py-2 text-[10px] uppercase font-black tracking-wider opacity-50 border-b border-slate-500/20 mb-1 flex items-center justify-between"
+            style="color: var(--text-muted);">
+            <span>Archivio Stagioni (${seasons.length})</span>
+            <span>Cronologico</span>
+          </div>
+          <div class="space-y-1">
+            ${dropdownItemsHtml}
           </div>
         </div>
-
-        <!-- Right (Older Season) Button -->
-        <button type="button"
-          ${rightSeason ? `onclick="selectArchiveSeason('${rightSeason}')" title="Stagione precedente (${rightSeason})"` : 'disabled title="Nessuna stagione precedente"'}
-          class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition border border-transparent ${
-            rightSeason
-              ? 'hover:bg-black/5 dark:hover:bg-white/5 opacity-80 hover:opacity-100 cursor-pointer active:scale-95'
-              : 'opacity-25 cursor-not-allowed'
-          }"
-          style="color: var(--text-main);"
-          aria-label="Stagione precedente">
-          <i class="fa-solid fa-chevron-right text-xs sm:text-sm"></i>
-        </button>
-
       </div>
+
+      <!-- Right (Older Season) Button -->
+      <button type="button"
+        ${rightSeason ? `onclick="selectArchiveSeason('${rightSeason}')" title="Stagione precedente (${rightSeason})"` : 'disabled title="Nessuna stagione precedente"'}
+        class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition border border-transparent ${
+          rightSeason
+            ? 'hover:bg-black/5 dark:hover:bg-white/5 opacity-80 hover:opacity-100 cursor-pointer active:scale-95'
+            : 'opacity-25 cursor-not-allowed'
+        }"
+        style="color: var(--text-main);"
+        aria-label="Stagione precedente">
+        <i class="fa-solid fa-chevron-right text-[11px] sm:text-xs"></i>
+      </button>
+
     </div>
   `;
 }
@@ -225,43 +224,52 @@ export function renderSeasonPills(seasons: string[], currentSelectedSeason: stri
 }
 
 /**
- * Renders the season overview banner with competition and team counts
+ * Renders the unified season overview banner with static title + attached stepper on left,
+ * and tournament badges + team counter on right
  */
 export function renderSeasonHeaderSummary(
   currentSelectedSeason: string,
   compsCount: number,
   totalTeams: number,
-  isInProgress: boolean = false
+  isInProgress: boolean = false,
+  stepperHtml: string = ''
 ): string {
+  const stepper = stepperHtml || renderSeasonStepper(getAvailableSeasons(), currentSelectedSeason);
+
   return `
-    <div class="flex flex-wrap items-center justify-between gap-3 mb-6 p-4 rounded-2xl border albo-table-wrap">
-      <div>
-        <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-2xl font-black font-sport italic uppercase" style="color: var(--accent-color);">
-            Stagione ${currentSelectedSeason}
-          </span>
-          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+    <div class="relative z-30 mb-6 p-4 sm:p-5 rounded-2xl border albo-table-wrap shadow-sm"
+      style="background-color: var(--table-surface);">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+        
+        <!-- Left: Static Title with Attached Minimalist Stepper & Subtitle -->
+        <div>
+          <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
+            <span class="text-2xl sm:text-3xl font-black font-sport italic uppercase tracking-tight" style="color: var(--accent-color);">
+              Stagione ${currentSelectedSeason}
+            </span>
+            ${stepper}
+          </div>
+          <p class="text-xs font-semibold mt-1 opacity-70" style="color: var(--text-muted);">
+            ${isInProgress
+              ? 'Classifiche e verdetti provvisori'
+              : `Archivio ufficiale dei piazzamenti, podi e verdetti storici ${LEAGUE.brand.name}`}
+          </p>
+        </div>
+
+        <!-- Right: Badges Group & Squad Counter -->
+        <div class="flex items-center gap-2 sm:gap-2.5 flex-wrap self-start md:self-center">
+          <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-500 dark:text-amber-400 border border-amber-500/30 shrink-0">
             ${compsCount} ${compsCount === 1 ? 'Competizione' : 'Competizioni'}
           </span>
-          ${isInProgress ? `
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-              In corso
+          ${totalTeams > 0 ? `
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold border border-slate-400/20 bg-slate-500/10 flex items-center gap-1.5 shrink-0" style="color: var(--text-muted);">
+              <i class="fa-solid fa-users text-amber-500 dark:text-amber-400"></i>
+              ${totalTeams} Squadre partecipanti
             </span>
           ` : ''}
         </div>
-        <p class="text-xs font-semibold mt-1 opacity-70" style="color: var(--text-muted);">
-          ${isInProgress
-            ? 'Stagione attualmente in corso • Classifiche e verdetti provvisori'
-            : `Archivio ufficiale dei piazzamenti, podi e verdetti storici ${LEAGUE.brand.name}`}
-        </p>
+
       </div>
-      ${totalTeams > 0 ? `
-        <div class="flex items-center gap-2 text-xs font-bold opacity-80" style="color: var(--text-muted);">
-          <i class="fa-solid fa-users text-amber-400"></i>
-          <span>${totalTeams} Squadre partecipanti</span>
-        </div>
-      ` : ''}
     </div>
   `;
 }

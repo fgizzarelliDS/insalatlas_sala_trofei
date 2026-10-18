@@ -38,6 +38,32 @@ export interface LeagueFeatures {
   cartonato: boolean;
 }
 
+export type CompetitionArchetype = 'tier3' | 'tier2' | 'single' | 'dishonor' | 'banners';
+
+export interface CompetitionDefinition {
+  id: string;               // Chiave univoca (es. 'championship', 'cup', 'supercup', 'mundialito', 'spoon', 'cartonato', 'champions')
+  name: string;             // Nome esteso (es. 'Campionato Serie Atlas', 'Coppa di Lega')
+  shortName: string;        // Etichetta compatta per intestazione colonna
+  category: string;         // Categoria abbinata nei record di data.json
+  nameKeywords?: string[];  // Parole chiave secondarie per match nel nome competizione
+  trophyIcon: string;       // Chiave SVG in trophies.ts (oro / trofeo principale)
+  silverTrophyIcon?: string;// Chiave SVG argento (tier3 / tier2)
+  bronzeTrophyIcon?: string;// Chiave SVG bronzo (tier3)
+  type: CompetitionArchetype;
+  scoringPoints: {
+    gold: number;
+    silver?: number;
+    bronze?: number;
+  };
+  grid: {
+    desktopTrack: string;   // CSS track, es. 'minmax(270px, 1.4fr)', '150px'
+    desktopWidthPx: number; // Larghezza base per export canvas HD
+    mobileWidthPx: number;  // Larghezza minima colonna su mobile (<768px)
+  };
+  order: number;
+  enabled: boolean;
+}
+
 export type AlboColumnKey =
   | 'manager'
   | 'championship'
@@ -45,12 +71,13 @@ export type AlboColumnKey =
   | 'cup'
   | 'supercup'
   | 'mundialito'
-  | 'cartonato';
+  | 'cartonato'
+  | (string & {});
 
 export interface AlboColumnDef {
   key: AlboColumnKey;
   cssVar: string;
-  titleKey: 'col1' | 'col2' | 'col3' | 'col4' | 'col5' | 'col6' | 'col7';
+  titleKey: string;
   defaultTitle: string;
   enabled: boolean;
   order: number;
@@ -130,6 +157,7 @@ export interface Manager {
   cartonato: number;
   coach_banners?: string[];
   cartonato_coaches?: string[];
+  trophies?: Record<string, number>;
   history?: SeasonRecord[];
 }
 

@@ -1,5 +1,5 @@
 import { state } from '@/state';
-import { LEAGUE } from '@/config';
+import { LEAGUE, getCompetitionDef } from '@/config';
 import { showToast } from '@/ui';
 import type { TrophyModalKey, CupSubTab } from './TrophyModalTypes';
 import { renderTrophyModalShellHTML } from './TrophyModalShell';
@@ -9,7 +9,8 @@ import {
   renderMundialitoContent,
   renderSpoonsContent,
   renderCartonatoContent,
-  renderSeasonsOverviewRollHTML
+  renderSeasonsOverviewRollHTML,
+  renderGenericCompetitionRollHTML
 } from './TrophyModalContent';
 
 let currentTrophyKey: TrophyModalKey | null = null;
@@ -40,18 +41,30 @@ function handleEscKey(e: KeyboardEvent): void {
 function renderTrophyBody(key: TrophyModalKey, subTab: CupSubTab): string {
   switch (key) {
     case 'scudetti':
+    case 'championship':
       return renderScudettiRollHTML(state.competitions, state.managers);
     case 'cups':
       return renderCupsContent(subTab, state.competitions, state.managers);
+    case 'cup':
+      return renderCupsContent('coppa', state.competitions, state.managers);
+    case 'supercup':
+      return renderCupsContent('supercoppa', state.competitions, state.managers);
     case 'mundialito':
       return renderMundialitoContent(state.competitions, state.managers);
     case 'spoons':
+    case 'spoon':
       return renderSpoonsContent(state.competitions, state.managers);
     case 'cartonato':
       return renderCartonatoContent(state.competitions, state.managers);
     case 'seasons':
-    default:
       return renderSeasonsOverviewRollHTML(state.competitions, state.managers);
+    default: {
+      const comp = getCompetitionDef(key);
+      if (comp) {
+        return renderGenericCompetitionRollHTML(comp, state.competitions, state.managers);
+      }
+      return renderSeasonsOverviewRollHTML(state.competitions, state.managers);
+    }
   }
 }
 

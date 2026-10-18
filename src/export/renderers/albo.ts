@@ -1,6 +1,6 @@
 import { state } from '@/state';
 import { showToast } from '@/ui';
-import { ALBO_COLUMNS } from '@/config';
+import { ALBO_COLUMNS, getActiveCompetitions, getCompetitionDef } from '@/config';
 import { renderNodeToCanvas, copyBlobToClipboard } from './core';
 
 /**
@@ -21,7 +21,6 @@ export async function renderAlboCanvas(customWrapper?: HTMLElement): Promise<HTM
   // 2. Clone the wrapper for off-screen desktop rendering
   const clone = wrapper.cloneNode(true) as HTMLElement;
   clone.id = 'palmares-export-clone';
-  const targetWidth = 1380;
 
   // 3. Remove interactive and mobile-only elements
   clone.querySelector('#scroll-hint-pill')?.remove();
@@ -46,7 +45,16 @@ export async function renderAlboCanvas(customWrapper?: HTMLElement): Promise<HTM
     captionEl.style.display = 'block';
   }
 
-  // 4. Compute dynamic column template based on enabled ALBO_COLUMNS with calibrated trophy weights
+  // 4. Compute dynamic column template and widths based on enabled ALBO_COLUMNS
+  let sumColWidths = 280; // manager base width
+  clone.style.setProperty('--col-manager', '280px');
+
+  for (const comp of getActiveCompetitions()) {
+    const width = comp.grid.desktopWidthPx || 120;
+    sumColWidths += width;
+    clone.style.setProperty(`--col-${comp.id}`, `${width}px`);
+  }
+
   const columnWeights: Record<string, string> = {
     manager: 'minmax(240px, 1.5fr)',
     championship: 'minmax(220px, 1.4fr)',
@@ -56,17 +64,15 @@ export async function renderAlboCanvas(customWrapper?: HTMLElement): Promise<HTM
     spoon: 'minmax(70px, 0.5fr)',
     cartonato: 'minmax(160px, 1.2fr)'
   };
-  const dynamicColsTemplate = ALBO_COLUMNS.map(c => columnWeights[c.key] || 'minmax(100px, 1fr)').join(' ');
+  const dynamicColsTemplate = ALBO_COLUMNS.map(c => {
+    if (c.key === 'manager') return 'minmax(240px, 1.5fr)';
+    return columnWeights[c.key] || getCompetitionDef(c.key)?.grid.desktopTrack || 'minmax(120px, 1fr)';
+  }).join(' ');
 
-  // Set desktop column CSS variables and --albo-cols on the clone
   clone.style.setProperty('--albo-cols', dynamicColsTemplate);
-  clone.style.setProperty('--col-manager', '280px');
-  clone.style.setProperty('--col-championship', '270px');
-  clone.style.setProperty('--col-spoon', '90px');
-  clone.style.setProperty('--col-cup', '150px');
-  clone.style.setProperty('--col-supercup', '120px');
-  clone.style.setProperty('--col-mundialito', '120px');
-  clone.style.setProperty('--col-cartonato', '220px');
+
+  // Scalable canvas width: max(1380, sum of column widths + safe padding)
+  const targetWidth = Math.max(1380, sumColWidths + 80);
 
   // 5. Ensure dynamic column layout for top summary cards (adapts cleanly to active cards)
   const summaryGrid = clone.querySelector('.grid.grid-cols-2') as HTMLElement | null;

@@ -177,6 +177,22 @@ def build_data(output_file: Optional[str] = None) -> int:
                 mgr['history'].append(ah)
         mgr['history'].sort(key=lambda h: parse_season_year(h.get('season', '')), reverse=True)
 
+        mgr['trophies'] = {
+            'championship': mgr.get('gold', 0),
+            'championship_silver': mgr.get('silver', 0),
+            'championship_bronze': mgr.get('bronze', 0),
+            'cup': mgr.get('cup_gold', 0),
+            'cup_silver': mgr.get('cup_silver', 0),
+            'supercup': mgr.get('supercup', 0),
+            'supercup_silver': mgr.get('supercup_silver', 0),
+            'mundialito': mgr.get('mundialito', 0),
+            'mundialito_silver': mgr.get('mundialito_silver', 0),
+            'spoon': mgr.get('spoon', 0),
+            'cartonato': mgr.get('cartonato', 0)
+        }
+        if 'trophies' in m and isinstance(m['trophies'], dict):
+            mgr['trophies'].update(m['trophies'])
+
     compiled_managers = [managers_dict[m['id']] for m in managers_meta]
 
     compiled_payload = {

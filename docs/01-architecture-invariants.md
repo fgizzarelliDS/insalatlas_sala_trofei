@@ -60,14 +60,14 @@ insalatlas_sala_trofei/
 
 ---
 
-## 2. La Griglia del Tabellone & Motore League-Agnostic
+## 2. La Griglia del Tabellone & Motore Dinamico N-Competizioni (SPEC 16)
 
-La tabella palmarès (`.albo-grid-row`) adotta una struttura a griglia CSS nativa definita in `css/layout.css` e pilotata dinamicamente dall'array `ALBO_COLUMNS` in `src/config.ts` (`buildAlboColumns(LEAGUE.features)`).
+La tabella palmarès (`.albo-grid-row`) adotta una struttura a griglia CSS nativa definita in `css/layout.css` e pilotata in modo puramente data-driven dal registro centralizzato `COMPETITION_REGISTRY` in `src/config.ts` (`buildAlboColumns(LEAGUE.features)`).
 
-Nella configurazione predefinita di InsalAtlas (tutte le feature attive), la griglia espone esattamente 7 colonne:
+Nella configurazione predefinita di InsalAtlas (tutte le 6 competizioni storiche + disonori attive), la griglia espone il manager e le colonne registrate:
 
 ```text
-.albo-grid-row (InsalAtlas: 7 colonne)
+.albo-grid-row (InsalAtlas: Manager + N Colonne)
 ├── 1. col-manager      (--col-manager)     : Mister & Presenze (sticky a sinistra)
 ├── 2. col-championship (--col-championship): Scudetti (Oro, Argento, Bronzo)
 ├── 3. col-cup          (--col-cup)         : Coppe di Lega (Vittorie & Finali)
@@ -77,10 +77,11 @@ Nella configurazione predefinita di InsalAtlas (tutte le feature attive), la gri
 └── 7. col-cartonato    (--col-cartonato)   : Trofeo Cartonato & Bacheca Allenatori
 ```
 
-In caso di leghe terze con feature disabilitate (es. Mundialito e Cartonato spenti), il motore ricalcola la proprietà CSS `--albo-cols` adattando la larghezza a $N$ colonne in modo automatico e proporzionale.
+Il motore è completamente generalizzato: supporta $N$ competizioni arbitrarie suddivise in 5 archetipi (`tier3`, `tier2`, `single`, `dishonor`, `banners`).
+All'avvio o al resize, `syncAlboGridColumns()` ricalcola dinamicamente le larghezze responsive e la proprietà CSS `--albo-cols`. Per una guida completa all'aggiunta di nuove competizioni, consultare [`docs/05-adding-competitions-guide.md`](05-adding-competitions-guide.md).
 
 > [!CAUTION]
-> **Regola Architetturale Invariante**: Non inserire mai wrapper intermedi (`div`, `span`, o contenitori flex) attorno alle colonne dei trofei. I nodi figli della riga devono corrispondere esattamente a quelli definiti in `ALBO_COLUMNS`. L'inserimento di nodi non previsti disallinea le colonne su layout responsive desktop e mobile e corrompe l'allineamento delle mensole trofei.
+> **Regola Architetturale Invariante**: Non inserire mai wrapper intermedi (`div`, `span`, o contenitori flex) attorno alle colonne dei trofei. I nodi figli della riga devono corrispondere esattamente a quelli definiti in `ALBO_COLUMNS`. L'inserimento di nodi non previsti disallinea le colonne su layout responsive desktop e mobile e corrompe l'allineamento delle mensole trofei. Inoltre, le celle con contenuti multipli larghi (come `banners`) devono mantenere il confinamento locale (`max-w-full overflow-hidden` all'esterno, `overflow-x: auto; scrollbar-none; justify-content: safe center;` all'interno) per impedire qualsiasi sbordamento orizzontale sulle colonne adiacenti.
 
 ---
 

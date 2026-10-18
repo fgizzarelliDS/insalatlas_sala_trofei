@@ -19,6 +19,7 @@
 
 L'applicazione offre un'interfaccia interattiva per desktop e mobile:
 
+- **Dynamic N-Competitions Engine (SPEC 16)**: Architettura data-driven unificata (`src/config.ts`) con supporto per $N$ tornei e disonori arbitrari basati su 5 archetipi (`tier3`, `tier2`, `single`, `dishonor`, `banners`), pesi di punteggio personalizzabili, griglia CSS reattiva auto-sincronizzante, ordinamenti dinamici e modali albo d'oro con zero duplicazione di codice.
 - **Architettura League-Agnostic**: Configurazione centralizzata (`src/config.ts`), colonne del tabellone dinamiche con griglia CSS reattiva, isolamento multi-tenant in local storage e supporto chiavi in mano per leghe arbitrarie.
 - **Albo d'Oro Storico Decennale**: Bacheca trofei consolidata, rating storico e schede manager ad alta risoluzione (HD) condivisibili.
 - **Bacheca Record Storici (Hall of Fame & Primati)**: **28 record certificati** su 5 categorie storiche (Punti & Podi, Dominio & Coppe, Rivalità H2H, Strisce & Fedeltà, Disonori & Curiosità) con navigazione contestuale duale (scheda manager e archivio classifica di stagione), inclusi i 3 record per debuttanti e matricole, gestione ex-aequo ed export Poster Panoramico HD + Story 9:16.
@@ -43,7 +44,7 @@ La documentazione del progetto è suddivisa in guide tematiche dedicate in [`doc
 
 ### 1. [Architettura & Invarianti Tecniche](docs/01-architecture-invariants.md)
 
-Struttura a **7 colonne native** (`.albo-grid-row`), il motore di theming basato su Custom Properties CSS (Gala, Serie A, Gazzetta, Studio) e la pipeline di build con Vite.
+Struttura a **colonne native** (`.albo-grid-row`), il motore di theming basato su Custom Properties CSS (Gala, Serie A, Gazzetta, Studio) e la pipeline di build con Vite.
 
 ### 2. [Funzionalità & Esperienza Utente](docs/02-features-and-ui.md)
 
@@ -63,6 +64,10 @@ Approfondimento matematico del modulo analitico:
 ### 4. [Data Schema & Validazione CI/CD](docs/04-data-schema-and-ci.md)
 
 Specifiche del contratto dati `public/data.json`, pipeline di compilazione (`scripts/build_data.py`), validazione CI/CD (`scripts/validate.py`) e GitHub Actions.
+
+### 5. [Guida: Aggiungere una Nuova Competizione (Registry Dinamico)](docs/05-adding-competitions-guide.md)
+
+Guida operativa passo-passo per estendere l'albo d'oro con nuove competizioni tramite `COMPETITION_REGISTRY`: i 5 archetipi, le icone SVG vettoriali, la griglia CSS responsive e l'adattamento automatico di classifiche, modali ed export HD.
 
 ---
 

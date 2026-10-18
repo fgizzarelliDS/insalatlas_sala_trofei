@@ -243,6 +243,14 @@ body {
   background-color: var(--accent-color);
 }
 
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* ==========================================================================
    HIGHLIGHT PULSE FOR STANDINGS ROWS (From Records / H2H Navigation)
    ========================================================================== */

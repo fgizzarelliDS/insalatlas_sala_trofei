@@ -87,9 +87,21 @@ export function renderTopStatsCards(): void {
   const activeComps = getActiveCompetitions();
   const numCards = 1 + activeComps.length;
 
-  container.className = `grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-${Math.min(numCards, 6)} gap-3 sm:gap-4 mb-6 max-w-5xl mx-auto`;
+  let lgColsClass = 'lg:grid-cols-6';
+  if (numCards >= 7) {
+    lgColsClass = 'lg:grid-cols-4';
+  } else if (numCards === 5) {
+    lgColsClass = 'lg:grid-cols-5';
+  } else if (numCards === 4) {
+    lgColsClass = 'lg:grid-cols-4';
+  } else if (numCards <= 3) {
+    lgColsClass = 'lg:grid-cols-3';
+  }
+
+  container.className = `grid grid-cols-2 sm:grid-cols-3 ${lgColsClass} gap-3 sm:gap-4 mb-6 max-w-5xl mx-auto`;
 
   const getCompCardIcon = (comp: CompetitionDefinition): string => {
+    if (comp.cardIcon) return comp.cardIcon;
     if (comp.id === 'championship') return '🥇';
     if (comp.id === 'cup') return '🏆';
     if (comp.id === 'supercup') return '⭐';
@@ -101,6 +113,7 @@ export function renderTopStatsCards(): void {
   };
 
   const getCompCardBadgeStyle = (comp: CompetitionDefinition): string => {
+    if (comp.cardBadgeStyle) return comp.cardBadgeStyle;
     if (comp.id === 'championship') return 'bg-amber-500/20 text-amber-400';
     if (comp.id === 'cup') return 'bg-blue-500/20 text-blue-400';
     if (comp.id === 'supercup') return 'bg-yellow-500/20 text-yellow-400';

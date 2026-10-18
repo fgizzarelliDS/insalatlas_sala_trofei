@@ -121,7 +121,7 @@ import {
   navigateToHome,
   handleBrandHomeClick
 } from '@/components/board/tableBoard';
-import { updateStatistics } from '@/components/board/statsCounter';
+import { updateStatistics, renderTopStatsCards } from '@/components/board/statsCounter';
 import {
   switchMainViewTab,
   selectArchiveSeason,
@@ -203,7 +203,7 @@ export {
   copyAlboToClipboard,
   shareAlboWhatsApp
 };
-export { updateStatistics };
+export { updateStatistics, renderTopStatsCards };
 export { promptPWAInstall };
 export {
   openSeasonModal,
@@ -272,6 +272,7 @@ declare global {
     resetOfficialData: typeof resetOfficialData;
     handleTitleBlur: typeof handleTitleBlur;
     renderBoard: typeof renderBoard;
+    renderTopStatsCards: typeof renderTopStatsCards;
     updateStatistics: typeof updateStatistics;
     promptPWAInstall: typeof promptPWAInstall;
     dismissScrollHint: typeof dismissScrollHint;
@@ -356,6 +357,7 @@ export async function initApp(): Promise<void> {
   await loadLeagueData();
   applyTitlesToDOM();
   renderBoard();
+  renderTopStatsCards();
   updateStatistics();
   initScrollHintListener();
   initPWA();
@@ -521,6 +523,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     resetOfficialData,
     handleTitleBlur,
     renderBoard,
+    renderTopStatsCards,
     updateStatistics,
     promptPWAInstall,
     dismissScrollHint,

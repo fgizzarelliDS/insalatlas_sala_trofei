@@ -330,15 +330,45 @@ describe('Dynamic Competition Registry Engine', () => {
       ];
     });
 
-    it('renderTopStatsCards creates cards for seasons and all enabled competitions', () => {
+    it('renderTopStatsCards creates cards for seasons and all enabled competitions with responsive static grid', () => {
       renderTopStatsCards();
-      const container = elements['top-stats-cards-container'];
+      const container = elements['top-stats-cards-container'] as any;
       expect(container.innerHTML).toContain('STAGIONI');
       expect(container.innerHTML).toContain('stat-total-scudetti');
+      // With 7 cards (1 season + 6 active comps), grid should use lg:grid-cols-4
+      expect(container.className).toContain('lg:grid-cols-4');
 
       updateStatistics();
       expect(elements['stat-total-scudetti'].textContent).toBe('3');
       expect(elements['stat-total-spoons'].textContent).toBe('3');
+    });
+
+    it('respects optional custom cardIcon and cardBadgeStyle on competitions', () => {
+      const customComp: CompetitionDefinition = {
+        id: 'mock_league',
+        name: 'Mock League',
+        shortName: 'Mock',
+        category: 'Coppa',
+        trophyIcon: 'gold_cup',
+        type: 'tier2',
+        cardIcon: '🌟',
+        cardBadgeStyle: 'bg-orange-500/20 text-orange-400',
+        scoringPoints: { gold: 2.0 },
+        grid: { desktopTrack: '120px', desktopWidthPx: 120, mobileWidthPx: 90 },
+        order: 9,
+        enabled: true
+      };
+      COMPETITION_REGISTRY.push(customComp);
+      try {
+        renderTopStatsCards();
+        const container = elements['top-stats-cards-container'];
+        expect(container.innerHTML).toContain('🌟');
+        expect(container.innerHTML).toContain('bg-orange-500/20 text-orange-400');
+        expect(container.innerHTML).toContain('Europa');
+      } finally {
+        const idx = COMPETITION_REGISTRY.indexOf(customComp);
+        if (idx !== -1) COMPETITION_REGISTRY.splice(idx, 1);
+      }
     });
   });
 

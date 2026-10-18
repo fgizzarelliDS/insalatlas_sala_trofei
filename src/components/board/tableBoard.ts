@@ -11,6 +11,7 @@ import {
 } from '@/score';
 import { openManagerModal, openProfileModal } from '@/components/modals';
 import { LEAGUE, ALBO_COLUMNS, getActiveCompetitions, getCompetitionDef } from '@/config';
+import { renderTopStatsCards } from '@/components/board/statsCounter';
 
 /**
  * Changes active sorting criterion and updates table
@@ -342,6 +343,7 @@ function renderCompetitionCell(
 export function renderBoard(): void {
   syncAlboGridColumns();
   renderBoardHeader();
+  renderTopStatsCards();
 
   const container = document.getElementById('managers-table-body');
   if (!container) return;

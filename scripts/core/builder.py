@@ -166,6 +166,12 @@ def build_data(output_file: Optional[str] = None) -> int:
 
             mgr['history'].append(history_entry)
 
+    # Collect all distinct custom trophy keys across all managers to keep public/data.json schema 100% homogeneous
+    all_extra_trophy_keys = set()
+    for m in managers_meta:
+        if 'trophies' in m and isinstance(m['trophies'], dict):
+            all_extra_trophy_keys.update(m['trophies'].keys())
+
     # Apply explicit overrides from managers.json and sort history descending
     for m in managers_meta:
         mid = m['id']
@@ -176,6 +182,10 @@ def build_data(output_file: Optional[str] = None) -> int:
             for ah in m['additional_history']:
                 mgr['history'].append(ah)
         mgr['history'].sort(key=lambda h: parse_season_year(h.get('season', '')), reverse=True)
+
+        coaches_count = len(mgr.get('cartonato_coaches', []))
+        if coaches_count > mgr.get('cartonato', 0):
+            mgr['cartonato'] = coaches_count
 
         mgr['trophies'] = {
             'championship': mgr.get('gold', 0),
@@ -190,6 +200,9 @@ def build_data(output_file: Optional[str] = None) -> int:
             'spoon': mgr.get('spoon', 0),
             'cartonato': mgr.get('cartonato', 0)
         }
+        for k in sorted(all_extra_trophy_keys):
+            mgr['trophies'][k] = 0
+
         if 'trophies' in m and isinstance(m['trophies'], dict):
             mgr['trophies'].update(m['trophies'])
 

@@ -60,6 +60,8 @@ export interface CompetitionDefinition {
     desktopWidthPx: number; // Larghezza base per export canvas HD
     mobileWidthPx: number;  // Larghezza minima colonna su mobile (<768px)
   };
+  cardIcon?: string;        // Emoji o icona per la card statistica in alto (default dedotto da archetype/id)
+  cardBadgeStyle?: string;  // Classi CSS/Tailwind per il badge icona nella card (es. 'bg-amber-500/20 text-amber-400')
   order: number;
   enabled: boolean;
 }

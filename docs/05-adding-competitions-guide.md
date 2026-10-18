@@ -33,6 +33,8 @@ export interface CompetitionDefinition {
     desktopWidthPx: number;                     // Larghezza stimata per esportazione canvas HD
     mobileWidthPx: number;                      // Larghezza traccia fissa su schermi < 768px
   };
+  cardIcon?: string;                            // Emoji/icona opzionale per la card in alto (default: '🏆')
+  cardBadgeStyle?: string;                      // Stile CSS/Tailwind per il badge icona (default: 'bg-amber-500/20 text-amber-400')
   order: number;                                // Ordine sequenziale orizzontale
   enabled: boolean;                             // Flag di attivazione (da LEAGUE.features o costante)
 }
@@ -117,7 +119,7 @@ Aggiungi la variabile CSS per il nuovo track in [`css/layout.css`](file:///Users
 > [!NOTE]
 > All'avvio dell'applicazione e al resize della viewport, la funzione `syncAlboGridColumns()` in `src/components/board/tableBoard.ts` sincronizza automaticamente sia le singole variabili CSS (`--col-[id]`) che la sequenza completa `--albo-cols` leggendo le proprietà da `COMPETITION_REGISTRY`.
 
-### Passo 4: Popolamento dei Dati Storici
+### Passo 4: Popolamento dei Dati Storici e Compilazione Automatica
 
 I dati della competizione possono essere inseriti nei tabellini stagionali e nelle bacheche dei manager:
 
@@ -131,15 +133,23 @@ I dati della competizione possono essere inseriti nei tabellini stagionali e nel
    ```
    Il motore estrattore (`scripts/core/extractor.py`) mapperà automaticamente il trofeo al rispettivo manager e ID competizione grazie a `nameKeywords: ['champions']`.
 
-2. **Nel dizionario trofei aggregato del manager** (`trophies`):
+2. **Nel file dei manager (`data/managers.json`)**:
+   I trofei possono essere assegnati a livello di singolo mister:
    ```json
-   "trophies": {
-     "champions": {
-       "gold": 2,
-       "silver": 1
+   {
+     "id": "gigi",
+     "name": "Gigi",
+     "trophies": {
+       "champions": 1
      }
    }
    ```
+   oppure specificando singoli tier (es. `"champions_gold": 1`, `"champions_silver": 1`).
+
+> [!IMPORTANT]
+> **Omogeneità Automatica dello Schema JSON (`builder.py`)**:
+> Quando esegui `npm run build:data`, lo script [`scripts/core/builder.py`](file:///Users/fgizzarelli/Desktop/projects/insalatlas_sala_trofei/scripts/core/builder.py) analizza tutti i manager, raccoglie l'insieme completo delle chiavi trofeo personalizzate (es. `champions`) e le inizializza automaticamente a `0` per tutti gli altri manager in `public/data.json`.
+> In questo modo la forma del JSON generato rimane al 100% omogenea, garantendo che TypeScript interpreti il campo `trophies: Record<string, number>` senza generare errori di inferenza (come `champions?: undefined`).
 
 ---
 
@@ -155,10 +165,12 @@ Una volta inserita la definizione in `COMPETITION_REGISTRY`, il motore gestisce 
 3. **Calcolo Punteggi Palmarès**:
    - Aggiornamento della formula `calculateScore()` pesando i punti configurati in `scoringPoints`.
    - Aggiornamento del conteggio trofei positivi (`getManagerTotalTrophies()`).
-4. **Top Summary Cards**:
-   - I contatori riassuntivi in cima al tabellone mostrano automaticamente il recordman della nuova competizione.
+4. **Top Summary Cards Dinamiche**:
+   - `renderTopStatsCards()` genera automaticamente in cima al tabellone una card dedicata per ogni competizione attiva in `COMPETITION_REGISTRY` (oltre alla card globale "Stagioni").
+   - Il layout a griglia utilizza classi Tailwind responsive statiche (fino a 4 colonne `lg:grid-cols-4` per 7+ card, `lg:grid-cols-6` per 6 card, ecc.) per prevenire la purge del compilatore JIT.
+   - Ogni card mostra il conteggio all-time aggiornato in tempo reale e, cliccandovi sopra, invoca `openTrophyModal(comp.id)` aprendo direttamente la cronologia storica dell'Albo d'Oro.
 5. **Modale Albo d'Oro Storico**:
-   - Cliccando sul titolo dell'header o dall'archivio, si apre il modale generico con lo storico di tutte le edizioni, i vincitori, finalisti e le pillole delle stagioni con link diretto.
+   - Cliccando sul titolo dell'header o sulla card riassuntiva, si apre il modale generico con lo storico di tutte le edizioni, i vincitori, finalisti e le pillole delle stagioni con link diretto.
 6. **Esportazione HD su Canvas**:
    - Il modulo `src/export/renderers/albo.ts` calcola la larghezza totale del canvas HD sommando dinamicamente `desktopWidthPx` di tutte le colonne attive, garantendo esportazioni perfette senza troncamenti.
 

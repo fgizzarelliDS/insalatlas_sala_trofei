@@ -149,7 +149,7 @@ export function renderBoardHeader(): void {
       case 'spoon':
         return `<div id="th-col-6" data-title-key="col6" onblur="handleTitleBlur(this)" class="text-center transition text-[11px] sm:text-xs">${title}</div>`;
       case 'cartonato':
-        return `<div id="th-col-7" data-title-key="col7" onblur="handleTitleBlur(this)" class="text-center transition text-[11px] sm:text-xs">${title}</div>`;
+        return `<div id="th-col-7" data-title-key="col7" onblur="handleTitleBlur(this)" class="text-center px-2 transition text-[11px] sm:text-xs">${title}</div>`;
       default:
         return '';
     }
@@ -342,7 +342,7 @@ export function renderBoard(): void {
         </div>
       `,
       cartonato: `
-        <div class="flex items-center justify-center self-center pb-2 min-h-[38px]">
+        <div class="flex items-center justify-center self-center px-2 pb-2 min-h-[38px]">
           ${cartonatoHTML}
         </div>
       `

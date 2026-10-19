@@ -2151,7 +2151,6 @@
       "statusLabel": "In Fiamme",
       "scheduleLuck": {
         "xPoints": 3.0,
-        "deltaPoints": 0.0,
         "xRank": 1,
         "deltaRank": 0,
         "allPlayRecord": {
@@ -2185,7 +2184,6 @@
       "statusLabel": "In Fiamme",
       "scheduleLuck": {
         "xPoints": 2.77,
-        "deltaPoints": 0.23,
         "xRank": 2,
         "deltaRank": 0,
         "allPlayRecord": {
@@ -2219,7 +2217,6 @@
       "statusLabel": "In Fiamme",
       "scheduleLuck": {
         "xPoints": 2.08,
-        "deltaPoints": 0.92,
         "xRank": 3,
         "deltaRank": 0,
         "allPlayRecord": {
@@ -2253,7 +2250,6 @@
       "statusLabel": "In Fiamme",
       "scheduleLuck": {
         "xPoints": 2.08,
-        "deltaPoints": 0.92,
         "xRank": 4,
         "deltaRank": 0,
         "allPlayRecord": {
@@ -2287,7 +2283,6 @@
       "statusLabel": "In Ascesa",
       "scheduleLuck": {
         "xPoints": 1.15,
-        "deltaPoints": 1.85,
         "xRank": 7,
         "deltaRank": -2,
         "allPlayRecord": {
@@ -2321,7 +2316,6 @@
       "statusLabel": "In Ascesa",
       "scheduleLuck": {
         "xPoints": 1.15,
-        "deltaPoints": 1.85,
         "xRank": 8,
         "deltaRank": -2,
         "allPlayRecord": {
@@ -2355,7 +2349,6 @@
       "statusLabel": "In Flessione",
       "scheduleLuck": {
         "xPoints": 2.08,
-        "deltaPoints": -1.08,
         "xRank": 5,
         "deltaRank": 2,
         "allPlayRecord": {
@@ -2389,7 +2382,6 @@
       "statusLabel": "In Flessione",
       "scheduleLuck": {
         "xPoints": 2.08,
-        "deltaPoints": -1.08,
         "xRank": 6,
         "deltaRank": 2,
         "allPlayRecord": {
@@ -2423,7 +2415,6 @@
       "statusLabel": "Crisi Nera",
       "scheduleLuck": {
         "xPoints": 1.15,
-        "deltaPoints": -1.15,
         "xRank": 9,
         "deltaRank": 0,
         "allPlayRecord": {
@@ -2457,7 +2448,6 @@
       "statusLabel": "Crisi Nera",
       "scheduleLuck": {
         "xPoints": 1.15,
-        "deltaPoints": -1.15,
         "xRank": 10,
         "deltaRank": 0,
         "allPlayRecord": {
@@ -2491,7 +2481,6 @@
       "statusLabel": "Crisi Nera",
       "scheduleLuck": {
         "xPoints": 0.23,
-        "deltaPoints": -0.23,
         "xRank": 11,
         "deltaRank": 0,
         "allPlayRecord": {
@@ -2525,7 +2514,6 @@
       "statusLabel": "Crisi Nera",
       "scheduleLuck": {
         "xPoints": 0.23,
-        "deltaPoints": -0.23,
         "xRank": 14,
         "deltaRank": -2,
         "allPlayRecord": {
@@ -2559,7 +2547,6 @@
       "statusLabel": "Crisi Nera",
       "scheduleLuck": {
         "xPoints": 0.23,
-        "deltaPoints": -0.23,
         "xRank": 13,
         "deltaRank": 0,
         "allPlayRecord": {
@@ -2593,7 +2580,6 @@
       "statusLabel": "Crisi Nera",
       "scheduleLuck": {
         "xPoints": 0.23,
-        "deltaPoints": -0.23,
         "xRank": 12,
         "deltaRank": 2,
         "allPlayRecord": {

@@ -91,12 +91,18 @@ class TestLuckSimulator(unittest.TestCase):
 
         analytics = compute_schedule_luck_analytics(teams_stats, rounds, total_rounds=6, random_seed=42)
 
-        self.assertEqual(analytics['Team A']['deltaPoints'], 0.0)
-        self.assertEqual(analytics['Team B']['deltaPoints'], -2.0)
-        self.assertEqual(analytics['Team C']['deltaPoints'], 2.0)
-        self.assertEqual(analytics['Team D']['deltaPoints'], 0.0)
+        # Delta Points = Actual Points - xPoints
+        delta_A = teams_stats['Team A']['points'] - analytics['Team A']['xPoints']
+        delta_B = teams_stats['Team B']['points'] - analytics['Team B']['xPoints']
+        delta_C = teams_stats['Team C']['points'] - analytics['Team C']['xPoints']
+        delta_D = teams_stats['Team D']['points'] - analytics['Team D']['xPoints']
 
-        total_delta = sum(t['deltaPoints'] for t in analytics.values())
+        self.assertEqual(delta_A, 0.0)
+        self.assertEqual(delta_B, -2.0)
+        self.assertEqual(delta_C, 2.0)
+        self.assertEqual(delta_D, 0.0)
+
+        total_delta = delta_A + delta_B + delta_C + delta_D
         self.assertAlmostEqual(total_delta, 0.0, places=2)
 
     def test_monte_carlo_performance_and_reproducibility(self):

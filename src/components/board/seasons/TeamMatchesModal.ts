@@ -334,7 +334,7 @@ export function openTeamMatchesModal(managerId?: string, teamName?: string, isBa
         <div class="flex items-center gap-2 flex-wrap">
           <span class="font-mono font-bold text-xs" style="color: var(--text-main);">${xPts.toFixed(2)} xPTS</span>
           <span class="text-[11px] opacity-75 font-semibold" style="color: var(--text-muted);">vs ${teamMetric?.points !== undefined && teamMetric?.points !== null ? `${teamMetric.points} pt` : '- pt'}</span>
-          ${renderDeltaPointsPillHTML(deltaPts)}
+          ${renderDeltaPointsPillHTML(deltaPts, teamMetric?.points !== undefined && teamMetric?.points !== null)}
           ${luckBadge && luckLabel && luckZ !== undefined ? renderLuckBadgeHTML(luckBadge, luckLabel, luckZ, true) : ''}
         </div>
         <!-- All-Play Record -->

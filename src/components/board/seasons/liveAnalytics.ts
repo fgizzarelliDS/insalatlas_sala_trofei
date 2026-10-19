@@ -245,8 +245,17 @@ export function renderDeltaRankPillHTML(deltaRank: number, realRank: number): st
 
 /**
  * Renders Delta Points pill (Actual Points - xPTS)
+ * When isRealPointsLoaded is false, renders a neutral '-' placeholder pill.
  */
-export function renderDeltaPointsPillHTML(deltaPoints: number): string {
+export function renderDeltaPointsPillHTML(deltaPoints: number, isRealPointsLoaded: boolean = true): string {
+  if (!isRealPointsLoaded) {
+    return `
+      <span class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-300 dark:bg-slate-800/80 dark:text-slate-400 dark:border-slate-700 whitespace-nowrap"
+            title="Punti reali non ancora disponibili">
+        -
+      </span>
+    `;
+  }
   if (deltaPoints > 0) {
     return `
       <span class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300/80 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/30 whitespace-nowrap"

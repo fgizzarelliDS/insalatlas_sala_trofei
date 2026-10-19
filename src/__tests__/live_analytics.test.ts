@@ -646,6 +646,10 @@ describe('Live In-Progress Form & Analytics Engine', () => {
 
       const neutralPts = renderDeltaPointsPillHTML(0.0);
       expect(neutralPts).toContain('0.00 pt');
+
+      const placeholderPts = renderDeltaPointsPillHTML(1.42, false);
+      expect(placeholderPts).toContain('-');
+      expect(placeholderPts).not.toContain('+1.42 pt');
     });
 
     it('renders 2-way toggle in standings table and switches views smoothly', () => {
@@ -718,9 +722,9 @@ describe('Live In-Progress Form & Analytics Engine', () => {
       expect(tableHTML).toContain('guide-content-real');
       expect(tableHTML).toContain('guide-content-merit');
       // Assert dynamic real points when present and placeholder when undefined
-      expect(tableHTML).toContain('• Reale #1 (3 pt)');
+      expect(tableHTML).toContain('Reale #1 (3 pt)');
       expect(tableHTML).toContain('vs 3 pt');
-      expect(tableHTML).toContain('• Reale #2 (- pt)');
+      expect(tableHTML).toContain('Reale #2 (- pt)');
       expect(tableHTML).toContain('vs - pt');
 
       // Test view switching DOM manipulation with Mock Elements

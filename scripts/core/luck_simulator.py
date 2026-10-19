@@ -408,7 +408,6 @@ def compute_schedule_luck_analytics(
 
         final_analytics[name] = {
             'xPoints': x_pts,
-            'deltaPoints': delta_pts,
             'xRank': x_rnk,
             'deltaRank': delta_rank,
             'allPlayRecord': ap.get('allPlayRecord', {

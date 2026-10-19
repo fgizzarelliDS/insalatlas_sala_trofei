@@ -576,7 +576,7 @@ export type LuckBadge = '🍀' | '↗️' | '⚖️' | '↘️' | '⛈️';
 
 export interface ScheduleLuckAnalytics {
   xPoints: number;
-  deltaPoints: number;
+  deltaPoints?: number;
   xRank: number;
   deltaRank: number;
   allPlayRecord: {

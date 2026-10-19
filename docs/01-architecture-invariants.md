@@ -98,3 +98,21 @@ I temi grafici aggiornano dinamicamente i token definiti in `css/themes.css` su 
 | `--text-muted` | `#94a3b8` | `#67e8f9` | `#881337` | `#64748b` |
 
 Tutti i componenti complessi (Trading Cards, modali analitici, cruscotti econometrici) ereditano queste proprietà senza hardcoding di colori nei file TypeScript.
+
+---
+
+## 4. Pipeline Live In-Progress & Privacy Masking Invariant
+
+Per la stagione in corso, l'applicazione supporta il monitoraggio dinamico delle giornate di campionato:
+
+1. **Separazione Dati Grezzi vs Distribuzione Pubblica**:
+   - I dati analitici completi (risultati numerici esatti, fantapunti per match, calendari API) risiedono esclusivamente nella directory `data/live/`, rigorosamente ignorata da Git (`.gitignore`).
+   - Il compilatore Python (`scripts/core/live_builder.py`) produce il file di distribuzione pubblico [`public/live_season_details.json`](file:///Users/fgizzarelli/Desktop/projects/insalatlas_sala_trofei/public/live_season_details.json).
+2. **Invariante di Mascheramento dei Risultati (Privacy & Clean UX)**:
+   - In `public/live_season_details.json`, i singoli incontri **non contengono mai punteggi numerici di gara o fantapunti decimali**.
+   - Ciascun match espone unicamente l'esito qualitativo pre-calcolato: `homeOutcome: 'W' | 'D' | 'L' | null` e `awayOutcome: 'W' | 'D' | 'L' | null`, con `isPlayed: false` e `outcome: null` per gli incontri non ancora disputati.
+   - Nelle classifiche in corso, le colonne analitiche numeriche grezze (punti, reti fatte, fantapunti totali) vengono mascherate a favore di posizionamento, forma recente (L5) e badge di momento.
+3. **Single Source of Truth per i Club (Option A Inheritance)**:
+   - I calendari delle partite registrano unicamente `homeManagerId` e `awayManagerId`.
+   - Il compilatore e il client ereditano deterministicamente nome squadra, allenatore e stemma ufficiale dal file di configurazione stagionale (`data/seasons/2026-27.json`). In questo modo, un aggiornamento di stemma o denominazione si propaga all'intero archivio partite senza toccare i file dei round.
+

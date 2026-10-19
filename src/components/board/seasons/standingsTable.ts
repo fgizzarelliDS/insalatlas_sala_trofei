@@ -147,10 +147,84 @@ function renderLiveChampionshipTable(
             In corso • G${lastCompleted}/${totalRounds}
           </span>
         </div>
-        <div class="flex items-center gap-2 text-xs font-semibold opacity-75">
+        <button type="button"
+                onclick="window.toggleLiveStandingsGuide && window.toggleLiveStandingsGuide()"
+                class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-xs font-semibold transition hover:bg-amber-500/15 active:scale-95 cursor-pointer shadow-xs bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/30"
+                title="Clicca per aprire la legenda dello stato di forma e guida partite">
           <i class="fa-solid fa-circle-info text-amber-400"></i>
-          <span class="hidden sm:inline">Clicca su una squadra per visualizzare il tabellino partite</span>
-          <span class="sm:hidden">Tocca per le partite</span>
+          <span class="hidden sm:inline">Clicca su una squadra per le partite • Guida Stato</span>
+          <span class="sm:hidden">Tocca per le partite • Guida</span>
+          <i id="live-guide-chevron" class="fa-solid fa-chevron-down text-[10px] ml-0.5 transition-transform duration-200"></i>
+        </button>
+      </div>
+
+      <!-- Expandable Collapsible Guide Box -->
+      <div id="live-standings-guide" class="hidden border-b p-3.5 sm:p-4 text-xs transition-all"
+           style="border-color: var(--table-border); background-color: var(--table-surface);">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+          <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-amber-500 dark:text-amber-400">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>Legenda Stato & Momentum (L5)</span>
+          </div>
+          <span class="text-[10px] font-semibold opacity-70" style="color: var(--text-muted);">
+            Ponderato sulle ultime 5 gare (le più recenti incidono di più)
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-2.5">
+          <!-- 🔥 In Fiamme -->
+          <div class="p-2 sm:p-2.5 rounded-xl border bg-amber-500/10 border-amber-500/30 flex items-start gap-2">
+            <span class="text-base leading-none shrink-0">🔥</span>
+            <div>
+              <div class="font-bold text-amber-500 dark:text-amber-400 text-xs">IN FIAMME</div>
+              <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Momentum &ge; 75% e fantapunti recenti sopra media lega.</div>
+            </div>
+          </div>
+
+          <!-- 📈 In Ascesa -->
+          <div class="p-2 sm:p-2.5 rounded-xl border bg-emerald-500/10 border-emerald-500/30 flex items-start gap-2">
+            <span class="text-base leading-none shrink-0">📈</span>
+            <div>
+              <div class="font-bold text-emerald-500 dark:text-emerald-400 text-xs">IN ASCESA</div>
+              <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Momentum &ge; 55% con vittoria nell'ultimo turno disputato.</div>
+            </div>
+          </div>
+
+          <!-- ⚖️ Stabile -->
+          <div class="p-2 sm:p-2.5 rounded-xl border bg-slate-500/10 border-slate-500/30 flex items-start gap-2">
+            <span class="text-base leading-none shrink-0">⚖️</span>
+            <div>
+              <div class="font-bold text-slate-500 dark:text-slate-300 text-xs">STABILE</div>
+              <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Rendimento bilanciato e trend a centro classifica.</div>
+            </div>
+          </div>
+
+          <!-- 📉 In Flessione -->
+          <div class="p-2 sm:p-2.5 rounded-xl border bg-orange-500/10 border-orange-500/30 flex items-start gap-2">
+            <span class="text-base leading-none shrink-0">📉</span>
+            <div>
+              <div class="font-bold text-orange-500 dark:text-orange-400 text-xs">IN FLESSIONE</div>
+              <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Momentum &le; 35% oppure 2 sconfitte consecutive.</div>
+            </div>
+          </div>
+
+          <!-- 🧊 Crisi Nera -->
+          <div class="p-2 sm:p-2.5 rounded-xl border bg-cyan-500/10 border-cyan-500/30 flex items-start gap-2">
+            <span class="text-base leading-none shrink-0">🧊</span>
+            <div>
+              <div class="font-bold text-cyan-500 dark:text-cyan-400 text-xs">CRISI NERA</div>
+              <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Momentum &le; 15% (striscia prolungata negativa).</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-2.5 pt-2 border-t flex items-center justify-between text-[11px] opacity-80"
+             style="border-color: var(--table-border); color: var(--text-muted);">
+          <div class="flex items-center gap-1.5">
+            <i class="fa-regular fa-hand-pointer text-amber-400"></i>
+            <span><strong>Tabellino gare:</strong> Clicca o tocca una squadra per vedere tutti gli incontri giornata per giornata.</span>
+          </div>
+          <span class="text-[10px] opacity-70 hidden sm:inline">Esiti: 🟢 V • 🟡 N • 🔴 P • - In programma</span>
         </div>
       </div>
 
@@ -316,4 +390,27 @@ export function renderChampionshipTable(championship: CompetitionRecord): string
       </div>
     </div>
   `;
+}
+
+declare global {
+  interface Window {
+    toggleLiveStandingsGuide?: () => void;
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.toggleLiveStandingsGuide = () => {
+    const guide = document.getElementById('live-standings-guide');
+    const chevron = document.getElementById('live-guide-chevron');
+    if (guide) {
+      const isHidden = guide.classList.contains('hidden');
+      if (isHidden) {
+        guide.classList.remove('hidden');
+        chevron?.classList.add('rotate-180');
+      } else {
+        guide.classList.add('hidden');
+        chevron?.classList.remove('rotate-180');
+      }
+    }
+  };
 }

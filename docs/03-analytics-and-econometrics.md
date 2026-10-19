@@ -368,6 +368,41 @@ L'interfaccia adotta l'architettura a due livelli (**Opzione 2**):
 
 ---
 
-## 8. Roadmap & Evoluzioni Future
+## 8. Analisi In-Progress: Forma Recente (L5), Momentum & Badge di Stato
 
+Nelle stagioni in corso, le prestazioni delle squadre vengono monitorate con un motore dinamico a rotazione continua sulle ultime 5 gare giocate ($k \le 5$):
+
+### 8.1 Ponderazione per Recency & Indice di Momentum
+I punti partita $pts(r_i)$ sono assegnati secondo la metrica classica: $pts(W) = 3$, $pts(D) = 1$, $pts(L) = 0$.
+Per catturare l'inerzia e i cambi di rotta di forma, l'indice di **Momentum** attribuisce un peso lineare crescente all'indice temporale $i \in [1, k]$ (dove $r_k$ è la giornata disputata più recentemente):
+
+$$\text{Momentum}(m) = \frac{\sum_{i=1}^{k} i \cdot pts(r_i)}{3 \cdot \frac{k(k+1)}{2}} \in [0.0, 1.0]$$
+
+Su una serie standard di 5 gare ($k = 5$):
+$$\text{Denominatore} = 3 \times \frac{5 \times 6}{2} = 45 \implies \text{Momentum} = \frac{1 \cdot pts(r_1) + 2 \cdot pts(r_2) + 3 \cdot pts(r_3) + 4 \cdot pts(r_4) + 5 \cdot pts(r_5)}{45}$$
+
+Un filotto di 5 vittorie produce $\text{Momentum} = 1.0$; 5 pareggi producono $\text{Momentum} = 0.33$; 5 sconfitte producono $\text{Momentum} = 0.0$. Una squadra che vince le ultime 3 dopo 2 sconfitte ottiene un Momentum di $0.80$, riflettendo l'inerzia positiva.
+
+---
+
+### 8.2 Matrice Decisionale dei Badge di Stato
+
+Combinando il Momentum con i fantapunti medi delle ultime 3 gare ($\bar{FP}_{L3}$) rispetto alla media di lega ($\mu_{\text{lega}}$) e gli ultimi esiti:
+
+| Badge | Etichetta | Colore | Condizione Matematica | Significato Dinamico |
+| :---: | :--- | :---: | :--- | :--- |
+| 🔥 | **In Fiamme** | Ambra | $\text{Momentum} \ge 0.75$ **AND** $\bar{FP}_{L3} \ge \mu_{\text{lega}} + 2.0$ | Rendimento travolgente: vittorie pesanti sostenute da punteggi eccellenti. |
+| 📈 | **In Ascesa** | Smeraldo | $\text{Momentum} \ge 0.55$ **AND** $r_{\text{last}} = 'W'$ | Trend ascendente: inerzia positiva consolidata con vittoria nell'ultimo turno. |
+| ⚖️ | **Stabile** | Ardesia | *Default bilanciato* (nessun estremo soddisfatto) | Rendimento costante, trend a centro classifica senza forti oscillazioni. |
+| 📉 | **In Flessione** | Arancione | $\text{Momentum} \le 0.35$ **OR** $r[-2:] = ['L', 'L']$ | Segnali di cedimento: calo di rendimento o due sconfitte consecutive. |
+| 🧊 | **Crisi Nera** | Ciano | $\text{Momentum} \le 0.15$ | Momento critico: striscia negativa prolungata e incapacità di fare punti. |
+
+---
+
+## 9. Roadmap & Evoluzioni Future
+
+- **Expected Points ($x\text{PTS}$) & Goal-Threshold All-Play**:
+  Simulazione deterministica settimanale in cui ogni squadra affronta tutti i 13 avversari contemporaneamente convertendo i fantapunti in fasce gol ufficiali (<66, 66, 72, 78...), quantificando esattamente il merito tecnico rispetto alla casualità del calendario.
+- **Simulazione Monte Carlo dei Calendari ($K = 10.000$)**:
+  Permutazione su larga scala degli accoppiamenti stagionali per generare la distribuzione empirica dei punti finali, l'intervallo di confidenza, lo Z-score di fortuna $\mathcal{L}_z$ e le probabilità percentuali di Scudetto e Cucchiaio.
 - **Integrazione Storico Mundialito**: Formalizzazione dello storico finale Mundialito (vinti e persi) per completare il set di dati delle coppe della lega quando i dati delle prime edizioni saranno integralmente reperiti.

@@ -151,6 +151,37 @@ I dati della competizione possono essere inseriti nei tabellini stagionali e nel
 > Quando esegui `npm run build:data`, lo script [`scripts/core/builder.py`](file:///Users/fgizzarelli/Desktop/projects/insalatlas_sala_trofei/scripts/core/builder.py) analizza tutti i manager, raccoglie l'insieme completo delle chiavi trofeo personalizzate (es. `champions`) e le inizializza automaticamente a `0` per tutti gli altri manager in `public/data.json`.
 > In questo modo la forma del JSON generato rimane al 100% omogenea, garantendo che TypeScript interpreti il campo `trophies: Record<string, number>` senza generare errori di inferenza (come `champions?: undefined`).
 
+### Passo 3.5: Configurazione di una Competizione In Corso (Live Analytics)
+
+Se la competizione appartiene alla stagione attualmente in svolgimento:
+
+1. **Configurazione nel file stagionale (`data/seasons/2026-27.json`)**:
+   Imposta il flag `in_progress: true` sia sulla stagione che sulla competizione di campionato, specificando l'elenco dei club partecipanti (Single Source of Truth - Option A):
+   ```json
+   {
+     "id": 863632,
+     "name": "Serie Atlas (Fase 1)",
+     "season": "2026/27",
+     "category": "Campionato",
+     "in_progress": true,
+     "status": "in_progress",
+     "ranking": [
+       {
+         "rank": 1,
+         "teamName": "Scalo San Genesio",
+         "coach": "valeriodam",
+         "managerId": "m_valery",
+         "points": 0.0,
+         "logo": "assets/teams/2543640_02914103.png"
+       }
+     ]
+   }
+   ```
+2. **Ingestione Calendario da Fantacalcio API (`scripts/fetch_live_rounds.py`)**:
+   Lo script `fetch_live_rounds.py <competition_id>` autentica la chiamata su Leghe Fantacalcio, mappa gli ID numerici delle squadre ai rispettivi manager e salva il calendario in `data/live/`.
+3. **Compilazione & Mascheramento Dati (`live_builder.py`)**:
+   Il builder calcola deterministicamente la classifica in tempo reale e produce `public/live_season_details.json` applicando il mascheramento privacy (solo esiti qualitativi `W`, `D`, `L`, `-` senza punteggi decimali o fantapunti grezzi esposti al pubblico).
+
 ---
 
 ## 4. Aggiornamenti Automatici del Sistema (Zero-Code)

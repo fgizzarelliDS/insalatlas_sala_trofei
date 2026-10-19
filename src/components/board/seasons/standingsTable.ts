@@ -67,8 +67,42 @@ function renderLiveChampionshipTable(
             </button>
           </div>
 
-          <!-- Right: Guide Toggle + Teams Count -->
+          <!-- Right: Guide Toggle + Merit Share + Teams Count -->
           <div class="flex items-center gap-2 shrink-0">
+            <!-- Desktop Standings Share Button (Always Visible) -->
+            <div class="relative">
+              <button type="button"
+                      id="btn-merit-share-desktop"
+                      onclick="window.toggleMeritShareDropdown && window.toggleMeritShareDropdown('desktop', event)"
+                      class="merit-share-btn flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-xs font-semibold transition hover:bg-white/20 active:scale-95 cursor-pointer shadow-xs bg-white/10 text-white/90 border-white/20 backdrop-blur-xs"
+                      title="Condividi Classifica">
+                <i class="fa-solid fa-share-nodes text-amber-300"></i>
+                <span>Condividi</span>
+              </button>
+              <div id="merit-share-dropdown-desktop"
+                   class="hidden absolute right-0 top-full mt-1.5 w-60 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
+                   style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--modal-text);">
+                <button type="button"
+                        onclick="window.exportStandingsPNG && window.exportStandingsPNG(); window.closeMeritShareDropdown && window.closeMeritShareDropdown();"
+                        class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
+                  <i class="fa-solid fa-download text-amber-500"></i>
+                  <span>Scarica Classifica PNG (HD)</span>
+                </button>
+                <button type="button"
+                        onclick="window.copyStandingsToClipboard && window.copyStandingsToClipboard(); window.closeMeritShareDropdown && window.closeMeritShareDropdown();"
+                        class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
+                  <i class="fa-solid fa-copy text-emerald-500"></i>
+                  <span>Copia per WhatsApp</span>
+                </button>
+                <button type="button"
+                        onclick="window.shareStandingsWhatsApp && window.shareStandingsWhatsApp(); window.closeMeritShareDropdown && window.closeMeritShareDropdown();"
+                        class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
+                  <i class="fa-brands fa-whatsapp text-emerald-500"></i>
+                  <span>Invia Link WhatsApp</span>
+                </button>
+              </div>
+            </div>
+
             <button type="button"
                     onclick="window.toggleLiveStandingsGuide && window.toggleLiveStandingsGuide()"
                     class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-xs font-semibold transition hover:bg-white/20 active:scale-95 cursor-pointer shadow-xs bg-white/10 text-white/90 border-white/20 backdrop-blur-xs"
@@ -92,13 +126,46 @@ function renderLiveChampionshipTable(
               <span class="truncate">${championship.name}</span>
             </div>
 
-            <div class="flex items-center gap-2 shrink-0">
+            <div class="flex items-center gap-1.5 shrink-0">
               <!-- Live Badge (Adaptive width: shows 'In corso • G1/26' on xs+ and 'G1/26' on tight screens) -->
               <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1.5 whitespace-nowrap shadow-xs">
                 <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
                 <span class="hidden xs:inline">In corso • </span>
                 <span>G${lastCompleted}/${totalRounds}</span>
               </span>
+
+              <!-- Compact Standings Share Button (Always Visible) -->
+              <div class="relative">
+                <button type="button"
+                        id="btn-merit-share-mobile"
+                        onclick="window.toggleMeritShareDropdown && window.toggleMeritShareDropdown('mobile', event)"
+                        class="merit-share-btn flex items-center px-2 py-1 rounded-full border text-xs font-semibold transition hover:bg-white/20 active:scale-95 cursor-pointer shadow-xs bg-white/10 text-white/90 border-white/20 backdrop-blur-xs"
+                        title="Condividi Classifica">
+                  <i class="fa-solid fa-share-nodes text-amber-300 text-xs"></i>
+                </button>
+                <div id="merit-share-dropdown-mobile"
+                     class="hidden absolute right-0 top-full mt-1.5 w-60 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
+                     style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--modal-text);">
+                  <button type="button"
+                          onclick="window.exportStandingsPNG && window.exportStandingsPNG(); window.closeMeritShareDropdown && window.closeMeritShareDropdown();"
+                          class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
+                    <i class="fa-solid fa-download text-amber-500"></i>
+                    <span>Scarica Classifica PNG (HD)</span>
+                  </button>
+                  <button type="button"
+                          onclick="window.copyStandingsToClipboard && window.copyStandingsToClipboard(); window.closeMeritShareDropdown && window.closeMeritShareDropdown();"
+                          class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
+                    <i class="fa-solid fa-copy text-emerald-500"></i>
+                    <span>Copia per WhatsApp</span>
+                  </button>
+                  <button type="button"
+                          onclick="window.shareStandingsWhatsApp && window.shareStandingsWhatsApp(); window.closeMeritShareDropdown && window.closeMeritShareDropdown();"
+                          class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
+                    <i class="fa-brands fa-whatsapp text-emerald-500"></i>
+                    <span>Invia Link WhatsApp</span>
+                  </button>
+                </div>
+              </div>
 
               <!-- Compact Guide Button in Row 1 -->
               <button type="button"
@@ -287,7 +354,27 @@ export function renderChampionshipTable(championship: CompetitionRecord): string
 const INACTIVE_TAB_CLASSES = ['text-white/75', 'hover:text-white', 'hover:bg-white/10'];
 const ACTIVE_TAB_CLASSES = ['bg-amber-500', 'text-slate-950', 'shadow-xs'];
 
-export function switchLiveStandingsView(mode: 'real' | 'merit'): void {
+export function toggleMeritShareDropdown(target: 'desktop' | 'mobile', event?: Event): void {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  const otherTarget = target === 'desktop' ? 'mobile' : 'desktop';
+  const otherDd = document.getElementById(`merit-share-dropdown-${otherTarget}`);
+  if (otherDd) otherDd.classList.add('hidden');
+
+  const dd = document.getElementById(`merit-share-dropdown-${target}`);
+  if (dd) dd.classList.toggle('hidden');
+}
+
+export function closeMeritShareDropdown(): void {
+  const ddDesktop = document.getElementById('merit-share-dropdown-desktop');
+  const ddMobile = document.getElementById('merit-share-dropdown-mobile');
+  if (ddDesktop) ddDesktop.classList.add('hidden');
+  if (ddMobile) ddMobile.classList.add('hidden');
+}
+
+export function switchLiveStandingsView(mode: 'real' | 'merit', updateUrl = true): void {
   if (typeof document === 'undefined') return;
 
   const btnReal = document.getElementById('btn-live-view-real');
@@ -303,6 +390,8 @@ export function switchLiveStandingsView(mode: 'real' | 'merit'): void {
 
   const realButtons = [btnReal, btnRealMobile].filter(Boolean) as HTMLElement[];
   const meritButtons = [btnMerit, btnMeritMobile].filter(Boolean) as HTMLElement[];
+
+  closeMeritShareDropdown();
 
   if (mode === 'real') {
     realButtons.forEach(btn => {
@@ -320,6 +409,14 @@ export function switchLiveStandingsView(mode: 'real' | 'merit'): void {
 
     guideReal?.classList.remove('hidden');
     guideMerit?.classList.add('hidden');
+
+    if (updateUrl && typeof window !== 'undefined' && window.history && window.location) {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('view')) {
+        url.searchParams.delete('view');
+        window.history.replaceState({ tab: 'seasons' }, '', url.toString());
+      }
+    }
   } else {
     meritButtons.forEach(btn => {
       btn.classList.remove(...INACTIVE_TAB_CLASSES);
@@ -336,15 +433,29 @@ export function switchLiveStandingsView(mode: 'real' | 'merit'): void {
 
     guideReal?.classList.add('hidden');
     guideMerit?.classList.remove('hidden');
+
+    if (updateUrl && typeof window !== 'undefined' && window.history && window.location) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', 'seasons');
+      url.searchParams.set('view', 'merit');
+      window.history.replaceState({ tab: 'seasons', view: 'merit' }, '', url.toString());
+    }
   }
 }
+
+export const toggleStandingsShareDropdown = toggleMeritShareDropdown;
+export const closeStandingsShareDropdown = closeMeritShareDropdown;
 
 declare global {
   interface Window {
     toggleLiveStandingsGuide?: () => void;
-    switchLiveStandingsView?: (mode: 'real' | 'merit') => void;
+    switchLiveStandingsView?: (mode: 'real' | 'merit', updateUrl?: boolean) => void;
     switchMeritSort?: (order: 'xpts' | 'luck') => void;
     toggleMobileMeritSort?: () => void;
+    toggleMeritShareDropdown?: (target: 'desktop' | 'mobile') => void;
+    closeMeritShareDropdown?: () => void;
+    toggleStandingsShareDropdown?: (target: 'desktop' | 'mobile') => void;
+    closeStandingsShareDropdown?: () => void;
   }
 }
 
@@ -353,4 +464,23 @@ if (typeof window !== 'undefined') {
   window.switchLiveStandingsView = switchLiveStandingsView;
   window.switchMeritSort = switchMeritSort;
   window.toggleMobileMeritSort = toggleMobileMeritSort;
+  window.toggleMeritShareDropdown = toggleMeritShareDropdown;
+  window.closeMeritShareDropdown = closeMeritShareDropdown;
+  window.toggleStandingsShareDropdown = toggleStandingsShareDropdown;
+  window.closeStandingsShareDropdown = closeStandingsShareDropdown;
+
+  if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        !target.closest?.('#btn-merit-share-desktop') &&
+        !target.closest?.('#btn-merit-share-mobile') &&
+        !target.closest?.('.merit-share-btn') &&
+        !target.closest?.('[id^="merit-share-dropdown-"]')
+      ) {
+        closeMeritShareDropdown();
+      }
+    });
+  }
 }

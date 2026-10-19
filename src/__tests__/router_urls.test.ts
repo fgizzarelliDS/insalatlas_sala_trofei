@@ -10,7 +10,9 @@ import {
   getManagerParamFromURL,
   getH2HParamFromURL,
   findManagerByParam,
-  getRecordCategoryParamFromURL
+  getRecordCategoryParamFromURL,
+  getTeamParamFromURL,
+  getViewParamFromURL
 } from '@/router';
 import { switchMainViewTab, selectArchiveSeason } from '@/components/board/seasons';
 import { filterRecordsCategory, searchRecords, clearRecordsSearch } from '@/components/board/records';
@@ -458,5 +460,31 @@ describe('Exhaustive URL & Deep-Linking Test Matrix', () => {
       expect(indexHtml).toContain('navigateToHome');
     });
   });
+
+  describe('9. Live Season Deep-Linking & Standings Views (?team=... & ?view=...)', () => {
+    it('parses ?team=TorLupara%20FC query param cleanly', () => {
+      const url = 'https://insalatlas.it/?tab=seasons&team=TorLupara%20FC';
+      expect(getTeamParamFromURL(url)).toBe('TorLupara FC');
+    });
+
+    it('parses ?team= from hash route cleanly', () => {
+      const url = 'https://insalatlas.it/#/seasons?team=Steven%20Bradbury%20FC';
+      expect(getTeamParamFromURL(url)).toBe('Steven Bradbury FC');
+    });
+
+    it('returns null when ?team= is missing or empty', () => {
+      expect(getTeamParamFromURL('https://insalatlas.it/?tab=seasons')).toBeNull();
+      expect(getTeamParamFromURL('https://insalatlas.it/?tab=seasons&team=')).toBeNull();
+    });
+
+    it('parses ?view=merit and ?view=real correctly', () => {
+      expect(getViewParamFromURL('https://insalatlas.it/?tab=seasons&view=merit')).toBe('merit');
+      expect(getViewParamFromURL('https://insalatlas.it/?tab=seasons&view=real')).toBe('real');
+      expect(getViewParamFromURL('https://insalatlas.it/#/seasons?view=merit')).toBe('merit');
+      expect(getViewParamFromURL('https://insalatlas.it/?tab=seasons&view=unknown')).toBeNull();
+      expect(getViewParamFromURL('https://insalatlas.it/?tab=seasons')).toBeNull();
+    });
+  });
 });
+
 

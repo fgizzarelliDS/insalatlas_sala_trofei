@@ -409,3 +409,73 @@ export function getTrophyParamFromURL(customUrl?: string): { trophy: TrophyModal
   return null;
 }
 
+/**
+ * Extracts ?team= query parameter from search or hash for TeamMatchesModal deep-linking
+ */
+export function getTeamParamFromURL(customUrl?: string): string | null {
+  const extract = (params: URLSearchParams): string | null => {
+    const raw = params.get('team');
+    return raw ? decodeURIComponent(raw).trim() : null;
+  };
+
+  if (customUrl) {
+    try {
+      const url = new URL(customUrl, 'https://example.com');
+      const val = extract(url.searchParams);
+      if (val) return val;
+      if (url.hash && url.hash.includes('?')) {
+        const hashParams = new URLSearchParams(url.hash.slice(url.hash.indexOf('?')));
+        return extract(hashParams);
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  if (typeof window === 'undefined') return null;
+  const val = extract(new URLSearchParams(window.location.search));
+  if (val) return val;
+  if (window.location && window.location.hash && window.location.hash.includes('?')) {
+    const hashParams = new URLSearchParams(window.location.hash.slice(window.location.hash.indexOf('?')));
+    return extract(hashParams);
+  }
+  return null;
+}
+
+/**
+ * Extracts ?view= query parameter ('real' | 'merit') from search or hash for Live Standings
+ */
+export function getViewParamFromURL(customUrl?: string): 'real' | 'merit' | null {
+  const extract = (params: URLSearchParams): 'real' | 'merit' | null => {
+    const raw = params.get('view')?.trim().toLowerCase();
+    if (raw === 'merit' || raw === 'real') return raw;
+    return null;
+  };
+
+  if (customUrl) {
+    try {
+      const url = new URL(customUrl, 'https://example.com');
+      const val = extract(url.searchParams);
+      if (val) return val;
+      if (url.hash && url.hash.includes('?')) {
+        const hashParams = new URLSearchParams(url.hash.slice(url.hash.indexOf('?')));
+        return extract(hashParams);
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  if (typeof window === 'undefined') return null;
+  const val = extract(new URLSearchParams(window.location.search));
+  if (val) return val;
+  if (window.location && window.location.hash && window.location.hash.includes('?')) {
+    const hashParams = new URLSearchParams(window.location.hash.slice(window.location.hash.indexOf('?')));
+    return extract(hashParams);
+  }
+  return null;
+}
+
+

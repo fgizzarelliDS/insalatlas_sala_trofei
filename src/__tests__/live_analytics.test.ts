@@ -18,6 +18,11 @@ import {
   toggleMobileMeritSort
 } from '@/components/board/seasons/standingsTable';
 import { openTeamMatchesModal, closeTeamMatchesModal } from '@/components/board/seasons/TeamMatchesModal';
+import {
+  buildTeamMatchesShareText,
+  buildMeritStandingsShareText,
+  buildRealStandingsShareText
+} from '@/export/share';
 import type { CompetitionRecord, LiveSeasonDetails } from '@/types';
 import { state } from '@/state';
 
@@ -896,6 +901,173 @@ describe('Live In-Progress Form & Analytics Engine', () => {
       expect(tableHTML).toContain('88.4%');
       expect(tableHTML).toContain('0.2%');
       expect(tableHTML).toContain('aria-label="Podio"');
+    });
+  });
+
+  describe('Live Standings & Team Matches Sharing and Deep-Linking', () => {
+    const mockTeamMetric = {
+      rank: 2,
+      managerId: 'm_scurcio',
+      teamName: 'TorLupara FC',
+      coach: 'cursimone',
+      scheduleLuck: {
+        xPoints: 2.08,
+        xRank: 2,
+        deltaRank: 0,
+        allPlayRecord: { played: 13, wins: 8, draws: 3, losses: 2, winPct: 61.5 },
+        luckZScore: -1.65,
+        luckBadge: '⛈️' as const,
+        luckLabel: 'Bersagliato',
+        monteCarlo: { medianPoints: 2.08, stdDev: 0.5, pPodiumPct: null, pSpoonPct: null }
+      }
+    };
+
+    it('builds rich formatted WhatsApp share text for team matches', () => {
+      const shareUrl = 'https://insalatlas.it/?tab=seasons&team=TorLupara%20FC';
+      const text = buildTeamMatchesShareText(mockTeamMetric as any, shareUrl);
+
+      expect(text).toContain('*TorLupara FC* (cursimone)');
+      expect(text).toContain('Posizione Reale: #2');
+      expect(text).toContain('Merito:* #2 (2.08 xPTS)');
+      expect(text).toContain('⛈️ Bersagliato (-1.65σ)');
+      expect(text).toContain('8V 3N 2P (61.5%)');
+      expect(text).toContain(shareUrl);
+    });
+
+    it('builds rich formatted WhatsApp share text for Merit Standings', () => {
+      const shareUrl = 'https://insalatlas.it/?tab=seasons&view=merit';
+      const standings = [
+        mockTeamMetric,
+        {
+          rank: 1,
+          managerId: 'm_alfo',
+          teamName: 'Steven Bradbury FC',
+          coach: 'alfius91',
+          scheduleLuck: {
+            xPoints: 2.77,
+            xRank: 1,
+            deltaRank: 0,
+            allPlayRecord: { played: 13, wins: 12, draws: 0, losses: 1, winPct: 92.3 },
+            luckZScore: 0.0,
+            luckBadge: '⚖️' as const,
+            luckLabel: 'Neutro'
+          }
+        }
+      ];
+
+      const text = buildMeritStandingsShareText(standings as any, shareUrl);
+      expect(text).toContain('Classifica di Merito (xPTS)');
+      expect(text).toContain('🥇 #1 *Steven Bradbury FC* (2.77 xPTS)');
+      expect(text).toContain('🥈 #2 *TorLupara FC* (2.08 xPTS)');
+      expect(text).toContain(shareUrl);
+    });
+
+    it('syncs ?team= to window.history on openTeamMatchesModal and removes on close', () => {
+      let currentUrl = 'https://insalatlas.it/?tab=seasons';
+      const pushSpy = vi.fn((_state, _title, url) => {
+        currentUrl = url.toString();
+        if (typeof window !== 'undefined' && window.location) {
+          (window.location as any).href = currentUrl;
+          (window.location as any).search = currentUrl.includes('?') ? currentUrl.slice(currentUrl.indexOf('?')) : '';
+        }
+      });
+      const replaceSpy = vi.fn((_state, _title, url) => {
+        currentUrl = url.toString();
+        if (typeof window !== 'undefined' && window.location) {
+          (window.location as any).href = currentUrl;
+          (window.location as any).search = currentUrl.includes('?') ? currentUrl.slice(currentUrl.indexOf('?')) : '';
+        }
+      });
+
+      const origHistory = typeof window !== 'undefined' ? window.history : undefined;
+      const origLocation = typeof window !== 'undefined' ? window.location : undefined;
+
+      const elements: Record<string, any> = {
+        'team-matches-modal': {
+          classList: {
+            classes: new Set<string>(['hidden']),
+            add: (c: string) => elements['team-matches-modal'].classList.classes.add(c),
+            remove: (c: string) => elements['team-matches-modal'].classList.classes.delete(c),
+            contains: (c: string) => elements['team-matches-modal'].classList.classes.has(c)
+          },
+          innerHTML: ''
+        },
+        'team-matches-modal-content': { innerHTML: '' },
+        'team-matches-dialog': { innerHTML: '' }
+      };
+
+      const origDoc = (globalThis as any).document;
+      (globalThis as any).document = {
+        getElementById: (id: string) => elements[id] || null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        body: { insertAdjacentHTML: vi.fn() }
+      };
+
+      (globalThis as any).window = (globalThis as any).window || {};
+      (globalThis as any).window.history = { pushState: pushSpy, replaceState: replaceSpy };
+      (globalThis as any).window.location = new URL(currentUrl);
+
+      setLiveSeasonDetails({
+        season: '2026/27',
+        competitionId: 863632,
+        lastCompletedRound: 1,
+        totalRounds: 26,
+        rounds: [
+          {
+            roundNumber: 1,
+            matches: [
+              {
+                homeTeam: 'TorLupara FC',
+                awayTeam: 'Levrieri d Abruzzo',
+                homeManagerId: 'm_scurcio',
+                awayManagerId: 'm_gizzagustacito',
+                isPlayed: true,
+                homeOutcome: 'D',
+                awayOutcome: 'D'
+              }
+            ]
+          }
+        ],
+        standings: [mockTeamMetric as any]
+      });
+
+      openTeamMatchesModal('m_scurcio', 'TorLupara FC', false, true);
+
+      expect(pushSpy).toHaveBeenCalled();
+      const calledUrl = pushSpy.mock.calls[0][2] as string;
+      expect(calledUrl).toContain('team=TorLupara');
+
+      // Verify 3 share dropdown options in DOM (PNG, Copia, WA Link)
+      const content = elements['team-matches-modal-content'];
+      expect(content.innerHTML).toContain('btn-team-matches-share');
+      expect(content.innerHTML).toContain('team-matches-share-dropdown');
+      expect(content.innerHTML).toContain('Scarica Scheda PNG (HD)');
+      expect(content.innerHTML).toContain('Copia per WhatsApp');
+      expect(content.innerHTML).toContain('Invia Link WhatsApp');
+
+      closeTeamMatchesModal(true);
+      expect(replaceSpy).toHaveBeenCalled();
+
+      // Cleanup
+      (globalThis as any).document = origDoc;
+      if (origHistory) (globalThis as any).window.history = origHistory;
+      if (origLocation) (globalThis as any).window.location = origLocation;
+    });
+
+    it('formats real standings snapshot text for WhatsApp correctly', () => {
+      const mockStandings = [
+        { rank: 1, teamName: 'TorLupara FC', points: 18 },
+        { rank: 2, teamName: 'Scalo San Genesio', points: 16 },
+        { rank: 3, teamName: 'Levrieri d Abruzzo', points: 14 }
+      ];
+      const text = buildRealStandingsShareText(mockStandings, 'https://insalatlas.it?tab=seasons&view=real');
+      expect(text).toContain('Classifica Ufficiale');
+      expect(text).toContain('TorLupara FC');
+      expect(text).toContain('18 pt');
+      expect(text).toContain('Scalo San Genesio');
+      expect(text).toContain('16 pt');
+      expect(text).toContain('https://insalatlas.it?tab=seasons&view=real');
     });
   });
 });

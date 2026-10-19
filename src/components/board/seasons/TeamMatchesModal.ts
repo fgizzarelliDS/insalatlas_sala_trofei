@@ -70,6 +70,14 @@ function ensureTeamMatchesModalMounted(): void {
 
   if (!isEscBound && typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
     window.addEventListener('keydown', handleEscKey);
+    if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+      document.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement | null;
+        if (target && !target.closest?.('#btn-team-matches-share') && !target.closest?.('#team-matches-share-dropdown')) {
+          closeTeamMatchesShareDropdown();
+        }
+      });
+    }
     isEscBound = true;
   }
 }
@@ -89,18 +97,41 @@ export function navigateBackTeamMatchesModal(): void {
   }
 }
 
+export function toggleTeamMatchesShareDropdown(event?: Event): void {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  const dd = document.getElementById('team-matches-share-dropdown');
+  if (dd) dd.classList.toggle('hidden');
+}
+
+export function closeTeamMatchesShareDropdown(): void {
+  const dd = document.getElementById('team-matches-share-dropdown');
+  if (dd) dd.classList.add('hidden');
+}
+
 /**
  * Closes the team matches modal
  */
-export function closeTeamMatchesModal(): void {
+export function closeTeamMatchesModal(updateUrl = true): void {
   if (typeof document === 'undefined') return;
   const modal = document.getElementById('team-matches-modal');
   if (modal) {
     modal.classList.add('hidden');
     modal.classList.remove('flex');
   }
+  closeTeamMatchesShareDropdown();
   teamMatchesHistory = [];
   currentlyDisplayedTeam = null;
+
+  if (updateUrl && typeof window !== 'undefined' && window.history && window.location) {
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('team')) {
+      url.searchParams.delete('team');
+      window.history.replaceState({ tab: 'seasons' }, '', url.toString());
+    }
+  }
 }
 
 /**
@@ -108,7 +139,7 @@ export function closeTeamMatchesModal(): void {
  */
 export function openManagerProfileFromMatches(managerId: string, teamName: string): void {
   setTeamMatchesReturnContext({ managerId, teamName });
-  closeTeamMatchesModal();
+  closeTeamMatchesModal(false);
   if (typeof window !== 'undefined' && (window as unknown as { openProfileModal?: (id: string) => void }).openProfileModal) {
     (window as unknown as { openProfileModal: (id: string) => void }).openProfileModal(managerId);
   }
@@ -117,7 +148,7 @@ export function openManagerProfileFromMatches(managerId: string, teamName: strin
 /**
  * Opens the interactive Team Matchday Breakdown Modal for a specific team
  */
-export function openTeamMatchesModal(managerId?: string, teamName?: string, isBackNav = false): void {
+export function openTeamMatchesModal(managerId?: string, teamName?: string, isBackNav = false, updateUrl = true): void {
   if (typeof document === 'undefined') return;
   ensureTeamMatchesModalMounted();
 
@@ -131,6 +162,17 @@ export function openTeamMatchesModal(managerId?: string, teamName?: string, isBa
 
   const resolvedTeamName = teamMetric?.teamName || teamName || 'Squadra';
   const resolvedManagerId = teamMetric?.managerId || managerId;
+
+  if (updateUrl && typeof window !== 'undefined' && window.history && window.location) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', 'seasons');
+    url.searchParams.set('team', resolvedTeamName);
+    if (!isBackNav) {
+      window.history.pushState({ team: resolvedTeamName, tab: 'seasons' }, '', url.toString());
+    } else {
+      window.history.replaceState({ team: resolvedTeamName, tab: 'seasons' }, '', url.toString());
+    }
+  }
 
   if (!isBackNav) {
     const modal = document.getElementById('team-matches-modal');
@@ -318,12 +360,52 @@ export function openTeamMatchesModal(managerId?: string, teamName?: string, isBa
         </div>
       </div>
 
-      <button type="button" onclick="window.closeTeamMatchesModal && window.closeTeamMatchesModal()"
-              class="w-8 h-8 rounded-full flex items-center justify-center font-bold opacity-75 hover:opacity-100 transition border shadow-xs"
-              style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);"
-              title="Chiudi">
-        ✕
-      </button>
+      <div class="flex items-center gap-2 shrink-0">
+        <!-- Share Dropdown Button -->
+        <div class="relative">
+          <button type="button"
+                  id="btn-team-matches-share"
+                  onclick="window.toggleTeamMatchesShareDropdown && window.toggleTeamMatchesShareDropdown(event)"
+                  class="px-2.5 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 hover:scale-105 active:scale-95 cursor-pointer text-amber-500 shadow-xs"
+                  style="background-color: var(--btn-bg); border-color: var(--btn-border);"
+                  title="Condividi calendario e statistiche">
+            <i class="fa-solid fa-share-nodes"></i>
+            <span class="hidden sm:inline">Condividi</span>
+            <i class="fa-solid fa-chevron-down text-[10px] ml-0.5 opacity-70"></i>
+          </button>
+
+          <!-- Dropdown Popover -->
+          <div id="team-matches-share-dropdown"
+               class="hidden absolute right-0 top-full mt-1.5 w-60 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
+               style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--modal-text);">
+            <button type="button"
+                    onclick="window.exportTeamMatchesPNG && window.exportTeamMatchesPNG('${escapedTeamName}'); window.closeTeamMatchesShareDropdown && window.closeTeamMatchesShareDropdown();"
+                    class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
+              <i class="fa-solid fa-download text-amber-500"></i>
+              <span>Scarica Scheda PNG (HD)</span>
+            </button>
+            <button type="button"
+                    onclick="window.copyTeamMatchesToClipboard && window.copyTeamMatchesToClipboard('${escapedTeamName}'); window.closeTeamMatchesShareDropdown && window.closeTeamMatchesShareDropdown();"
+                    class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
+              <i class="fa-solid fa-copy text-emerald-500"></i>
+              <span>Copia per WhatsApp</span>
+            </button>
+            <button type="button"
+                    onclick="window.shareTeamMatchesWhatsApp && window.shareTeamMatchesWhatsApp('${escapedTeamName}'); window.closeTeamMatchesShareDropdown && window.closeTeamMatchesShareDropdown();"
+                    class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
+              <i class="fa-brands fa-whatsapp text-emerald-500"></i>
+              <span>Invia Link WhatsApp</span>
+            </button>
+          </div>
+        </div>
+
+        <button type="button" onclick="window.closeTeamMatchesModal && window.closeTeamMatchesModal()"
+                class="w-8 h-8 rounded-full flex items-center justify-center font-bold opacity-75 hover:opacity-100 transition border shadow-xs"
+                style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);"
+                title="Chiudi">
+          ✕
+        </button>
+      </div>
     </div>
 
     <!-- Analytical Summary Strip (Merit & Schedule Luck) -->
@@ -389,4 +471,6 @@ if (typeof window !== 'undefined') {
   win.closeTeamMatchesModal = closeTeamMatchesModal;
   win.openManagerProfileFromMatches = openManagerProfileFromMatches;
   win.navigateBackTeamMatchesModal = navigateBackTeamMatchesModal;
+  win.toggleTeamMatchesShareDropdown = toggleTeamMatchesShareDropdown;
+  win.closeTeamMatchesShareDropdown = closeTeamMatchesShareDropdown;
 }

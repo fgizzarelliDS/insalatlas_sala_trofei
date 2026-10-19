@@ -508,6 +508,8 @@ def compile_live_season_details(
                 'awayTeam': m.get('awayTeam'),
                 'homeManagerId': m.get('homeManagerId'),
                 'awayManagerId': m.get('awayManagerId'),
+                'homeLogo': m.get('homeLogo'),
+                'awayLogo': m.get('awayLogo'),
                 'isPlayed': is_played,
                 'homeOutcome': home_outcome,
                 'awayOutcome': away_outcome

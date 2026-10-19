@@ -1,4 +1,8 @@
-import { getLiveSeasonDetails } from './liveAnalytics';
+import {
+  getLiveSeasonDetails,
+  renderLuckBadgeHTML,
+  renderDeltaPointsPillHTML
+} from './liveAnalytics';
 import { state } from '@/state';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
 
@@ -145,6 +149,23 @@ export function openTeamMatchesModal(managerId?: string, teamName?: string, isBa
   const teamLogo = resolveTeamLogo(resolvedTeamName, teamMetric?.logo);
   const escapedTeamName = resolvedTeamName.replace(/'/g, "\\'");
 
+  const luck = teamMetric?.scheduleLuck;
+  const xPts = luck?.xPoints;
+  const deltaPts = luck?.deltaPoints;
+  const ap = luck?.allPlayRecord;
+  const luckBadge = luck?.luckBadge;
+  const luckLabel = luck?.luckLabel;
+  const luckZ = luck?.luckZScore;
+
+  // Index authentic team logos from standings
+  const teamLogos = new Map<string, string>();
+  for (const s of liveData.standings) {
+    if (s.logo) {
+      teamLogos.set(s.teamName, s.logo);
+      if (s.managerId) teamLogos.set(s.managerId, s.logo);
+    }
+  }
+
   // Extract matches for this team across all rounds
   const matchesPlayed: Array<{
     roundNumber: number;
@@ -166,7 +187,9 @@ export function openTeamMatchesModal(managerId?: string, teamName?: string, isBa
 
       const oppTeam = isHome ? m.awayTeam : m.homeTeam;
       const oppMgrId = isHome ? m.awayManagerId : m.homeManagerId;
-      const oppLogo = isHome ? m.awayLogo : m.homeLogo;
+      const oppLogo = (oppMgrId && teamLogos.get(oppMgrId))
+        || teamLogos.get(oppTeam)
+        || (isHome ? m.awayLogo : m.homeLogo);
 
       let outcome: 'W' | 'D' | 'L' | null = null;
       let isPlayed = false;
@@ -290,7 +313,7 @@ export function openTeamMatchesModal(managerId?: string, teamName?: string, isBa
           <div class="text-xs font-semibold flex items-center gap-1.5 mt-0.5" style="color: var(--text-muted);">
             <i class="fa-solid fa-user-tie text-[10px] opacity-70 shrink-0" style="color: var(--accent-color);"></i>
             <span class="font-bold" style="color: var(--accent-color);">${managerDisplayName}</span>
-            ${teamMetric ? `<span class="opacity-60 text-[11px]">• #${teamMetric.rank} in classifica</span>` : ''}
+            ${teamMetric ? `<span class="opacity-60 text-[11px]">• #${teamMetric.rank} in classifica (${teamMetric.points !== undefined && teamMetric.points !== null ? `${teamMetric.points} pt` : '- pt'})</span>` : ''}
           </div>
         </div>
       </div>
@@ -302,6 +325,24 @@ export function openTeamMatchesModal(managerId?: string, teamName?: string, isBa
         ✕
       </button>
     </div>
+
+    <!-- Analytical Summary Strip (Merit & Schedule Luck) -->
+    ${luck && xPts !== undefined && deltaPts !== undefined && ap ? `
+      <div class="px-4 py-2 sm:px-5 sm:py-2.5 border-b flex flex-wrap items-center justify-between gap-2 text-xs"
+           style="border-color: var(--table-border); background-color: var(--table-surface);">
+        <!-- xPTS & Delta & Luck Badge -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-mono font-bold text-xs" style="color: var(--text-main);">${xPts.toFixed(2)} xPTS</span>
+          <span class="text-[11px] opacity-75 font-semibold" style="color: var(--text-muted);">vs ${teamMetric?.points !== undefined && teamMetric?.points !== null ? `${teamMetric.points} pt` : '- pt'}</span>
+          ${renderDeltaPointsPillHTML(deltaPts)}
+          ${luckBadge && luckLabel && luckZ !== undefined ? renderLuckBadgeHTML(luckBadge, luckLabel, luckZ, true) : ''}
+        </div>
+        <!-- All-Play Record -->
+        <div class="text-[11px] font-mono opacity-80" style="color: var(--text-muted);">
+          Tutti vs Tutti: <strong style="color: var(--text-main);">${ap.wins}V ${ap.draws}N ${ap.losses}P</strong> (${ap.winPct}%)
+        </div>
+      </div>
+    ` : ''}
 
     <!-- Matches Scrollable Body -->
     <div class="p-4 sm:p-5 flex-1 overflow-y-auto space-y-2.5">

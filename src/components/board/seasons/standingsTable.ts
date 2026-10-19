@@ -9,7 +9,8 @@ import {
   renderStatusBadgeHTML,
   renderLuckBadgeHTML,
   renderDeltaRankPillHTML,
-  renderDeltaPointsPillHTML
+  renderDeltaPointsPillHTML,
+  renderPodiumSVG
 } from './liveAnalytics';
 
 /**
@@ -135,15 +136,8 @@ function renderLiveChampionshipTable(
     `;
   }).join('');
 
-  // Merit View: Sort by xRank ascending
-  const meritStandings = [...standings].sort((a, b) => {
-    const rA = a.scheduleLuck?.xRank ?? a.rank;
-    const rB = b.scheduleLuck?.xRank ?? b.rank;
-    return rA - rB;
-  });
-
-  // Merit View: Desktop Rows
-  const desktopMeritRowsHTML = meritStandings.map(team => {
+  // Helper to render desktop rows for merit view
+  const renderDesktopMeritRows = (teamList: typeof standings) => teamList.map(team => {
     const mgr = state.managers?.find(m => m.id === team.managerId);
     const managerName = mgr ? mgr.name : (team.coach || 'Allenatore');
     const teamLogo = resolveTeamLogo(team.teamName, team.logo);
@@ -172,7 +166,15 @@ function renderLiveChampionshipTable(
     const mcPodium = luck?.monteCarlo?.pPodiumPct;
     const mcSpoon = luck?.monteCarlo?.pSpoonPct;
     const mcDisplayHTML = (mcPodium !== null && mcPodium !== undefined && mcSpoon !== null && mcSpoon !== undefined)
-      ? `<div class="text-[10px] font-bold"><span class="text-amber-500 dark:text-amber-400">Podio: ${mcPodium}%</span></div><div class="text-[9px] opacity-70" style="color: var(--text-muted);">Cucchiaio: ${mcSpoon}%</div>`
+      ? `<div class="flex flex-col items-center">
+           <div class="flex items-center gap-1 text-[11px] font-bold text-amber-500 dark:text-amber-400">
+             ${renderPodiumSVG(14)}
+             <span>${mcPodium.toFixed(1)}%</span>
+           </div>
+           <div class="text-[9px] opacity-70 font-semibold" style="color: var(--text-muted);">
+             🥄 ${mcSpoon.toFixed(1)}%
+           </div>
+         </div>`
       : `<span class="px-2 py-0.5 rounded-full text-[9px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700" title="Le proiezioni probabilistiche di fine stagione si sbloccano dopo 5 giornate">Dalla 5ª g.</span>`;
 
     return `
@@ -213,8 +215,9 @@ function renderLiveChampionshipTable(
           <div class="font-bold font-mono text-xs sm:text-sm" style="color: var(--text-main);">
             ${xPts.toFixed(2)} xPTS
           </div>
-          <div class="mt-0.5">
+          <div class="mt-0.5 flex items-center justify-center gap-1 text-[10px]">
             ${renderDeltaPointsPillHTML(deltaPts)}
+            <span class="opacity-60 font-semibold whitespace-nowrap" style="color: var(--text-muted);">vs ${team.points !== undefined && team.points !== null ? `${team.points} pt` : '- pt'}</span>
           </div>
         </td>
         <!-- Record Tutti vs Tutti -->
@@ -231,15 +234,15 @@ function renderLiveChampionshipTable(
           ${renderLuckBadgeHTML(luckBadge, luckLabel, luckZ)}
         </td>
         <!-- Scenari Monte Carlo -->
-        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-24">
+        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-28">
           ${mcDisplayHTML}
         </td>
       </tr>
     `;
   }).join('');
 
-  // Merit View: Mobile Clean Cards (< 768px)
-  const mobileMeritCardsHTML = meritStandings.map(team => {
+  // Helper to render mobile cards for merit view
+  const renderMobileMeritCards = (teamList: typeof standings) => teamList.map(team => {
     const mgr = state.managers?.find(m => m.id === team.managerId);
     const managerName = mgr ? mgr.name : (team.coach || 'Allenatore');
     const teamLogo = resolveTeamLogo(team.teamName, team.logo);
@@ -261,12 +264,15 @@ function renderLiveChampionshipTable(
       rankBadgeClass = 'bg-slate-200 text-slate-800 dark:bg-slate-700/60 dark:text-slate-200 font-bold';
     }
 
+    const mcPodium = luck?.monteCarlo?.pPodiumPct;
+    const mcSpoon = luck?.monteCarlo?.pSpoonPct;
+
     return `
       <div onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${team.managerId || ''}', '${escapedTeamName}')"
-           class="p-3 border-b last:border-b-0 transition-colors active:bg-amber-500/10 cursor-pointer"
+           class="p-2.5 sm:p-3 border-b last:border-b-0 transition-colors active:bg-amber-500/10 cursor-pointer"
            style="border-color: var(--table-border);">
-        <div class="flex items-center justify-between gap-2.5">
-          <div class="flex items-center gap-2.5 min-w-0 flex-1">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0 flex-1">
             <div class="flex flex-col items-center shrink-0">
               <span class="w-7 h-6 rounded-md text-[11px] border flex items-center justify-center ${rankBadgeClass}">
                 #${xRank}
@@ -276,15 +282,15 @@ function renderLiveChampionshipTable(
               </div>
             </div>
             <img src="${teamLogo}" alt="${team.teamName}"
-                 class="w-8 h-8 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-700 shadow-xs"
+                 class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-700 shadow-xs"
                  onerror="this.onerror=null; this.src='${getTeamFallbackCrest(team.teamName)}'">
             <div class="min-w-0 flex-1">
-              <div class="font-bold text-xs sm:text-sm leading-tight truncate" style="color: var(--text-main);">
+              <div class="font-bold text-xs sm:text-sm leading-tight line-clamp-2 break-words" style="color: var(--text-main);">
                 ${team.teamName}
               </div>
-              <div class="text-[10px] sm:text-[11px] font-semibold opacity-80 truncate flex items-center gap-1 mt-0.5" style="color: var(--accent-color);">
-                <span>${managerName}</span>
-                <span class="opacity-60" style="color: var(--text-muted);">• Reale #${team.rank}</span>
+              <div class="text-[10px] sm:text-[11px] font-semibold opacity-80 flex items-center gap-1 mt-0.5 min-w-0" style="color: var(--accent-color);">
+                <span class="truncate">${managerName}</span>
+                <span class="opacity-60 shrink-0 whitespace-nowrap" style="color: var(--text-muted);">• Reale #${team.rank} (${team.points !== undefined && team.points !== null ? `${team.points} pt` : '- pt'})</span>
               </div>
             </div>
           </div>
@@ -293,19 +299,55 @@ function renderLiveChampionshipTable(
           </div>
         </div>
 
-        <div class="flex items-center justify-between gap-2 mt-2 pt-2 border-t text-[11px]"
+        <div class="flex items-center justify-between gap-1.5 mt-2 pt-2 border-t text-[11px]"
              style="border-color: var(--table-border);">
           <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap">
             <span class="font-bold font-mono text-xs" style="color: var(--text-main);">${xPts.toFixed(2)} xPTS</span>
             ${renderDeltaPointsPillHTML(deltaPts)}
           </div>
-          <div class="text-[10px] font-semibold font-mono truncate text-right" style="color: var(--text-muted);">
-            <span>Vs Tutti: <strong style="color: var(--text-main);">${ap.wins}V-${ap.draws}N-${ap.losses}P</strong> (${ap.winPct}%)</span>
-          </div>
+          ${(mcPodium !== null && mcPodium !== undefined && mcSpoon !== null && mcSpoon !== undefined) ? `
+            <div class="flex items-center gap-1 shrink-0">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30" title="Probabilità di Podio (1°-3° posto)">
+                ${renderPodiumSVG(13)}
+                <span>${mcPodium.toFixed(1)}%</span>
+              </span>
+              <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/25" title="Rischio Cucchiaio di Legno">
+                <span>🥄</span>
+                <span>${mcSpoon.toFixed(1)}%</span>
+              </span>
+            </div>
+          ` : `
+            <div class="text-[10px] font-mono opacity-75 shrink-0" style="color: var(--text-muted);">
+              TvT: <strong style="color: var(--text-main);">${ap.wins}V-${ap.draws}N-${ap.losses}P</strong> (${ap.winPct}%)
+            </div>
+          `}
         </div>
       </div>
     `;
   }).join('');
+
+  // Sort 1: by xRank ascending (default)
+  const meritStandingsXPTS = [...standings].sort((a, b) => {
+    const rA = a.scheduleLuck?.xRank ?? a.rank;
+    const rB = b.scheduleLuck?.xRank ?? b.rank;
+    return rA - rB;
+  });
+
+  // Sort 2: by luckZScore descending (from luckiest 🍀 down to most unlucky ⛈️)
+  const meritStandingsLuck = [...standings].sort((a, b) => {
+    const zA = a.scheduleLuck?.luckZScore ?? 0;
+    const zB = b.scheduleLuck?.luckZScore ?? 0;
+    if (zB !== zA) return zB - zA;
+    const dPA = a.scheduleLuck?.deltaPoints ?? 0;
+    const dPB = b.scheduleLuck?.deltaPoints ?? 0;
+    if (dPB !== dPA) return dPB - dPA;
+    return a.teamName.localeCompare(b.teamName);
+  });
+
+  const desktopMeritRowsXPTS = renderDesktopMeritRows(meritStandingsXPTS);
+  const desktopMeritRowsLuck = renderDesktopMeritRows(meritStandingsLuck);
+  const mobileMeritCardsXPTS = renderMobileMeritCards(meritStandingsXPTS);
+  const mobileMeritCardsLuck = renderMobileMeritCards(meritStandingsLuck);
 
   return `
     <div class="albo-table-wrap rounded-2xl overflow-hidden border mb-6 shadow-sm" style="border-color: var(--table-border); background-color: var(--table-surface);">
@@ -446,7 +488,7 @@ function renderLiveChampionshipTable(
             <div class="p-2 sm:p-2.5 rounded-xl border bg-slate-500/10 border-slate-500/30 flex items-start gap-2">
               <span class="text-base leading-none shrink-0">⚖️</span>
               <div>
-                <div class="font-bold text-slate-800 dark:text-slate-200 text-xs">STABILE</div>
+                <div class="font-bold text-xs" style="color: var(--text-main);">STABILE</div>
                 <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Rendimento bilanciato e trend a centro classifica.</div>
               </div>
             </div>
@@ -506,7 +548,7 @@ function renderLiveChampionshipTable(
             <div class="p-2 sm:p-2.5 rounded-xl border bg-slate-500/10 border-slate-500/30 flex items-start gap-2">
               <span class="text-base leading-none shrink-0">⚖️</span>
               <div>
-                <div class="font-bold text-slate-800 dark:text-slate-200 text-xs">NEUTRO (±0.35σ)</div>
+                <div class="font-bold text-xs" style="color: var(--text-main);">NEUTRO (±0.35σ)</div>
                 <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Calendario bilanciato. Punti reali allineati al merito della squadra.</div>
               </div>
             </div>
@@ -548,7 +590,7 @@ function renderLiveChampionshipTable(
       </div>
 
       <!-- View 1: Real Standings Container -->
-      <div id="live-view-real-container">
+      <div id="live-view-real-container" class="animate-fadeIn">
         <!-- Desktop View (>= 768px) -->
         <div class="hidden md:block overflow-x-auto">
           <table class="w-full text-left border-collapse table-auto">
@@ -574,7 +616,23 @@ function renderLiveChampionshipTable(
       </div>
 
       <!-- View 2: Merit & Fortuna Standings Container -->
-      <div id="live-view-merit-container" class="hidden">
+      <div id="live-view-merit-container" class="hidden animate-fadeIn">
+        <!-- Mobile Micro-Sorter (< md) -->
+        <div class="md:hidden px-3.5 py-1.5 border-b flex items-center justify-between text-xs"
+             style="border-color: var(--table-border); background-color: var(--table-surface);">
+          <span class="text-[11px] font-semibold opacity-70" style="color: var(--text-muted);">
+            Ordina per:
+          </span>
+          <button id="btn-merit-sort-mobile-toggle"
+                  type="button"
+                  onclick="window.toggleMobileMeritSort && window.toggleMobileMeritSort()"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border transition shadow-xs cursor-pointer bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/25 active:scale-95"
+                  title="Tocca per cambiare ordinamento">
+            <i class="fa-solid fa-arrow-down-wide-short text-[10px]"></i>
+            <span id="label-merit-sort-mobile">xPTS (Merito)</span>
+          </button>
+        </div>
+
         <!-- Desktop View (>= 768px) -->
         <div class="hidden md:block overflow-x-auto">
           <table class="w-full text-left border-collapse table-auto">
@@ -583,21 +641,50 @@ function renderLiveChampionshipTable(
                   style="border-color: var(--table-border); background-color: var(--table-surface);">
                 <th class="py-2.5 px-3 text-center w-24">Pos. xPTS</th>
                 <th class="py-2.5 px-3 text-left">Squadra / Allenatore</th>
-                <th class="py-2.5 px-3 text-center w-28">Punti Attesi</th>
+                <th class="py-2.5 px-3 text-center w-28">
+                  <button id="th-merit-sort-xpts"
+                          type="button"
+                          onclick="window.switchMeritSort && window.switchMeritSort('xpts')"
+                          class="inline-flex items-center justify-center gap-1 w-full text-center hover:text-amber-500 transition cursor-pointer text-amber-500 dark:text-amber-400 font-black uppercase text-[10px] sm:text-[11px] tracking-wider"
+                          title="Clicca per ordinare per Punti Attesi (xPTS)">
+                    <span>Punti Attesi</span>
+                    <i id="sort-icon-merit-xpts" class="fa-solid fa-arrow-down text-[10px] ml-0.5"></i>
+                  </button>
+                </th>
                 <th class="py-2.5 px-3 text-center w-32">Tutti vs Tutti</th>
-                <th class="py-2.5 px-3 text-center w-36">Indice Fortuna</th>
-                <th class="py-2.5 px-3 text-center w-24">Scenari MC</th>
+                <th class="py-2.5 px-3 text-center w-36">
+                  <button id="th-merit-sort-luck"
+                          type="button"
+                          onclick="window.switchMeritSort && window.switchMeritSort('luck')"
+                          class="inline-flex items-center justify-center gap-1 w-full text-center hover:text-amber-500 transition cursor-pointer opacity-70 hover:opacity-100 font-bold uppercase text-[10px] sm:text-[11px] tracking-wider"
+                          title="Clicca per ordinare per Indice Fortuna (Z-Score)">
+                    <span>Indice Fortuna</span>
+                    <i id="sort-icon-merit-luck" class="fa-solid fa-arrow-down text-[10px] ml-0.5 hidden"></i>
+                  </button>
+                </th>
+                <th class="py-2.5 px-3 text-center w-28">
+                  <div class="flex items-center justify-center gap-1">
+                    ${renderPodiumSVG(15)}
+                    <span>Scenari MC</span>
+                  </div>
+                </th>
               </tr>
             </thead>
-            <tbody>
-              ${desktopMeritRowsHTML}
+            <tbody id="merit-desktop-tbody-xpts">
+              ${desktopMeritRowsXPTS}
+            </tbody>
+            <tbody id="merit-desktop-tbody-luck" class="hidden">
+              ${desktopMeritRowsLuck}
             </tbody>
           </table>
         </div>
 
         <!-- Mobile Clean View (< 768px) -->
-        <div class="md:hidden flex flex-col divide-y divide-[var(--table-border)]">
-          ${mobileMeritCardsHTML}
+        <div id="merit-mobile-cards-xpts" class="md:hidden flex flex-col divide-y divide-[var(--table-border)]">
+          ${mobileMeritCardsXPTS}
+        </div>
+        <div id="merit-mobile-cards-luck" class="hidden md:hidden flex flex-col divide-y divide-[var(--table-border)]">
+          ${mobileMeritCardsLuck}
         </div>
       </div>
     </div>
@@ -746,6 +833,8 @@ declare global {
   interface Window {
     toggleLiveStandingsGuide?: () => void;
     switchLiveStandingsView?: (mode: 'real' | 'merit') => void;
+    switchMeritSort?: (order: 'xpts' | 'luck') => void;
+    toggleMobileMeritSort?: () => void;
   }
 }
 
@@ -822,7 +911,67 @@ export function switchLiveStandingsView(mode: 'real' | 'merit'): void {
   }
 }
 
+let currentMeritSort: 'xpts' | 'luck' = 'xpts';
+
+export function toggleMobileMeritSort(): void {
+  const nextOrder = currentMeritSort === 'xpts' ? 'luck' : 'xpts';
+  switchMeritSort(nextOrder);
+}
+
+export function switchMeritSort(order: 'xpts' | 'luck'): void {
+  currentMeritSort = order;
+  if (typeof document === 'undefined') return;
+
+  const thXPTS = document.getElementById('th-merit-sort-xpts');
+  const thLuck = document.getElementById('th-merit-sort-luck');
+  const iconXPTS = document.getElementById('sort-icon-merit-xpts');
+  const iconLuck = document.getElementById('sort-icon-merit-luck');
+
+  const labelMobile = document.getElementById('label-merit-sort-mobile');
+
+  const desktopXPTS = document.getElementById('merit-desktop-tbody-xpts');
+  const desktopLuck = document.getElementById('merit-desktop-tbody-luck');
+  const mobileXPTS = document.getElementById('merit-mobile-cards-xpts');
+  const mobileLuck = document.getElementById('merit-mobile-cards-luck');
+
+  if (order === 'xpts') {
+    thXPTS?.classList.remove('opacity-70');
+    thXPTS?.classList.add('text-amber-500', 'dark:text-amber-400', 'font-black');
+    iconXPTS?.classList.remove('hidden');
+
+    thLuck?.classList.remove('text-amber-500', 'dark:text-amber-400', 'font-black');
+    thLuck?.classList.add('opacity-70');
+    iconLuck?.classList.add('hidden');
+
+    if (labelMobile) labelMobile.textContent = 'xPTS (Merito)';
+
+    desktopXPTS?.classList.remove('hidden');
+    desktopLuck?.classList.add('hidden');
+    mobileXPTS?.classList.remove('hidden');
+    mobileLuck?.classList.add('hidden');
+  } else {
+    thLuck?.classList.remove('opacity-70');
+    thLuck?.classList.add('text-amber-500', 'dark:text-amber-400', 'font-black');
+    iconLuck?.classList.remove('hidden');
+
+    thXPTS?.classList.remove('text-amber-500', 'dark:text-amber-400', 'font-black');
+    thXPTS?.classList.add('opacity-70');
+    iconXPTS?.classList.add('hidden');
+
+    if (labelMobile) labelMobile.textContent = 'Fortuna (Z-Score)';
+
+    desktopLuck?.classList.remove('hidden');
+    desktopXPTS?.classList.add('hidden');
+    mobileLuck?.classList.remove('hidden');
+    mobileXPTS?.classList.add('hidden');
+  }
+}
+
 if (typeof window !== 'undefined') {
   window.toggleLiveStandingsGuide = toggleLiveStandingsGuide;
   window.switchLiveStandingsView = switchLiveStandingsView;
+  window.switchMeritSort = switchMeritSort;
+  window.toggleMobileMeritSort = toggleMobileMeritSort;
 }
+
+

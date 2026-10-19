@@ -271,3 +271,23 @@ export function renderDeltaPointsPillHTML(deltaPoints: number): string {
   `;
 }
 
+/**
+ * Renders a compact micro-SVG podium icon [2 | 1 | 3]
+ * Inspired by classic sports podium: gold center (#1), silver left (#2), bronze right (#3)
+ */
+export function renderPodiumSVG(size: number = 16, className: string = ''): string {
+  return `
+    <svg class="inline-block shrink-0 ${className}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Podio" title="Podio">
+      <!-- Step 2 (Left / Silver) -->
+      <rect x="2" y="10" width="6.5" height="12" rx="1" fill="#94A3B8" class="dark:fill-slate-400" />
+      <text x="5.25" y="18" font-size="7" font-weight="bold" fill="#0F172A" text-anchor="middle" font-family="sans-serif">2</text>
+      <!-- Step 1 (Center / Gold) -->
+      <rect x="8.75" y="5" width="6.5" height="17" rx="1" fill="#F59E0B" class="dark:fill-amber-400" />
+      <text x="12" y="14" font-size="8" font-weight="900" fill="#0F172A" text-anchor="middle" font-family="sans-serif">1</text>
+      <!-- Step 3 (Right / Bronze) -->
+      <rect x="15.5" y="13" width="6.5" height="9" rx="1" fill="#D97706" class="dark:fill-amber-600" />
+      <text x="18.75" y="20" font-size="6.5" font-weight="bold" fill="#0F172A" text-anchor="middle" font-family="sans-serif">3</text>
+    </svg>
+  `.trim();
+}
+

@@ -8,9 +8,15 @@ import {
   renderLuckBadgeHTML,
   renderDeltaRankPillHTML,
   renderDeltaPointsPillHTML,
+  renderPodiumSVG,
   setLiveSeasonDetails
 } from '@/components/board/seasons/liveAnalytics';
-import { renderChampionshipTable, switchLiveStandingsView } from '@/components/board/seasons/standingsTable';
+import {
+  renderChampionshipTable,
+  switchLiveStandingsView,
+  switchMeritSort,
+  toggleMobileMeritSort
+} from '@/components/board/seasons/standingsTable';
 import { openTeamMatchesModal, closeTeamMatchesModal } from '@/components/board/seasons/TeamMatchesModal';
 import type { CompetitionRecord, LiveSeasonDetails } from '@/types';
 import { state } from '@/state';
@@ -527,6 +533,62 @@ describe('Live In-Progress Form & Analytics Engine', () => {
 
       closeModal();
     });
+
+    it('renders analytical summary strip in TeamMatchesModal with all-play record and luck badge', () => {
+      setLiveSeasonDetails({
+        season: '2026/27',
+        competitionId: 863632,
+        lastCompletedRound: 1,
+        totalRounds: 26,
+        standings: [
+          {
+            rank: 1,
+            points: 3,
+            managerId: 'm_valery',
+            teamName: 'Scalo San Genesio',
+            coach: 'valeriodam',
+            recentForm: ['W'],
+            statusBadge: '🔥',
+            statusLabel: 'In Fiamme',
+            scheduleLuck: {
+              xPoints: 2.85,
+              deltaPoints: 0.15,
+              xRank: 1,
+              deltaRank: 0,
+              allPlayRecord: { played: 13, wins: 12, draws: 0, losses: 1, winPct: 92.3 },
+              luckZScore: 1.25,
+              luckBadge: '🍀',
+              luckLabel: 'Fortunato'
+            }
+          }
+        ],
+        rounds: [
+          {
+            roundNumber: 1,
+            matches: [
+              {
+                homeTeam: 'Scalo San Genesio',
+                awayTeam: 'Arcore 1936',
+                homeOutcome: 'W',
+                awayOutcome: 'L',
+                isPlayed: true
+              }
+            ]
+          }
+        ]
+      });
+
+      openTeamMatchesModal('m_valery', 'Scalo San Genesio');
+      const modalContent = elements['team-matches-modal-content'];
+      expect(modalContent?.innerHTML).toContain('2.85 xPTS');
+      expect(modalContent?.innerHTML).toContain('+0.15 pt');
+      expect(modalContent?.innerHTML).toContain('vs 3 pt');
+      expect(modalContent?.innerHTML).toContain('#1 in classifica (3 pt)');
+      expect(modalContent?.innerHTML).toContain('12V 0N 1P');
+      expect(modalContent?.innerHTML).toContain('92.3%');
+      expect(modalContent?.innerHTML).toContain('Fortunato');
+      closeTeamMatchesModal();
+    });
   });
 
   describe('Schedule Luck, xPTS & 2-Way View Switching', () => {
@@ -608,6 +670,7 @@ describe('Live In-Progress Form & Analytics Engine', () => {
         standings: [
           {
             rank: 1,
+            points: 3,
             managerId: 'm_alfo',
             teamName: 'Steven Bradbury FC',
             coach: 'alfius91',
@@ -654,6 +717,11 @@ describe('Live In-Progress Form & Analytics Engine', () => {
       expect(tableHTML).toContain('live-view-merit-container');
       expect(tableHTML).toContain('guide-content-real');
       expect(tableHTML).toContain('guide-content-merit');
+      // Assert dynamic real points when present and placeholder when undefined
+      expect(tableHTML).toContain('• Reale #1 (3 pt)');
+      expect(tableHTML).toContain('vs 3 pt');
+      expect(tableHTML).toContain('• Reale #2 (- pt)');
+      expect(tableHTML).toContain('vs - pt');
 
       // Test view switching DOM manipulation with Mock Elements
       class MockElement {
@@ -703,5 +771,128 @@ describe('Live In-Progress Form & Analytics Engine', () => {
         (globalThis as any).document = origDoc;
       }
     });
+
+    it('renders vector micro-SVG podium icon with correct viewBox and steps', () => {
+      const svg = renderPodiumSVG(16, 'custom-podium');
+      expect(svg).toContain('<svg');
+      expect(svg).toContain('viewBox="0 0 24 24"');
+      expect(svg).toContain('width="16"');
+      expect(svg).toContain('height="16"');
+      expect(svg).toContain('custom-podium');
+      expect(svg).toContain('aria-label="Podio"');
+      expect(svg).toContain('>1</text>');
+      expect(svg).toContain('>2</text>');
+      expect(svg).toContain('>3</text>');
+    });
+
+    it('toggles interactive merit sorting between xPTS and luck', () => {
+      class MockElement {
+        classes = new Set<string>();
+        textContent: string = '';
+        classList = {
+          add: (...cls: string[]) => cls.forEach(c => this.classes.add(c)),
+          remove: (...cls: string[]) => cls.forEach(c => this.classes.delete(c)),
+          contains: (cls: string) => this.classes.has(cls)
+        };
+      }
+
+      const elements: Record<string, MockElement> = {
+        'th-merit-sort-xpts': new MockElement(),
+        'th-merit-sort-luck': new MockElement(),
+        'sort-icon-merit-xpts': new MockElement(),
+        'sort-icon-merit-luck': new MockElement(),
+        'label-merit-sort-mobile': new MockElement(),
+        'merit-desktop-tbody-xpts': new MockElement(),
+        'merit-desktop-tbody-luck': new MockElement(),
+        'merit-mobile-cards-xpts': new MockElement(),
+        'merit-mobile-cards-luck': new MockElement()
+      };
+
+      elements['merit-desktop-tbody-luck'].classList.add('hidden');
+      elements['merit-mobile-cards-luck'].classList.add('hidden');
+      elements['sort-icon-merit-luck'].classList.add('hidden');
+
+      const origDoc = (globalThis as any).document;
+      (globalThis as any).document = {
+        getElementById: (id: string) => elements[id] || null
+      };
+
+      try {
+        expect(elements['merit-desktop-tbody-xpts'].classList.contains('hidden')).toBe(false);
+        expect(elements['merit-desktop-tbody-luck'].classList.contains('hidden')).toBe(true);
+
+        switchMeritSort('luck');
+        expect(elements['merit-desktop-tbody-xpts'].classList.contains('hidden')).toBe(true);
+        expect(elements['merit-desktop-tbody-luck'].classList.contains('hidden')).toBe(false);
+        expect(elements['merit-mobile-cards-xpts'].classList.contains('hidden')).toBe(true);
+        expect(elements['merit-mobile-cards-luck'].classList.contains('hidden')).toBe(false);
+        expect(elements['sort-icon-merit-luck'].classList.contains('hidden')).toBe(false);
+        expect(elements['sort-icon-merit-xpts'].classList.contains('hidden')).toBe(true);
+        expect(elements['label-merit-sort-mobile'].textContent).toBe('Fortuna (Z-Score)');
+
+        toggleMobileMeritSort();
+        expect(elements['merit-desktop-tbody-xpts'].classList.contains('hidden')).toBe(false);
+        expect(elements['merit-desktop-tbody-luck'].classList.contains('hidden')).toBe(true);
+        expect(elements['merit-mobile-cards-xpts'].classList.contains('hidden')).toBe(false);
+        expect(elements['merit-mobile-cards-luck'].classList.contains('hidden')).toBe(true);
+        expect(elements['sort-icon-merit-xpts'].classList.contains('hidden')).toBe(false);
+        expect(elements['sort-icon-merit-luck'].classList.contains('hidden')).toBe(true);
+        expect(elements['label-merit-sort-mobile'].textContent).toBe('xPTS (Merito)');
+      } finally {
+        (globalThis as any).document = origDoc;
+      }
+    });
+
+    it('renders Monte Carlo podium SVG and Spoon pills on mobile cards when unlocked', () => {
+      const mockComp: CompetitionRecord = {
+        id: 863632,
+        name: 'Campionato In Corso',
+        season: '2025-2026',
+        category: 'championship',
+        in_progress: true,
+        ranking: [{ rank: 1, teamName: 'FC Bovisa', managerId: 'm_lucar', points: 15, coach: 'Luca R.' }]
+      };
+
+      setLiveSeasonDetails({
+        season: '2025-2026',
+        competitionId: 863632,
+        lastCompletedRound: 5,
+        totalRounds: 26,
+        rounds: [],
+        standings: [
+          {
+            rank: 1,
+            managerId: 'm_lucar',
+            teamName: 'FC Bovisa',
+            coach: 'Luca R.',
+            recentForm: ['W', 'W', 'W', 'W', 'W'],
+            statusBadge: '🔥',
+            statusLabel: 'In Fiamme',
+            scheduleLuck: {
+              xPoints: 3.0,
+              deltaPoints: 0.0,
+              xRank: 1,
+              deltaRank: 0,
+              allPlayRecord: { played: 13, wins: 12, draws: 0, losses: 1, winPct: 92.3 },
+              luckZScore: 0.0,
+              luckBadge: '⚖️',
+              luckLabel: 'Neutro',
+              monteCarlo: {
+                medianPoints: 45.0,
+                stdDev: 6.2,
+                pPodiumPct: 88.4,
+                pSpoonPct: 0.2
+              }
+            }
+          }
+        ]
+      });
+
+      const tableHTML = renderChampionshipTable(mockComp);
+      expect(tableHTML).toContain('88.4%');
+      expect(tableHTML).toContain('0.2%');
+      expect(tableHTML).toContain('aria-label="Podio"');
+    });
   });
 });
+

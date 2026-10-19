@@ -46,7 +46,7 @@ def compute_status_badge(
     if momentum <= 0.15:
         return '🧊', 'Crisi Nera'
     if momentum >= 0.55 and last_res == 'W':
-        return '📈', 'In Salita'
+        return '📈', 'In Ascesa'
     if momentum <= 0.35 or (len(last_2_res) == 2 and last_2_res == ['L', 'L']):
         return '📉', 'In Flessione'
 
@@ -325,8 +325,26 @@ def compile_live_season_details(
                 m['awayCoach'] = m.get('awayCoach') or info.get('coach', '')
                 m['awayLogo'] = m.get('awayLogo') or info.get('logo')
 
-    # Aggregate stats per team
+    # Pre-populate teams from canonical season definition
     teams_stats: Dict[str, Dict[str, Any]] = {}
+    for t_name, info in teams_by_name.items():
+        teams_stats[t_name] = {
+            'teamName': t_name,
+            'coach': info.get('coach', ''),
+            'managerId': info.get('managerId'),
+            'logo': info.get('logo'),
+            'played': 0,
+            'won': 0,
+            'drawn': 0,
+            'lost': 0,
+            'goalsFor': 0,
+            'goalsAgainst': 0,
+            'totalFantaPoints': 0.0,
+            'allForm': [],
+            'fantaPointsHistory': [],
+            'points': 0
+        }
+
     total_league_fp = 0.0
     total_team_matches = 0
 
@@ -338,10 +356,19 @@ def compile_live_season_details(
             if not home or not away:
                 continue
 
+            h_fp = float(m.get('homeFantaPoints', 0.0) or 0.0)
+            a_fp = float(m.get('awayFantaPoints', 0.0) or 0.0)
+            is_played = bool(
+                m.get('isPlayed')
+                or m.get('played')
+                or h_fp > 0
+                or a_fp > 0
+            )
+            if not is_played:
+                continue
+
             h_score = int(m.get('homeScore', 0))
             a_score = int(m.get('awayScore', 0))
-            h_fp = float(m.get('homeFantaPoints', 0.0))
-            a_fp = float(m.get('awayFantaPoints', 0.0))
 
             total_league_fp += (h_fp + a_fp)
             total_team_matches += 2
@@ -427,7 +454,15 @@ def compile_live_season_details(
         t['expectedRank'] = idx
         t['deltaLuck'] = t['expectedRank'] - t['rank']
 
-    last_completed = max((r.get('roundNumber', 0) for r in all_rounds), default=0)
+    completed_rounds = [
+        r.get('roundNumber', 0)
+        for r in all_rounds
+        if any(
+            bool(m.get('isPlayed') or m.get('played') or float(m.get('homeFantaPoints', 0) or 0) > 0 or float(m.get('awayFantaPoints', 0) or 0) > 0)
+            for m in r.get('matches', [])
+        )
+    ]
+    last_completed = max(completed_rounds, default=0)
 
     # Clean intermediate calculation fields from final JSON standings
     final_standings = []

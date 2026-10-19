@@ -153,7 +153,8 @@ export function openTeamMatchesModal(managerId?: string, teamName?: string, isBa
     oppManagerId?: string;
     oppCoach?: string;
     oppLogo?: string;
-    outcome: 'W' | 'D' | 'L';
+    outcome: 'W' | 'D' | 'L' | null;
+    isPlayed: boolean;
   }> = [];
 
   for (const r of liveData.rounds) {
@@ -169,9 +170,20 @@ export function openTeamMatchesModal(managerId?: string, teamName?: string, isBa
       const oppMgrId = isHome ? m.awayManagerId : m.homeManagerId;
       const oppLogo = isHome ? m.awayLogo : m.homeLogo;
 
-      let outcome: 'W' | 'D' | 'L' = 'D';
-      if (teamScore > oppScore) outcome = 'W';
-      else if (teamScore < oppScore) outcome = 'L';
+      const isPlayed = Boolean(
+        (m.homeFantaPoints !== undefined && m.homeFantaPoints > 0) ||
+        (m.awayFantaPoints !== undefined && m.awayFantaPoints > 0) ||
+        (liveData.lastCompletedRound && r.roundNumber <= liveData.lastCompletedRound) ||
+        (m as any).isPlayed ||
+        (m as any).played
+      );
+
+      let outcome: 'W' | 'D' | 'L' | null = null;
+      if (isPlayed) {
+        if (teamScore > oppScore) outcome = 'W';
+        else if (teamScore < oppScore) outcome = 'L';
+        else outcome = 'D';
+      }
 
       matchesPlayed.push({
         roundNumber: r.roundNumber,
@@ -179,12 +191,13 @@ export function openTeamMatchesModal(managerId?: string, teamName?: string, isBa
         oppTeamName: oppTeam,
         oppManagerId: oppMgrId,
         oppLogo,
-        outcome
+        outcome,
+        isPlayed
       });
     }
   }
 
-  // Matches list HTML - clean minimalist view: [G #] [Logo] [Name] -> [Outcome]
+  // Matches list HTML - clean minimalist view: [G #] [Logo] [Name] -> [Outcome] or [-]
   const matchesListHTML = matchesPlayed.map(match => {
     let outcomeBadgeClass = 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30';
     let outcomeIcon = 'fa-minus';
@@ -222,12 +235,16 @@ export function openTeamMatchesModal(managerId?: string, teamName?: string, isBa
           </div>
         </div>
 
-        <!-- Outcome Badge ONLY (no numeric score) -->
-        <div class="shrink-0 flex items-center">
-          <span class="px-2.5 py-1 rounded-xl text-xs font-black tracking-wider uppercase border flex items-center gap-1.5 shadow-xs ${outcomeBadgeClass}">
-            <i class="fa-solid ${outcomeIcon} text-[10px]"></i>
-            <span>${outcomeText}</span>
-          </span>
+        <!-- Outcome Badge ONLY (no numeric score) or simple '-' if not yet played -->
+        <div class="shrink-0 flex items-center justify-end min-w-[2rem]">
+          ${match.isPlayed && match.outcome ? `
+            <span class="px-2.5 py-1 rounded-xl text-xs font-black tracking-wider uppercase border flex items-center gap-1.5 shadow-xs ${outcomeBadgeClass}">
+              <i class="fa-solid ${outcomeIcon} text-[10px]"></i>
+              <span>${outcomeText}</span>
+            </span>
+          ` : `
+            <span class="text-sm font-bold text-slate-400 dark:text-slate-500 px-3 py-1 select-none">-</span>
+          `}
         </div>
       </div>
     `;

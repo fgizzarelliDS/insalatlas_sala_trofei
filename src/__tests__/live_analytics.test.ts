@@ -54,10 +54,10 @@ describe('Live In-Progress Form & Analytics Engine', () => {
       expect(res.label).toBe('Crisi Nera');
     });
 
-    it('awards 📈 In Salita when momentum >= 0.55 and last match is a Win', () => {
+    it('awards 📈 In Ascesa when momentum >= 0.55 and last match is a Win', () => {
       const res = computeStatusBadge(0.6, 73.0, 72.0, ['L', 'D', 'W', 'L', 'W']);
       expect(res.badge).toBe('📈');
-      expect(res.label).toBe('In Salita');
+      expect(res.label).toBe('In Ascesa');
     });
 
     it('awards 📉 In Flessione when momentum <= 0.35 or last 2 matches are losses', () => {
@@ -192,7 +192,7 @@ describe('Live In-Progress Form & Analytics Engine', () => {
           momentum: 0.65,
           recentForm: ['W', 'D', 'W', 'W', 'L'],
           statusBadge: '📈',
-          statusLabel: 'In Salita'
+          statusLabel: 'In Ascesa'
         }
       ]
     };
@@ -429,6 +429,21 @@ describe('Live In-Progress Form & Analytics Engine', () => {
                 awayFantaPoints: 68.5
               }
             ]
+          },
+          {
+            roundNumber: 2,
+            matches: [
+              {
+                homeTeam: 'Scalo San Genesio',
+                awayTeam: 'Arcore 1936',
+                homeManagerId: 'm_valery',
+                awayManagerId: 'm_sebba',
+                homeScore: 0,
+                awayScore: 0,
+                homeFantaPoints: 0.0,
+                awayFantaPoints: 0.0
+              }
+            ]
           }
         ],
         standings: [
@@ -487,6 +502,10 @@ describe('Live In-Progress Form & Analytics Engine', () => {
       expect(content?.innerHTML).not.toContain('CASA');
       expect(content?.innerHTML).not.toContain('TRASFERTA');
       expect(content?.innerHTML).not.toContain('vs sebbadavid');
+      // Unplayed G2 match has no outcome yet and renders simple '-' instead of PAREGGIO
+      expect(content?.innerHTML).toContain('G2');
+      expect(content?.innerHTML).toContain('select-none">-</span>');
+      expect(content?.innerHTML).not.toContain('PAREGGIO');
       // No back button initially
       expect(content?.innerHTML).not.toContain('navigateBackTeamMatchesModal');
 

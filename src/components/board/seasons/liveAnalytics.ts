@@ -88,7 +88,7 @@ export function computeStatusBadge(
     return { badge: '🧊', label: 'Crisi Nera' };
   }
   if (momentum >= 0.55 && lastRes === 'W') {
-    return { badge: '📈', label: 'In Salita' };
+    return { badge: '📈', label: 'In Ascesa' };
   }
   if (momentum <= 0.35 || (last2.length === 2 && last2[0] === 'L' && last2[1] === 'L')) {
     return { badge: '📉', label: 'In Flessione' };
@@ -108,16 +108,16 @@ export function renderFormDotsHTML(recentForm: FormResult[] = []): string {
   return `
     <div class="inline-flex items-center gap-1" title="Forma ultime 5 giornate: ${recentForm.join('-')}">
       ${recentForm
-        .map(r => {
-          if (r === 'W') {
-            return '<span class="w-4 h-4 rounded-full bg-emerald-500 text-slate-950 font-black text-[9px] flex items-center justify-center shadow-sm" title="Vittoria">V</span>';
-          }
-          if (r === 'D') {
-            return '<span class="w-4 h-4 rounded-full bg-amber-400 text-slate-950 font-black text-[9px] flex items-center justify-center shadow-sm" title="Pareggio">N</span>';
-          }
-          return '<span class="w-4 h-4 rounded-full bg-rose-500 text-white font-black text-[9px] flex items-center justify-center shadow-sm" title="Sconfitta">P</span>';
-        })
-        .join('')}
+      .map(r => {
+        if (r === 'W') {
+          return '<span class="w-4 h-4 rounded-full bg-emerald-500 text-slate-950 font-black text-[9px] flex items-center justify-center shadow-sm" title="Vittoria">V</span>';
+        }
+        if (r === 'D') {
+          return '<span class="w-4 h-4 rounded-full bg-amber-400 text-slate-950 font-black text-[9px] flex items-center justify-center shadow-sm" title="Pareggio">N</span>';
+        }
+        return '<span class="w-4 h-4 rounded-full bg-rose-500 text-white font-black text-[9px] flex items-center justify-center shadow-sm" title="Sconfitta">P</span>';
+      })
+      .join('')}
     </div>
   `;
 }
@@ -163,7 +163,7 @@ export function renderStatusBadgeHTML(badge: CompositeStatusBadge, label: string
   return `
     <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-xs font-bold border shadow-xs ${badgeStyle}" title="Stato e Momentum: ${label}">
       <span class="text-sm leading-none">${badge}</span>
-      <span class="text-[10px] uppercase font-bold hidden sm:inline">${label}</span>
+      <span class="text-[10px] uppercase font-bold tracking-wider">${label}</span>
     </span>
   `;
 }

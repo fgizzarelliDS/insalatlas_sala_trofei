@@ -119,6 +119,12 @@
             "type": "string"
           }
         },
+        "trophies": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
         "history": {
           "type": "array"
         }

@@ -1,7 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { computeTradingCardBadges, getManagerInitials, buildTradingCardHTML, buildWhatsAppShareText } from '@/export';
+import {
+  computeTradingCardBadges,
+  getManagerInitials,
+  buildTradingCardHTML,
+  buildWhatsAppShareText,
+  buildH2HWhatsAppShareText,
+  buildMultiManagerWhatsAppShareText
+} from '@/export';
 import { Manager, LeagueRecord } from '@/types';
 import { createTestManager } from './test-utils';
+import { LEAGUE } from '@/config';
 
 describe('export.ts - Trading Card Logic and Formatting', () => {
   describe('getManagerInitials', () => {
@@ -185,7 +193,7 @@ describe('export.ts - Trading Card Logic and Formatting', () => {
       expect(html).toContain('Cucchiai Legno');
       expect(html).toContain('Cartonati');
       expect(html).toContain('MAZZARRI');
-      expect(html).toContain('InsalAtlas Lega');
+      expect(html).toContain(LEAGUE.brand.name);
     });
   });
 
@@ -204,6 +212,7 @@ describe('export.ts - Trading Card Logic and Formatting', () => {
 
       const text = buildWhatsAppShareText(m, 'https://fgizzarellids.github.io/insalatlas_sala_trofei/');
 
+      expect(text).toContain(`🏆 *${LEAGUE.brand.name} • ${LEAGUE.brand.mainTitle}*`);
       expect(text).toContain('*ALFO*');
       expect(text).toContain('4 Stagioni');
       expect(text).toContain('Rating Storico:');
@@ -275,7 +284,7 @@ describe('export.ts - Trading Card Logic and Formatting', () => {
       };
 
       const text = buildRecordWhatsAppShareText(mockRecord, 'https://test.insalatlas.it/');
-      expect(text).toContain('🏆 *InsalAtlas • Record & Primati Storici*');
+      expect(text).toContain(`🏆 *${LEAGUE.brand.name} • Record & Primati Storici*`);
       expect(text).toContain('RECORD PUNTI SINGOLA STAGIONE');
       expect(text).toContain('67.0 pt');
       expect(text).toContain('Makako');
@@ -422,10 +431,15 @@ describe('export.ts - Trading Card Logic and Formatting', () => {
 
     it('generates rich WhatsApp share text for Hall of Fame poster with ?tab=records', async () => {
       const { buildPosterWhatsAppShareText } = await import('@/export');
+      const { getLeagueYearSpan } = await import('@/analytics/records/helpers');
+      const { state } = await import('@/state');
+      const leagueSpan = getLeagueYearSpan(state.competitions);
+
       const text = buildPosterWhatsAppShareText('https://test.insalatlas.it/');
 
-      expect(text).toContain('🏆 *InsalAtlas • Hall of Fame Ufficiale (2016-2026)*');
-      expect(text).toContain('RECORD & PRIMATI ALL-TIME DELLA SERIE ATLAS');
+      expect(text).toContain(`🏆 *${LEAGUE.brand.name} • Hall of Fame Ufficiale (${leagueSpan.spanText})*`);
+      const champUpper = (LEAGUE.brand.championshipLabel || LEAGUE.brand.name).toUpperCase();
+      expect(text).toContain(`RECORD & PRIMATI ALL-TIME DELLA ${champUpper}`);
       expect(text).toContain('Punti & Podi');
       expect(text).toContain('Rivalità Head-to-Head');
       expect(text).toContain('https://test.insalatlas.it/?tab=records');
@@ -435,7 +449,9 @@ describe('export.ts - Trading Card Logic and Formatting', () => {
   describe('Albo d Oro Export Engine & Toolbar Dropdown', () => {
     it('generates rich WhatsApp share text with top 3 champions and ?tab=albo', async () => {
       const { buildAlboWhatsAppShareText } = await import('@/export');
+      const { getLeagueYearSpan } = await import('@/analytics/records/helpers');
       const { state } = await import('@/state');
+      const leagueSpan = getLeagueYearSpan(state.competitions);
 
       state.managers = [
         createTestManager({ id: 'm1', name: 'Primo Manager', gold: 3, cup_gold: 2, supercup: 1, mundialito: 0 }),
@@ -446,7 +462,7 @@ describe('export.ts - Trading Card Logic and Formatting', () => {
 
       const text = buildAlboWhatsAppShareText('https://test.insalatlas.it/');
 
-      expect(text).toContain('🏆 *InsalAtlas • Albo d\'Oro & Sala Trofei (2016-2026)*');
+      expect(text).toContain(`🏆 *${LEAGUE.brand.name} • ${LEAGUE.brand.subtitle} (${leagueSpan.spanText})*`);
       expect(text).toContain('CLASSIFICA STORICA DEI PIÙ TITOLATI');
       expect(text).toContain('🥇 *Primo Manager*: 6 Titoli (3 Scudetti)');
       expect(text).toContain('🥈 *Secondo Manager*: 3 Titoli (2 Scudetti)');
@@ -518,5 +534,27 @@ describe('export.ts - Trading Card Logic and Formatting', () => {
       expect(lock.packages[''].version).toBe(pkg.version);
     });
   });
+
+  describe('H2H & Multi-Manager WhatsApp Share', () => {
+    it('formats H2H duel WhatsApp share text with league branding', () => {
+      const mA = createTestManager({ id: 'm_a', name: 'Mister A', years: 3 });
+      const mB = createTestManager({ id: 'm_b', name: 'Mister B', years: 3 });
+      const text = buildH2HWhatsAppShareText(mA, mB, 'https://test.insalatlas.it/');
+      expect(text).toContain(`⚔️ *${LEAGUE.brand.name} • Duello Head-to-Head*`);
+      expect(text).toContain('*MISTER A* vs *MISTER B*');
+      expect(text).toContain('https://test.insalatlas.it/?h2h=m_a:m_b');
+    });
+
+    it('formats Tavolo dei Rivali WhatsApp share text with league branding', () => {
+      const mA = createTestManager({ id: 'm_a', name: 'Mister A', years: 3 });
+      const mB = createTestManager({ id: 'm_b', name: 'Mister B', years: 3 });
+      const mC = createTestManager({ id: 'm_c', name: 'Mister C', years: 3 });
+      const text = buildMultiManagerWhatsAppShareText([mA, mB, mC], ['m_a', 'm_b', 'm_c'], 'https://test.insalatlas.it/');
+      expect(text).toContain(`🕸️ *${LEAGUE.brand.name} • Tavolo dei Rivali*`);
+      expect(text).toContain('MISTER A vs MISTER B vs MISTER C');
+      expect(text).toContain('https://test.insalatlas.it/?h2h=multi&m=m_a%3Am_b%3Am_c');
+    });
+  });
 });
+
 

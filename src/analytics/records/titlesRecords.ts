@@ -4,6 +4,7 @@ import {
   getCompletedChampionships,
   resolveManagerRecordCrest
 } from './helpers';
+import { LEAGUE } from '@/config';
 
 /**
  * Computes all records in the 'titles' category:
@@ -329,7 +330,7 @@ export function computeTitlesRecords(
       primaryHolders,
       primaryHolder: primaryHolders[0],
       runnerUps,
-      description: 'Il fantallenatore più decorato della storia con il maggior numero di titoli della Serie Atlas in bacheca.'
+      description: `Il fantallenatore più decorato della storia con il maggior numero di titoli della ${LEAGUE.brand.championshipLabel || LEAGUE.brand.name} in bacheca.`
     });
   }
 
@@ -455,7 +456,7 @@ export function computeTitlesRecords(
       primaryHolders,
       primaryHolder: primaryHolders[0],
       runnerUps,
-      description: 'Il maggior numero complessivo di piazzamenti sul podio (1°, 2° o 3° posto) nella storia della Serie Atlas.'
+      description: `Il maggior numero complessivo di piazzamenti sul podio (1°, 2° o 3° posto) nella storia della ${LEAGUE.brand.championshipLabel || LEAGUE.brand.name}.`
     });
   }
 
@@ -577,7 +578,7 @@ export function computeTitlesRecords(
       primaryHolders,
       primaryHolder: primaryHolders[0],
       runnerUps,
-      description: 'L’unica storica impresa di chi è riuscito a vincere e difendere il titolo della Serie Atlas per due stagioni consecutive.'
+      description: `L’unica storica impresa di chi è riuscito a vincere e difendere il titolo della ${LEAGUE.brand.championshipLabel || LEAGUE.brand.name} per due stagioni consecutive.`
     });
   }
 

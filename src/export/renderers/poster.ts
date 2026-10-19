@@ -4,6 +4,7 @@ import { computeAllLeagueRecords } from '@/analytics/records';
 import { getLeagueYearSpan } from '@/analytics/records/helpers';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
 import { renderNodeToCanvas } from './core';
+import { LEAGUE, LEAGUE_SITE_HOST } from '@/config';
 
 /**
  * Renders an all-in-one celebratory high-resolution Poster Infographic covering all official Hall of Fame records.
@@ -26,7 +27,7 @@ export async function renderHallOfFamePosterCanvas(
     : (state.currentTheme === 'gazzetta' ? '#fce7ec' : state.currentTheme === 'studio' ? '#f1f5f9' : state.currentTheme === 'seriea' ? '#020b1c' : '#090d16');
 
   const poster = document.createElement('div');
-  poster.id = 'insalatlas-hall-of-fame-poster';
+  poster.id = `${LEAGUE.filePrefix}-hall-of-fame-poster`;
   poster.style.width = `${targetWidth}px`;
   poster.style.padding = '36px 40px';
   poster.style.boxSizing = 'border-box';
@@ -220,10 +221,10 @@ export async function renderHallOfFamePosterCanvas(
     <!-- Poster Top Championship Banner -->
     <div style="text-align: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1.5px solid var(--table-border, rgba(51, 65, 85, 0.5));">
       <div style="display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 8px;">
-        <img src="favicon-64x64.png" alt="InsalAtlas" style="width: 58px; height: 58px; object-fit: contain; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.3); border: 2px solid rgba(245, 158, 11, 0.4);" />
+        <img src="favicon-64x64.png" alt="${LEAGUE.brand.name}" style="width: 58px; height: 58px; object-fit: contain; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.3); border: 2px solid rgba(245, 158, 11, 0.4);" />
         <div style="text-align: left;">
           <div style="font-size: 12px; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent-color, #f59e0b);">
-            Serie Atlas • Sala Trofei Ufficiale
+            ${LEAGUE.brand.championshipLabel || LEAGUE.brand.name} • ${LEAGUE.brand.mainTitle} Ufficiale
           </div>
           <h1 style="font-size: 30px; font-weight: 900; letter-spacing: -0.02em; text-transform: uppercase; margin: 2px 0 0 0; color: var(--text-main, #f8fafc); line-height: 1.15;">
             Hall of Fame • I Primati &amp; I Record All-Time
@@ -275,17 +276,17 @@ export async function renderHallOfFamePosterCanvas(
     <!-- Poster Official Closing Footer -->
     <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 18px; border-top: 1.5px solid var(--table-border, rgba(51, 65, 85, 0.5)); font-size: 11px;">
       <div style="display: flex; align-items: center; gap: 8px;">
-        <img src="favicon-64x64.png" alt="InsalAtlas" style="width: 20px; height: 20px; object-fit: contain; border-radius: 9999px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" />
+        <img src="favicon-64x64.png" alt="${LEAGUE.brand.name}" style="width: 20px; height: 20px; object-fit: contain; border-radius: 9999px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" />
         <span style="font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-main, #f8fafc);">
-          InsalAtlas • Sala Trofei &amp; Archivio Storico
+          ${LEAGUE.brand.name} • ${LEAGUE.brand.mainTitle} &amp; Archivio Storico
         </span>
         <span style="opacity: 0.4;">•</span>
         <span style="color: var(--accent-color, #f59e0b); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-          Serie Atlas Ufficiale
+          ${LEAGUE.brand.championshipLabel || LEAGUE.brand.name} Ufficiale
         </span>
       </div>
       <div style="font-family: monospace; font-size: 10px; opacity: 0.75; color: var(--text-muted, #94a3b8);">
-        fgizzarellids.github.io/insalatlas_sala_trofei • ${leagueSpan.spanText}
+        ${LEAGUE_SITE_HOST} • ${leagueSpan.spanText}
       </div>
     </div>
   `;

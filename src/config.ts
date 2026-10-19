@@ -1,4 +1,11 @@
-import { ScoringWeights, TitlesConfig, LeagueProfile, LeagueFeatures, AlboColumnDef } from '@/types';
+import {
+  ScoringWeights,
+  TitlesConfig,
+  LeagueProfile,
+  LeagueFeatures,
+  AlboColumnDef,
+  CompetitionDefinition
+} from '@/types';
 
 export const LEAGUE: LeagueProfile = {
   id: 'insalatlas',
@@ -53,17 +60,131 @@ export const LEAGUE_SITE_HOST: string = LEAGUE.siteUrl
   .replace(/^https?:\/\//, '')
   .replace(/\/+$/, '');
 
-export function buildAlboColumns(features: LeagueFeatures): AlboColumnDef[] {
-  const allColumns: AlboColumnDef[] = [
-    { key: 'manager', cssVar: '--col-manager', titleKey: 'col1', defaultTitle: 'Allenatore (Presenze)', enabled: true, order: 1 },
-    { key: 'championship', cssVar: '--col-championship', titleKey: 'col2', defaultTitle: 'Campionato', enabled: true, order: 2 },
-    { key: 'cup', cssVar: '--col-cup', titleKey: 'col3', defaultTitle: 'Coppa di Lega', enabled: features.cup, order: 3 },
-    { key: 'supercup', cssVar: '--col-supercup', titleKey: 'col4', defaultTitle: 'Supercoppa', enabled: features.supercup, order: 4 },
-    { key: 'mundialito', cssVar: '--col-mundialito', titleKey: 'col5', defaultTitle: 'Mundialito', enabled: features.mundialito, order: 5 },
-    { key: 'spoon', cssVar: '--col-spoon', titleKey: 'col6', defaultTitle: 'Cucchiaio', enabled: features.spoon, order: 6 },
-    { key: 'cartonato', cssVar: '--col-cartonato', titleKey: 'col7', defaultTitle: 'Cartonato', enabled: features.cartonato, order: 7 }
-  ];
-  return allColumns.filter(c => c.enabled).sort((a, b) => a.order - b.order);
+/**
+ * Centralized Competition Registry (Single Source of Truth)
+ * Defines all tournaments, their archetypes, icons, points, and responsive grid dimensions.
+ */
+export const COMPETITION_REGISTRY: CompetitionDefinition[] = [
+  {
+    id: 'championship',
+    name: 'Campionato',
+    shortName: 'Campionato',
+    category: 'Campionato',
+    nameKeywords: ['serie'],
+    trophyIcon: 'gold_cup',
+    silverTrophyIcon: 'silver_cup',
+    bronzeTrophyIcon: 'bronze_cup',
+    type: 'tier3',
+    scoringPoints: { gold: 3.0, silver: 0.5, bronze: 0.25 },
+    grid: { desktopTrack: 'minmax(270px, 1.4fr)', desktopWidthPx: 270, mobileWidthPx: 115 },
+    order: 2,
+    enabled: true
+  },
+  {
+    id: 'cup',
+    name: 'Coppa di Lega',
+    shortName: 'Coppa di Lega',
+    category: 'Coppa',
+    nameKeywords: ['coppa'],
+    trophyIcon: 'coppa_gold',
+    silverTrophyIcon: 'coppa_silver',
+    type: 'tier2',
+    scoringPoints: { gold: 2.0, silver: 0.25 },
+    grid: { desktopTrack: '150px', desktopWidthPx: 150, mobileWidthPx: 85 },
+    order: 3,
+    enabled: LEAGUE.features.cup
+  },
+  {
+    id: 'supercup',
+    name: 'Supercoppa',
+    shortName: 'Supercoppa',
+    category: 'Supercoppa',
+    nameKeywords: ['supercoppa'],
+    trophyIcon: 'supercup',
+    type: 'single',
+    scoringPoints: { gold: 1.0 },
+    grid: { desktopTrack: '120px', desktopWidthPx: 120, mobileWidthPx: 90 },
+    order: 4,
+    enabled: LEAGUE.features.supercup
+  },
+  {
+    id: 'mundialito',
+    name: 'Mundialito',
+    shortName: 'Mundialito',
+    category: 'Mundialito',
+    nameKeywords: ['mundialito'],
+    trophyIcon: 'mundialito',
+    type: 'single',
+    scoringPoints: { gold: 1.0 },
+    grid: { desktopTrack: '120px', desktopWidthPx: 120, mobileWidthPx: 90 },
+    order: 5,
+    enabled: LEAGUE.features.mundialito
+  },
+  {
+    id: 'spoon',
+    name: 'Cucchiaio di Legno',
+    shortName: 'Cucchiaio',
+    category: 'Campionato',
+    nameKeywords: ['cucchiaio'],
+    trophyIcon: 'wooden_spoon',
+    type: 'dishonor',
+    scoringPoints: { gold: -1.0 },
+    grid: { desktopTrack: '90px', desktopWidthPx: 90, mobileWidthPx: 65 },
+    order: 6,
+    enabled: LEAGUE.features.spoon
+  },
+  {
+    id: 'cartonato',
+    name: 'Cartonato (Playout)',
+    shortName: 'Cartonato',
+    category: 'Perdenti',
+    nameKeywords: ['perdenti', 'cartonato'],
+    trophyIcon: 'cartonato',
+    type: 'banners',
+    scoringPoints: { gold: -2.0 },
+    grid: { desktopTrack: 'minmax(150px, 1.1fr)', desktopWidthPx: 220, mobileWidthPx: 175 },
+    order: 7,
+    enabled: LEAGUE.features.cartonato
+  }
+];
+
+export function getActiveCompetitions(): CompetitionDefinition[] {
+  return COMPETITION_REGISTRY.filter(c => c.enabled).sort((a, b) => a.order - b.order);
+}
+
+export function getCompetitionDef(id: string): CompetitionDefinition | undefined {
+  return COMPETITION_REGISTRY.find(c => c.id === id);
+}
+
+export function buildAlboColumns(features: LeagueFeatures = LEAGUE.features): AlboColumnDef[] {
+  const managerCol: AlboColumnDef = {
+    key: 'manager',
+    cssVar: '--col-manager',
+    titleKey: 'col1',
+    defaultTitle: 'Allenatore (Presenze)',
+    enabled: true,
+    order: 1
+  };
+
+  const compCols: AlboColumnDef[] = COMPETITION_REGISTRY
+    .filter(comp => {
+      if (comp.id === 'cup') return features.cup;
+      if (comp.id === 'supercup') return features.supercup;
+      if (comp.id === 'mundialito') return features.mundialito;
+      if (comp.id === 'spoon') return features.spoon;
+      if (comp.id === 'cartonato') return features.cartonato;
+      return comp.enabled;
+    })
+    .map(comp => ({
+      key: comp.id,
+      cssVar: `--col-${comp.id}`,
+      titleKey: `col${comp.order}`,
+      defaultTitle: comp.shortName,
+      enabled: true,
+      order: comp.order
+    }));
+
+  return [managerCol, ...compCols].sort((a, b) => a.order - b.order);
 }
 
 export const ALBO_COLUMNS: AlboColumnDef[] = buildAlboColumns(LEAGUE.features);

@@ -254,6 +254,22 @@ def extract_data(root_dir: Optional[str] = None) -> int:
         c_mundialito_silver = sum(1 for s in hist_list for a in s["achievements"] if a["badge"] == "mundialito_silver")
         c_cartonato = sum(1 for s in hist_list for a in s["achievements"] if a["badge"] == "cartonato")
 
+        calculated_trophies = {
+            "championship": c_gold,
+            "championship_silver": c_silver,
+            "championship_bronze": c_bronze,
+            "cup": c_cup_gold,
+            "cup_silver": c_cup_silver,
+            "supercup": c_supercup,
+            "supercup_silver": c_supercup_silver,
+            "mundialito": c_mundialito,
+            "mundialito_silver": c_mundialito_silver,
+            "spoon": c_spoon,
+            "cartonato": c_cartonato
+        }
+        all_trophies = dict(mgr.get("trophies") or {})
+        all_trophies.update(calculated_trophies)
+
         output_managers.append({
             "id": mgr["id"],
             "name": mgr["name"],
@@ -271,6 +287,7 @@ def extract_data(root_dir: Optional[str] = None) -> int:
             "cartonato": c_cartonato,
             "coach_banners": mgr["coach_banners"],
             "cartonato_coaches": mgr["cartonato_coaches"],
+            "trophies": all_trophies,
             "history": hist_list
         })
 

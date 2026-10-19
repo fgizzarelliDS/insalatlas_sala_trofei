@@ -6,6 +6,7 @@ dist/
 
 # Local env files
 .env
+env.local
 .env.local
 .env.*.local
 specs/*
@@ -19,6 +20,7 @@ scripts/archive/teams/*
 scripts/archive/
 public/assets/trophies/*
 data/*.jpeg
+data/live/
 
 # Editor directories and files
 .vscode/

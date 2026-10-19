@@ -18,6 +18,7 @@ from .rules import (
     create_cup_achievement,
     SPOON_MIN_TEAMS
 )
+from .live_builder import compile_live_season_details
 
 def build_data(output_file: Optional[str] = None) -> int:
     base_dir = get_base_dir()
@@ -166,6 +167,12 @@ def build_data(output_file: Optional[str] = None) -> int:
 
             mgr['history'].append(history_entry)
 
+    # Collect all distinct custom trophy keys across all managers to keep public/data.json schema 100% homogeneous
+    all_extra_trophy_keys = set()
+    for m in managers_meta:
+        if 'trophies' in m and isinstance(m['trophies'], dict):
+            all_extra_trophy_keys.update(m['trophies'].keys())
+
     # Apply explicit overrides from managers.json and sort history descending
     for m in managers_meta:
         mid = m['id']
@@ -176,6 +183,29 @@ def build_data(output_file: Optional[str] = None) -> int:
             for ah in m['additional_history']:
                 mgr['history'].append(ah)
         mgr['history'].sort(key=lambda h: parse_season_year(h.get('season', '')), reverse=True)
+
+        coaches_count = len(mgr.get('cartonato_coaches', []))
+        if coaches_count > mgr.get('cartonato', 0):
+            mgr['cartonato'] = coaches_count
+
+        mgr['trophies'] = {
+            'championship': mgr.get('gold', 0),
+            'championship_silver': mgr.get('silver', 0),
+            'championship_bronze': mgr.get('bronze', 0),
+            'cup': mgr.get('cup_gold', 0),
+            'cup_silver': mgr.get('cup_silver', 0),
+            'supercup': mgr.get('supercup', 0),
+            'supercup_silver': mgr.get('supercup_silver', 0),
+            'mundialito': mgr.get('mundialito', 0),
+            'mundialito_silver': mgr.get('mundialito_silver', 0),
+            'spoon': mgr.get('spoon', 0),
+            'cartonato': mgr.get('cartonato', 0)
+        }
+        for k in sorted(all_extra_trophy_keys):
+            mgr['trophies'][k] = 0
+
+        if 'trophies' in m and isinstance(m['trophies'], dict):
+            mgr['trophies'].update(m['trophies'])
 
     compiled_managers = [managers_dict[m['id']] for m in managers_meta]
 
@@ -191,6 +221,11 @@ def build_data(output_file: Optional[str] = None) -> int:
 
     ok(f"Loaded {len(compiled_managers)} managers, {len(seasons_data)} seasons, {len(all_competitions)} competitions.")
     ok(f"Compiled successfully to {output_file}!")
+
+    live_result = compile_live_season_details(root_dir=base_dir)
+    if live_result:
+        ok("Compiled live season details successfully to public/live_season_details.json!")
+
     return 0
 
 if __name__ == '__main__':

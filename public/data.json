@@ -175,7 +175,20 @@
           "competitionId": 147883,
           "achievements": []
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 3,
+        "championship_silver": 1,
+        "championship_bronze": 0,
+        "cup": 0,
+        "cup_silver": 0,
+        "supercup": 2,
+        "supercup_silver": 1,
+        "mundialito": 0,
+        "mundialito_silver": 2,
+        "spoon": 1,
+        "cartonato": 0
+      }
     },
     {
       "id": "m_lucchetto",
@@ -329,7 +342,20 @@
             }
           ]
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 2,
+        "championship_silver": 1,
+        "championship_bronze": 0,
+        "cup": 0,
+        "cup_silver": 2,
+        "supercup": 1,
+        "supercup_silver": 0,
+        "mundialito": 1,
+        "mundialito_silver": 0,
+        "spoon": 0,
+        "cartonato": 0
+      }
     },
     {
       "id": "m_alfo",
@@ -552,7 +578,20 @@
             }
           ]
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 1,
+        "championship_silver": 3,
+        "championship_bronze": 2,
+        "cup": 3,
+        "cup_silver": 0,
+        "supercup": 3,
+        "supercup_silver": 1,
+        "mundialito": 2,
+        "mundialito_silver": 0,
+        "spoon": 0,
+        "cartonato": 0
+      }
     },
     {
       "id": "m_peterdani",
@@ -689,7 +728,20 @@
           "competitionId": 147887,
           "achievements": []
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 1,
+        "championship_silver": 1,
+        "championship_bronze": 0,
+        "cup": 2,
+        "cup_silver": 0,
+        "supercup": 1,
+        "supercup_silver": 2,
+        "mundialito": 0,
+        "mundialito_silver": 0,
+        "spoon": 0,
+        "cartonato": 0
+      }
     },
     {
       "id": "m_makako",
@@ -797,7 +849,20 @@
             }
           ]
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 1,
+        "championship_silver": 2,
+        "championship_bronze": 0,
+        "cup": 1,
+        "cup_silver": 0,
+        "supercup": 0,
+        "supercup_silver": 0,
+        "mundialito": 0,
+        "mundialito_silver": 0,
+        "spoon": 1,
+        "cartonato": 0
+      }
     },
     {
       "id": "m_valery",
@@ -945,7 +1010,20 @@
             }
           ]
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 1,
+        "championship_silver": 0,
+        "championship_bronze": 2,
+        "cup": 0,
+        "cup_silver": 2,
+        "supercup": 0,
+        "supercup_silver": 0,
+        "mundialito": 0,
+        "mundialito_silver": 0,
+        "spoon": 0,
+        "cartonato": 0
+      }
     },
     {
       "id": "m_sebba",
@@ -1077,7 +1155,20 @@
           "competitionId": 147883,
           "achievements": []
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 1,
+        "championship_silver": 0,
+        "championship_bronze": 1,
+        "cup": 0,
+        "cup_silver": 0,
+        "supercup": 0,
+        "supercup_silver": 1,
+        "mundialito": 0,
+        "mundialito_silver": 1,
+        "spoon": 0,
+        "cartonato": 0
+      }
     },
     {
       "id": "m_gigicholo",
@@ -1221,7 +1312,20 @@
             }
           ]
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 0,
+        "championship_silver": 1,
+        "championship_bronze": 0,
+        "cup": 1,
+        "cup_silver": 2,
+        "supercup": 0,
+        "supercup_silver": 1,
+        "mundialito": 0,
+        "mundialito_silver": 0,
+        "spoon": 1,
+        "cartonato": 2
+      }
     },
     {
       "id": "m_pippo",
@@ -1356,7 +1460,20 @@
           "competitionId": 147885,
           "achievements": []
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 0,
+        "championship_silver": 0,
+        "championship_bronze": 0,
+        "cup": 1,
+        "cup_silver": 0,
+        "supercup": 0,
+        "supercup_silver": 1,
+        "mundialito": 0,
+        "mundialito_silver": 0,
+        "spoon": 3,
+        "cartonato": 1
+      }
     },
     {
       "id": "m_compagno",
@@ -1416,7 +1533,20 @@
           "competitionId": 147885,
           "achievements": []
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 0,
+        "championship_silver": 0,
+        "championship_bronze": 0,
+        "cup": 0,
+        "cup_silver": 0,
+        "supercup": 0,
+        "supercup_silver": 0,
+        "mundialito": 0,
+        "mundialito_silver": 0,
+        "spoon": 0,
+        "cartonato": 0
+      }
     },
     {
       "id": "m_scurcio",
@@ -1557,7 +1687,20 @@
           "competitionId": 147883,
           "achievements": []
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 0,
+        "championship_silver": 0,
+        "championship_bronze": 2,
+        "cup": 0,
+        "cup_silver": 1,
+        "supercup": 0,
+        "supercup_silver": 0,
+        "mundialito": 0,
+        "mundialito_silver": 0,
+        "spoon": 1,
+        "cartonato": 0
+      }
     },
     {
       "id": "m_avvisatina",
@@ -1690,7 +1833,20 @@
             }
           ]
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 0,
+        "championship_silver": 0,
+        "championship_bronze": 1,
+        "cup": 0,
+        "cup_silver": 1,
+        "supercup": 0,
+        "supercup_silver": 0,
+        "mundialito": 0,
+        "mundialito_silver": 0,
+        "spoon": 1,
+        "cartonato": 0
+      }
     },
     {
       "id": "m_tazio",
@@ -1786,7 +1942,20 @@
           "competitionId": 147889,
           "achievements": []
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 0,
+        "championship_silver": 0,
+        "championship_bronze": 1,
+        "cup": 0,
+        "cup_silver": 0,
+        "supercup": 0,
+        "supercup_silver": 0,
+        "mundialito": 0,
+        "mundialito_silver": 0,
+        "spoon": 1,
+        "cartonato": 1
+      }
     },
     {
       "id": "m_gizzagustacito",
@@ -1831,7 +2000,20 @@
             }
           ]
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 0,
+        "championship_silver": 0,
+        "championship_bronze": 1,
+        "cup": 0,
+        "cup_silver": 0,
+        "supercup": 0,
+        "supercup_silver": 0,
+        "mundialito": 0,
+        "mundialito_silver": 0,
+        "spoon": 0,
+        "cartonato": 0
+      }
     },
     {
       "id": "m_vannicosebbi",
@@ -1871,7 +2053,20 @@
             }
           ]
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 0,
+        "championship_silver": 0,
+        "championship_bronze": 0,
+        "cup": 0,
+        "cup_silver": 0,
+        "supercup": 0,
+        "supercup_silver": 0,
+        "mundialito": 0,
+        "mundialito_silver": 0,
+        "spoon": 0,
+        "cartonato": 1
+      }
     },
     {
       "id": "m_makakocompagno",
@@ -1907,7 +2102,20 @@
             }
           ]
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 0,
+        "championship_silver": 1,
+        "championship_bronze": 0,
+        "cup": 0,
+        "cup_silver": 0,
+        "supercup": 0,
+        "supercup_silver": 0,
+        "mundialito": 0,
+        "mundialito_silver": 0,
+        "spoon": 0,
+        "cartonato": 0
+      }
     },
     {
       "id": "m_matteone",
@@ -1935,7 +2143,20 @@
           "competitionId": 147883,
           "achievements": []
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 0,
+        "championship_silver": 0,
+        "championship_bronze": 0,
+        "cup": 0,
+        "cup_silver": 0,
+        "supercup": 0,
+        "supercup_silver": 0,
+        "mundialito": 0,
+        "mundialito_silver": 0,
+        "spoon": 0,
+        "cartonato": 0
+      }
     },
     {
       "id": "m_erboro",
@@ -1971,7 +2192,20 @@
             }
           ]
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 0,
+        "championship_silver": 0,
+        "championship_bronze": 0,
+        "cup": 0,
+        "cup_silver": 0,
+        "supercup": 0,
+        "supercup_silver": 0,
+        "mundialito": 0,
+        "mundialito_silver": 0,
+        "spoon": 1,
+        "cartonato": 0
+      }
     },
     {
       "id": "m_zatte",
@@ -2000,7 +2234,20 @@
           "achievements": [],
           "in_progress": true
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 0,
+        "championship_silver": 0,
+        "championship_bronze": 0,
+        "cup": 0,
+        "cup_silver": 0,
+        "supercup": 0,
+        "supercup_silver": 0,
+        "mundialito": 0,
+        "mundialito_silver": 0,
+        "spoon": 0,
+        "cartonato": 0
+      }
     },
     {
       "id": "m_makakoleone",
@@ -2029,7 +2276,20 @@
           "achievements": [],
           "in_progress": true
         }
-      ]
+      ],
+      "trophies": {
+        "championship": 0,
+        "championship_silver": 0,
+        "championship_bronze": 0,
+        "cup": 0,
+        "cup_silver": 0,
+        "supercup": 0,
+        "supercup_silver": 0,
+        "mundialito": 0,
+        "mundialito_silver": 0,
+        "spoon": 0,
+        "cartonato": 0
+      }
     }
   ],
   "competitions": [
@@ -2071,7 +2331,7 @@
           "coach": "sebbadavid",
           "managerId": "m_sebba",
           "points": 0.0,
-          "logo": "assets/teams/2545541_03768647.png"
+          "logo": "assets/teams/2545541_04342571.png"
         },
         {
           "rank": 5,
@@ -2859,7 +3119,7 @@
           "coach": "Sebbadavid",
           "managerId": "m_sebba",
           "points": 38.0,
-          "logo": "assets/teams/2545541_03768647.png"
+          "logo": "assets/teams/2545541_04342571.png"
         },
         {
           "rank": 11,

@@ -1,4 +1,5 @@
 import { showToast } from '@/ui';
+import { LEAGUE } from '@/config';
 
 /**
  * Direct file download via anchor tag (bypasses OS Share Sheet completely)
@@ -18,7 +19,7 @@ export function downloadBlob(blob: Blob, filename: string): void {
 /**
  * Copies a PNG blob directly to the system clipboard
  */
-export async function copyBlobToClipboard(blob: Blob, fallbackFilename = 'insalatlas_scheda.png'): Promise<boolean> {
+export async function copyBlobToClipboard(blob: Blob, fallbackFilename = `${LEAGUE.filePrefix}_scheda.png`): Promise<boolean> {
   try {
     if (typeof navigator !== 'undefined' && navigator.clipboard && typeof ClipboardItem !== 'undefined') {
       await navigator.clipboard.write([
@@ -72,7 +73,7 @@ export async function renderNodeToCanvas(
 
   // 2. Stage off-screen container invisible to user
   const container = document.createElement('div');
-  container.id = 'insalatlas-export-staging-container';
+  container.id = 'league-export-staging-container';
   container.style.position = 'fixed';
   container.style.left = '-10000px';
   container.style.top = '0';

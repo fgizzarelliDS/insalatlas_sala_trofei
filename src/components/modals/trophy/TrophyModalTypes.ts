@@ -2,7 +2,18 @@
  * Types and data models for the Interactive Trophy History Modals
  */
 
-export type TrophyModalKey = 'seasons' | 'scudetti' | 'cups' | 'mundialito' | 'spoons' | 'cartonato';
+export type TrophyModalKey =
+  | 'seasons'
+  | 'scudetti'
+  | 'championship'
+  | 'cups'
+  | 'cup'
+  | 'supercup'
+  | 'mundialito'
+  | 'spoons'
+  | 'spoon'
+  | 'cartonato'
+  | (string & {});
 
 export type CupSubTab = 'coppa' | 'supercoppa';
 

@@ -4,6 +4,7 @@ import {
   getCompletedChampionships,
   resolveManagerRecordCrest
 } from './helpers';
+import { LEAGUE } from '@/config';
 
 /**
  * Computes all records in the 'h2h' (head-to-head) category:
@@ -107,7 +108,7 @@ export function computeH2HRecords(
       primaryHolders,
       primaryHolder: primaryHolders[0],
       runnerUps,
-      description: 'Il maggior divario di punti registrato tra due squadre al termine di una singola stagione di Serie Atlas.'
+      description: `Il maggior divario di punti registrato tra due squadre al termine di una singola stagione di ${LEAGUE.brand.championshipLabel || LEAGUE.brand.name}.`
     });
   }
 
@@ -179,7 +180,7 @@ export function computeH2HRecords(
 
     records.push({
       id: 'most_frequent_rivalry',
-      title: 'Duello Più Frequente in Serie Atlas',
+      title: `Duello Più Frequente in ${LEAGUE.brand.championshipLabel || LEAGUE.brand.name}`,
       category: 'h2h',
       icon: 'fa-solid fa-handshake-angle',
       watermark: '⚔️',

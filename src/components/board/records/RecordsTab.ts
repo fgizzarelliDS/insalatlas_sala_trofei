@@ -1,4 +1,5 @@
 import { state } from '@/state';
+import { LEAGUE } from '@/config';
 import { computeAllLeagueRecords, filterRecordsByCategory } from '@/analytics/records';
 import { getLeagueYearSpan } from '@/analytics/records/helpers';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
@@ -516,7 +517,7 @@ export function renderRecordsContentHTML(
             </span>
           </h2>
           <p class="text-xs" style="color: var(--text-muted);">
-            I numeri, le imprese e le sventure all-time che hanno fatto la storia della Serie Atlas (${leagueSpan.spanText}).
+            I numeri, le imprese e le sventure all-time che hanno fatto la storia della ${LEAGUE.brand.championshipLabel || LEAGUE.brand.name} (${leagueSpan.spanText}).
           </p>
         </div>
 

@@ -1,4 +1,4 @@
-import type { CompetitionRecord, Manager } from '@/types';
+import type { CompetitionRecord, Manager, CompetitionDefinition } from '@/types';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
 import type { CupSubTab, TrophyEditionParticipant } from './TrophyModalTypes';
 
@@ -538,3 +538,99 @@ export function renderSeasonsOverviewRollHTML(competitions: CompetitionRecord[],
     `;
   }).join('');
 }
+
+/**
+ * Generic Competition Roll of Honor renderer based on archetype
+ */
+export function renderGenericCompetitionRollHTML(
+  comp: CompetitionDefinition,
+  competitions: CompetitionRecord[],
+  managers: Manager[]
+): string {
+  const targetComps = (competitions || [])
+    .filter(c => {
+      if (c.in_progress || c.status === 'in_progress') return false;
+      if (c.category === comp.category) return true;
+      const name = (c.name || '').toLowerCase();
+      return comp.nameKeywords && comp.nameKeywords.some(kw => name.includes(kw));
+    })
+    .sort((a, b) => (b.season || '').localeCompare(a.season || ''));
+
+  if (targetComps.length === 0) {
+    return `<div class="text-center py-8 text-xs opacity-60">Nessuna edizione conclusa di ${comp.name} in archivio.</div>`;
+  }
+
+  return targetComps.map(c => {
+    const validRanks = (c.ranking || []).filter(r => r.rank !== null && r.rank !== undefined && r.rank > 0);
+    const rank1 = validRanks.find(r => r.rank === 1);
+    const rank2 = validRanks.find(r => r.rank === 2);
+    const rank3 = validRanks.find(r => r.rank === 3);
+
+    const p1 = rank1 ? buildParticipant(rank1.managerId, rank1.coach, rank1.teamName, rank1.points, rank1.logo, managers) : undefined;
+    const p2 = rank2 ? buildParticipant(rank2.managerId, rank2.coach, rank2.teamName, rank2.points, rank2.logo, managers) : undefined;
+    const p3 = rank3 ? buildParticipant(rank3.managerId, rank3.coach, rank3.teamName, rank3.points, rank3.logo, managers) : undefined;
+
+    let bodyHTML = '';
+
+    if (comp.type === 'tier3') {
+      bodyHTML = `
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          ${p1 ? renderPodiumCard(p1, '🥇 1° Posto', 'bg-amber-500/20 text-amber-300 border border-amber-500/40') : ''}
+          ${p2 ? renderPodiumCard(p2, '🥈 2° Posto', 'bg-slate-400/20 text-slate-300 border border-slate-400/30') : ''}
+          ${p3 ? renderPodiumCard(p3, '🥉 3° Posto', 'bg-amber-800/20 text-amber-600 border border-amber-800/30') : ''}
+          ${(!p1 && !p2 && !p3) ? `<div class="text-[11px] text-center py-2 opacity-60 col-span-full">Dati podio non registrati.</div>` : ''}
+        </div>
+      `;
+    } else if (comp.type === 'tier2') {
+      bodyHTML = `
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          ${p1 ? renderParticipantRow(p1, '🏆 Vincitore', 'bg-amber-500/20 text-amber-300 border border-amber-500/40', undefined, false) : ''}
+          ${p2 ? renderParticipantRow(p2, '🥈 Finalista', 'bg-slate-400/20 text-slate-300 border border-slate-400/30', undefined, false) : ''}
+          ${(!p1 && !p2) ? `<div class="text-[11px] text-center py-2 opacity-60 col-span-full">Dati finalisti non registrati.</div>` : ''}
+        </div>
+      `;
+    } else if (comp.type === 'single') {
+      bodyHTML = `
+        <div class="space-y-1.5">
+          ${p1 ? renderParticipantRow(p1, '🏆 Vincitore', 'bg-amber-500/20 text-amber-300 border border-amber-500/40', undefined, false) : '<div class="text-[11px] text-center py-2 opacity-60">Dato non registrato.</div>'}
+        </div>
+      `;
+    } else if (comp.type === 'dishonor') {
+      const maxRank = validRanks.length > 0 ? Math.max(...validRanks.map(r => r.rank!)) : 0;
+      const lastItem = validRanks.find(r => r.rank === maxRank);
+      const lastP = lastItem ? buildParticipant(lastItem.managerId, lastItem.coach, lastItem.teamName, lastItem.points, lastItem.logo, managers) : undefined;
+      bodyHTML = `
+        <div class="space-y-1.5">
+          ${lastP ? renderParticipantRow(lastP, `🥄 #${maxRank}° Ultimo Posto`, 'bg-rose-500/20 text-rose-400 border border-rose-500/40', undefined, false) : '<div class="text-[11px] text-center py-2 opacity-60">Dato non disponibile.</div>'}
+        </div>
+      `;
+    } else {
+      bodyHTML = `
+        <div class="space-y-1.5">
+          ${p1 ? renderParticipantRow(p1, '📦 Assegnato', 'bg-blue-900/30 text-blue-400 border border-blue-800/40', undefined, false) : '<div class="text-[11px] text-center py-2 opacity-60">Dato non disponibile.</div>'}
+        </div>
+      `;
+    }
+
+    return `
+      <div class="p-3.5 sm:p-4 rounded-2xl border space-y-2.5 transition"
+        style="background-color: var(--table-surface); border-color: var(--table-border);">
+        <div class="flex items-center justify-between gap-2 border-b pb-2" style="border-color: var(--table-border);">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-md border text-amber-400 bg-amber-500/10 border-amber-500/30">
+              ${c.season}
+            </span>
+            <span class="text-xs font-bold" style="color: var(--text-main);">${c.name}</span>
+          </div>
+          <button type="button" onclick="window.navigateToSeasonStandings && window.navigateToSeasonStandings('${c.season}')"
+            class="text-[10px] font-bold text-amber-400 hover:underline flex items-center gap-1 cursor-pointer">
+            <span>Classifica</span>
+            <i class="fa-solid fa-arrow-right text-[8px]"></i>
+          </button>
+        </div>
+        ${bodyHTML}
+      </div>
+    `;
+  }).join('');
+}
+

@@ -1,5 +1,5 @@
 /**
- * InsalAtlas Vector Team Crest Fallback Engine
+ * Vector Team Crest Fallback Engine
  * Provides deterministic, high-definition SVG crests for teams lacking custom logos.
  */
 

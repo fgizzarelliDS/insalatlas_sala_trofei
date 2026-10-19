@@ -18,6 +18,7 @@ import { renderMultiManagerRadarSVG } from '@/components/modals/h2h/MultiManager
 import { computeH2HAxes, renderH2HRadarSVG } from '@/components/modals/h2h/HeadToHeadRadar';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
 import { renderNodeToCanvas } from './core';
+import { LEAGUE, LEAGUE_SITE_HOST } from '@/config';
 
 const STORY_WIDTH = 1080;
 const STORY_HEIGHT = 1920;
@@ -32,7 +33,7 @@ function createStoryContainer(title: string, subtitle: string): {
   contentBox: HTMLDivElement;
 } {
   const container = document.createElement('div');
-  container.id = 'insalatlas-story-export-container';
+  container.id = 'league-story-export-container';
   container.style.width = `${STORY_WIDTH}px`;
   container.style.height = `${STORY_HEIGHT}px`;
   container.style.maxHeight = `${STORY_HEIGHT}px`;
@@ -64,7 +65,7 @@ function createStoryContainer(title: string, subtitle: string): {
       <img src="favicon-64x64.png" alt="Logo" class="w-10 h-10 object-contain drop-shadow-md">
       <div>
         <h1 class="font-sport font-black text-2xl tracking-wider uppercase text-amber-400 leading-none">
-          INSALATLAS
+          ${LEAGUE.brand.name.toUpperCase()}
         </h1>
         <p class="text-xs uppercase tracking-widest text-slate-400 font-bold mt-1">
           ${subtitle}
@@ -88,9 +89,9 @@ function createStoryContainer(title: string, subtitle: string): {
   footerBar.innerHTML = `
     <div class="flex items-center gap-2">
       <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-      <span>Sala Trofei Ufficiale</span>
+      <span>${LEAGUE.brand.mainTitle || 'Sala Trofei'} Ufficiale</span>
     </div>
-    <span class="text-slate-500">insalatlas.it</span>
+    <span class="text-slate-500">${LEAGUE_SITE_HOST}</span>
   `;
   container.appendChild(footerBar);
 
@@ -201,7 +202,7 @@ export async function renderManagerStoryCanvas(manager: Manager): Promise<HTMLCa
     <!-- Rating Banner -->
     <div class="w-full p-4 rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-500/15 via-slate-900/80 to-amber-500/15 text-center shadow-xl">
       <div class="text-xs uppercase tracking-widest text-amber-400 font-extrabold mb-1">
-        Rating Storico InsalAtlas
+        Rating Storico ${LEAGUE.brand.name}
       </div>
       <div class="font-sport font-black text-5xl text-amber-400 font-mono tracking-tight drop-shadow-md">
         ${formatScore(score)} <span class="text-2xl text-amber-300">PT</span>
@@ -580,7 +581,8 @@ export async function renderRecordStoryCanvas(record: LeagueRecord): Promise<HTM
  * 5. Renders High-Definition Vertical 9:16 Story for Marquee Records Summary Poster
  */
 export async function renderRecordsSummaryStoryCanvas(recordsList?: LeagueRecord[]): Promise<HTMLCanvasElement> {
-  const { container, contentBox } = createStoryContainer('Hall of Fame', 'Top Primati della Serie Atlas');
+  const champLabel = LEAGUE.brand.championshipLabel || LEAGUE.brand.name;
+  const { container, contentBox } = createStoryContainer('Hall of Fame', `Top Primati di ${champLabel}`);
   contentBox.className = 'flex-1 flex flex-col justify-between py-3 w-full max-w-[960px] mx-auto';
 
   const allRecords = recordsList || computeAllLeagueRecords(state.managers, state.competitions);
@@ -643,7 +645,7 @@ export async function renderRecordsSummaryStoryCanvas(recordsList?: LeagueRecord
         Hall of Fame
       </h1>
       <p class="text-sm text-slate-400 font-bold mt-1.5">
-        Le grandi pietre miliari e le leggende della Serie Atlas
+        Le grandi pietre miliari e le leggende di ${champLabel}
       </p>
     </div>
 

@@ -76,6 +76,15 @@ export function initModalListeners(): void {
       }
     }
 
+    const seasonStepperDropdown = document.getElementById('season-stepper-dropdown-menu');
+    if (seasonStepperDropdown && !seasonStepperDropdown.classList.contains('hidden')) {
+      const target = e.target as HTMLElement;
+      if (!seasonStepperDropdown.contains(target) && !target.closest('#btn-season-stepper-dropdown')) {
+        seasonStepperDropdown.classList.add('hidden');
+        document.getElementById('season-stepper-chevron')?.classList.remove('rotate-180');
+      }
+    }
+
     const targetEl = e.target as HTMLElement;
     if (!targetEl.closest('.record-card-actions')) {
       closeAllRecordShareDropdowns();
@@ -86,6 +95,12 @@ export function initModalListeners(): void {
   window.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
       closeAllRecordShareDropdowns();
+      const seasonStepperDropdown = document.getElementById('season-stepper-dropdown-menu');
+      if (seasonStepperDropdown && !seasonStepperDropdown.classList.contains('hidden')) {
+        seasonStepperDropdown.classList.add('hidden');
+        document.getElementById('season-stepper-chevron')?.classList.remove('rotate-180');
+        return;
+      }
       const shareDropdown = document.getElementById('share-dropdown-menu');
       if (shareDropdown && !shareDropdown.classList.contains('hidden')) {
         closeShareDropdown();

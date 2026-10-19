@@ -1,5 +1,6 @@
-import { LEAGUE } from '@/config';
+import { LEAGUE, getCompetitionDef } from '@/config';
 import { state } from '@/state';
+import { getManagerTrophyCount } from '@/score';
 import type { CompetitionRecord, Manager } from '@/types';
 import type { TrophyModalKey, CupSubTab } from './TrophyModalTypes';
 
@@ -20,7 +21,8 @@ export function getTrophyHeaderConfig(
   const mgrs = managers || [];
 
   switch (key) {
-    case 'scudetti': {
+    case 'scudetti':
+    case 'championship': {
       const completedChamps = comps.filter(
         c => !c.in_progress && c.status !== 'in_progress' && (c.category === 'Campionato' || (c.name && c.name.toLowerCase().includes('serie')))
       );
@@ -32,8 +34,11 @@ export function getTrophyHeaderConfig(
         badgeLabel: `${count} Edizioni Concluse`
       };
     }
-    case 'cups': {
-      if (subTab === 'supercoppa') {
+    case 'cups':
+    case 'cup':
+    case 'supercup': {
+      const effectiveSubTab = key === 'supercup' ? 'supercoppa' : key === 'cup' ? 'coppa' : subTab;
+      if (effectiveSubTab === 'supercoppa') {
         const completedSuper = comps.filter(
           c => !c.in_progress && c.status !== 'in_progress' && (c.category === 'Supercoppa' || (c.name && c.name.toLowerCase().includes('supercoppa')))
         );
@@ -72,7 +77,8 @@ export function getTrophyHeaderConfig(
         badgeLabel: `${count} Edizioni Concluse`
       };
     }
-    case 'spoons': {
+    case 'spoons':
+    case 'spoon': {
       const completedChamps = comps.filter(
         c => !c.in_progress && c.status !== 'in_progress' && (c.category === 'Campionato' || (c.name && c.name.toLowerCase().includes('serie')))
       );
@@ -98,6 +104,24 @@ export function getTrophyHeaderConfig(
     }
     case 'seasons':
     default: {
+      const comp = getCompetitionDef(key);
+      if (comp) {
+        const completedComps = comps.filter(c => {
+          if (c.in_progress || c.status === 'in_progress') return false;
+          if (c.category === comp.category) return true;
+          const name = (c.name || '').toLowerCase();
+          return comp.nameKeywords && comp.nameKeywords.some(kw => name.includes(kw));
+        });
+        const count = completedComps.length || mgrs.reduce((sum, m) => sum + getManagerTrophyCount(m, comp.id, 'gold'), 0);
+        const icon = comp.type === 'dishonor' ? '🥄' : comp.trophyIcon.includes('super') ? '⭐' : comp.trophyIcon.includes('mundial') ? '🌍' : '🏆';
+        return {
+          icon,
+          title: `Albo d’Oro ${comp.name}`,
+          subtitle: `Albo d’oro e verdetti storici di ${comp.name} per ogni stagione.`,
+          badgeLabel: `${count} Edizioni Concluse`
+        };
+      }
+
       const distinctSeasons = Array.from(new Set(comps.map(c => c.season).filter(Boolean)));
       const completedSeasons = distinctSeasons.filter(s =>
         !comps.some(c => c.season === s && (c.in_progress || c.status === 'in_progress'))

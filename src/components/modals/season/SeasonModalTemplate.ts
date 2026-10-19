@@ -1,6 +1,7 @@
 import type { ParsedFantacalcioData, ParsedChampionshipRow } from '@/utils/fantacalcioParser';
 import { getSuggestedNextSeason } from '@/utils/fantacalcioParser';
 import { state } from '@/state';
+import { LEAGUE } from '@/config';
 
 /**
  * Builds HTML option tags for manager dropdowns
@@ -97,7 +98,7 @@ export function renderSeasonModalContent(
   initialData?: ParsedFantacalcioData
 ): string {
   const suggestedSeason = initialData?.season || getSuggestedNextSeason(state.competitions);
-  const suggestedCompName = initialData?.competitionName || `Serie Atlas ${suggestedSeason.replace('/', '-')}`;
+  const suggestedCompName = initialData?.competitionName || `${LEAGUE.brand.championshipLabel || 'Serie ' + LEAGUE.brand.name} ${suggestedSeason.replace('/', '-')}`;
   const rows = initialData?.rows;
   const activeCount = rows && rows.length >= 6 ? rows.length : teamCount;
 
@@ -226,7 +227,7 @@ export function renderSeasonModalContent(
                 <th class="py-2 px-2 text-center w-12 sm:w-16">Pos</th>
                 <th class="py-2 px-2 text-left">Squadra (Testo Libero)</th>
                 <th class="py-2 px-2 text-left">Coach (Fantacalcio)</th>
-                <th class="py-2 px-2 text-left min-w-[140px] sm:min-w-[170px]">Mister InsalAtlas</th>
+                <th class="py-2 px-2 text-left min-w-[140px] sm:min-w-[170px]">Mister ${LEAGUE.brand.name}</th>
                 <th class="py-2 px-2 text-right w-20 sm:w-24">Punti</th>
               </tr>
             </thead>
@@ -252,9 +253,9 @@ export function renderSeasonModalContent(
         <div id="season-cups-section-content" class="p-3.5 space-y-3 border-t hidden" style="border-color: var(--table-border);">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             
-            <!-- Coppa InsalAtlas -->
+            <!-- Coppa ${LEAGUE.brand.name} -->
             <div class="p-3 rounded-xl border space-y-2" style="background: rgba(0,0,0,0.03); border-color: var(--table-border);">
-              <span class="text-xs font-bold block text-blue-400">🏆 Coppa InsalAtlas</span>
+              <span class="text-xs font-bold block text-blue-400">🏆 Coppa ${LEAGUE.brand.name}</span>
               <div class="grid grid-cols-2 gap-2 text-xs">
                 <div>
                   <label class="block text-[9px] uppercase font-bold opacity-70 mb-0.5">Vincitore (Oro)</label>
@@ -273,9 +274,9 @@ export function renderSeasonModalContent(
               </div>
             </div>
 
-            <!-- Supercoppa InsalAtlas -->
+            <!-- Supercoppa ${LEAGUE.brand.name} -->
             <div class="p-3 rounded-xl border space-y-2" style="background: rgba(0,0,0,0.03); border-color: var(--table-border);">
-              <span class="text-xs font-bold block text-amber-400">⭐ Supercoppa InsalAtlas</span>
+              <span class="text-xs font-bold block text-amber-400">⭐ Supercoppa ${LEAGUE.brand.name}</span>
               <div class="grid grid-cols-2 gap-2 text-xs">
                 <div>
                   <label class="block text-[9px] uppercase font-bold opacity-70 mb-0.5">Vincitore (Oro)</label>

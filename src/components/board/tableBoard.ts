@@ -1,10 +1,17 @@
-import type { SortMode } from '@/types';
+import type { SortMode, CompetitionDefinition, Manager } from '@/types';
 import { state } from '@/state';
 import { showToast } from '@/ui';
 import { renderTrophySVG, renderCoachBanner } from '@/trophies';
-import { calculateManagerScore, formatScore, getSortedManagers } from '@/score';
+import {
+  calculateManagerScore,
+  formatScore,
+  getSortedManagers,
+  getManagerTrophyCount,
+  getManagerTotalTrophies
+} from '@/score';
 import { openManagerModal, openProfileModal } from '@/components/modals';
-import { LEAGUE, ALBO_COLUMNS } from '@/config';
+import { LEAGUE, ALBO_COLUMNS, getActiveCompetitions, getCompetitionDef } from '@/config';
+import { renderTopStatsCards } from '@/components/board/statsCounter';
 
 /**
  * Changes active sorting criterion and updates table
@@ -114,46 +121,219 @@ export function toggleDisplayMode(): void {
 /**
  * Synchronizes the --albo-cols CSS variable with enabled columns in ALBO_COLUMNS
  */
+/**
+ * Synchronizes the --albo-cols CSS variable and competition column tracks with ALBO_COLUMNS
+ */
 export function syncAlboGridColumns(): void {
   if (typeof document === 'undefined' || !document.documentElement?.style?.setProperty) return;
+  const isMobile = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(max-width: 767px)').matches : false;
+  for (const comp of getActiveCompetitions()) {
+    const track = isMobile ? `${comp.grid.mobileWidthPx}px` : comp.grid.desktopTrack;
+    document.documentElement.style.setProperty(`--col-${comp.id}`, track);
+  }
   const colsTemplate = ALBO_COLUMNS.map(c => `var(${c.cssVar})`).join(' ');
   document.documentElement.style.setProperty('--albo-cols', colsTemplate);
 }
 
 /**
- * Synchronizes header columns in #albo-table-header with ALBO_COLUMNS
+ * Synchronizes header columns in #albo-table-header dynamically with ALBO_COLUMNS
  */
 export function renderBoardHeader(): void {
   const header = document.getElementById('albo-table-header');
   if (!header) return;
 
   header.innerHTML = ALBO_COLUMNS.map(col => {
-    const title = state.titles[col.titleKey] || col.defaultTitle;
-    switch (col.key) {
-      case 'manager':
-        return `
-          <div id="th-col-1" data-title-key="col1" onblur="handleTitleBlur(this)"
-            class="sticky left-0 z-20 px-2 sm:pl-4 sm:pr-3 transition border-r shadow-[3px_0_6px_-2px_rgba(0,0,0,0.25)] text-[11px] sm:text-xs truncate self-stretch flex items-center"
-            style="background-color: var(--header-bg); border-color: rgba(255, 255, 255, 0.15);">
-            ${title}
+    const title = (state.titles as unknown as Record<string, string>)[col.titleKey] || col.defaultTitle;
+    if (col.key === 'manager') {
+      return `
+        <div id="th-col-1" data-title-key="col1" onblur="handleTitleBlur(this)"
+          class="sticky left-0 z-20 px-2 sm:pl-4 sm:pr-3 transition border-r shadow-[3px_0_6px_-2px_rgba(0,0,0,0.25)] text-[11px] sm:text-xs truncate self-stretch flex items-center"
+          style="background-color: var(--header-bg); border-color: rgba(255, 255, 255, 0.15);">
+          ${title}
+        </div>
+      `;
+    }
+    const padding = col.key === 'championship' ? 'px-1 sm:px-3' : col.key === 'cartonato' ? 'px-2' : ['supercup', 'mundialito'].includes(col.key) ? 'px-1' : '';
+    const extraClasses = ['supercup', 'mundialito'].includes(col.key) ? 'tracking-tight sm:tracking-wider truncate' : '';
+    return `<div id="th-col-${col.order}" data-title-key="${col.titleKey}" onblur="handleTitleBlur(this)" class="text-center ${padding} transition text-[11px] sm:text-xs ${extraClasses}">${title}</div>`;
+  }).join('');
+}
+
+/**
+ * Renders the sticky manager name, ranking and score cell
+ */
+function renderManagerCell(
+  m: Manager,
+  index: number,
+  totalMajor: number,
+  score: number
+): string {
+  return `
+    <div class="sticky left-0 z-10 px-2 sm:pl-4 sm:pr-3 self-stretch flex items-center justify-between pb-2 overflow-hidden border-r shadow-[3px_0_6px_-2px_rgba(0,0,0,0.20)]"
+         style="background-color: var(--table-surface); border-color: var(--shelf-line);">
+      <div class="flex items-center gap-1.5 sm:gap-2.5 overflow-hidden w-full">
+        <span class="w-5 h-5 sm:w-6 sm:h-6 rounded bg-black/20 flex items-center justify-center font-sport font-bold text-[10px] sm:text-xs opacity-75 shrink-0">
+          ${index + 1}
+        </span>
+        <div class="flex flex-col justify-center min-w-0 flex-1">
+          <div class="font-sport font-bold text-xs sm:text-base tracking-normal uppercase leading-tight truncate" style="color: var(--text-main);" title="${m.name} (${m.years})">
+            ${m.name} <span class="font-semibold text-[10px] sm:text-xs opacity-75">(${m.years})</span>
+          </div>
+          <div class="text-[10px] sm:text-[11px] font-bold leading-tight mt-0.5 flex items-center gap-1 sm:gap-1.5 truncate">
+            ${totalMajor > 0 ? `
+              <span class="font-extrabold shrink-0" style="color: var(--badge-trophy, #b45309);">🏆 ${totalMajor}</span>
+              <span class="opacity-40">•</span>
+            ` : ''}
+            <span class="text-amber-500 font-extrabold shrink-0">⭐ ${formatScore(score)} pt</span>
+          </div>
+        </div>
+      </div>
+
+      ${state.isEditMode ? `
+        <div class="flex items-center gap-1 shrink-0 ml-1">
+          <button class="w-5 h-5 sm:w-6 sm:h-6 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500 hover:text-slate-950 flex items-center justify-center transition shrink-0">
+            <i class="fa-solid fa-pen text-[9px] sm:text-[10px]"></i>
+          </button>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+/**
+ * Generic Cell Dispatcher: Renders any competition cell based on its CompetitionDefinition archetype
+ */
+function renderCompetitionCell(
+  m: Manager,
+  comp: CompetitionDefinition,
+  displayMode: 'multiple' | 'compact'
+): string {
+  switch (comp.type) {
+    case 'tier3': {
+      const gold = getManagerTrophyCount(m, comp.id, 'gold');
+      const silver = getManagerTrophyCount(m, comp.id, 'silver');
+      const bronze = getManagerTrophyCount(m, comp.id, 'bronze');
+      let cellInner = '';
+      if (displayMode === 'multiple') {
+        const items: string[] = [];
+        for (let i = 0; i < gold; i++) items.push(renderTrophySVG(comp.trophyIcon));
+        for (let i = 0; i < silver; i++) items.push(renderTrophySVG(comp.silverTrophyIcon || 'silver_cup'));
+        for (let i = 0; i < bronze; i++) items.push(renderTrophySVG(comp.bronzeTrophyIcon || 'bronze_cup'));
+        cellInner = items.length
+          ? `<div class="flex flex-nowrap items-end justify-center gap-1.5 overflow-visible pb-0">${items.join('')}</div>`
+          : '';
+      } else {
+        cellInner = `
+          <div class="flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base font-extrabold pb-2">
+            ${gold ? `<span class="inline-flex items-center gap-1 text-amber-400">${renderTrophySVG(comp.trophyIcon, 'compact')}<span>${gold}</span></span>` : ''}
+            ${silver ? `<span class="inline-flex items-center gap-1 text-slate-300">${renderTrophySVG(comp.silverTrophyIcon || 'silver_cup', 'compact')}<span>${silver}</span></span>` : ''}
+            ${bronze ? `<span class="inline-flex items-center gap-1 text-amber-600">${renderTrophySVG(comp.bronzeTrophyIcon || 'bronze_cup', 'compact')}<span>${bronze}</span></span>` : ''}
           </div>
         `;
-      case 'championship':
-        return `<div id="th-col-2" data-title-key="col2" onblur="handleTitleBlur(this)" class="text-center px-1 sm:px-3 transition text-[11px] sm:text-xs">${title}</div>`;
-      case 'cup':
-        return `<div id="th-col-3" data-title-key="col3" onblur="handleTitleBlur(this)" class="text-center transition text-[11px] sm:text-xs">${title}</div>`;
-      case 'supercup':
-        return `<div id="th-col-4" data-title-key="col4" onblur="handleTitleBlur(this)" class="text-center px-1 transition text-[10px] sm:text-xs tracking-tight sm:tracking-wider truncate">${title}</div>`;
-      case 'mundialito':
-        return `<div id="th-col-5" data-title-key="col5" onblur="handleTitleBlur(this)" class="text-center px-1 transition text-[10px] sm:text-xs tracking-tight sm:tracking-wider truncate">${title}</div>`;
-      case 'spoon':
-        return `<div id="th-col-6" data-title-key="col6" onblur="handleTitleBlur(this)" class="text-center transition text-[11px] sm:text-xs">${title}</div>`;
-      case 'cartonato':
-        return `<div id="th-col-7" data-title-key="col7" onblur="handleTitleBlur(this)" class="text-center transition text-[11px] sm:text-xs">${title}</div>`;
-      default:
-        return '';
+      }
+      return `
+        <div class="flex items-end justify-center min-h-[38px] px-1 sm:px-3 pb-0">
+          ${cellInner}
+        </div>
+      `;
     }
-  }).join('');
+
+    case 'tier2': {
+      const gold = getManagerTrophyCount(m, comp.id, 'gold');
+      const silver = getManagerTrophyCount(m, comp.id, 'silver');
+      let cellInner = '';
+      if (displayMode === 'multiple') {
+        const items: string[] = [];
+        for (let i = 0; i < gold; i++) items.push(renderTrophySVG(comp.trophyIcon));
+        for (let i = 0; i < silver; i++) items.push(renderTrophySVG(comp.silverTrophyIcon || 'coppa_silver'));
+        cellInner = items.length
+          ? `<div class="flex flex-nowrap items-end justify-center gap-1.5 pb-0">${items.join('')}</div>`
+          : '';
+      } else {
+        cellInner = `
+          <div class="flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base font-extrabold pb-2">
+            ${gold ? `<span class="inline-flex items-center gap-1 text-amber-400">${renderTrophySVG(comp.trophyIcon, 'compact')}<span>${gold}</span></span>` : ''}
+            ${silver ? `<span class="inline-flex items-center gap-1 text-slate-300">${renderTrophySVG(comp.silverTrophyIcon || 'coppa_silver', 'compact')}<span>${silver}</span></span>` : ''}
+          </div>
+        `;
+      }
+      return `
+        <div class="flex items-end justify-center min-h-[38px] pb-0">
+          ${cellInner}
+        </div>
+      `;
+    }
+
+    case 'single': {
+      const gold = getManagerTrophyCount(m, comp.id, 'gold');
+      let cellInner = '';
+      if (displayMode === 'multiple') {
+        const items: string[] = [];
+        for (let i = 0; i < gold; i++) items.push(renderTrophySVG(comp.trophyIcon));
+        cellInner = items.length
+          ? `<div class="flex flex-nowrap items-end justify-center gap-1 pb-0">${items.join('')}</div>`
+          : '';
+      } else {
+        const colorClass = comp.id === 'supercup' ? 'text-yellow-400' : comp.id === 'mundialito' ? 'text-cyan-400' : 'text-amber-400';
+        cellInner = gold ? `
+          <div class="flex items-center justify-center gap-1 text-sm sm:text-base font-extrabold ${colorClass} pb-2">
+            ${renderTrophySVG(comp.trophyIcon, 'compact')}<span>${gold}</span>
+          </div>
+        ` : '';
+      }
+      return `
+        <div class="flex items-end justify-center min-h-[38px] pb-0">
+          ${cellInner}
+        </div>
+      `;
+    }
+
+    case 'dishonor': {
+      const spoon = getManagerTrophyCount(m, comp.id, 'gold');
+      let cellInner = '';
+      if (displayMode === 'multiple') {
+        const items: string[] = [];
+        for (let i = 0; i < spoon; i++) items.push(renderTrophySVG(comp.trophyIcon));
+        cellInner = items.length
+          ? `<div class="flex flex-nowrap items-end justify-center gap-1 pb-0">${items.join('')}</div>`
+          : '';
+      } else {
+        cellInner = spoon ? `
+          <div class="flex items-center justify-center gap-1 text-sm sm:text-base font-extrabold text-amber-600 pb-2">
+            ${renderTrophySVG(comp.trophyIcon, 'compact')}<span>${spoon}</span>
+          </div>
+        ` : '';
+      }
+      return `
+        <div class="flex items-end justify-center min-h-[38px] pb-0">
+          ${cellInner}
+        </div>
+      `;
+    }
+
+    case 'banners': {
+      const count = getManagerTrophyCount(m, comp.id, 'gold');
+      const coaches = m.coach_banners || m.cartonato_coaches || [];
+      let cellInner = '';
+      if (count > 0 || coaches.length > 0) {
+        const bannersHTML: string[] = [];
+        if (coaches.length > 0) {
+          coaches.forEach(c => bannersHTML.push(renderCoachBanner(c)));
+        } else {
+          for (let i = 0; i < count; i++) bannersHTML.push(renderCoachBanner('CARTONATO'));
+        }
+        cellInner = `<div class="flex items-center gap-1.5 flex-nowrap max-w-full overflow-x-auto pb-1 scrollbar-none" style="justify-content: safe center;">${bannersHTML.join('')}</div>`;
+      }
+      return `
+        <div class="banners-cell flex items-center justify-center self-center px-1 sm:px-2 pb-2 min-h-[38px] w-full max-w-full overflow-hidden">
+          ${cellInner}
+        </div>
+      `;
+    }
+
+    default:
+      return '';
+  }
 }
 
 /**
@@ -163,6 +343,7 @@ export function renderBoardHeader(): void {
 export function renderBoard(): void {
   syncAlboGridColumns();
   renderBoardHeader();
+  renderTopStatsCards();
 
   const container = document.getElementById('managers-table-body');
   if (!container) return;
@@ -181,174 +362,20 @@ export function renderBoard(): void {
       }
     };
 
-    const totalMajor = (m.gold || 0) + (m.cup_gold || 0) + (m.supercup || 0) + (m.mundialito || 0);
+    const totalMajor = getManagerTotalTrophies(m);
     const score = calculateManagerScore(m);
 
-    // 1. Campionato
-    let champHTML = '';
-    if (state.displayMode === 'multiple') {
-      const items: string[] = [];
-      for (let i = 0; i < (m.gold || 0); i++) items.push(renderTrophySVG('gold_cup'));
-      for (let i = 0; i < (m.silver || 0); i++) items.push(renderTrophySVG('silver_cup'));
-      for (let i = 0; i < (m.bronze || 0); i++) items.push(renderTrophySVG('bronze_cup'));
-      champHTML = items.length
-        ? `<div class="flex flex-nowrap items-end justify-center gap-1.5 overflow-visible pb-0">${items.join('')}</div>`
-        : '';
-    } else {
-      champHTML = `
-        <div class="flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base font-extrabold pb-2">
-          ${m.gold ? `<span class="inline-flex items-center gap-1 text-amber-400">${renderTrophySVG('gold_cup', 'compact')}<span>${m.gold}</span></span>` : ''}
-          ${m.silver ? `<span class="inline-flex items-center gap-1 text-slate-300">${renderTrophySVG('silver_cup', 'compact')}<span>${m.silver}</span></span>` : ''}
-          ${m.bronze ? `<span class="inline-flex items-center gap-1 text-amber-600">${renderTrophySVG('bronze_cup', 'compact')}<span>${m.bronze}</span></span>` : ''}
-        </div>
-      `;
-    }
-
-    // 2. Cucchiaio
-    let spoonHTML = '';
-    if (state.displayMode === 'multiple') {
-      const items: string[] = [];
-      for (let i = 0; i < (m.spoon || 0); i++) items.push(renderTrophySVG('wooden_spoon'));
-      spoonHTML = items.length
-        ? `<div class="flex flex-nowrap items-end justify-center gap-1 pb-0">${items.join('')}</div>`
-        : '';
-    } else {
-      spoonHTML = m.spoon ? `
-        <div class="flex items-center justify-center gap-1 text-sm sm:text-base font-extrabold text-amber-600 pb-2">
-          ${renderTrophySVG('wooden_spoon', 'compact')}<span>${m.spoon}</span>
-        </div>
-      ` : '';
-    }
-
-    // 3. Coppa di Lega
-    let cupHTML = '';
-    if (state.displayMode === 'multiple') {
-      const items: string[] = [];
-      for (let i = 0; i < (m.cup_gold || 0); i++) items.push(renderTrophySVG('coppa_gold'));
-      for (let i = 0; i < (m.cup_silver || 0); i++) items.push(renderTrophySVG('coppa_silver'));
-      cupHTML = items.length
-        ? `<div class="flex flex-nowrap items-end justify-center gap-1.5 pb-0">${items.join('')}</div>`
-        : '';
-    } else {
-      cupHTML = `
-        <div class="flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base font-extrabold pb-2">
-          ${m.cup_gold ? `<span class="inline-flex items-center gap-1 text-amber-400">${renderTrophySVG('coppa_gold', 'compact')}<span>${m.cup_gold}</span></span>` : ''}
-          ${m.cup_silver ? `<span class="inline-flex items-center gap-1 text-slate-300">${renderTrophySVG('coppa_silver', 'compact')}<span>${m.cup_silver}</span></span>` : ''}
-        </div>
-      `;
-    }
-
-    // 4. Supercoppa
-    let superHTML = '';
-    if (state.displayMode === 'multiple') {
-      const items: string[] = [];
-      for (let i = 0; i < (m.supercup || 0); i++) items.push(renderTrophySVG('supercup'));
-      superHTML = items.length
-        ? `<div class="flex flex-nowrap items-end justify-center gap-1 pb-0">${items.join('')}</div>`
-        : '';
-    } else {
-      superHTML = m.supercup ? `
-        <div class="flex items-center justify-center gap-1 text-sm sm:text-base font-extrabold text-yellow-400 pb-2">
-          ${renderTrophySVG('supercup', 'compact')}<span>${m.supercup}</span>
-        </div>
-      ` : '';
-    }
-
-    // 5. Mundialito
-    let mundialitoHTML = '';
-    if (state.displayMode === 'multiple') {
-      const items: string[] = [];
-      for (let i = 0; i < (m.mundialito || 0); i++) items.push(renderTrophySVG('mundialito'));
-      mundialitoHTML = items.length
-        ? `<div class="flex flex-nowrap items-end justify-center gap-1.5 pb-0">${items.join('')}</div>`
-        : '';
-    } else {
-      mundialitoHTML = m.mundialito ? `
-        <div class="flex items-center justify-center gap-1 text-sm sm:text-base font-extrabold text-cyan-400 pb-2">
-          ${renderTrophySVG('mundialito', 'compact')}<span>${m.mundialito}</span>
-        </div>
-      ` : '';
-    }
-
-    // 6. Cartonato (Playout) - Solo Banner
-    let cartonatoHTML = '';
-    const count = m.cartonato || 0;
-    const coaches = m.coach_banners || m.cartonato_coaches || [];
-
-    if (count > 0 || coaches.length > 0) {
-      const bannersHTML: string[] = [];
-      if (coaches.length > 0) {
-        coaches.forEach(c => bannersHTML.push(renderCoachBanner(c)));
-      } else {
-        for (let i = 0; i < count; i++) bannersHTML.push(renderCoachBanner('CARTONATO'));
+    row.innerHTML = ALBO_COLUMNS.map(col => {
+      if (col.key === 'manager') {
+        return renderManagerCell(m, index, totalMajor, score);
       }
-      cartonatoHTML = `<div class="flex items-center justify-center gap-1.5 flex-nowrap overflow-visible pb-2">${bannersHTML.join('')}</div>`;
-    }
+      const comp = getCompetitionDef(col.key);
+      if (comp) {
+        return renderCompetitionCell(m, comp, state.displayMode);
+      }
+      return '';
+    }).join('');
 
-    const columnCells: Record<string, string> = {
-      manager: `
-        <div class="sticky left-0 z-10 px-2 sm:pl-4 sm:pr-3 self-stretch flex items-center justify-between pb-2 overflow-hidden border-r shadow-[3px_0_6px_-2px_rgba(0,0,0,0.20)]"
-             style="background-color: var(--table-surface); border-color: var(--shelf-line);">
-          <div class="flex items-center gap-1.5 sm:gap-2.5 overflow-hidden w-full">
-            <span class="w-5 h-5 sm:w-6 sm:h-6 rounded bg-black/20 flex items-center justify-center font-sport font-bold text-[10px] sm:text-xs opacity-75 shrink-0">
-              ${index + 1}
-            </span>
-            <div class="flex flex-col justify-center min-w-0 flex-1">
-              <div class="font-sport font-bold text-xs sm:text-base tracking-normal uppercase leading-tight truncate" style="color: var(--text-main);" title="${m.name} (${m.years})">
-                ${m.name} <span class="font-semibold text-[10px] sm:text-xs opacity-75">(${m.years})</span>
-              </div>
-              <div class="text-[10px] sm:text-[11px] font-bold leading-tight mt-0.5 flex items-center gap-1 sm:gap-1.5 truncate">
-                ${totalMajor > 0 ? `
-                  <span class="font-extrabold shrink-0" style="color: var(--badge-trophy, #b45309);">🏆 ${totalMajor}</span>
-                  <span class="opacity-40">•</span>
-                ` : ''}
-                <span class="text-amber-500 font-extrabold shrink-0">⭐ ${formatScore(score)} pt</span>
-              </div>
-            </div>
-          </div>
-
-          ${state.isEditMode ? `
-            <div class="flex items-center gap-1 shrink-0 ml-1">
-              <button class="w-5 h-5 sm:w-6 sm:h-6 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500 hover:text-slate-950 flex items-center justify-center transition shrink-0">
-                <i class="fa-solid fa-pen text-[9px] sm:text-[10px]"></i>
-              </button>
-            </div>
-          ` : ''}
-        </div>
-      `,
-      championship: `
-        <div class="flex items-end justify-center min-h-[38px] px-1 sm:px-3 pb-0">
-          ${champHTML}
-        </div>
-      `,
-      spoon: `
-        <div class="flex items-end justify-center min-h-[38px] pb-0">
-          ${spoonHTML}
-        </div>
-      `,
-      cup: `
-        <div class="flex items-end justify-center min-h-[38px] pb-0">
-          ${cupHTML}
-        </div>
-      `,
-      supercup: `
-        <div class="flex items-end justify-center min-h-[38px] pb-0">
-          ${superHTML}
-        </div>
-      `,
-      mundialito: `
-        <div class="flex items-end justify-center min-h-[38px] pb-0">
-          ${mundialitoHTML}
-        </div>
-      `,
-      cartonato: `
-        <div class="flex items-center justify-center self-center pb-2 min-h-[38px]">
-          ${cartonatoHTML}
-        </div>
-      `
-    };
-
-    row.innerHTML = ALBO_COLUMNS.map(col => columnCells[col.key] || '').join('');
     container.appendChild(row);
   });
 

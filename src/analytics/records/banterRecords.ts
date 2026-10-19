@@ -1,5 +1,6 @@
 import type { Manager, CompetitionRecord, LeagueRecord, RecordHolder } from '@/types';
 import { resolveManagerRecordCrest, resolveManagerName, getCompletedChampionships } from './helpers';
+import { LEAGUE } from '@/config';
 
 /**
  * Computes all records in the 'banter' (curiosities & wooden spoons) category:
@@ -141,7 +142,7 @@ export function computeBanterRecords(
       primaryHolders,
       primaryHolder: primaryHolders[0],
       runnerUps,
-      description: 'Il recordman di maglie nere e ultimi posti solitari nella classifica finale della Serie Atlas.'
+      description: `Il recordman di maglie nere e ultimi posti solitari nella classifica finale della ${LEAGUE.brand.championshipLabel || LEAGUE.brand.name}.`
     });
   }
 
@@ -420,7 +421,7 @@ export function computeBanterRecords(
   }
 
   // -------------------------------------------------------------
-  // Record 5.7: Il Purgatorio della Serie Atlas (Attesa Scudetto)
+  // Record 5.7: Il Purgatorio del Campionato (Attesa Scudetto)
   // -------------------------------------------------------------
   const allDroughtHolders: {
     managerId: string;
@@ -464,7 +465,7 @@ export function computeBanterRecords(
 
     records.push({
       id: 'title_drought_purgatory',
-      title: 'Il Purgatorio della Serie Atlas',
+      title: `Il Purgatorio della ${LEAGUE.brand.championshipLabel || LEAGUE.brand.name}`,
       category: 'banter',
       icon: 'fa-solid fa-hourglass-empty',
       watermark: '⏳',
@@ -473,7 +474,7 @@ export function computeBanterRecords(
       primaryHolders,
       primaryHolder: primaryHolders[0],
       runnerUps,
-      description: 'Il maggior numero di campionati disputati in Serie Atlas senza mai essere riuscito a cucirsi lo Scudetto sul petto.'
+      description: `Il maggior numero di campionati disputati in ${LEAGUE.brand.championshipLabel || LEAGUE.brand.name} senza mai essere riuscito a cucirsi lo Scudetto sul petto.`
     });
   }
 
@@ -548,7 +549,7 @@ export function computeBanterRecords(
       primaryHolders,
       primaryHolder: primaryHolders[0],
       runnerUps: [],
-      description: 'I disonori all’esordio: fantallenatori incappati nel Cucchiaio di Legno (ultimo posto) o nel Trofeo Cartonato nella loro primissima stagione in Serie Atlas.'
+      description: `I disonori all’esordio: fantallenatori incappati nel Cucchiaio di Legno (ultimo posto) o nel Trofeo Cartonato nella loro primissima stagione in ${LEAGUE.brand.championshipLabel || LEAGUE.brand.name}.`
     });
   }
 

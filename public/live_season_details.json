@@ -1,0 +1,1946 @@
+{
+  "season": "2026/27",
+  "competitionId": 863632,
+  "lastCompletedRound": 1,
+  "totalRounds": 26,
+  "rounds": [
+    {
+      "roundNumber": 1,
+      "matches": [
+        {
+          "homeTeam": "TorLupara FC",
+          "awayTeam": "Levrieri d Abruzzo",
+          "homeManagerId": "m_scurcio",
+          "awayManagerId": "m_gizzagustacito",
+          "isPlayed": true,
+          "homeOutcome": "D",
+          "awayOutcome": "D"
+        },
+        {
+          "homeTeam": "LoTUS FC",
+          "awayTeam": "Steven Bradbury FC",
+          "homeManagerId": "m_avvisatina",
+          "awayManagerId": "m_alfo",
+          "isPlayed": true,
+          "homeOutcome": "L",
+          "awayOutcome": "W"
+        },
+        {
+          "homeTeam": "Sarviette FC",
+          "awayTeam": "Scalo San Genesio",
+          "homeManagerId": "m_peterdani",
+          "awayManagerId": "m_valery",
+          "isPlayed": true,
+          "homeOutcome": "W",
+          "awayOutcome": "L"
+        },
+        {
+          "homeTeam": "Arcore 1936",
+          "awayTeam": "Posto INFNito FC",
+          "homeManagerId": "m_sebba",
+          "awayManagerId": "m_lucchetto",
+          "isPlayed": true,
+          "homeOutcome": "L",
+          "awayOutcome": "W"
+        },
+        {
+          "homeTeam": "CarloMonte FC",
+          "awayTeam": "A S CorradiAndBosuTeam",
+          "homeManagerId": "m_gigicholo",
+          "awayManagerId": "m_vannico",
+          "isPlayed": true,
+          "homeOutcome": "W",
+          "awayOutcome": "L"
+        },
+        {
+          "homeTeam": "AS Qualo",
+          "awayTeam": "LEONE MAKAKO CORPORATION",
+          "homeManagerId": "m_zatte",
+          "awayManagerId": "m_makakoleone",
+          "isPlayed": true,
+          "homeOutcome": "L",
+          "awayOutcome": "W"
+        },
+        {
+          "homeTeam": "Partizan Peroni",
+          "awayTeam": "Kiwi Football Club",
+          "homeManagerId": "m_pippo",
+          "awayManagerId": "m_tazio",
+          "isPlayed": true,
+          "homeOutcome": "L",
+          "awayOutcome": "W"
+        }
+      ]
+    },
+    {
+      "roundNumber": 2,
+      "matches": [
+        {
+          "homeTeam": "Kiwi Football Club",
+          "awayTeam": "AS Qualo",
+          "homeManagerId": "m_tazio",
+          "awayManagerId": "m_zatte",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "A S CorradiAndBosuTeam",
+          "awayTeam": "Arcore 1936",
+          "homeManagerId": "m_vannico",
+          "awayManagerId": "m_sebba",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Posto INFNito FC",
+          "awayTeam": "Sarviette FC",
+          "homeManagerId": "m_lucchetto",
+          "awayManagerId": "m_peterdani",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Steven Bradbury FC",
+          "awayTeam": "TorLupara FC",
+          "homeManagerId": "m_alfo",
+          "awayManagerId": "m_scurcio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Levrieri d Abruzzo",
+          "awayTeam": "Partizan Peroni",
+          "homeManagerId": "m_gizzagustacito",
+          "awayManagerId": "m_pippo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LEONE MAKAKO CORPORATION",
+          "awayTeam": "CarloMonte FC",
+          "homeManagerId": "m_makakoleone",
+          "awayManagerId": "m_gigicholo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Scalo San Genesio",
+          "awayTeam": "LoTUS FC",
+          "homeManagerId": "m_valery",
+          "awayManagerId": "m_avvisatina",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 3,
+      "matches": [
+        {
+          "homeTeam": "LoTUS FC",
+          "awayTeam": "Posto INFNito FC",
+          "homeManagerId": "m_avvisatina",
+          "awayManagerId": "m_lucchetto",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Sarviette FC",
+          "awayTeam": "A S CorradiAndBosuTeam",
+          "homeManagerId": "m_peterdani",
+          "awayManagerId": "m_vannico",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Arcore 1936",
+          "awayTeam": "LEONE MAKAKO CORPORATION",
+          "homeManagerId": "m_sebba",
+          "awayManagerId": "m_makakoleone",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Scalo San Genesio",
+          "awayTeam": "Steven Bradbury FC",
+          "homeManagerId": "m_valery",
+          "awayManagerId": "m_alfo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "CarloMonte FC",
+          "awayTeam": "Kiwi Football Club",
+          "homeManagerId": "m_gigicholo",
+          "awayManagerId": "m_tazio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "AS Qualo",
+          "awayTeam": "Levrieri d Abruzzo",
+          "homeManagerId": "m_zatte",
+          "awayManagerId": "m_gizzagustacito",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Partizan Peroni",
+          "awayTeam": "TorLupara FC",
+          "homeManagerId": "m_pippo",
+          "awayManagerId": "m_scurcio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 4,
+      "matches": [
+        {
+          "homeTeam": "Kiwi Football Club",
+          "awayTeam": "Arcore 1936",
+          "homeManagerId": "m_tazio",
+          "awayManagerId": "m_sebba",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "A S CorradiAndBosuTeam",
+          "awayTeam": "LoTUS FC",
+          "homeManagerId": "m_vannico",
+          "awayManagerId": "m_avvisatina",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "TorLupara FC",
+          "awayTeam": "AS Qualo",
+          "homeManagerId": "m_scurcio",
+          "awayManagerId": "m_zatte",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Posto INFNito FC",
+          "awayTeam": "Scalo San Genesio",
+          "homeManagerId": "m_lucchetto",
+          "awayManagerId": "m_valery",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Steven Bradbury FC",
+          "awayTeam": "Partizan Peroni",
+          "homeManagerId": "m_alfo",
+          "awayManagerId": "m_pippo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Levrieri d Abruzzo",
+          "awayTeam": "CarloMonte FC",
+          "homeManagerId": "m_gizzagustacito",
+          "awayManagerId": "m_gigicholo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LEONE MAKAKO CORPORATION",
+          "awayTeam": "Sarviette FC",
+          "homeManagerId": "m_makakoleone",
+          "awayManagerId": "m_peterdani",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 5,
+      "matches": [
+        {
+          "homeTeam": "Posto INFNito FC",
+          "awayTeam": "Steven Bradbury FC",
+          "homeManagerId": "m_lucchetto",
+          "awayManagerId": "m_alfo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LoTUS FC",
+          "awayTeam": "LEONE MAKAKO CORPORATION",
+          "homeManagerId": "m_avvisatina",
+          "awayManagerId": "m_makakoleone",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Sarviette FC",
+          "awayTeam": "Kiwi Football Club",
+          "homeManagerId": "m_peterdani",
+          "awayManagerId": "m_tazio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Arcore 1936",
+          "awayTeam": "Levrieri d Abruzzo",
+          "homeManagerId": "m_sebba",
+          "awayManagerId": "m_gizzagustacito",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Scalo San Genesio",
+          "awayTeam": "A S CorradiAndBosuTeam",
+          "homeManagerId": "m_valery",
+          "awayManagerId": "m_vannico",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "CarloMonte FC",
+          "awayTeam": "TorLupara FC",
+          "homeManagerId": "m_gigicholo",
+          "awayManagerId": "m_scurcio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "AS Qualo",
+          "awayTeam": "Partizan Peroni",
+          "homeManagerId": "m_zatte",
+          "awayManagerId": "m_pippo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 6,
+      "matches": [
+        {
+          "homeTeam": "Kiwi Football Club",
+          "awayTeam": "LoTUS FC",
+          "homeManagerId": "m_tazio",
+          "awayManagerId": "m_avvisatina",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "A S CorradiAndBosuTeam",
+          "awayTeam": "Posto INFNito FC",
+          "homeManagerId": "m_vannico",
+          "awayManagerId": "m_lucchetto",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "TorLupara FC",
+          "awayTeam": "Arcore 1936",
+          "homeManagerId": "m_scurcio",
+          "awayManagerId": "m_sebba",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Steven Bradbury FC",
+          "awayTeam": "AS Qualo",
+          "homeManagerId": "m_alfo",
+          "awayManagerId": "m_zatte",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Levrieri d Abruzzo",
+          "awayTeam": "Sarviette FC",
+          "homeManagerId": "m_gizzagustacito",
+          "awayManagerId": "m_peterdani",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LEONE MAKAKO CORPORATION",
+          "awayTeam": "Scalo San Genesio",
+          "homeManagerId": "m_makakoleone",
+          "awayManagerId": "m_valery",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Partizan Peroni",
+          "awayTeam": "CarloMonte FC",
+          "homeManagerId": "m_pippo",
+          "awayManagerId": "m_gigicholo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 7,
+      "matches": [
+        {
+          "homeTeam": "A S CorradiAndBosuTeam",
+          "awayTeam": "Steven Bradbury FC",
+          "homeManagerId": "m_vannico",
+          "awayManagerId": "m_alfo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Posto INFNito FC",
+          "awayTeam": "LEONE MAKAKO CORPORATION",
+          "homeManagerId": "m_lucchetto",
+          "awayManagerId": "m_makakoleone",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LoTUS FC",
+          "awayTeam": "Levrieri d Abruzzo",
+          "homeManagerId": "m_avvisatina",
+          "awayManagerId": "m_gizzagustacito",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Sarviette FC",
+          "awayTeam": "TorLupara FC",
+          "homeManagerId": "m_peterdani",
+          "awayManagerId": "m_scurcio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Arcore 1936",
+          "awayTeam": "Partizan Peroni",
+          "homeManagerId": "m_sebba",
+          "awayManagerId": "m_pippo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Scalo San Genesio",
+          "awayTeam": "Kiwi Football Club",
+          "homeManagerId": "m_valery",
+          "awayManagerId": "m_tazio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "CarloMonte FC",
+          "awayTeam": "AS Qualo",
+          "homeManagerId": "m_gigicholo",
+          "awayManagerId": "m_zatte",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 8,
+      "matches": [
+        {
+          "homeTeam": "Kiwi Football Club",
+          "awayTeam": "Posto INFNito FC",
+          "homeManagerId": "m_tazio",
+          "awayManagerId": "m_lucchetto",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "TorLupara FC",
+          "awayTeam": "LoTUS FC",
+          "homeManagerId": "m_scurcio",
+          "awayManagerId": "m_avvisatina",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Steven Bradbury FC",
+          "awayTeam": "CarloMonte FC",
+          "homeManagerId": "m_alfo",
+          "awayManagerId": "m_gigicholo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Levrieri d Abruzzo",
+          "awayTeam": "Scalo San Genesio",
+          "homeManagerId": "m_gizzagustacito",
+          "awayManagerId": "m_valery",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LEONE MAKAKO CORPORATION",
+          "awayTeam": "A S CorradiAndBosuTeam",
+          "homeManagerId": "m_makakoleone",
+          "awayManagerId": "m_vannico",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "AS Qualo",
+          "awayTeam": "Arcore 1936",
+          "homeManagerId": "m_zatte",
+          "awayManagerId": "m_sebba",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Partizan Peroni",
+          "awayTeam": "Sarviette FC",
+          "homeManagerId": "m_pippo",
+          "awayManagerId": "m_peterdani",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 9,
+      "matches": [
+        {
+          "homeTeam": "A S CorradiAndBosuTeam",
+          "awayTeam": "Kiwi Football Club",
+          "homeManagerId": "m_vannico",
+          "awayManagerId": "m_tazio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Posto INFNito FC",
+          "awayTeam": "Levrieri d Abruzzo",
+          "homeManagerId": "m_lucchetto",
+          "awayManagerId": "m_gizzagustacito",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LoTUS FC",
+          "awayTeam": "Partizan Peroni",
+          "homeManagerId": "m_avvisatina",
+          "awayManagerId": "m_pippo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Sarviette FC",
+          "awayTeam": "AS Qualo",
+          "homeManagerId": "m_peterdani",
+          "awayManagerId": "m_zatte",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Arcore 1936",
+          "awayTeam": "CarloMonte FC",
+          "homeManagerId": "m_sebba",
+          "awayManagerId": "m_gigicholo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LEONE MAKAKO CORPORATION",
+          "awayTeam": "Steven Bradbury FC",
+          "homeManagerId": "m_makakoleone",
+          "awayManagerId": "m_alfo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Scalo San Genesio",
+          "awayTeam": "TorLupara FC",
+          "homeManagerId": "m_valery",
+          "awayManagerId": "m_scurcio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 10,
+      "matches": [
+        {
+          "homeTeam": "Kiwi Football Club",
+          "awayTeam": "LEONE MAKAKO CORPORATION",
+          "homeManagerId": "m_tazio",
+          "awayManagerId": "m_makakoleone",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "TorLupara FC",
+          "awayTeam": "Posto INFNito FC",
+          "homeManagerId": "m_scurcio",
+          "awayManagerId": "m_lucchetto",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Steven Bradbury FC",
+          "awayTeam": "Arcore 1936",
+          "homeManagerId": "m_alfo",
+          "awayManagerId": "m_sebba",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Levrieri d Abruzzo",
+          "awayTeam": "A S CorradiAndBosuTeam",
+          "homeManagerId": "m_gizzagustacito",
+          "awayManagerId": "m_vannico",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "CarloMonte FC",
+          "awayTeam": "Sarviette FC",
+          "homeManagerId": "m_gigicholo",
+          "awayManagerId": "m_peterdani",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "AS Qualo",
+          "awayTeam": "LoTUS FC",
+          "homeManagerId": "m_zatte",
+          "awayManagerId": "m_avvisatina",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Partizan Peroni",
+          "awayTeam": "Scalo San Genesio",
+          "homeManagerId": "m_pippo",
+          "awayManagerId": "m_valery",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 11,
+      "matches": [
+        {
+          "homeTeam": "Kiwi Football Club",
+          "awayTeam": "Steven Bradbury FC",
+          "homeManagerId": "m_tazio",
+          "awayManagerId": "m_alfo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "A S CorradiAndBosuTeam",
+          "awayTeam": "TorLupara FC",
+          "homeManagerId": "m_vannico",
+          "awayManagerId": "m_scurcio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Posto INFNito FC",
+          "awayTeam": "Partizan Peroni",
+          "homeManagerId": "m_lucchetto",
+          "awayManagerId": "m_pippo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LoTUS FC",
+          "awayTeam": "CarloMonte FC",
+          "homeManagerId": "m_avvisatina",
+          "awayManagerId": "m_gigicholo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Sarviette FC",
+          "awayTeam": "Arcore 1936",
+          "homeManagerId": "m_peterdani",
+          "awayManagerId": "m_sebba",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LEONE MAKAKO CORPORATION",
+          "awayTeam": "Levrieri d Abruzzo",
+          "homeManagerId": "m_makakoleone",
+          "awayManagerId": "m_gizzagustacito",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Scalo San Genesio",
+          "awayTeam": "AS Qualo",
+          "homeManagerId": "m_valery",
+          "awayManagerId": "m_zatte",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 12,
+      "matches": [
+        {
+          "homeTeam": "TorLupara FC",
+          "awayTeam": "LEONE MAKAKO CORPORATION",
+          "homeManagerId": "m_scurcio",
+          "awayManagerId": "m_makakoleone",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Sarviette FC",
+          "awayTeam": "Steven Bradbury FC",
+          "homeManagerId": "m_peterdani",
+          "awayManagerId": "m_alfo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Levrieri d Abruzzo",
+          "awayTeam": "Kiwi Football Club",
+          "homeManagerId": "m_gizzagustacito",
+          "awayManagerId": "m_tazio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Arcore 1936",
+          "awayTeam": "LoTUS FC",
+          "homeManagerId": "m_sebba",
+          "awayManagerId": "m_avvisatina",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "CarloMonte FC",
+          "awayTeam": "Scalo San Genesio",
+          "homeManagerId": "m_gigicholo",
+          "awayManagerId": "m_valery",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "AS Qualo",
+          "awayTeam": "Posto INFNito FC",
+          "homeManagerId": "m_zatte",
+          "awayManagerId": "m_lucchetto",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Partizan Peroni",
+          "awayTeam": "A S CorradiAndBosuTeam",
+          "homeManagerId": "m_pippo",
+          "awayManagerId": "m_vannico",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 13,
+      "matches": [
+        {
+          "homeTeam": "Kiwi Football Club",
+          "awayTeam": "TorLupara FC",
+          "homeManagerId": "m_tazio",
+          "awayManagerId": "m_scurcio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "A S CorradiAndBosuTeam",
+          "awayTeam": "AS Qualo",
+          "homeManagerId": "m_vannico",
+          "awayManagerId": "m_zatte",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Posto INFNito FC",
+          "awayTeam": "CarloMonte FC",
+          "homeManagerId": "m_lucchetto",
+          "awayManagerId": "m_gigicholo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LoTUS FC",
+          "awayTeam": "Sarviette FC",
+          "homeManagerId": "m_avvisatina",
+          "awayManagerId": "m_peterdani",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Steven Bradbury FC",
+          "awayTeam": "Levrieri d Abruzzo",
+          "homeManagerId": "m_alfo",
+          "awayManagerId": "m_gizzagustacito",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LEONE MAKAKO CORPORATION",
+          "awayTeam": "Partizan Peroni",
+          "homeManagerId": "m_makakoleone",
+          "awayManagerId": "m_pippo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Scalo San Genesio",
+          "awayTeam": "Arcore 1936",
+          "homeManagerId": "m_valery",
+          "awayManagerId": "m_sebba",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 14,
+      "matches": [
+        {
+          "homeTeam": "Kiwi Football Club",
+          "awayTeam": "CarloMonte FC",
+          "homeManagerId": "m_tazio",
+          "awayManagerId": "m_gigicholo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Levrieri d Abruzzo",
+          "awayTeam": "AS Qualo",
+          "homeManagerId": "m_gizzagustacito",
+          "awayManagerId": "m_zatte",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LEONE MAKAKO CORPORATION",
+          "awayTeam": "Posto INFNito FC",
+          "homeManagerId": "m_makakoleone",
+          "awayManagerId": "m_lucchetto",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Scalo San Genesio",
+          "awayTeam": "Partizan Peroni",
+          "homeManagerId": "m_valery",
+          "awayManagerId": "m_pippo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "TorLupara FC",
+          "awayTeam": "A S CorradiAndBosuTeam",
+          "homeManagerId": "m_scurcio",
+          "awayManagerId": "m_vannico",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Sarviette FC",
+          "awayTeam": "LoTUS FC",
+          "homeManagerId": "m_peterdani",
+          "awayManagerId": "m_avvisatina",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Arcore 1936",
+          "awayTeam": "Steven Bradbury FC",
+          "homeManagerId": "m_sebba",
+          "awayManagerId": "m_alfo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 15,
+      "matches": [
+        {
+          "homeTeam": "CarloMonte FC",
+          "awayTeam": "Levrieri d Abruzzo",
+          "homeManagerId": "m_gigicholo",
+          "awayManagerId": "m_gizzagustacito",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Partizan Peroni",
+          "awayTeam": "LEONE MAKAKO CORPORATION",
+          "homeManagerId": "m_pippo",
+          "awayManagerId": "m_makakoleone",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "AS Qualo",
+          "awayTeam": "Kiwi Football Club",
+          "homeManagerId": "m_zatte",
+          "awayManagerId": "m_tazio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "A S CorradiAndBosuTeam",
+          "awayTeam": "Scalo San Genesio",
+          "homeManagerId": "m_vannico",
+          "awayManagerId": "m_valery",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Posto INFNito FC",
+          "awayTeam": "Arcore 1936",
+          "homeManagerId": "m_lucchetto",
+          "awayManagerId": "m_sebba",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LoTUS FC",
+          "awayTeam": "TorLupara FC",
+          "homeManagerId": "m_avvisatina",
+          "awayManagerId": "m_scurcio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Steven Bradbury FC",
+          "awayTeam": "Sarviette FC",
+          "homeManagerId": "m_alfo",
+          "awayManagerId": "m_peterdani",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 16,
+      "matches": [
+        {
+          "homeTeam": "Levrieri d Abruzzo",
+          "awayTeam": "LoTUS FC",
+          "homeManagerId": "m_gizzagustacito",
+          "awayManagerId": "m_avvisatina",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Kiwi Football Club",
+          "awayTeam": "Partizan Peroni",
+          "homeManagerId": "m_tazio",
+          "awayManagerId": "m_pippo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Scalo San Genesio",
+          "awayTeam": "Posto INFNito FC",
+          "homeManagerId": "m_valery",
+          "awayManagerId": "m_lucchetto",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Arcore 1936",
+          "awayTeam": "A S CorradiAndBosuTeam",
+          "homeManagerId": "m_sebba",
+          "awayManagerId": "m_vannico",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "AS Qualo",
+          "awayTeam": "TorLupara FC",
+          "homeManagerId": "m_zatte",
+          "awayManagerId": "m_scurcio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Sarviette FC",
+          "awayTeam": "LEONE MAKAKO CORPORATION",
+          "homeManagerId": "m_peterdani",
+          "awayManagerId": "m_makakoleone",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "CarloMonte FC",
+          "awayTeam": "Steven Bradbury FC",
+          "homeManagerId": "m_gigicholo",
+          "awayManagerId": "m_alfo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 17,
+      "matches": [
+        {
+          "homeTeam": "Posto INFNito FC",
+          "awayTeam": "AS Qualo",
+          "homeManagerId": "m_lucchetto",
+          "awayManagerId": "m_zatte",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Steven Bradbury FC",
+          "awayTeam": "Kiwi Football Club",
+          "homeManagerId": "m_alfo",
+          "awayManagerId": "m_tazio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "A S CorradiAndBosuTeam",
+          "awayTeam": "Levrieri d Abruzzo",
+          "homeManagerId": "m_vannico",
+          "awayManagerId": "m_gizzagustacito",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Partizan Peroni",
+          "awayTeam": "Arcore 1936",
+          "homeManagerId": "m_pippo",
+          "awayManagerId": "m_sebba",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LEONE MAKAKO CORPORATION",
+          "awayTeam": "LoTUS FC",
+          "homeManagerId": "m_makakoleone",
+          "awayManagerId": "m_avvisatina",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "TorLupara FC",
+          "awayTeam": "CarloMonte FC",
+          "homeManagerId": "m_scurcio",
+          "awayManagerId": "m_gigicholo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Scalo San Genesio",
+          "awayTeam": "Sarviette FC",
+          "homeManagerId": "m_valery",
+          "awayManagerId": "m_peterdani",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 18,
+      "matches": [
+        {
+          "homeTeam": "LoTUS FC",
+          "awayTeam": "A S CorradiAndBosuTeam",
+          "homeManagerId": "m_avvisatina",
+          "awayManagerId": "m_vannico",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Steven Bradbury FC",
+          "awayTeam": "Posto INFNito FC",
+          "homeManagerId": "m_alfo",
+          "awayManagerId": "m_lucchetto",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LEONE MAKAKO CORPORATION",
+          "awayTeam": "Kiwi Football Club",
+          "homeManagerId": "m_makakoleone",
+          "awayManagerId": "m_tazio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "CarloMonte FC",
+          "awayTeam": "Partizan Peroni",
+          "homeManagerId": "m_gigicholo",
+          "awayManagerId": "m_pippo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Arcore 1936",
+          "awayTeam": "Scalo San Genesio",
+          "homeManagerId": "m_sebba",
+          "awayManagerId": "m_valery",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "AS Qualo",
+          "awayTeam": "Sarviette FC",
+          "homeManagerId": "m_zatte",
+          "awayManagerId": "m_peterdani",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Levrieri d Abruzzo",
+          "awayTeam": "TorLupara FC",
+          "homeManagerId": "m_gizzagustacito",
+          "awayManagerId": "m_scurcio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 19,
+      "matches": [
+        {
+          "homeTeam": "TorLupara FC",
+          "awayTeam": "Scalo San Genesio",
+          "homeManagerId": "m_scurcio",
+          "awayManagerId": "m_valery",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Partizan Peroni",
+          "awayTeam": "Steven Bradbury FC",
+          "homeManagerId": "m_pippo",
+          "awayManagerId": "m_alfo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LoTUS FC",
+          "awayTeam": "AS Qualo",
+          "homeManagerId": "m_avvisatina",
+          "awayManagerId": "m_zatte",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "CarloMonte FC",
+          "awayTeam": "LEONE MAKAKO CORPORATION",
+          "homeManagerId": "m_gigicholo",
+          "awayManagerId": "m_makakoleone",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Kiwi Football Club",
+          "awayTeam": "A S CorradiAndBosuTeam",
+          "homeManagerId": "m_tazio",
+          "awayManagerId": "m_vannico",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Levrieri d Abruzzo",
+          "awayTeam": "Arcore 1936",
+          "homeManagerId": "m_gizzagustacito",
+          "awayManagerId": "m_sebba",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Sarviette FC",
+          "awayTeam": "Posto INFNito FC",
+          "homeManagerId": "m_peterdani",
+          "awayManagerId": "m_lucchetto",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 20,
+      "matches": [
+        {
+          "homeTeam": "A S CorradiAndBosuTeam",
+          "awayTeam": "LEONE MAKAKO CORPORATION",
+          "homeManagerId": "m_vannico",
+          "awayManagerId": "m_makakoleone",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Posto INFNito FC",
+          "awayTeam": "Kiwi Football Club",
+          "homeManagerId": "m_lucchetto",
+          "awayManagerId": "m_tazio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "TorLupara FC",
+          "awayTeam": "Partizan Peroni",
+          "homeManagerId": "m_scurcio",
+          "awayManagerId": "m_pippo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Scalo San Genesio",
+          "awayTeam": "Levrieri d Abruzzo",
+          "homeManagerId": "m_valery",
+          "awayManagerId": "m_gizzagustacito",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Arcore 1936",
+          "awayTeam": "Sarviette FC",
+          "homeManagerId": "m_sebba",
+          "awayManagerId": "m_peterdani",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Steven Bradbury FC",
+          "awayTeam": "LoTUS FC",
+          "homeManagerId": "m_alfo",
+          "awayManagerId": "m_avvisatina",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "AS Qualo",
+          "awayTeam": "CarloMonte FC",
+          "homeManagerId": "m_zatte",
+          "awayManagerId": "m_gigicholo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 21,
+      "matches": [
+        {
+          "homeTeam": "LEONE MAKAKO CORPORATION",
+          "awayTeam": "AS Qualo",
+          "homeManagerId": "m_makakoleone",
+          "awayManagerId": "m_zatte",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Kiwi Football Club",
+          "awayTeam": "Scalo San Genesio",
+          "homeManagerId": "m_tazio",
+          "awayManagerId": "m_valery",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Levrieri d Abruzzo",
+          "awayTeam": "Steven Bradbury FC",
+          "homeManagerId": "m_gizzagustacito",
+          "awayManagerId": "m_alfo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "A S CorradiAndBosuTeam",
+          "awayTeam": "Sarviette FC",
+          "homeManagerId": "m_vannico",
+          "awayManagerId": "m_peterdani",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Partizan Peroni",
+          "awayTeam": "Posto INFNito FC",
+          "homeManagerId": "m_pippo",
+          "awayManagerId": "m_lucchetto",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "CarloMonte FC",
+          "awayTeam": "LoTUS FC",
+          "homeManagerId": "m_gigicholo",
+          "awayManagerId": "m_avvisatina",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Arcore 1936",
+          "awayTeam": "TorLupara FC",
+          "homeManagerId": "m_sebba",
+          "awayManagerId": "m_scurcio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 22,
+      "matches": [
+        {
+          "homeTeam": "Partizan Peroni",
+          "awayTeam": "AS Qualo",
+          "homeManagerId": "m_pippo",
+          "awayManagerId": "m_zatte",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Scalo San Genesio",
+          "awayTeam": "CarloMonte FC",
+          "homeManagerId": "m_valery",
+          "awayManagerId": "m_gigicholo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Steven Bradbury FC",
+          "awayTeam": "LEONE MAKAKO CORPORATION",
+          "homeManagerId": "m_alfo",
+          "awayManagerId": "m_makakoleone",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Sarviette FC",
+          "awayTeam": "Levrieri d Abruzzo",
+          "homeManagerId": "m_peterdani",
+          "awayManagerId": "m_gizzagustacito",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Posto INFNito FC",
+          "awayTeam": "A S CorradiAndBosuTeam",
+          "homeManagerId": "m_lucchetto",
+          "awayManagerId": "m_vannico",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LoTUS FC",
+          "awayTeam": "Arcore 1936",
+          "homeManagerId": "m_avvisatina",
+          "awayManagerId": "m_sebba",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "TorLupara FC",
+          "awayTeam": "Kiwi Football Club",
+          "homeManagerId": "m_scurcio",
+          "awayManagerId": "m_tazio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 23,
+      "matches": [
+        {
+          "homeTeam": "AS Qualo",
+          "awayTeam": "Steven Bradbury FC",
+          "homeManagerId": "m_zatte",
+          "awayManagerId": "m_alfo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Arcore 1936",
+          "awayTeam": "Kiwi Football Club",
+          "homeManagerId": "m_sebba",
+          "awayManagerId": "m_tazio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "TorLupara FC",
+          "awayTeam": "Sarviette FC",
+          "homeManagerId": "m_scurcio",
+          "awayManagerId": "m_peterdani",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LoTUS FC",
+          "awayTeam": "Scalo San Genesio",
+          "homeManagerId": "m_avvisatina",
+          "awayManagerId": "m_valery",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "A S CorradiAndBosuTeam",
+          "awayTeam": "Partizan Peroni",
+          "homeManagerId": "m_vannico",
+          "awayManagerId": "m_pippo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "CarloMonte FC",
+          "awayTeam": "Posto INFNito FC",
+          "homeManagerId": "m_gigicholo",
+          "awayManagerId": "m_lucchetto",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Levrieri d Abruzzo",
+          "awayTeam": "LEONE MAKAKO CORPORATION",
+          "homeManagerId": "m_gizzagustacito",
+          "awayManagerId": "m_makakoleone",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 24,
+      "matches": [
+        {
+          "homeTeam": "LEONE MAKAKO CORPORATION",
+          "awayTeam": "Arcore 1936",
+          "homeManagerId": "m_makakoleone",
+          "awayManagerId": "m_sebba",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Steven Bradbury FC",
+          "awayTeam": "A S CorradiAndBosuTeam",
+          "homeManagerId": "m_alfo",
+          "awayManagerId": "m_vannico",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Partizan Peroni",
+          "awayTeam": "LoTUS FC",
+          "homeManagerId": "m_pippo",
+          "awayManagerId": "m_avvisatina",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Posto INFNito FC",
+          "awayTeam": "TorLupara FC",
+          "homeManagerId": "m_lucchetto",
+          "awayManagerId": "m_scurcio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "AS Qualo",
+          "awayTeam": "Scalo San Genesio",
+          "homeManagerId": "m_zatte",
+          "awayManagerId": "m_valery",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Kiwi Football Club",
+          "awayTeam": "Levrieri d Abruzzo",
+          "homeManagerId": "m_tazio",
+          "awayManagerId": "m_gizzagustacito",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Sarviette FC",
+          "awayTeam": "CarloMonte FC",
+          "homeManagerId": "m_peterdani",
+          "awayManagerId": "m_gigicholo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 25,
+      "matches": [
+        {
+          "homeTeam": "Arcore 1936",
+          "awayTeam": "AS Qualo",
+          "homeManagerId": "m_sebba",
+          "awayManagerId": "m_zatte",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Levrieri d Abruzzo",
+          "awayTeam": "Posto INFNito FC",
+          "homeManagerId": "m_gizzagustacito",
+          "awayManagerId": "m_lucchetto",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LoTUS FC",
+          "awayTeam": "Kiwi Football Club",
+          "homeManagerId": "m_avvisatina",
+          "awayManagerId": "m_tazio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Sarviette FC",
+          "awayTeam": "Partizan Peroni",
+          "homeManagerId": "m_peterdani",
+          "awayManagerId": "m_pippo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "TorLupara FC",
+          "awayTeam": "Steven Bradbury FC",
+          "homeManagerId": "m_scurcio",
+          "awayManagerId": "m_alfo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Scalo San Genesio",
+          "awayTeam": "LEONE MAKAKO CORPORATION",
+          "homeManagerId": "m_valery",
+          "awayManagerId": "m_makakoleone",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "A S CorradiAndBosuTeam",
+          "awayTeam": "CarloMonte FC",
+          "homeManagerId": "m_vannico",
+          "awayManagerId": "m_gigicholo",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    },
+    {
+      "roundNumber": 26,
+      "matches": [
+        {
+          "homeTeam": "Kiwi Football Club",
+          "awayTeam": "Sarviette FC",
+          "homeManagerId": "m_tazio",
+          "awayManagerId": "m_peterdani",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Steven Bradbury FC",
+          "awayTeam": "Scalo San Genesio",
+          "homeManagerId": "m_alfo",
+          "awayManagerId": "m_valery",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "LEONE MAKAKO CORPORATION",
+          "awayTeam": "TorLupara FC",
+          "homeManagerId": "m_makakoleone",
+          "awayManagerId": "m_scurcio",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "CarloMonte FC",
+          "awayTeam": "Arcore 1936",
+          "homeManagerId": "m_gigicholo",
+          "awayManagerId": "m_sebba",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Partizan Peroni",
+          "awayTeam": "Levrieri d Abruzzo",
+          "homeManagerId": "m_pippo",
+          "awayManagerId": "m_gizzagustacito",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "AS Qualo",
+          "awayTeam": "A S CorradiAndBosuTeam",
+          "homeManagerId": "m_zatte",
+          "awayManagerId": "m_vannico",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        },
+        {
+          "homeTeam": "Posto INFNito FC",
+          "awayTeam": "LoTUS FC",
+          "homeManagerId": "m_lucchetto",
+          "awayManagerId": "m_avvisatina",
+          "isPlayed": false,
+          "homeOutcome": null,
+          "awayOutcome": null
+        }
+      ]
+    }
+  ],
+  "standings": [
+    {
+      "rank": 1,
+      "managerId": "m_tazio",
+      "teamName": "Kiwi Football Club",
+      "coach": "tazio13",
+      "logo": "assets/teams/7823986_09569971.png",
+      "recentForm": [
+        "W"
+      ],
+      "statusBadge": "🔥",
+      "statusLabel": "In Fiamme"
+    },
+    {
+      "rank": 2,
+      "managerId": "m_alfo",
+      "teamName": "Steven Bradbury FC",
+      "coach": "alfius91",
+      "logo": "assets/teams/2545500_09340839.png",
+      "recentForm": [
+        "W"
+      ],
+      "statusBadge": "🔥",
+      "statusLabel": "In Fiamme"
+    },
+    {
+      "rank": 3,
+      "managerId": "m_lucchetto",
+      "teamName": "Posto INFNito FC",
+      "coach": "Lucchetto",
+      "logo": "assets/teams/2549374_08789113.png",
+      "recentForm": [
+        "W"
+      ],
+      "statusBadge": "🔥",
+      "statusLabel": "In Fiamme"
+    },
+    {
+      "rank": 4,
+      "managerId": "m_gigicholo",
+      "teamName": "CarloMonte FC",
+      "coach": "Dr cholo",
+      "logo": "assets/teams/6150431_02386417.png",
+      "recentForm": [
+        "W"
+      ],
+      "statusBadge": "🔥",
+      "statusLabel": "In Fiamme"
+    },
+    {
+      "rank": 5,
+      "managerId": "m_makakoleone",
+      "teamName": "LEONE MAKAKO CORPORATION",
+      "coach": "Leone",
+      "logo": "assets/teams/20614631_002972323.png",
+      "recentForm": [
+        "W"
+      ],
+      "statusBadge": "📈",
+      "statusLabel": "In Ascesa"
+    },
+    {
+      "rank": 6,
+      "managerId": "m_peterdani",
+      "teamName": "Sarviette FC",
+      "coach": "petrubik88",
+      "logo": "assets/teams/4862674_07729756.png",
+      "recentForm": [
+        "W"
+      ],
+      "statusBadge": "📈",
+      "statusLabel": "In Ascesa"
+    },
+    {
+      "rank": 7,
+      "managerId": "m_scurcio",
+      "teamName": "TorLupara FC",
+      "coach": "cursimone",
+      "logo": "assets/teams/2544594_04501676.png",
+      "recentForm": [
+        "D"
+      ],
+      "statusBadge": "📉",
+      "statusLabel": "In Flessione"
+    },
+    {
+      "rank": 8,
+      "managerId": "m_gizzagustacito",
+      "teamName": "Levrieri d Abruzzo",
+      "coach": "Gizza",
+      "logo": "assets/teams/16496754_03423498.png",
+      "recentForm": [
+        "D"
+      ],
+      "statusBadge": "📉",
+      "statusLabel": "In Flessione"
+    },
+    {
+      "rank": 9,
+      "managerId": "m_vannico",
+      "teamName": "A S CorradiAndBosuTeam",
+      "coach": "vannico",
+      "logo": "assets/teams/2546265_07646962.png",
+      "recentForm": [
+        "L"
+      ],
+      "statusBadge": "🧊",
+      "statusLabel": "Crisi Nera"
+    },
+    {
+      "rank": 10,
+      "managerId": "m_sebba",
+      "teamName": "Arcore 1936",
+      "coach": "sebbadavid",
+      "logo": "assets/teams/2545541_04342571.png",
+      "recentForm": [
+        "L"
+      ],
+      "statusBadge": "🧊",
+      "statusLabel": "Crisi Nera"
+    },
+    {
+      "rank": 11,
+      "managerId": "m_valery",
+      "teamName": "Scalo San Genesio",
+      "coach": "valeriodam",
+      "logo": "assets/teams/2543640_02914103.png",
+      "recentForm": [
+        "L"
+      ],
+      "statusBadge": "🧊",
+      "statusLabel": "Crisi Nera"
+    },
+    {
+      "rank": 12,
+      "managerId": "m_zatte",
+      "teamName": "AS Qualo",
+      "coach": "Zatte",
+      "logo": "assets/teams/20613187_04209253.png",
+      "recentForm": [
+        "L"
+      ],
+      "statusBadge": "🧊",
+      "statusLabel": "Crisi Nera"
+    },
+    {
+      "rank": 13,
+      "managerId": "m_avvisatina",
+      "teamName": "LoTUS FC",
+      "coach": "Juliet-91",
+      "logo": "assets/crests/golden_griffin.svg",
+      "recentForm": [
+        "L"
+      ],
+      "statusBadge": "🧊",
+      "statusLabel": "Crisi Nera"
+    },
+    {
+      "rank": 14,
+      "managerId": "m_pippo",
+      "teamName": "Partizan Peroni",
+      "coach": "Paiden",
+      "logo": "assets/crests/anchor_bay.svg",
+      "recentForm": [
+        "L"
+      ],
+      "statusBadge": "🧊",
+      "statusLabel": "Crisi Nera"
+    }
+  ]
+}

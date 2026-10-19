@@ -1,4 +1,5 @@
 import { renderNodeToCanvas } from './core';
+import { LEAGUE } from '@/config';
 
 /**
  * Renders an exact off-screen clone of the profile modal card into a high-res canvas.
@@ -29,14 +30,14 @@ export async function renderProfileModalCanvas(card: HTMLElement): Promise<HTMLC
     palmaresContent.style.display = 'block';
   }
 
-  // 3. Add balanced, elegant closing footer with InsalAtlas • Palmarès Ufficiale (no links/URLs)
+  // 3. Add balanced, elegant closing footer with LEAGUE.brand.name • LEAGUE.brand.mainTitle Ufficiale (no links/URLs)
   const footer = document.createElement('div');
   footer.className = 'flex items-center justify-center gap-2 pt-3.5 mt-2 border-t text-xs font-bold tracking-wider uppercase opacity-70';
   footer.style.borderColor = 'var(--table-border)';
   footer.style.color = 'var(--text-muted)';
   footer.innerHTML = `
-    <img src="favicon-64x64.png" alt="InsalAtlas" class="w-4 h-4 object-contain inline-block">
-    <span>InsalAtlas • Palmarès Ufficiale</span>
+    <img src="favicon-64x64.png" alt="${LEAGUE.brand.name}" class="w-4 h-4 object-contain inline-block">
+    <span>${LEAGUE.brand.name} • ${LEAGUE.brand.mainTitle} Ufficiale</span>
   `;
   clone.appendChild(footer);
 

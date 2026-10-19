@@ -31,7 +31,7 @@ function norm(str?: string | null): string {
 }
 
 /**
- * Attempts to match a raw coach handle and team name to an InsalAtlas manager ID
+ * Attempts to match a raw coach handle and team name to a canonical manager ID
  */
 export function matchManagerId(
   coachName?: string,
@@ -184,7 +184,7 @@ export function parseFantacalcioText(
       continue;
     }
 
-    // Detect Tournament / Season from title lines like "Classifica Coppa InsalAtlas LeaguePh 26-27"
+    // Detect Tournament / Season from title lines like "Classifica Coppa di Lega 26-27"
     if (/classifica/i.test(line)) {
       detectedCompName = line.replace(/^classifica\s+/i, '').replace(/,+$/, '').trim();
 

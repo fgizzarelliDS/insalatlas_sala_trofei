@@ -38,6 +38,34 @@ export interface LeagueFeatures {
   cartonato: boolean;
 }
 
+export type CompetitionArchetype = 'tier3' | 'tier2' | 'single' | 'dishonor' | 'banners';
+
+export interface CompetitionDefinition {
+  id: string;               // Chiave univoca (es. 'championship', 'cup', 'supercup', 'mundialito', 'spoon', 'cartonato', 'champions')
+  name: string;             // Nome esteso (es. 'Campionato Serie Atlas', 'Coppa di Lega')
+  shortName: string;        // Etichetta compatta per intestazione colonna
+  category: string;         // Categoria abbinata nei record di data.json
+  nameKeywords?: string[];  // Parole chiave secondarie per match nel nome competizione
+  trophyIcon: string;       // Chiave SVG in trophies.ts (oro / trofeo principale)
+  silverTrophyIcon?: string;// Chiave SVG argento (tier3 / tier2)
+  bronzeTrophyIcon?: string;// Chiave SVG bronzo (tier3)
+  type: CompetitionArchetype;
+  scoringPoints: {
+    gold: number;
+    silver?: number;
+    bronze?: number;
+  };
+  grid: {
+    desktopTrack: string;   // CSS track, es. 'minmax(270px, 1.4fr)', '150px'
+    desktopWidthPx: number; // Larghezza base per export canvas HD
+    mobileWidthPx: number;  // Larghezza minima colonna su mobile (<768px)
+  };
+  cardIcon?: string;        // Emoji o icona per la card statistica in alto (default dedotto da archetype/id)
+  cardBadgeStyle?: string;  // Classi CSS/Tailwind per il badge icona nella card (es. 'bg-amber-500/20 text-amber-400')
+  order: number;
+  enabled: boolean;
+}
+
 export type AlboColumnKey =
   | 'manager'
   | 'championship'
@@ -45,12 +73,13 @@ export type AlboColumnKey =
   | 'cup'
   | 'supercup'
   | 'mundialito'
-  | 'cartonato';
+  | 'cartonato'
+  | (string & {});
 
 export interface AlboColumnDef {
   key: AlboColumnKey;
   cssVar: string;
-  titleKey: 'col1' | 'col2' | 'col3' | 'col4' | 'col5' | 'col6' | 'col7';
+  titleKey: string;
   defaultTitle: string;
   enabled: boolean;
   order: number;
@@ -101,6 +130,16 @@ export interface CompetitionRankingItem {
   managerId?: string;
   points: number | null;
   logo?: string;
+  played?: number;
+  won?: number;
+  drawn?: number;
+  lost?: number;
+  goalsFor?: number;
+  goalsAgainst?: number;
+  goalDiff?: number;
+  totalFantaPoints?: number;
+  avgFantaPoints?: number;
+  recentForm?: Array<'W' | 'D' | 'L'>;
 }
 
 export interface CompetitionRecord {
@@ -130,6 +169,7 @@ export interface Manager {
   cartonato: number;
   coach_banners?: string[];
   cartonato_coaches?: string[];
+  trophies?: Record<string, number>;
   history?: SeasonRecord[];
 }
 
@@ -526,6 +566,65 @@ export interface LeagueRecord {
   primaryHolder: RecordHolder; // points to primaryHolders[0] for backward compatibility
   runnerUps: RecordHolder[];
   description: string;
+}
+
+export type FormResult = 'W' | 'D' | 'L';
+
+export type CompositeStatusBadge = '🔥' | '📈' | '⚖️' | '📉' | '🧊';
+
+export interface MatchdayMatch {
+  homeTeam: string;
+  awayTeam: string;
+  homeManagerId?: string;
+  awayManagerId?: string;
+  isPlayed?: boolean;
+  homeOutcome?: FormResult | null;
+  awayOutcome?: FormResult | null;
+  homeScore?: number;
+  awayScore?: number;
+  homeFantaPoints?: number;
+  awayFantaPoints?: number;
+  homeLogo?: string;
+  awayLogo?: string;
+}
+
+export interface MatchdayRound {
+  roundNumber: number;
+  date?: string;
+  matches: MatchdayMatch[];
+}
+
+export interface LiveTeamMetrics {
+  rank: number;
+  managerId?: string;
+  teamName: string;
+  coach: string;
+  recentForm: FormResult[];
+  statusBadge: CompositeStatusBadge;
+  statusLabel: string;
+  logo?: string;
+  points?: number;
+  played?: number;
+  won?: number;
+  drawn?: number;
+  lost?: number;
+  goalsFor?: number;
+  goalsAgainst?: number;
+  goalDiff?: number;
+  totalFantaPoints?: number;
+  avgFantaPoints?: number;
+  expectedRank?: number;
+  deltaLuck?: number;
+  momentum?: number;
+}
+
+export interface LiveSeasonDetails {
+  season: string;
+  competitionId: number | string;
+  lastCompletedRound: number;
+  totalRounds: number;
+  rounds: MatchdayRound[];
+  standings: LiveTeamMetrics[];
 }
 
 

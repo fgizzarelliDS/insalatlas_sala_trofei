@@ -140,12 +140,6 @@ export function renderOtherTournamentsSection(otherTournaments: CompetitionRecor
             <div class="flex items-center gap-2 font-sport font-bold text-xs sm:text-sm tracking-wide">
               ${trophyElement}
               <span>${tourn.name}</span>
-              ${isInProgress ? `
-                <span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-500 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
-                  <span class="w-1 h-1 rounded-full bg-amber-500 dark:bg-amber-400 animate-pulse"></span>
-                  In corso
-                </span>
-              ` : ''}
             </div>
             <span class="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-md border shadow-sm ${badgeStyleClass}">
               ${categoryBadge}

@@ -1,4 +1,5 @@
 import { state } from '@/state';
+import { LEAGUE } from '@/config';
 import { resolveTeamLogo, getTeamFallbackCrest, isCustomLogo } from '@/crests';
 import type { Manager, CompetitionRecord } from '@/types';
 
@@ -23,7 +24,7 @@ export function getSeasonMatchdays(season: string, teamCount?: number): number {
   if (teamCount === 12) {
     return 33;
   }
-  // All Serie Atlas 12-team seasons from 2020/21 onwards have 33 matchdays
+  // Standard 12-team seasons (3 rounds = 33 matchdays)
   const seasonStartYear = parseInt(season.split('/')[0], 10);
   if (!isNaN(seasonStartYear) && seasonStartYear >= 2020) {
     return 33;
@@ -33,7 +34,7 @@ export function getSeasonMatchdays(season: string, teamCount?: number): number {
 }
 
 /**
- * Computes dynamic year span and count of completed Serie Atlas championships
+ * Computes dynamic year span and count of completed championships
  * e.g. { startYear: 2016, endYear: 2026, spanText: '2016-2026', completedCount: 10 }
  */
 export function getLeagueYearSpan(competitionsList?: CompetitionRecord[]): {
@@ -55,10 +56,11 @@ export function getLeagueYearSpan(competitionsList?: CompetitionRecord[]): {
     }
   });
 
-  const startYear = years.length > 0 ? Math.min(...years) : 2016;
-  const maxStartYear = years.length > 0 ? Math.max(...years) : 2025;
+  const currentYear = new Date().getFullYear();
+  const startYear = years.length > 0 ? Math.min(...years) : currentYear;
+  const maxStartYear = years.length > 0 ? Math.max(...years) : currentYear;
   const endYear = maxStartYear + 1;
-  const completedCount = completedChampionships.length > 0 ? completedChampionships.length : 10;
+  const completedCount = completedChampionships.length > 0 ? completedChampionships.length : 0;
 
   return {
     startYear,
@@ -85,14 +87,21 @@ export function resolveManagerName(
 }
 
 /**
- * Filters out in-progress competitions and returns only completed Serie Atlas championships
+ * Filters out in-progress competitions and returns only completed league championships
  */
 export function getCompletedChampionships(competitions: CompetitionRecord[]): CompetitionRecord[] {
+  const champLabel = (LEAGUE?.brand?.championshipLabel || '').toLowerCase();
   return (competitions || []).filter(c => {
     if (c.in_progress || c.status === 'in_progress') return false;
     const cat = (c.category || '').toLowerCase();
     const name = (c.name || '').toLowerCase();
-    return cat === 'championship' || name.includes('serie') || (!c.category && !name.includes('coppa'));
+    return (
+      cat === 'championship' ||
+      (champLabel && name.includes(champLabel)) ||
+      name.includes('serie') ||
+      name.includes('campionato') ||
+      (!c.category && !name.includes('coppa'))
+    );
   });
 }
 
@@ -177,7 +186,7 @@ export function resolveManagerRecordCrest(
   }
 
   // 3. Fallback to explicitTeamName or manager name
-  const fallbackName = explicitTeamName || mgr?.name || 'InsalAtlas FC';
+  const fallbackName = explicitTeamName || mgr?.name || 'FC';
   return {
     teamName: fallbackName,
     logo: resolveTeamLogo(fallbackName),

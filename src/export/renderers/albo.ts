@@ -1,5 +1,6 @@
 import { state } from '@/state';
 import { showToast } from '@/ui';
+import { ALBO_COLUMNS, getActiveCompetitions, getCompetitionDef } from '@/config';
 import { renderNodeToCanvas, copyBlobToClipboard } from './core';
 
 /**
@@ -20,7 +21,6 @@ export async function renderAlboCanvas(customWrapper?: HTMLElement): Promise<HTM
   // 2. Clone the wrapper for off-screen desktop rendering
   const clone = wrapper.cloneNode(true) as HTMLElement;
   clone.id = 'palmares-export-clone';
-  const targetWidth = 1380;
 
   // 3. Remove interactive and mobile-only elements
   clone.querySelector('#scroll-hint-pill')?.remove();
@@ -45,20 +45,43 @@ export async function renderAlboCanvas(customWrapper?: HTMLElement): Promise<HTM
     captionEl.style.display = 'block';
   }
 
-  // 4. Force desktop column CSS variables on the clone
+  // 4. Compute dynamic column template and widths based on enabled ALBO_COLUMNS
+  let sumColWidths = 280; // manager base width
   clone.style.setProperty('--col-manager', '280px');
-  clone.style.setProperty('--col-championship', '270px');
-  clone.style.setProperty('--col-spoon', '90px');
-  clone.style.setProperty('--col-cup', '150px');
-  clone.style.setProperty('--col-supercup', '120px');
-  clone.style.setProperty('--col-mundialito', '120px');
-  clone.style.setProperty('--col-cartonato', '220px');
 
-  // 5. Ensure desktop 6-column layout for top summary cards (including Banner Cartonato)
+  for (const comp of getActiveCompetitions()) {
+    const width = comp.grid.desktopWidthPx || 120;
+    sumColWidths += width;
+    clone.style.setProperty(`--col-${comp.id}`, `${width}px`);
+  }
+
+  const columnWeights: Record<string, string> = {
+    manager: 'minmax(240px, 1.5fr)',
+    championship: 'minmax(220px, 1.4fr)',
+    cup: 'minmax(140px, 0.9fr)',
+    supercup: 'minmax(130px, 0.8fr)',
+    mundialito: 'minmax(130px, 0.8fr)',
+    spoon: 'minmax(70px, 0.5fr)',
+    cartonato: 'minmax(160px, 1.2fr)'
+  };
+  const dynamicColsTemplate = ALBO_COLUMNS.map(c => {
+    if (c.key === 'manager') return 'minmax(240px, 1.5fr)';
+    return columnWeights[c.key] || getCompetitionDef(c.key)?.grid.desktopTrack || 'minmax(120px, 1fr)';
+  }).join(' ');
+
+  clone.style.setProperty('--albo-cols', dynamicColsTemplate);
+
+  // Scalable canvas width: max(1380, sum of column widths + safe padding)
+  const targetWidth = Math.max(1380, sumColWidths + 80);
+
+  // 5. Ensure dynamic column layout for top summary cards (adapts cleanly to active cards)
   const summaryGrid = clone.querySelector('.grid.grid-cols-2') as HTMLElement | null;
   if (summaryGrid) {
+    const visibleCards = Array.from(summaryGrid.children).filter(
+      c => (c as HTMLElement).style.display !== 'none' && !c.classList.contains('hidden')
+    ).length;
     summaryGrid.style.display = 'grid';
-    summaryGrid.style.gridTemplateColumns = 'repeat(6, minmax(0, 1fr))';
+    summaryGrid.style.gridTemplateColumns = `repeat(${visibleCards || 4}, minmax(0, 1fr))`;
     summaryGrid.style.gap = '12px';
   }
 
@@ -68,20 +91,34 @@ export async function renderAlboCanvas(customWrapper?: HTMLElement): Promise<HTM
     scrollContainer.style.overflow = 'visible';
     scrollContainer.style.overflowX = 'visible';
     scrollContainer.style.width = '100%';
+    scrollContainer.style.maxWidth = 'none';
   }
   const innerWrap = scrollContainer?.firstElementChild as HTMLElement | null;
   if (innerWrap) {
+    innerWrap.classList.remove('w-max');
     innerWrap.style.minWidth = '100%';
     innerWrap.style.width = '100%';
+    innerWrap.style.maxWidth = 'none';
     innerWrap.style.overflow = 'visible';
   }
 
-  // 7. Fix header row: remove sticky, ensure unclipped text and proper padding across all columns
+  const tableWrap = clone.querySelector('.albo-table-wrap') as HTMLElement | null;
+  if (tableWrap) {
+    tableWrap.style.width = '100%';
+    tableWrap.style.maxWidth = 'none';
+  }
+
+  // 7. Fix header row: remove sticky, apply dynamicColsTemplate inline to beat mobile @media queries
   const headerRow = clone.querySelector('.albo-grid-row') as HTMLElement | null;
   if (headerRow) {
     headerRow.style.paddingTop = '12px';
     headerRow.style.paddingBottom = '12px';
     headerRow.style.overflow = 'visible';
+    headerRow.style.width = '100%';
+    headerRow.style.maxWidth = 'none';
+    headerRow.style.minWidth = '100%';
+    headerRow.style.boxSizing = 'border-box';
+    headerRow.style.gridTemplateColumns = dynamicColsTemplate;
   }
 
   // De-truncate and unclip all header cells (prevents vertical font clipping in SVG foreignObject)
@@ -96,12 +133,17 @@ export async function renderAlboCanvas(customWrapper?: HTMLElement): Promise<HTM
     el.style.boxShadow = 'none';
   });
 
-  // 8. Fix shelf rows: remove sticky, unclip manager name and score stats
+  // 8. Fix shelf rows: remove sticky, unclip manager name and apply dynamicColsTemplate inline
   const shelfRows = clone.querySelectorAll('.table-shelf-row');
   shelfRows.forEach(row => {
     const rowEl = row as HTMLElement;
     rowEl.style.minHeight = '56px';
     rowEl.style.overflow = 'visible';
+    rowEl.style.width = '100%';
+    rowEl.style.maxWidth = 'none';
+    rowEl.style.minWidth = '100%';
+    rowEl.style.boxSizing = 'border-box';
+    rowEl.style.gridTemplateColumns = dynamicColsTemplate;
 
     const col1 = rowEl.firstElementChild as HTMLElement | null;
     if (col1) {

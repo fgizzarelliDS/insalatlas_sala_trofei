@@ -1,9 +1,10 @@
 import { renderNodeToCanvas } from './core';
+import { LEAGUE } from '@/config';
 
 /**
  * Renders an exact off-screen clone of the Trophy Roll of Honor modal dialog into a high-res canvas.
  * Expands scrollable lists to ensure all editions are captured, strips interactive buttons and dropdowns,
- * and attaches an elegant official InsalAtlas footer.
+ * and attaches an elegant official league footer.
  */
 export async function renderTrophyModalCanvas(dialog: HTMLElement): Promise<HTMLCanvasElement> {
   const clone = dialog.cloneNode(true) as HTMLElement;
@@ -42,14 +43,14 @@ export async function renderTrophyModalCanvas(dialog: HTMLElement): Promise<HTML
     bodyEl.style.height = 'auto';
   }
 
-  // 4. Replace footer with clean InsalAtlas watermark badge
+  // 4. Replace footer with clean league watermark badge
   const footerEl = clone.querySelector('.border-t.flex.items-center.justify-between') as HTMLElement | null;
   if (footerEl) {
     footerEl.innerHTML = `
       <div class="flex items-center justify-center gap-2 w-full py-1 text-xs font-bold tracking-wider uppercase opacity-70"
         style="color: var(--text-muted);">
-        <img src="favicon-64x64.png" alt="InsalAtlas" class="w-4 h-4 object-contain inline-block">
-        <span>InsalAtlas • Albo d'Oro Ufficiale</span>
+        <img src="favicon-64x64.png" alt="${LEAGUE.brand.name}" class="w-4 h-4 object-contain inline-block">
+        <span>${LEAGUE.brand.name} • ${LEAGUE.brand.subtitle || "Albo d'Oro Ufficiale"}</span>
       </div>
     `;
   }

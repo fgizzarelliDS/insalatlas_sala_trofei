@@ -2,6 +2,7 @@ import type { Manager, TradingCardBadge } from '@/types';
 import { calculateManagerScore, formatScore } from '@/score';
 import { renderTrophySVG, renderCoachBanner } from '@/trophies';
 import { computeManagerBadges } from '@/analytics';
+import { LEAGUE, LEAGUE_SITE_HOST } from '@/config';
 
 /**
  * Computes dynamic merit and behavioral badges for a manager's trading card
@@ -55,9 +56,9 @@ export function buildTradingCardHTML(manager: Manager): string {
       <!-- Card Top Header -->
       <div class="flex items-center justify-between border-b pb-3" style="border-color: var(--table-border);">
         <div class="flex items-center gap-3">
-          <img src="favicon-64x64.png" alt="InsalAtlas" class="w-10 h-10 object-contain drop-shadow" />
+          <img src="favicon-64x64.png" alt="${LEAGUE.brand.name}" class="w-10 h-10 object-contain drop-shadow" />
           <div>
-            <span class="block text-xs uppercase font-black tracking-widest" style="color: var(--accent-color, #eab308);">InsalAtlas Lega</span>
+            <span class="block text-xs uppercase font-black tracking-widest" style="color: var(--accent-color, #eab308);">${LEAGUE.brand.name}</span>
             <span class="block text-[11px] opacity-70">Scheda Ufficiale Palmarès</span>
           </div>
         </div>
@@ -167,7 +168,7 @@ export function buildTradingCardHTML(manager: Manager): string {
 
       <!-- Card Footer -->
       <div class="border-t pt-2.5 flex items-center justify-between text-[11px] opacity-50 font-mono" style="border-color: var(--table-border);">
-        <span>fgizzarellids.github.io/insalatlas_sala_trofei</span>
+        <span>${LEAGUE_SITE_HOST}</span>
         <span>Scheda Ufficiale ${new Date().getFullYear()}</span>
       </div>
     </div>

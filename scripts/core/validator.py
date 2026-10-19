@@ -52,6 +52,10 @@ def validate_manager(m: Dict[str, Any], index: int) -> Optional[str]:
             if not isinstance(m[arr_field], list) or not all(isinstance(x, str) for x in m[arr_field]):
                 return f"Manager #{index} ({m['id']}): '{arr_field}' must be a list of strings."
 
+    if "trophies" in m:
+        if not isinstance(m["trophies"], dict) or not all(isinstance(k, str) and isinstance(v, int) for k, v in m["trophies"].items()):
+            return f"Manager #{index} ({m['id']}): 'trophies' must be a dictionary of string -> int."
+
     if "history" in m:
         if not isinstance(m["history"], list):
             return f"Manager #{index} ({m['id']}): 'history' must be a list."

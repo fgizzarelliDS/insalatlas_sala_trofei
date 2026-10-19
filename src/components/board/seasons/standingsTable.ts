@@ -6,7 +6,10 @@ import { LEAGUE } from '@/config';
 import {
   getLiveSeasonDetails,
   renderFormDotsHTML,
-  renderStatusBadgeHTML
+  renderStatusBadgeHTML,
+  renderLuckBadgeHTML,
+  renderDeltaRankPillHTML,
+  renderDeltaPointsPillHTML
 } from './liveAnalytics';
 
 /**
@@ -24,7 +27,7 @@ function renderLiveChampionshipTable(
   const lastCompleted = liveData.lastCompletedRound || 0;
   const totalRounds = liveData.totalRounds || 0;
 
-  // Desktop Table Rows
+  // Real View: Desktop Rows
   const desktopRowsHTML = standings.map(team => {
     const mgr = state.managers?.find(m => m.id === team.managerId);
     const managerName = mgr ? mgr.name : (team.coach || 'Allenatore');
@@ -81,7 +84,7 @@ function renderLiveChampionshipTable(
     `;
   }).join('');
 
-  // Mobile Clean Cards (< 768px)
+  // Real View: Mobile Clean Cards (< 768px)
   const mobileCardsHTML = standings.map(team => {
     const mgr = state.managers?.find(m => m.id === team.managerId);
     const managerName = mgr ? mgr.name : (team.coach || 'Allenatore');
@@ -99,7 +102,6 @@ function renderLiveChampionshipTable(
       <div onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${team.managerId || ''}', '${escapedTeamName}')"
            class="p-3 border-b last:border-b-0 transition-colors active:bg-amber-500/10 cursor-pointer"
            style="border-color: var(--table-border);">
-        <!-- Top Row: Rank + Team/Coach + Status -->
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-2.5 min-w-0 flex-1">
             <span class="w-7 h-6 rounded-md text-[11px] border flex items-center justify-center shrink-0 ${rankBadgeClass}">
@@ -122,7 +124,6 @@ function renderLiveChampionshipTable(
           </div>
         </div>
 
-        <!-- Sub-Detail Row: ONLY Forma L5 -->
         <div class="flex items-center justify-between gap-1 mt-2 pt-1.5 border-t text-[10px] font-semibold opacity-90"
              style="border-color: var(--table-border); color: var(--text-muted);">
           <span class="text-[10px] uppercase font-bold tracking-wider opacity-60">Forma Recente (L5)</span>
@@ -134,87 +135,358 @@ function renderLiveChampionshipTable(
     `;
   }).join('');
 
+  // Merit View: Sort by xRank ascending
+  const meritStandings = [...standings].sort((a, b) => {
+    const rA = a.scheduleLuck?.xRank ?? a.rank;
+    const rB = b.scheduleLuck?.xRank ?? b.rank;
+    return rA - rB;
+  });
+
+  // Merit View: Desktop Rows
+  const desktopMeritRowsHTML = meritStandings.map(team => {
+    const mgr = state.managers?.find(m => m.id === team.managerId);
+    const managerName = mgr ? mgr.name : (team.coach || 'Allenatore');
+    const teamLogo = resolveTeamLogo(team.teamName, team.logo);
+    const escapedTeamName = team.teamName.replace(/'/g, "\\'");
+    const luck = team.scheduleLuck;
+    const xRank = luck?.xRank ?? team.rank;
+    const deltaRank = luck?.deltaRank ?? 0;
+    const xPts = luck?.xPoints ?? 0;
+    const deltaPts = luck?.deltaPoints ?? 0;
+    const ap = luck?.allPlayRecord ?? { played: 0, wins: 0, draws: 0, losses: 0, winPct: 0 };
+    const luckBadge = luck?.luckBadge ?? '⚖️';
+    const luckLabel = luck?.luckLabel ?? 'Neutro';
+    const luckZ = luck?.luckZScore ?? 0;
+
+    let rankBadgeClass = 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 font-bold';
+    if (xRank === 1) {
+      rankBadgeClass = 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-500/25 dark:text-amber-300 dark:border-amber-500/40 font-black';
+    } else if (xRank === 2) {
+      rankBadgeClass = 'bg-slate-200 text-slate-800 border-slate-300 dark:bg-slate-700/60 dark:text-slate-200 dark:border-slate-600 font-bold';
+    } else if (xRank === 3) {
+      rankBadgeClass = 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-700/25 dark:text-amber-400 dark:border-amber-700/40 font-bold';
+    } else if (xRank >= 12) {
+      rankBadgeClass = 'bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/40 font-bold';
+    }
+
+    const mcPodium = luck?.monteCarlo?.pPodiumPct;
+    const mcSpoon = luck?.monteCarlo?.pSpoonPct;
+    const mcDisplayHTML = (mcPodium !== null && mcPodium !== undefined && mcSpoon !== null && mcSpoon !== undefined)
+      ? `<div class="text-[10px] font-bold"><span class="text-amber-500 dark:text-amber-400">Podio: ${mcPodium}%</span></div><div class="text-[9px] opacity-70" style="color: var(--text-muted);">Cucchiaio: ${mcSpoon}%</div>`
+      : `<span class="px-2 py-0.5 rounded-full text-[9px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700" title="Le proiezioni probabilistiche di fine stagione si sbloccano dopo 5 giornate">Dalla 5ª g.</span>`;
+
+    return `
+      <tr onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${team.managerId || ''}', '${escapedTeamName}')"
+          class="border-b last:border-b-0 transition-colors cursor-pointer hover:bg-amber-500/10 group"
+          style="border-color: var(--table-border);">
+        <!-- Pos. xPTS & Delta vs Reale -->
+        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-24">
+          <div class="flex flex-col items-center gap-0.5">
+            <div class="flex items-center gap-1.5">
+              <span class="px-2 py-0.5 rounded-lg text-xs border shadow-xs inline-block ${rankBadgeClass}">
+                #${xRank}
+              </span>
+              ${renderDeltaRankPillHTML(deltaRank, team.rank)}
+            </div>
+            <span class="text-[10px] font-semibold opacity-60" style="color: var(--text-muted);">Reale #${team.rank}</span>
+          </div>
+        </td>
+        <!-- Squadra & Manager -->
+        <td class="py-2.5 px-3 text-left align-middle min-w-0">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <img src="${teamLogo}" alt="${team.teamName}"
+                 class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-700 shadow-sm transition-transform group-hover:scale-105"
+                 onerror="this.onerror=null; this.src='${getTeamFallbackCrest(team.teamName)}'">
+            <div class="min-w-0 flex-1">
+              <div class="font-bold text-xs sm:text-sm leading-snug truncate" style="color: var(--text-main);">
+                ${team.teamName}
+              </div>
+              <div class="text-[10px] sm:text-[11px] font-semibold flex items-center gap-1 mt-0.5 truncate" style="color: var(--accent-color);">
+                <i class="fa-solid fa-user-tie text-[9px] opacity-70 shrink-0"></i>
+                <span class="truncate">${managerName}</span>
+              </div>
+            </div>
+          </div>
+        </td>
+        <!-- Punti Attesi (xPTS) & Delta -->
+        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-28">
+          <div class="font-bold font-mono text-xs sm:text-sm" style="color: var(--text-main);">
+            ${xPts.toFixed(2)} xPTS
+          </div>
+          <div class="mt-0.5">
+            ${renderDeltaPointsPillHTML(deltaPts)}
+          </div>
+        </td>
+        <!-- Record Tutti vs Tutti -->
+        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-32">
+          <div class="font-bold font-mono text-xs" style="color: var(--text-main);">
+            ${ap.wins}V ${ap.draws}N ${ap.losses}P
+          </div>
+          <div class="text-[10px] font-semibold mt-0.5" style="color: var(--text-muted);">
+            ${ap.winPct}% vittorie
+          </div>
+        </td>
+        <!-- Indice Fortuna Z-Score -->
+        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-36">
+          ${renderLuckBadgeHTML(luckBadge, luckLabel, luckZ)}
+        </td>
+        <!-- Scenari Monte Carlo -->
+        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-24">
+          ${mcDisplayHTML}
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  // Merit View: Mobile Clean Cards (< 768px)
+  const mobileMeritCardsHTML = meritStandings.map(team => {
+    const mgr = state.managers?.find(m => m.id === team.managerId);
+    const managerName = mgr ? mgr.name : (team.coach || 'Allenatore');
+    const teamLogo = resolveTeamLogo(team.teamName, team.logo);
+    const escapedTeamName = team.teamName.replace(/'/g, "\\'");
+    const luck = team.scheduleLuck;
+    const xRank = luck?.xRank ?? team.rank;
+    const deltaRank = luck?.deltaRank ?? 0;
+    const xPts = luck?.xPoints ?? 0;
+    const deltaPts = luck?.deltaPoints ?? 0;
+    const ap = luck?.allPlayRecord ?? { played: 0, wins: 0, draws: 0, losses: 0, winPct: 0 };
+    const luckBadge = luck?.luckBadge ?? '⚖️';
+    const luckLabel = luck?.luckLabel ?? 'Neutro';
+    const luckZ = luck?.luckZScore ?? 0;
+
+    let rankBadgeClass = 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-300 font-bold';
+    if (xRank === 1) {
+      rankBadgeClass = 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-500/25 dark:text-amber-300 font-black';
+    } else if (xRank <= 3) {
+      rankBadgeClass = 'bg-slate-200 text-slate-800 dark:bg-slate-700/60 dark:text-slate-200 font-bold';
+    }
+
+    return `
+      <div onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${team.managerId || ''}', '${escapedTeamName}')"
+           class="p-3 border-b last:border-b-0 transition-colors active:bg-amber-500/10 cursor-pointer"
+           style="border-color: var(--table-border);">
+        <div class="flex items-center justify-between gap-2.5">
+          <div class="flex items-center gap-2.5 min-w-0 flex-1">
+            <div class="flex flex-col items-center shrink-0">
+              <span class="w-7 h-6 rounded-md text-[11px] border flex items-center justify-center ${rankBadgeClass}">
+                #${xRank}
+              </span>
+              <div class="mt-0.5">
+                ${renderDeltaRankPillHTML(deltaRank, team.rank)}
+              </div>
+            </div>
+            <img src="${teamLogo}" alt="${team.teamName}"
+                 class="w-8 h-8 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-700 shadow-xs"
+                 onerror="this.onerror=null; this.src='${getTeamFallbackCrest(team.teamName)}'">
+            <div class="min-w-0 flex-1">
+              <div class="font-bold text-xs sm:text-sm leading-tight truncate" style="color: var(--text-main);">
+                ${team.teamName}
+              </div>
+              <div class="text-[10px] sm:text-[11px] font-semibold opacity-80 truncate flex items-center gap-1 mt-0.5" style="color: var(--accent-color);">
+                <span>${managerName}</span>
+                <span class="opacity-60" style="color: var(--text-muted);">• Reale #${team.rank}</span>
+              </div>
+            </div>
+          </div>
+          <div class="shrink-0">
+            ${renderLuckBadgeHTML(luckBadge, luckLabel, luckZ, true)}
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-2 mt-2 pt-2 border-t text-[11px]"
+             style="border-color: var(--table-border);">
+          <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap">
+            <span class="font-bold font-mono text-xs" style="color: var(--text-main);">${xPts.toFixed(2)} xPTS</span>
+            ${renderDeltaPointsPillHTML(deltaPts)}
+          </div>
+          <div class="text-[10px] font-semibold font-mono truncate text-right" style="color: var(--text-muted);">
+            <span>Vs Tutti: <strong style="color: var(--text-main);">${ap.wins}V-${ap.draws}N-${ap.losses}P</strong> (${ap.winPct}%)</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
   return `
     <div class="albo-table-wrap rounded-2xl overflow-hidden border mb-6 shadow-sm" style="border-color: var(--table-border); background-color: var(--table-surface);">
-      <!-- Table Header Banner -->
-      <div class="px-3.5 sm:px-4 py-2.5 sm:py-3 border-b flex flex-wrap items-center justify-between gap-2"
+      <!-- Table Header Banner (Integrated with Switcher & Guide Toggle) -->
+      <div class="px-3.5 sm:px-4 py-2.5 sm:py-3 border-b"
            style="border-color: var(--table-border); background-color: var(--header-bg); color: var(--header-text);">
-        <div class="flex items-center gap-2 font-sport font-bold text-xs sm:text-sm tracking-wide">
-          ${renderTrophySVG('gold_cup', 'compact')}
-          <span>${championship.name} (${championship.season})</span>
-          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-500 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400 animate-pulse"></span>
-            In corso • G${lastCompleted}/${totalRounds}
-          </span>
+        <div class="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
+          
+          <!-- Title & Live Round Badge -->
+          <div class="flex items-center gap-2 font-sport font-bold text-xs sm:text-sm tracking-wide">
+            ${renderTrophySVG('gold_cup', 'compact')}
+            <span>${championship.name} (${championship.season})</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+              In corso • G${lastCompleted}/${totalRounds}
+            </span>
+          </div>
+
+          <!-- Switcher: order-last w-full on mobile (< sm), order-none w-auto on desktop (>= sm) -->
+          <div class="order-3 sm:order-2 w-full sm:w-auto grid grid-cols-2 sm:inline-flex items-center p-0.5 rounded-xl bg-black/25 backdrop-blur-xs border border-white/15 shadow-inner">
+            <button id="btn-live-view-real"
+                    type="button"
+                    onclick="window.switchLiveStandingsView && window.switchLiveStandingsView('real')"
+                    class="px-2.5 sm:px-3 py-1.5 sm:py-1 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer bg-amber-500 text-slate-950 shadow-xs">
+              <i class="fa-solid fa-list-ol text-[11px]"></i>
+              <span>Classifica Reale</span>
+            </button>
+            <button id="btn-live-view-merit"
+                    type="button"
+                    onclick="window.switchLiveStandingsView && window.switchLiveStandingsView('merit')"
+                    class="px-2.5 sm:px-3 py-1.5 sm:py-1 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-white/75 hover:text-white hover:bg-white/10">
+              <i class="fa-solid fa-scale-balanced text-[11px]"></i>
+              <span>Merito & Fortuna</span>
+            </button>
+          </div>
+
+          <!-- Right side: Guide Toggle Button & Teams Count -->
+          <div class="order-2 sm:order-3 flex items-center gap-2 shrink-0">
+            <button type="button"
+                    onclick="window.toggleLiveStandingsGuide && window.toggleLiveStandingsGuide()"
+                    class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-xs font-semibold transition hover:bg-white/20 active:scale-95 cursor-pointer shadow-xs bg-white/10 text-white/90 border-white/20 backdrop-blur-xs"
+                    title="Clicca per aprire la guida">
+              <i class="fa-solid fa-circle-info text-amber-300"></i>
+              <span class="hidden sm:inline">Guida & Legenda</span>
+              <span class="sm:hidden">Guida</span>
+              <i id="live-guide-chevron" class="fa-solid fa-chevron-down text-[10px] ml-0.5 transition-transform duration-200"></i>
+            </button>
+            <div class="text-xs font-semibold opacity-75 hidden sm:block">
+              ${standings.length} Squadre
+            </div>
+          </div>
+
         </div>
-        <button type="button"
-                onclick="window.toggleLiveStandingsGuide && window.toggleLiveStandingsGuide()"
-                class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-xs font-semibold transition hover:bg-amber-500/15 active:scale-95 cursor-pointer shadow-xs bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/30"
-                title="Clicca per aprire la legenda dello stato di forma e guida partite">
-          <i class="fa-solid fa-circle-info text-amber-400"></i>
-          <span class="hidden sm:inline">Clicca su una squadra per le partite • Guida Stato</span>
-          <span class="sm:hidden">Tocca per le partite • Guida</span>
-          <i id="live-guide-chevron" class="fa-solid fa-chevron-down text-[10px] ml-0.5 transition-transform duration-200"></i>
-        </button>
       </div>
 
-      <!-- Expandable Collapsible Guide Box -->
+      <!-- Expandable Collapsible Dynamic Guide Box -->
       <div id="live-standings-guide" class="hidden border-b p-3.5 sm:p-4 text-xs transition-all"
            style="border-color: var(--table-border); background-color: var(--table-surface);">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
-          <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-amber-500 dark:text-amber-400">
-            <i class="fa-solid fa-chart-line"></i>
-            <span>Legenda Stato & Momentum (L5)</span>
+        <!-- Guide Content for Real View -->
+        <div id="guide-content-real">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+            <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-amber-600 dark:text-amber-400">
+              <i class="fa-solid fa-chart-line"></i>
+              <span>Legenda Stato & Momentum (L5)</span>
+            </div>
+            <span class="text-[10px] font-semibold opacity-70" style="color: var(--text-muted);">
+              Ponderato sulle ultime 5 gare (le più recenti incidono di più)
+            </span>
           </div>
-          <span class="text-[10px] font-semibold opacity-70" style="color: var(--text-muted);">
-            Ponderato sulle ultime 5 gare (le più recenti incidono di più)
-          </span>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-2.5">
+            <!-- 🔥 In Fiamme -->
+            <div class="p-2 sm:p-2.5 rounded-xl border bg-amber-500/10 border-amber-500/30 flex items-start gap-2">
+              <span class="text-base leading-none shrink-0">🔥</span>
+              <div>
+                <div class="font-bold text-amber-800 dark:text-amber-400 text-xs">IN FIAMME</div>
+                <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Momentum &ge; 75% e fantapunti recenti sopra media lega.</div>
+              </div>
+            </div>
+
+            <!-- 📈 In Ascesa -->
+            <div class="p-2 sm:p-2.5 rounded-xl border bg-emerald-500/10 border-emerald-500/30 flex items-start gap-2">
+              <span class="text-base leading-none shrink-0">📈</span>
+              <div>
+                <div class="font-bold text-emerald-800 dark:text-emerald-400 text-xs">IN ASCESA</div>
+                <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Momentum &ge; 55% con vittoria nell'ultimo turno disputato.</div>
+              </div>
+            </div>
+
+            <!-- ⚖️ Stabile -->
+            <div class="p-2 sm:p-2.5 rounded-xl border bg-slate-500/10 border-slate-500/30 flex items-start gap-2">
+              <span class="text-base leading-none shrink-0">⚖️</span>
+              <div>
+                <div class="font-bold text-slate-800 dark:text-slate-200 text-xs">STABILE</div>
+                <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Rendimento bilanciato e trend a centro classifica.</div>
+              </div>
+            </div>
+
+            <!-- 📉 In Flessione -->
+            <div class="p-2 sm:p-2.5 rounded-xl border bg-orange-500/10 border-orange-500/30 flex items-start gap-2">
+              <span class="text-base leading-none shrink-0">📉</span>
+              <div>
+                <div class="font-bold text-orange-800 dark:text-orange-400 text-xs">IN FLESSIONE</div>
+                <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Momentum &le; 35% oppure 2 sconfitte consecutive.</div>
+              </div>
+            </div>
+
+            <!-- 🧊 Crisi Nera -->
+            <div class="p-2 sm:p-2.5 rounded-xl border bg-cyan-500/10 border-cyan-500/30 flex items-start gap-2">
+              <span class="text-base leading-none shrink-0">🧊</span>
+              <div>
+                <div class="font-bold text-cyan-800 dark:text-cyan-400 text-xs">CRISI NERA</div>
+                <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Momentum &le; 15% (striscia prolungata negativa).</div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-2.5">
-          <!-- 🔥 In Fiamme -->
-          <div class="p-2 sm:p-2.5 rounded-xl border bg-amber-500/10 border-amber-500/30 flex items-start gap-2">
-            <span class="text-base leading-none shrink-0">🔥</span>
-            <div>
-              <div class="font-bold text-amber-500 dark:text-amber-400 text-xs">IN FIAMME</div>
-              <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Momentum &ge; 75% e fantapunti recenti sopra media lega.</div>
+        <!-- Guide Content for Merit View -->
+        <div id="guide-content-merit" class="hidden">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+            <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-amber-600 dark:text-amber-400">
+              <i class="fa-solid fa-scale-balanced"></i>
+              <span>Guida Merito (xPTS) & Calendario Monte Carlo</span>
+            </div>
+            <span class="text-[10px] font-semibold opacity-70" style="color: var(--text-muted);">
+              1 vs Tutti a soglie gol (66/72/78) • 10.000 calendari alternativi simulati
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-2.5">
+            <!-- 🍀 Favorevole -->
+            <div class="p-2 sm:p-2.5 rounded-xl border bg-emerald-500/10 border-emerald-500/30 flex items-start gap-2">
+              <span class="text-base leading-none shrink-0">🍀</span>
+              <div>
+                <div class="font-bold text-emerald-800 dark:text-emerald-400 text-xs">FAVOREVOLE (&ge; +1.0σ)</div>
+                <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Massima resa dagli incroci. Punti reali superiori al merito oggettivo.</div>
+              </div>
+            </div>
+
+            <!-- ↗️ Positivo -->
+            <div class="p-2 sm:p-2.5 rounded-xl border bg-teal-500/10 border-teal-500/30 flex items-start gap-2">
+              <span class="text-base leading-none shrink-0">↗️</span>
+              <div>
+                <div class="font-bold text-teal-800 dark:text-teal-400 text-xs">POSITIVO (+0.35..+1.0σ)</div>
+                <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Accoppiamenti favorevoli rispetto al volume di fantapunti prodotti.</div>
+              </div>
+            </div>
+
+            <!-- ⚖️ Neutro -->
+            <div class="p-2 sm:p-2.5 rounded-xl border bg-slate-500/10 border-slate-500/30 flex items-start gap-2">
+              <span class="text-base leading-none shrink-0">⚖️</span>
+              <div>
+                <div class="font-bold text-slate-800 dark:text-slate-200 text-xs">NEUTRO (±0.35σ)</div>
+                <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Calendario bilanciato. Punti reali allineati al merito della squadra.</div>
+              </div>
+            </div>
+
+            <!-- ↘️ Sfortunato -->
+            <div class="p-2 sm:p-2.5 rounded-xl border bg-amber-500/10 border-amber-500/30 flex items-start gap-2">
+              <span class="text-base leading-none shrink-0">↘️</span>
+              <div>
+                <div class="font-bold text-amber-800 dark:text-amber-400 text-xs">SFORTUNATO (-0.35..-1.0σ)</div>
+                <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Penalizzato dal calendario. Ha affrontato avversari in gran spolvero.</div>
+              </div>
+            </div>
+
+            <!-- ⛈️ Bersagliato -->
+            <div class="p-2 sm:p-2.5 rounded-xl border bg-rose-500/10 border-rose-500/30 flex items-start gap-2">
+              <span class="text-base leading-none shrink-0">⛈️</span>
+              <div>
+                <div class="font-bold text-rose-800 dark:text-rose-400 text-xs">BERSAGLIATO (&le; -1.0σ)</div>
+                <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Fortissima sfortuna: punti persi in sfide proibitive nonostante punteggi alti.</div>
+              </div>
             </div>
           </div>
 
-          <!-- 📈 In Ascesa -->
-          <div class="p-2 sm:p-2.5 rounded-xl border bg-emerald-500/10 border-emerald-500/30 flex items-start gap-2">
-            <span class="text-base leading-none shrink-0">📈</span>
-            <div>
-              <div class="font-bold text-emerald-500 dark:text-emerald-400 text-xs">IN ASCESA</div>
-              <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Momentum &ge; 55% con vittoria nell'ultimo turno disputato.</div>
-            </div>
-          </div>
-
-          <!-- ⚖️ Stabile -->
-          <div class="p-2 sm:p-2.5 rounded-xl border bg-slate-500/10 border-slate-500/30 flex items-start gap-2">
-            <span class="text-base leading-none shrink-0">⚖️</span>
-            <div>
-              <div class="font-bold text-slate-500 dark:text-slate-300 text-xs">STABILE</div>
-              <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Rendimento bilanciato e trend a centro classifica.</div>
-            </div>
-          </div>
-
-          <!-- 📉 In Flessione -->
-          <div class="p-2 sm:p-2.5 rounded-xl border bg-orange-500/10 border-orange-500/30 flex items-start gap-2">
-            <span class="text-base leading-none shrink-0">📉</span>
-            <div>
-              <div class="font-bold text-orange-500 dark:text-orange-400 text-xs">IN FLESSIONE</div>
-              <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Momentum &le; 35% oppure 2 sconfitte consecutive.</div>
-            </div>
-          </div>
-
-          <!-- 🧊 Crisi Nera -->
-          <div class="p-2 sm:p-2.5 rounded-xl border bg-cyan-500/10 border-cyan-500/30 flex items-start gap-2">
-            <span class="text-base leading-none shrink-0">🧊</span>
-            <div>
-              <div class="font-bold text-cyan-500 dark:text-cyan-400 text-xs">CRISI NERA</div>
-              <div class="text-[10px] opacity-80 leading-snug" style="color: var(--text-main);">Momentum &le; 15% (striscia prolungata negativa).</div>
-            </div>
+          <div class="mt-2.5 pt-2 border-t flex flex-wrap items-center justify-between gap-2 text-[11px] opacity-80"
+               style="border-color: var(--table-border); color: var(--text-muted);">
+            <div><strong>Punti Attesi (xPTS):</strong> Media esatta dei punti meritati simulando ogni giornata contro tutti i 13 avversari.</div>
+            <div><strong>ΔPunti:</strong> Punti Reali − xPTS (differenza dovuta unicamente alla casualità del calendario).</div>
           </div>
         </div>
 
@@ -228,27 +500,58 @@ function renderLiveChampionshipTable(
         </div>
       </div>
 
-      <!-- Desktop View (>= 768px) -->
-      <div class="hidden md:block overflow-x-auto">
-        <table class="w-full text-left border-collapse table-auto">
-          <thead>
-            <tr class="border-b text-[10px] sm:text-[11px] uppercase tracking-wider opacity-70 font-bold"
-                style="border-color: var(--table-border); background-color: var(--table-surface);">
-              <th class="py-2.5 px-3 text-center w-14">Pos</th>
-              <th class="py-2.5 px-3 text-left">Squadra / Allenatore</th>
-              <th class="py-2.5 px-3 text-center w-36">Forma (L5)</th>
-              <th class="py-2.5 px-3 text-center w-32">Stato</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${desktopRowsHTML}
-          </tbody>
-        </table>
+      <!-- View 1: Real Standings Container -->
+      <div id="live-view-real-container">
+        <!-- Desktop View (>= 768px) -->
+        <div class="hidden md:block overflow-x-auto">
+          <table class="w-full text-left border-collapse table-auto">
+            <thead>
+              <tr class="border-b text-[10px] sm:text-[11px] uppercase tracking-wider opacity-70 font-bold"
+                  style="border-color: var(--table-border); background-color: var(--table-surface);">
+                <th class="py-2.5 px-3 text-center w-14">Pos</th>
+                <th class="py-2.5 px-3 text-left">Squadra / Allenatore</th>
+                <th class="py-2.5 px-3 text-center w-36">Forma (L5)</th>
+                <th class="py-2.5 px-3 text-center w-32">Stato</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${desktopRowsHTML}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Clean View (< 768px) -->
+        <div class="md:hidden flex flex-col divide-y divide-[var(--table-border)]">
+          ${mobileCardsHTML}
+        </div>
       </div>
 
-      <!-- Mobile Clean View (< 768px) -->
-      <div class="md:hidden flex flex-col divide-y divide-[var(--table-border)]">
-        ${mobileCardsHTML}
+      <!-- View 2: Merit & Fortuna Standings Container -->
+      <div id="live-view-merit-container" class="hidden">
+        <!-- Desktop View (>= 768px) -->
+        <div class="hidden md:block overflow-x-auto">
+          <table class="w-full text-left border-collapse table-auto">
+            <thead>
+              <tr class="border-b text-[10px] sm:text-[11px] uppercase tracking-wider opacity-70 font-bold"
+                  style="border-color: var(--table-border); background-color: var(--table-surface);">
+                <th class="py-2.5 px-3 text-center w-24">Pos. xPTS</th>
+                <th class="py-2.5 px-3 text-left">Squadra / Allenatore</th>
+                <th class="py-2.5 px-3 text-center w-28">Punti Attesi</th>
+                <th class="py-2.5 px-3 text-center w-32">Tutti vs Tutti</th>
+                <th class="py-2.5 px-3 text-center w-36">Indice Fortuna</th>
+                <th class="py-2.5 px-3 text-center w-24">Scenari MC</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${desktopMeritRowsHTML}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Clean View (< 768px) -->
+        <div class="md:hidden flex flex-col divide-y divide-[var(--table-border)]">
+          ${mobileMeritCardsHTML}
+        </div>
       </div>
     </div>
   `;
@@ -395,22 +698,68 @@ export function renderChampionshipTable(championship: CompetitionRecord): string
 declare global {
   interface Window {
     toggleLiveStandingsGuide?: () => void;
+    switchLiveStandingsView?: (mode: 'real' | 'merit') => void;
+  }
+}
+
+export function toggleLiveStandingsGuide(): void {
+  const guide = typeof document !== 'undefined' ? document.getElementById('live-standings-guide') : null;
+  const chevron = typeof document !== 'undefined' ? document.getElementById('live-guide-chevron') : null;
+  if (guide) {
+    const isHidden = guide.classList.contains('hidden');
+    if (isHidden) {
+      guide.classList.remove('hidden');
+      chevron?.classList.add('rotate-180');
+    } else {
+      guide.classList.add('hidden');
+      chevron?.classList.remove('rotate-180');
+    }
+  }
+}
+
+const INACTIVE_TAB_CLASSES = ['text-white/75', 'hover:text-white', 'hover:bg-white/10'];
+const ACTIVE_TAB_CLASSES = ['bg-amber-500', 'text-slate-950', 'shadow-xs'];
+
+export function switchLiveStandingsView(mode: 'real' | 'merit'): void {
+  if (typeof document === 'undefined') return;
+
+  const btnReal = document.getElementById('btn-live-view-real');
+  const btnMerit = document.getElementById('btn-live-view-merit');
+
+  const viewReal = document.getElementById('live-view-real-container');
+  const viewMerit = document.getElementById('live-view-merit-container');
+
+  const guideReal = document.getElementById('guide-content-real');
+  const guideMerit = document.getElementById('guide-content-merit');
+
+  if (mode === 'real') {
+    btnReal?.classList.remove(...INACTIVE_TAB_CLASSES);
+    btnReal?.classList.add(...ACTIVE_TAB_CLASSES);
+
+    btnMerit?.classList.remove(...ACTIVE_TAB_CLASSES);
+    btnMerit?.classList.add(...INACTIVE_TAB_CLASSES);
+
+    viewReal?.classList.remove('hidden');
+    viewMerit?.classList.add('hidden');
+
+    guideReal?.classList.remove('hidden');
+    guideMerit?.classList.add('hidden');
+  } else {
+    btnMerit?.classList.remove(...INACTIVE_TAB_CLASSES);
+    btnMerit?.classList.add(...ACTIVE_TAB_CLASSES);
+
+    btnReal?.classList.remove(...ACTIVE_TAB_CLASSES);
+    btnReal?.classList.add(...INACTIVE_TAB_CLASSES);
+
+    viewReal?.classList.add('hidden');
+    viewMerit?.classList.remove('hidden');
+
+    guideReal?.classList.add('hidden');
+    guideMerit?.classList.remove('hidden');
   }
 }
 
 if (typeof window !== 'undefined') {
-  window.toggleLiveStandingsGuide = () => {
-    const guide = document.getElementById('live-standings-guide');
-    const chevron = document.getElementById('live-guide-chevron');
-    if (guide) {
-      const isHidden = guide.classList.contains('hidden');
-      if (isHidden) {
-        guide.classList.remove('hidden');
-        chevron?.classList.add('rotate-180');
-      } else {
-        guide.classList.add('hidden');
-        chevron?.classList.remove('rotate-180');
-      }
-    }
-  };
+  window.toggleLiveStandingsGuide = toggleLiveStandingsGuide;
+  window.switchLiveStandingsView = switchLiveStandingsView;
 }

@@ -5,9 +5,12 @@ import {
   renderFormDotsHTML,
   renderDeltaLuckBadgeHTML,
   renderStatusBadgeHTML,
+  renderLuckBadgeHTML,
+  renderDeltaRankPillHTML,
+  renderDeltaPointsPillHTML,
   setLiveSeasonDetails
 } from '@/components/board/seasons/liveAnalytics';
-import { renderChampionshipTable } from '@/components/board/seasons/standingsTable';
+import { renderChampionshipTable, switchLiveStandingsView } from '@/components/board/seasons/standingsTable';
 import { openTeamMatchesModal, closeTeamMatchesModal } from '@/components/board/seasons/TeamMatchesModal';
 import type { CompetitionRecord, LiveSeasonDetails } from '@/types';
 import { state } from '@/state';
@@ -523,6 +526,182 @@ describe('Live In-Progress Form & Analytics Engine', () => {
       expect(content?.innerHTML).toContain('VITTORIA');
 
       closeModal();
+    });
+  });
+
+  describe('Schedule Luck, xPTS & 2-Way View Switching', () => {
+    it('renders luck badges correctly for all 5 categories', () => {
+      const lucky = renderLuckBadgeHTML('🍀', 'Favorevole', 1.45);
+      expect(lucky).toContain('🍀');
+      expect(lucky).toContain('Favorevole');
+      expect(lucky).toContain('+1.45σ');
+      expect(lucky).toContain('bg-emerald-500/20');
+
+      const positive = renderLuckBadgeHTML('↗️', 'Positivo', 0.65);
+      expect(positive).toContain('↗️');
+      expect(positive).toContain('Positivo');
+      expect(positive).toContain('+0.65σ');
+
+      const neutral = renderLuckBadgeHTML('⚖️', 'Neutro', 0.0);
+      expect(neutral).toContain('⚖️');
+      expect(neutral).toContain('Neutro');
+      expect(neutral).toContain('0.00σ');
+
+      const unlucky = renderLuckBadgeHTML('↘️', 'Sfortunato', -0.75);
+      expect(unlucky).toContain('↘️');
+      expect(unlucky).toContain('Sfortunato');
+      expect(unlucky).toContain('-0.75σ');
+
+      const battered = renderLuckBadgeHTML('⛈️', 'Bersagliato', -1.82);
+      expect(battered).toContain('⛈️');
+      expect(battered).toContain('Bersagliato');
+      expect(battered).toContain('-1.82σ');
+      expect(battered).toContain('bg-rose-500/20');
+    });
+
+    it('renders delta rank comparison pills correctly', () => {
+      const gain = renderDeltaRankPillHTML(3, 4);
+      expect(gain).toContain('▲ +3');
+      expect(gain).toContain('bg-emerald-100');
+
+      const drop = renderDeltaRankPillHTML(-2, 1);
+      expect(drop).toContain('▼ -2');
+      expect(drop).toContain('bg-rose-100');
+
+      const equal = renderDeltaRankPillHTML(0, 5);
+      expect(equal).toContain('= 0');
+      expect(equal).toContain('bg-slate-100');
+    });
+
+    it('renders delta points pills correctly', () => {
+      const luckyPts = renderDeltaPointsPillHTML(1.42);
+      expect(luckyPts).toContain('+1.42 pt');
+      expect(luckyPts).toContain('text-emerald-800');
+
+      const unluckyPts = renderDeltaPointsPillHTML(-1.85);
+      expect(unluckyPts).toContain('-1.85 pt');
+      expect(unluckyPts).toContain('text-rose-800');
+
+      const neutralPts = renderDeltaPointsPillHTML(0.0);
+      expect(neutralPts).toContain('0.00 pt');
+    });
+
+    it('renders 2-way toggle in standings table and switches views smoothly', () => {
+      const mockComp: CompetitionRecord = {
+        id: 863632,
+        name: 'Campionato',
+        season: '2026/27',
+        category: 'championship',
+        in_progress: true,
+        ranking: [
+          { rank: 1, teamName: 'Steven Bradbury FC', coach: 'alfius91', managerId: 'm_alfo', points: 3 },
+          { rank: 2, teamName: 'TorLupara FC', coach: 'cursimone', managerId: 'm_scurcio', points: 1 }
+        ]
+      };
+
+      setLiveSeasonDetails({
+        season: '2026/27',
+        competitionId: 863632,
+        lastCompletedRound: 1,
+        totalRounds: 26,
+        rounds: [],
+        standings: [
+          {
+            rank: 1,
+            managerId: 'm_alfo',
+            teamName: 'Steven Bradbury FC',
+            coach: 'alfius91',
+            recentForm: ['W'],
+            statusBadge: '🔥',
+            statusLabel: 'In Fiamme',
+            scheduleLuck: {
+              xPoints: 2.77,
+              deltaPoints: 0.23,
+              xRank: 1,
+              deltaRank: 0,
+              allPlayRecord: { played: 13, wins: 12, draws: 0, losses: 1, winPct: 92.3 },
+              luckZScore: 0.0,
+              luckBadge: '⚖️',
+              luckLabel: 'Neutro'
+            }
+          },
+          {
+            rank: 2,
+            managerId: 'm_scurcio',
+            teamName: 'TorLupara FC',
+            coach: 'cursimone',
+            recentForm: ['D'],
+            statusBadge: '📉',
+            statusLabel: 'In Flessione',
+            scheduleLuck: {
+              xPoints: 2.08,
+              deltaPoints: -1.08,
+              xRank: 2,
+              deltaRank: 0,
+              allPlayRecord: { played: 13, wins: 8, draws: 3, losses: 2, winPct: 61.5 },
+              luckZScore: -1.65,
+              luckBadge: '⛈️',
+              luckLabel: 'Bersagliato'
+            }
+          }
+        ]
+      });
+
+      const tableHTML = renderChampionshipTable(mockComp);
+      expect(tableHTML).toContain('btn-live-view-real');
+      expect(tableHTML).toContain('btn-live-view-merit');
+      expect(tableHTML).toContain('live-view-real-container');
+      expect(tableHTML).toContain('live-view-merit-container');
+      expect(tableHTML).toContain('guide-content-real');
+      expect(tableHTML).toContain('guide-content-merit');
+
+      // Test view switching DOM manipulation with Mock Elements
+      class MockElement {
+        classes = new Set<string>();
+        classList = {
+          add: (...cls: string[]) => cls.forEach(c => this.classes.add(c)),
+          remove: (...cls: string[]) => cls.forEach(c => this.classes.delete(c)),
+          contains: (cls: string) => this.classes.has(cls)
+        };
+      }
+
+      const elements: Record<string, MockElement> = {
+        'btn-live-view-real': new MockElement(),
+        'btn-live-view-merit': new MockElement(),
+        'live-view-real-container': new MockElement(),
+        'live-view-merit-container': new MockElement(),
+        'guide-content-real': new MockElement(),
+        'guide-content-merit': new MockElement()
+      };
+
+      elements['live-view-merit-container'].classList.add('hidden');
+      elements['guide-content-merit'].classList.add('hidden');
+
+      const origDoc = (globalThis as any).document;
+      (globalThis as any).document = {
+        getElementById: (id: string) => elements[id] || null
+      };
+
+      try {
+        expect(elements['live-view-real-container'].classList.contains('hidden')).toBe(false);
+        expect(elements['live-view-merit-container'].classList.contains('hidden')).toBe(true);
+
+        // Switch to merit view
+        switchLiveStandingsView('merit');
+        expect(elements['live-view-real-container'].classList.contains('hidden')).toBe(true);
+        expect(elements['live-view-merit-container'].classList.contains('hidden')).toBe(false);
+        expect(elements['guide-content-real'].classList.contains('hidden')).toBe(true);
+        expect(elements['guide-content-merit'].classList.contains('hidden')).toBe(false);
+
+        // Switch back to real view
+        switchLiveStandingsView('real');
+        expect(elements['live-view-real-container'].classList.contains('hidden')).toBe(false);
+        expect(elements['live-view-merit-container'].classList.contains('hidden')).toBe(true);
+        expect(elements['guide-content-real'].classList.contains('hidden')).toBe(false);
+        expect(elements['guide-content-merit'].classList.contains('hidden')).toBe(true);
+      } finally {
+        (globalThis as any).document = origDoc;
+      }
     });
   });
 });

@@ -572,6 +572,31 @@ export type FormResult = 'W' | 'D' | 'L';
 
 export type CompositeStatusBadge = '🔥' | '📈' | '⚖️' | '📉' | '🧊';
 
+export type LuckBadge = '🍀' | '↗️' | '⚖️' | '↘️' | '⛈️';
+
+export interface ScheduleLuckAnalytics {
+  xPoints: number;
+  deltaPoints: number;
+  xRank: number;
+  deltaRank: number;
+  allPlayRecord: {
+    played: number;
+    wins: number;
+    draws: number;
+    losses: number;
+    winPct: number;
+  };
+  luckZScore: number;
+  luckBadge: LuckBadge;
+  luckLabel: string;
+  monteCarlo?: {
+    medianPoints: number;
+    stdDev: number;
+    pPodiumPct?: number | null;
+    pSpoonPct?: number | null;
+  };
+}
+
 export interface MatchdayMatch {
   homeTeam: string;
   awayTeam: string;
@@ -603,6 +628,7 @@ export interface LiveTeamMetrics {
   statusBadge: CompositeStatusBadge;
   statusLabel: string;
   logo?: string;
+  scheduleLuck?: ScheduleLuckAnalytics;
   points?: number;
   played?: number;
   won?: number;

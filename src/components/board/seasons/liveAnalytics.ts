@@ -1,6 +1,7 @@
 import type {
   FormResult,
   CompositeStatusBadge,
+  LuckBadge,
   LiveSeasonDetails
 } from '@/types';
 
@@ -154,11 +155,11 @@ export function renderDeltaLuckBadgeHTML(deltaLuck: number, expectedRank: number
  * Renders composite status pill with tooltip
  */
 export function renderStatusBadgeHTML(badge: CompositeStatusBadge, label: string): string {
-  let badgeStyle = 'bg-slate-500/20 text-slate-400 border-slate-500/30';
-  if (badge === '🔥') badgeStyle = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-  if (badge === '📈') badgeStyle = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
-  if (badge === '📉') badgeStyle = 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-  if (badge === '🧊') badgeStyle = 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
+  let badgeStyle = 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-500/20 dark:text-slate-300 dark:border-slate-500/30';
+  if (badge === '🔥') badgeStyle = 'bg-amber-100 text-amber-800 border-amber-300/80 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30';
+  if (badge === '📈') badgeStyle = 'bg-emerald-100 text-emerald-800 border-emerald-300/80 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/30';
+  if (badge === '📉') badgeStyle = 'bg-orange-100 text-orange-800 border-orange-300/80 dark:bg-orange-500/20 dark:text-orange-300 dark:border-orange-500/30';
+  if (badge === '🧊') badgeStyle = 'bg-cyan-100 text-cyan-800 border-cyan-300/80 dark:bg-cyan-500/20 dark:text-cyan-300 dark:border-cyan-500/30';
 
   return `
     <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-xs font-bold border shadow-xs ${badgeStyle}" title="Stato e Momentum: ${label}">
@@ -167,3 +168,106 @@ export function renderStatusBadgeHTML(badge: CompositeStatusBadge, label: string
     </span>
   `;
 }
+
+/**
+ * Renders Schedule Luck Z-score badge with color and tooltip
+ */
+export function renderLuckBadgeHTML(
+  badge: LuckBadge,
+  label: string,
+  zScore: number,
+  compact: boolean = false
+): string {
+  let badgeStyle = 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800/80 dark:text-slate-200 dark:border-slate-700';
+  if (badge === '🍀') {
+    badgeStyle = 'bg-emerald-50 text-emerald-800 border-emerald-300/80 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/40';
+  } else if (badge === '↗️') {
+    badgeStyle = 'bg-teal-50 text-teal-800 border-teal-300/80 dark:bg-teal-500/20 dark:text-teal-300 dark:border-teal-500/40';
+  } else if (badge === '⚖️') {
+    badgeStyle = 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800/80 dark:text-slate-200 dark:border-slate-700';
+  } else if (badge === '↘️') {
+    badgeStyle = 'bg-amber-50 text-amber-800 border-amber-300/80 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40';
+  } else if (badge === '⛈️') {
+    badgeStyle = 'bg-rose-50 text-rose-800 border-rose-300/80 dark:bg-rose-500/20 dark:text-rose-300 dark:border-rose-500/40';
+  }
+
+  const sign = zScore > 0 ? '+' : '';
+  const zFormatted = `${sign}${zScore.toFixed(2)}σ`;
+
+  if (compact) {
+    return `
+      <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-xs font-bold border shadow-xs ${badgeStyle} whitespace-nowrap"
+            title="Indice Calendario (Z-Score): ${label} (${zFormatted})">
+        <span class="text-xs leading-none">${badge}</span>
+        <span class="text-[10px] font-bold tracking-wide">${label}</span>
+      </span>
+    `;
+  }
+
+  return `
+    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-bold border shadow-xs ${badgeStyle} whitespace-nowrap"
+          title="Indice Calendario (Z-Score): ${label} (${zFormatted})">
+      <span class="text-sm leading-none">${badge}</span>
+      <span class="text-[10px] font-bold tracking-wide">${label}</span>
+      <span class="text-[9px] font-mono opacity-80 ml-0.5">(${zFormatted})</span>
+    </span>
+  `;
+}
+
+/**
+ * Renders minimalist comparison delta pill vs Real Rank
+ * (e.g. ▲ +3 vs Reale #4, ▼ -2 vs Reale #5, = 0)
+ */
+export function renderDeltaRankPillHTML(deltaRank: number, realRank: number): string {
+  if (deltaRank > 0) {
+    return `
+      <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300/80 dark:bg-emerald-500/25 dark:text-emerald-300 dark:border-emerald-500/40 whitespace-nowrap"
+            title="Meriterebbe #${realRank - deltaRank} su merito, mentre in classifica reale è #${realRank} (+${deltaRank} posizioni di merito)">
+        <span>▲ +${deltaRank}</span>
+      </span>
+    `;
+  }
+  if (deltaRank < 0) {
+    return `
+      <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300/80 dark:bg-rose-500/25 dark:text-rose-300 dark:border-rose-500/40 whitespace-nowrap"
+            title="In classifica reale è #${realRank}, ma in merito oggettivo è #${realRank - deltaRank} (${deltaRank} posizioni di calendario)">
+        <span>▼ ${deltaRank}</span>
+      </span>
+    `;
+  }
+  return `
+    <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-300 dark:bg-slate-800/80 dark:text-slate-400 dark:border-slate-700 whitespace-nowrap"
+          title="Posizione di merito identica alla classifica reale (#${realRank})">
+      <span>= 0</span>
+    </span>
+  `;
+}
+
+/**
+ * Renders Delta Points pill (Actual Points - xPTS)
+ */
+export function renderDeltaPointsPillHTML(deltaPoints: number): string {
+  if (deltaPoints > 0) {
+    return `
+      <span class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300/80 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/30 whitespace-nowrap"
+            title="Fortuna da calendario: +${deltaPoints.toFixed(2)} punti conquistati rispetto al merito matematico">
+        +${deltaPoints.toFixed(2)} pt
+      </span>
+    `;
+  }
+  if (deltaPoints < 0) {
+    return `
+      <span class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300/80 dark:bg-rose-500/20 dark:text-rose-300 dark:border-rose-500/30 whitespace-nowrap"
+            title="Sfortuna da calendario: ${deltaPoints.toFixed(2)} punti persi a causa di incroci avversi">
+        ${deltaPoints.toFixed(2)} pt
+      </span>
+    `;
+  }
+  return `
+    <span class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-300 dark:bg-slate-800/80 dark:text-slate-400 dark:border-slate-700 whitespace-nowrap"
+          title="Punti reali perfettamente allineati ai punti attesi">
+      0.00 pt
+    </span>
+  `;
+}
+

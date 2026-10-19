@@ -225,16 +225,25 @@ Per le stagioni contrassegnate come `in_progress: true`, il sistema attiva un mo
      - `Squadra / Allenatore`: Nome club e manager con stemma ufficiale ad alta definizione.
      - `Forma (L5)`: Pallini compatti colorati 🟢 (Vittoria), 🟡 (Pareggio), 🔴 (Sconfitta).
      - `Stato`: Badge qualitativo di momento (`🔥 IN FIAMME`, `📈 IN ASCESA`, `⚖️ STABILE`, `📉 IN FLESSIONE`, `🧊 CRISI NERA`) con etichetta estesa visibile sia su desktop che su mobile.
-   - **Mobile (< 768px)**: Card compatte touch-friendly con `#Pos`, club, mister, badge di stato ed espansione sub-dettaglio per i pallini L5.
-3. **Banner Espandibile: Legenda Stato & Guida Partite**:
-   - Nell'header della tabella live è presente il selettore interattivo con icona info: `[ℹ️ Clicca su una squadra per le partite • Guida Stato ▾]`.
-   - Cliccandovi, si apre a soffietto un box informativo con le definizioni e le soglie dei 5 badge di stato e del Momentum (L5), oltre alle indicazioni di navigazione.
-4. **Tabellino Partite Minimalista (`TeamMatchesModal.ts`)**:
+    - **Mobile (< 768px)**: Card compatte touch-friendly con `#Pos`, club, mister, badge di stato ed espansione sub-dettaglio per i pallini L5.
+3. **Selettore a 2 Viste & Guida Dinamica Integrati nell'Header (`standingsTable.ts`)**:
+   - Direttamente nell'header box della tabella (la fascia con il colore del tema) è integrato lo switch segmentato a 2 viste in stile dark glass (`bg-black/25 backdrop-blur-xs border-white/15`):
+     - `[ Classifica Reale ]`: visualizzazione a 4 colonne focalizzata sulla corsa campionato (Pos, Squadra, Forma L5, Stato).
+     - `[ Merito & Fortuna (xPTS) ]`: visualizzazione analitica scientifica che misura la distorsione del calendario.
+     - Su desktop (>= sm) lo switch si trova sulla stessa riga dopo la dicitura `In corso`; su mobile (< sm) occupa ordinatamente una seconda riga a tutta larghezza (50/50).
+   - **Pulsante Guida Dinamica `[ℹ️ Guida & Legenda ▾]`**:
+     - Posizionato a destra nell'header in stile glass, apre a fisarmonica la guida contestuale direttamente sopra la tabella.
+     - In *Classifica Reale*: illustra il Momentum L5 e la matrice dei 5 badge di Stato.
+     - In *Merito & Fortuna*: illustra il calcolo dei punti attesi $x\text{PTS}$ (matrice 1 vs Tutti a soglie gol), il delta di fortuna $\Delta\text{Pt}$, e i 5 badge di fortuna del Z-Score Monte Carlo (`🍀`, `↗️`, `⚖️`, `↘️`, `⛈️`).
+4. **Colonne della Classifica Merito & Fortuna**:
+   - **Pos. xPTS**: Piazzamento di merito con pillola comparativa minimalista rispetto alla posizione reale (es. `▲ +3 (R:#4)`, `▼ -2 (R:#1)`, `= 0`).
+   - **Squadra & Allenatore**: Stemma, nome club e mister, interattivi per aprire il tabellino gare.
+   - **Punti Attesi ($x\text{PTS}$)**: Punti meritati su base 3 punti partita, con pillola $\Delta\text{Pt} = \text{Punti Reali} - x\text{PTS}$ (verde se favorito dal calendario, rosso se sfortunato).
+   - **Record Tutti vs Tutti**: Risultati cumulativi affrontando tutti gli altri 13 manager ogni giornata (es. `11V 1N 1P`) e percentuale vittorie.
+   - **Indice Fortuna Z-Score**: Badge con emoji, etichetta e deviazione standard $\mathcal{L}_z$ calcolata su 10.000 calendari alternativi.
+   - **Scenari Monte Carlo**: Percentuali di Podio % e Cucchiaio % (attivate a partire dalla 5ª giornata disputata per garantire solidità statistica).
+5. **Tabellino Partite Minimalista (`TeamMatchesModal.ts`)**:
    - **Layout Essenziale**: Badge giornata in grassetto su singola riga (`G1`, `G2`...), stemma squadra e denominazione avversario affiancati orizzontalmente. Rimossi data, nome mister e pill CASA/TRASFERTA per massima pulizia visiva.
    - **Mascheramento Punteggi & Esiti**: Mostra unicamente badge qualitativi (`VITTORIA` 🟢, `PAREGGIO` 🟡, `SCONFITTA` 🔴). Gli incontri non ancora disputati (in programma) riportano un pulito indicatore **`-`** privo di esito forzato.
    - **Navigazione Contestuale tra Avversari**: Cliccando su qualsiasi squadra avversaria, il modale carica istantaneamente il calendario del club cliccato, esponendo un pulsante circolare `[←]` nell'header per ripercorrere a ritroso la cronologia di navigazione.
-5. **Roadmap Statistica Avanzata**:
-   - Progettazione del modello a due livelli per la stima del merito reale e della fortuna di calendario:
-     - **Tier 1 (Goal-Threshold All-Play)**: Punti attesi $x\text{PTS}$ simulando duelli contro tutti i 13 avversari ogni giornata convertendo i fantapunti in soglie gol standard.
-     - **Tier 2 (Monte Carlo Permutations)**: $K=10.000$ permutazioni di calendario con punteggi settimanali fissati per calcolare mediana punti, intervalli di confidenza, Z-score di fortuna $\mathcal{L}_z$ e probabilità titolo/cucchiaio.
 

@@ -8,6 +8,14 @@ import os
 import json
 from typing import Dict, Any, List, Optional, Tuple
 
+try:
+    from core.luck_simulator import compute_schedule_luck_analytics
+except ImportError:
+    try:
+        from luck_simulator import compute_schedule_luck_analytics
+    except ImportError:
+        from scripts.core.luck_simulator import compute_schedule_luck_analytics
+
 def compute_momentum(recent_form: List[str]) -> float:
     """
     Computes recency-weighted momentum in [0.0, 1.0].
@@ -509,9 +517,20 @@ def compile_live_season_details(
             'matches': masked_matches
         })
 
+    # Compute Schedule Luck & Expected Rank Analytics
+    schedule_luck_data = compute_schedule_luck_analytics(
+        teams_stats=teams_stats,
+        all_rounds=all_rounds,
+        total_rounds=total_rounds,
+        season=season_name,
+        last_completed_round=last_completed
+    )
+
     # Clean intermediate calculation fields from final JSON standings
     final_standings = []
     for t in teams_list:
+        t_name = t['teamName']
+        luck_entry = schedule_luck_data.get(t_name, {})
         final_standings.append({
             'rank': t['rank'],
             'managerId': t.get('managerId'),
@@ -520,7 +539,8 @@ def compile_live_season_details(
             'logo': t.get('logo'),
             'recentForm': t['recentForm'],
             'statusBadge': t['statusBadge'],
-            'statusLabel': t['statusLabel']
+            'statusLabel': t['statusLabel'],
+            'scheduleLuck': luck_entry
         })
 
     compiled_details = {
@@ -537,3 +557,11 @@ def compile_live_season_details(
         json.dump(compiled_details, f, indent=2, ensure_ascii=False)
 
     return compiled_details
+
+
+if __name__ == '__main__':
+    res = compile_live_season_details()
+    if res:
+        print(f"Successfully compiled live season details for {res.get('season')}")
+    else:
+        print("No live season details compiled.")

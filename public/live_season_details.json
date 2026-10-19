@@ -1784,7 +1784,29 @@
         "W"
       ],
       "statusBadge": "🔥",
-      "statusLabel": "In Fiamme"
+      "statusLabel": "In Fiamme",
+      "scheduleLuck": {
+        "xPoints": 3.0,
+        "deltaPoints": 0.0,
+        "xRank": 1,
+        "deltaRank": 0,
+        "allPlayRecord": {
+          "played": 13,
+          "wins": 13,
+          "draws": 0,
+          "losses": 0,
+          "winPct": 100.0
+        },
+        "luckZScore": 0.0,
+        "luckBadge": "⚖️",
+        "luckLabel": "Neutro",
+        "monteCarlo": {
+          "medianPoints": 3.0,
+          "stdDev": 0.0,
+          "pPodiumPct": null,
+          "pSpoonPct": null
+        }
+      }
     },
     {
       "rank": 2,
@@ -1796,7 +1818,29 @@
         "W"
       ],
       "statusBadge": "🔥",
-      "statusLabel": "In Fiamme"
+      "statusLabel": "In Fiamme",
+      "scheduleLuck": {
+        "xPoints": 2.77,
+        "deltaPoints": 0.23,
+        "xRank": 2,
+        "deltaRank": 0,
+        "allPlayRecord": {
+          "played": 13,
+          "wins": 12,
+          "draws": 0,
+          "losses": 1,
+          "winPct": 92.3
+        },
+        "luckZScore": 0.0,
+        "luckBadge": "⚖️",
+        "luckLabel": "Neutro",
+        "monteCarlo": {
+          "medianPoints": 3.0,
+          "stdDev": 0.8,
+          "pPodiumPct": null,
+          "pSpoonPct": null
+        }
+      }
     },
     {
       "rank": 3,
@@ -1808,7 +1852,29 @@
         "W"
       ],
       "statusBadge": "🔥",
-      "statusLabel": "In Fiamme"
+      "statusLabel": "In Fiamme",
+      "scheduleLuck": {
+        "xPoints": 2.08,
+        "deltaPoints": 0.92,
+        "xRank": 3,
+        "deltaRank": 0,
+        "allPlayRecord": {
+          "played": 13,
+          "wins": 8,
+          "draws": 3,
+          "losses": 2,
+          "winPct": 61.5
+        },
+        "luckZScore": 0.0,
+        "luckBadge": "⚖️",
+        "luckLabel": "Neutro",
+        "monteCarlo": {
+          "medianPoints": 3.0,
+          "stdDev": 1.2,
+          "pPodiumPct": null,
+          "pSpoonPct": null
+        }
+      }
     },
     {
       "rank": 4,
@@ -1820,7 +1886,29 @@
         "W"
       ],
       "statusBadge": "🔥",
-      "statusLabel": "In Fiamme"
+      "statusLabel": "In Fiamme",
+      "scheduleLuck": {
+        "xPoints": 2.08,
+        "deltaPoints": 0.92,
+        "xRank": 4,
+        "deltaRank": 0,
+        "allPlayRecord": {
+          "played": 13,
+          "wins": 8,
+          "draws": 3,
+          "losses": 2,
+          "winPct": 61.5
+        },
+        "luckZScore": 0.0,
+        "luckBadge": "⚖️",
+        "luckLabel": "Neutro",
+        "monteCarlo": {
+          "medianPoints": 3.0,
+          "stdDev": 1.2,
+          "pPodiumPct": null,
+          "pSpoonPct": null
+        }
+      }
     },
     {
       "rank": 5,
@@ -1832,7 +1920,29 @@
         "W"
       ],
       "statusBadge": "📈",
-      "statusLabel": "In Ascesa"
+      "statusLabel": "In Ascesa",
+      "scheduleLuck": {
+        "xPoints": 1.15,
+        "deltaPoints": 1.85,
+        "xRank": 7,
+        "deltaRank": -2,
+        "allPlayRecord": {
+          "played": 13,
+          "wins": 4,
+          "draws": 3,
+          "losses": 6,
+          "winPct": 30.8
+        },
+        "luckZScore": 1.55,
+        "luckBadge": "🍀",
+        "luckLabel": "Favorevole",
+        "monteCarlo": {
+          "medianPoints": 1.0,
+          "stdDev": 1.29,
+          "pPodiumPct": null,
+          "pSpoonPct": null
+        }
+      }
     },
     {
       "rank": 6,
@@ -1844,7 +1954,29 @@
         "W"
       ],
       "statusBadge": "📈",
-      "statusLabel": "In Ascesa"
+      "statusLabel": "In Ascesa",
+      "scheduleLuck": {
+        "xPoints": 1.15,
+        "deltaPoints": 1.85,
+        "xRank": 8,
+        "deltaRank": -2,
+        "allPlayRecord": {
+          "played": 13,
+          "wins": 4,
+          "draws": 3,
+          "losses": 6,
+          "winPct": 30.8
+        },
+        "luckZScore": 1.55,
+        "luckBadge": "🍀",
+        "luckLabel": "Favorevole",
+        "monteCarlo": {
+          "medianPoints": 1.0,
+          "stdDev": 1.29,
+          "pPodiumPct": null,
+          "pSpoonPct": null
+        }
+      }
     },
     {
       "rank": 7,
@@ -1856,7 +1988,29 @@
         "D"
       ],
       "statusBadge": "📉",
-      "statusLabel": "In Flessione"
+      "statusLabel": "In Flessione",
+      "scheduleLuck": {
+        "xPoints": 2.08,
+        "deltaPoints": -1.08,
+        "xRank": 5,
+        "deltaRank": 2,
+        "allPlayRecord": {
+          "played": 13,
+          "wins": 8,
+          "draws": 3,
+          "losses": 2,
+          "winPct": 61.5
+        },
+        "luckZScore": -1.66,
+        "luckBadge": "⛈️",
+        "luckLabel": "Bersagliato",
+        "monteCarlo": {
+          "medianPoints": 3.0,
+          "stdDev": 1.21,
+          "pPodiumPct": null,
+          "pSpoonPct": null
+        }
+      }
     },
     {
       "rank": 8,
@@ -1868,7 +2022,29 @@
         "D"
       ],
       "statusBadge": "📉",
-      "statusLabel": "In Flessione"
+      "statusLabel": "In Flessione",
+      "scheduleLuck": {
+        "xPoints": 2.08,
+        "deltaPoints": -1.08,
+        "xRank": 6,
+        "deltaRank": 2,
+        "allPlayRecord": {
+          "played": 13,
+          "wins": 8,
+          "draws": 3,
+          "losses": 2,
+          "winPct": 61.5
+        },
+        "luckZScore": -1.65,
+        "luckBadge": "⛈️",
+        "luckLabel": "Bersagliato",
+        "monteCarlo": {
+          "medianPoints": 3.0,
+          "stdDev": 1.21,
+          "pPodiumPct": null,
+          "pSpoonPct": null
+        }
+      }
     },
     {
       "rank": 9,
@@ -1880,7 +2056,29 @@
         "L"
       ],
       "statusBadge": "🧊",
-      "statusLabel": "Crisi Nera"
+      "statusLabel": "Crisi Nera",
+      "scheduleLuck": {
+        "xPoints": 1.15,
+        "deltaPoints": -1.15,
+        "xRank": 9,
+        "deltaRank": 0,
+        "allPlayRecord": {
+          "played": 13,
+          "wins": 4,
+          "draws": 3,
+          "losses": 6,
+          "winPct": 30.8
+        },
+        "luckZScore": -0.78,
+        "luckBadge": "↘️",
+        "luckLabel": "Sfortunato",
+        "monteCarlo": {
+          "medianPoints": 1.0,
+          "stdDev": 1.28,
+          "pPodiumPct": null,
+          "pSpoonPct": null
+        }
+      }
     },
     {
       "rank": 10,
@@ -1892,7 +2090,29 @@
         "L"
       ],
       "statusBadge": "🧊",
-      "statusLabel": "Crisi Nera"
+      "statusLabel": "Crisi Nera",
+      "scheduleLuck": {
+        "xPoints": 1.15,
+        "deltaPoints": -1.15,
+        "xRank": 10,
+        "deltaRank": 0,
+        "allPlayRecord": {
+          "played": 13,
+          "wins": 4,
+          "draws": 3,
+          "losses": 6,
+          "winPct": 30.8
+        },
+        "luckZScore": -0.77,
+        "luckBadge": "↘️",
+        "luckLabel": "Sfortunato",
+        "monteCarlo": {
+          "medianPoints": 1.0,
+          "stdDev": 1.29,
+          "pPodiumPct": null,
+          "pSpoonPct": null
+        }
+      }
     },
     {
       "rank": 11,
@@ -1904,7 +2124,29 @@
         "L"
       ],
       "statusBadge": "🧊",
-      "statusLabel": "Crisi Nera"
+      "statusLabel": "Crisi Nera",
+      "scheduleLuck": {
+        "xPoints": 0.23,
+        "deltaPoints": -0.23,
+        "xRank": 11,
+        "deltaRank": 0,
+        "allPlayRecord": {
+          "played": 13,
+          "wins": 0,
+          "draws": 3,
+          "losses": 10,
+          "winPct": 0.0
+        },
+        "luckZScore": 0.0,
+        "luckBadge": "⚖️",
+        "luckLabel": "Neutro",
+        "monteCarlo": {
+          "medianPoints": 0.0,
+          "stdDev": 0.42,
+          "pPodiumPct": null,
+          "pSpoonPct": null
+        }
+      }
     },
     {
       "rank": 12,
@@ -1916,7 +2158,29 @@
         "L"
       ],
       "statusBadge": "🧊",
-      "statusLabel": "Crisi Nera"
+      "statusLabel": "Crisi Nera",
+      "scheduleLuck": {
+        "xPoints": 0.23,
+        "deltaPoints": -0.23,
+        "xRank": 14,
+        "deltaRank": -2,
+        "allPlayRecord": {
+          "played": 13,
+          "wins": 0,
+          "draws": 3,
+          "losses": 10,
+          "winPct": 0.0
+        },
+        "luckZScore": 0.0,
+        "luckBadge": "⚖️",
+        "luckLabel": "Neutro",
+        "monteCarlo": {
+          "medianPoints": 0.0,
+          "stdDev": 0.42,
+          "pPodiumPct": null,
+          "pSpoonPct": null
+        }
+      }
     },
     {
       "rank": 13,
@@ -1928,7 +2192,29 @@
         "L"
       ],
       "statusBadge": "🧊",
-      "statusLabel": "Crisi Nera"
+      "statusLabel": "Crisi Nera",
+      "scheduleLuck": {
+        "xPoints": 0.23,
+        "deltaPoints": -0.23,
+        "xRank": 13,
+        "deltaRank": 0,
+        "allPlayRecord": {
+          "played": 13,
+          "wins": 0,
+          "draws": 3,
+          "losses": 10,
+          "winPct": 0.0
+        },
+        "luckZScore": 0.0,
+        "luckBadge": "⚖️",
+        "luckLabel": "Neutro",
+        "monteCarlo": {
+          "medianPoints": 0.0,
+          "stdDev": 0.42,
+          "pPodiumPct": null,
+          "pSpoonPct": null
+        }
+      }
     },
     {
       "rank": 14,
@@ -1940,7 +2226,29 @@
         "L"
       ],
       "statusBadge": "🧊",
-      "statusLabel": "Crisi Nera"
+      "statusLabel": "Crisi Nera",
+      "scheduleLuck": {
+        "xPoints": 0.23,
+        "deltaPoints": -0.23,
+        "xRank": 12,
+        "deltaRank": 2,
+        "allPlayRecord": {
+          "played": 13,
+          "wins": 0,
+          "draws": 3,
+          "losses": 10,
+          "winPct": 0.0
+        },
+        "luckZScore": 0.0,
+        "luckBadge": "⚖️",
+        "luckLabel": "Neutro",
+        "monteCarlo": {
+          "medianPoints": 0.0,
+          "stdDev": 0.42,
+          "pPodiumPct": null,
+          "pSpoonPct": null
+        }
+      }
     }
   ]
 }

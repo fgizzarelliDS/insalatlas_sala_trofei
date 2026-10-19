@@ -364,7 +364,7 @@ describe('Dynamic Competition Registry Engine', () => {
         const container = elements['top-stats-cards-container'];
         expect(container.innerHTML).toContain('🌟');
         expect(container.innerHTML).toContain('bg-orange-500/20 text-orange-400');
-        expect(container.innerHTML).toContain('Europa');
+        expect(container.innerHTML).toContain('Mock');
       } finally {
         const idx = COMPETITION_REGISTRY.indexOf(customComp);
         if (idx !== -1) COMPETITION_REGISTRY.splice(idx, 1);

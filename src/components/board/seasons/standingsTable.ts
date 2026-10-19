@@ -309,13 +309,14 @@ function renderLiveChampionshipTable(
 
   return `
     <div class="albo-table-wrap rounded-2xl overflow-hidden border mb-6 shadow-sm" style="border-color: var(--table-border); background-color: var(--table-surface);">
-      <!-- Table Header Banner (Integrated with Switcher & Guide Toggle) -->
-      <div class="px-3.5 sm:px-4 py-2.5 sm:py-3 border-b"
+      <!-- Table Header Banner (Integrated with Switcher & Compact Guide Toggle) -->
+      <div class="px-3 sm:px-4 py-2 sm:py-2.5 border-b"
            style="border-color: var(--table-border); background-color: var(--header-bg); color: var(--header-text);">
-        <div class="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
-          
-          <!-- Title & Live Round Badge -->
-          <div class="flex items-center gap-2 font-sport font-bold text-xs sm:text-sm tracking-wide">
+        
+        <!-- Desktop Layout (>= md): Single Sleek Broadcast Row -->
+        <div class="hidden md:flex items-center justify-between gap-3">
+          <!-- Left: Trophy + Title + In Corso Badge -->
+          <div class="flex items-center gap-2.5 font-sport font-bold text-sm tracking-wide shrink-0">
             ${renderTrophySVG('gold_cup', 'compact')}
             <span>${championship.name} (${championship.season})</span>
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
@@ -324,41 +325,87 @@ function renderLiveChampionshipTable(
             </span>
           </div>
 
-          <!-- Switcher: order-last w-full on mobile (< sm), order-none w-auto on desktop (>= sm) -->
-          <div class="order-3 sm:order-2 w-full sm:w-auto grid grid-cols-2 sm:inline-flex items-center p-0.5 rounded-xl bg-black/25 backdrop-blur-xs border border-white/15 shadow-inner">
+          <!-- Center: 2-Way View Switcher -->
+          <div class="inline-flex items-center p-0.5 rounded-xl bg-black/25 backdrop-blur-xs border border-white/15 shadow-inner">
             <button id="btn-live-view-real"
                     type="button"
                     onclick="window.switchLiveStandingsView && window.switchLiveStandingsView('real')"
-                    class="px-2.5 sm:px-3 py-1.5 sm:py-1 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer bg-amber-500 text-slate-950 shadow-xs">
+                    class="px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-amber-500 text-slate-950 shadow-xs">
               <i class="fa-solid fa-list-ol text-[11px]"></i>
               <span>Classifica Reale</span>
             </button>
             <button id="btn-live-view-merit"
                     type="button"
                     onclick="window.switchLiveStandingsView && window.switchLiveStandingsView('merit')"
-                    class="px-2.5 sm:px-3 py-1.5 sm:py-1 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-white/75 hover:text-white hover:bg-white/10">
+                    class="px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer text-white/75 hover:text-white hover:bg-white/10">
               <i class="fa-solid fa-scale-balanced text-[11px]"></i>
               <span>Merito & Fortuna</span>
             </button>
           </div>
 
-          <!-- Right side: Guide Toggle Button & Teams Count -->
-          <div class="order-2 sm:order-3 flex items-center gap-2 shrink-0">
+          <!-- Right: Guide Toggle + Teams Count -->
+          <div class="flex items-center gap-2 shrink-0">
             <button type="button"
                     onclick="window.toggleLiveStandingsGuide && window.toggleLiveStandingsGuide()"
                     class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-xs font-semibold transition hover:bg-white/20 active:scale-95 cursor-pointer shadow-xs bg-white/10 text-white/90 border-white/20 backdrop-blur-xs"
                     title="Clicca per aprire la guida">
               <i class="fa-solid fa-circle-info text-amber-300"></i>
-              <span class="hidden sm:inline">Guida & Legenda</span>
-              <span class="sm:hidden">Guida</span>
+              <span>Guida & Legenda</span>
               <i id="live-guide-chevron" class="fa-solid fa-chevron-down text-[10px] ml-0.5 transition-transform duration-200"></i>
             </button>
-            <div class="text-xs font-semibold opacity-75 hidden sm:block">
+            <div class="text-xs font-semibold opacity-75">
               ${standings.length} Squadre
             </div>
           </div>
-
         </div>
+
+        <!-- Mobile Layout (< md): 2 Clean Rows with Compact Guida Button in Row 1 -->
+        <div class="md:hidden flex flex-col gap-2">
+          <!-- Row 1: Title (left) & Live Badge + Compact Guide Button (right) -->
+          <div class="flex items-center justify-between gap-2 min-w-0">
+            <div class="flex items-center gap-1.5 font-sport font-bold text-xs tracking-wide truncate min-w-0">
+              ${renderTrophySVG('gold_cup', 'compact')}
+              <span class="truncate">${championship.name}</span>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              <!-- Live Badge (Adaptive width: shows 'In corso • G1/26' on xs+ and 'G1/26' on tight screens) -->
+              <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1.5 whitespace-nowrap shadow-xs">
+                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span class="hidden xs:inline">In corso • </span>
+                <span>G${lastCompleted}/${totalRounds}</span>
+              </span>
+
+              <!-- Compact Guide Button in Row 1 -->
+              <button type="button"
+                      onclick="window.toggleLiveStandingsGuide && window.toggleLiveStandingsGuide()"
+                      class="flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-semibold transition hover:bg-white/20 active:scale-95 cursor-pointer shadow-xs bg-white/10 text-white/90 border-white/20 backdrop-blur-xs"
+                      title="Apri guida e legenda">
+                <i class="fa-solid fa-circle-info text-amber-300 text-xs"></i>
+                <i id="live-guide-chevron-mobile" class="fa-solid fa-chevron-down text-[9px] opacity-75 transition-transform duration-200"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Row 2: Full-Width 50/50 Glass Switcher -->
+          <div class="grid grid-cols-2 p-0.5 rounded-xl bg-black/25 backdrop-blur-xs border border-white/15 shadow-inner w-full">
+            <button id="btn-live-view-real-mobile"
+                    type="button"
+                    onclick="window.switchLiveStandingsView && window.switchLiveStandingsView('real')"
+                    class="px-2 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer bg-amber-500 text-slate-950 shadow-xs">
+              <i class="fa-solid fa-list-ol text-[11px]"></i>
+              <span>Classifica Reale</span>
+            </button>
+            <button id="btn-live-view-merit-mobile"
+                    type="button"
+                    onclick="window.switchLiveStandingsView && window.switchLiveStandingsView('merit')"
+                    class="px-2 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-white/75 hover:text-white hover:bg-white/10">
+              <i class="fa-solid fa-scale-balanced text-[11px]"></i>
+              <span>Merito & Fortuna</span>
+            </button>
+          </div>
+        </div>
+
       </div>
 
       <!-- Expandable Collapsible Dynamic Guide Box -->
@@ -705,14 +752,17 @@ declare global {
 export function toggleLiveStandingsGuide(): void {
   const guide = typeof document !== 'undefined' ? document.getElementById('live-standings-guide') : null;
   const chevron = typeof document !== 'undefined' ? document.getElementById('live-guide-chevron') : null;
+  const chevronMobile = typeof document !== 'undefined' ? document.getElementById('live-guide-chevron-mobile') : null;
   if (guide) {
     const isHidden = guide.classList.contains('hidden');
     if (isHidden) {
       guide.classList.remove('hidden');
       chevron?.classList.add('rotate-180');
+      chevronMobile?.classList.add('rotate-180');
     } else {
       guide.classList.add('hidden');
       chevron?.classList.remove('rotate-180');
+      chevronMobile?.classList.remove('rotate-180');
     }
   }
 }
@@ -724,7 +774,9 @@ export function switchLiveStandingsView(mode: 'real' | 'merit'): void {
   if (typeof document === 'undefined') return;
 
   const btnReal = document.getElementById('btn-live-view-real');
+  const btnRealMobile = document.getElementById('btn-live-view-real-mobile');
   const btnMerit = document.getElementById('btn-live-view-merit');
+  const btnMeritMobile = document.getElementById('btn-live-view-merit-mobile');
 
   const viewReal = document.getElementById('live-view-real-container');
   const viewMerit = document.getElementById('live-view-merit-container');
@@ -732,12 +784,19 @@ export function switchLiveStandingsView(mode: 'real' | 'merit'): void {
   const guideReal = document.getElementById('guide-content-real');
   const guideMerit = document.getElementById('guide-content-merit');
 
-  if (mode === 'real') {
-    btnReal?.classList.remove(...INACTIVE_TAB_CLASSES);
-    btnReal?.classList.add(...ACTIVE_TAB_CLASSES);
+  const realButtons = [btnReal, btnRealMobile].filter(Boolean) as HTMLElement[];
+  const meritButtons = [btnMerit, btnMeritMobile].filter(Boolean) as HTMLElement[];
 
-    btnMerit?.classList.remove(...ACTIVE_TAB_CLASSES);
-    btnMerit?.classList.add(...INACTIVE_TAB_CLASSES);
+  if (mode === 'real') {
+    realButtons.forEach(btn => {
+      btn.classList.remove(...INACTIVE_TAB_CLASSES);
+      btn.classList.add(...ACTIVE_TAB_CLASSES);
+    });
+
+    meritButtons.forEach(btn => {
+      btn.classList.remove(...ACTIVE_TAB_CLASSES);
+      btn.classList.add(...INACTIVE_TAB_CLASSES);
+    });
 
     viewReal?.classList.remove('hidden');
     viewMerit?.classList.add('hidden');
@@ -745,11 +804,15 @@ export function switchLiveStandingsView(mode: 'real' | 'merit'): void {
     guideReal?.classList.remove('hidden');
     guideMerit?.classList.add('hidden');
   } else {
-    btnMerit?.classList.remove(...INACTIVE_TAB_CLASSES);
-    btnMerit?.classList.add(...ACTIVE_TAB_CLASSES);
+    meritButtons.forEach(btn => {
+      btn.classList.remove(...INACTIVE_TAB_CLASSES);
+      btn.classList.add(...ACTIVE_TAB_CLASSES);
+    });
 
-    btnReal?.classList.remove(...ACTIVE_TAB_CLASSES);
-    btnReal?.classList.add(...INACTIVE_TAB_CLASSES);
+    realButtons.forEach(btn => {
+      btn.classList.remove(...ACTIVE_TAB_CLASSES);
+      btn.classList.add(...INACTIVE_TAB_CLASSES);
+    });
 
     viewReal?.classList.add('hidden');
     viewMerit?.classList.remove('hidden');

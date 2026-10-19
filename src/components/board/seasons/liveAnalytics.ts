@@ -178,13 +178,13 @@ export function renderLuckBadgeHTML(
   zScore: number,
   compact: boolean = false
 ): string {
-  let badgeStyle = 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800/80 dark:text-slate-200 dark:border-slate-700';
+  let badgeStyle = 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-700/60 dark:text-slate-200 dark:border-slate-600';
   if (badge === '🍀') {
     badgeStyle = 'bg-emerald-50 text-emerald-800 border-emerald-300/80 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/40';
   } else if (badge === '↗️') {
     badgeStyle = 'bg-teal-50 text-teal-800 border-teal-300/80 dark:bg-teal-500/20 dark:text-teal-300 dark:border-teal-500/40';
   } else if (badge === '⚖️') {
-    badgeStyle = 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800/80 dark:text-slate-200 dark:border-slate-700';
+    badgeStyle = 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-700/60 dark:text-slate-200 dark:border-slate-600';
   } else if (badge === '↘️') {
     badgeStyle = 'bg-amber-50 text-amber-800 border-amber-300/80 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40';
   } else if (badge === '⛈️') {

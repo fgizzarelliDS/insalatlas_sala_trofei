@@ -60,7 +60,7 @@ insalatlas_sala_trofei/
 
 ---
 
-## 2. La Griglia del Tabellone & Motore Dinamico N-Competizioni (SPEC 16)
+## 2. La Griglia del Tabellone & Motore Dinamico N-Competizioni
 
 La tabella palmarès (`.albo-grid-row`) adotta una struttura a griglia CSS nativa definita in `css/layout.css` e pilotata in modo puramente data-driven dal registro centralizzato `COMPETITION_REGISTRY` in `src/config.ts` (`buildAlboColumns(LEAGUE.features)`).
 

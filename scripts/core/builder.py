@@ -18,6 +18,7 @@ from .rules import (
     create_cup_achievement,
     SPOON_MIN_TEAMS
 )
+from .live_builder import compile_live_season_details
 
 def build_data(output_file: Optional[str] = None) -> int:
     base_dir = get_base_dir()
@@ -220,6 +221,11 @@ def build_data(output_file: Optional[str] = None) -> int:
 
     ok(f"Loaded {len(compiled_managers)} managers, {len(seasons_data)} seasons, {len(all_competitions)} competitions.")
     ok(f"Compiled successfully to {output_file}!")
+
+    live_result = compile_live_season_details(root_dir=base_dir)
+    if live_result:
+        ok("Compiled live season details successfully to public/live_season_details.json!")
+
     return 0
 
 if __name__ == '__main__':

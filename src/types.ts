@@ -130,6 +130,16 @@ export interface CompetitionRankingItem {
   managerId?: string;
   points: number | null;
   logo?: string;
+  played?: number;
+  won?: number;
+  drawn?: number;
+  lost?: number;
+  goalsFor?: number;
+  goalsAgainst?: number;
+  goalDiff?: number;
+  totalFantaPoints?: number;
+  avgFantaPoints?: number;
+  recentForm?: Array<'W' | 'D' | 'L'>;
 }
 
 export interface CompetitionRecord {
@@ -556,6 +566,62 @@ export interface LeagueRecord {
   primaryHolder: RecordHolder; // points to primaryHolders[0] for backward compatibility
   runnerUps: RecordHolder[];
   description: string;
+}
+
+export type FormResult = 'W' | 'D' | 'L';
+
+export type CompositeStatusBadge = '🔥' | '📈' | '⚖️' | '📉' | '🧊';
+
+export interface MatchdayMatch {
+  homeTeam: string;
+  awayTeam: string;
+  homeManagerId?: string;
+  awayManagerId?: string;
+  homeScore: number;
+  awayScore: number;
+  homeFantaPoints: number;
+  awayFantaPoints: number;
+  homeLogo?: string;
+  awayLogo?: string;
+}
+
+export interface MatchdayRound {
+  roundNumber: number;
+  date?: string;
+  matches: MatchdayMatch[];
+}
+
+export interface LiveTeamMetrics {
+  rank: number;
+  managerId?: string;
+  teamName: string;
+  coach: string;
+  points: number;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDiff: number;
+  totalFantaPoints: number;
+  avgFantaPoints: number;
+  expectedRank: number;
+  deltaLuck: number;
+  momentum: number;
+  recentForm: FormResult[];
+  statusBadge: CompositeStatusBadge;
+  statusLabel: string;
+  logo?: string;
+}
+
+export interface LiveSeasonDetails {
+  season: string;
+  competitionId: number | string;
+  lastCompletedRound: number;
+  totalRounds: number;
+  rounds: MatchdayRound[];
+  standings: LiveTeamMetrics[];
 }
 
 

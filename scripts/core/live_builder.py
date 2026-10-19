@@ -1,0 +1,472 @@
+"""
+scripts/core/live_builder.py
+Processor for compiling matchday-by-matchday rounds into public/live_season_details.json.
+Implement In-Progress Form Index, Schedule Luck & Live Analytics.
+"""
+
+import os
+import json
+from typing import Dict, Any, List, Optional, Tuple
+
+def compute_momentum(recent_form: List[str]) -> float:
+    """
+    Computes recency-weighted momentum in [0.0, 1.0].
+    r[-1] is the most recent matchday.
+    """
+    if not recent_form:
+        return 0.5
+
+    k = len(recent_form)
+    denom = 3 * (k * (k + 1) // 2)
+    if denom == 0:
+        return 0.5
+
+    pts_map = {'W': 3, 'D': 1, 'L': 0}
+    weighted_sum = sum((i + 1) * pts_map.get(res, 0) for i, res in enumerate(recent_form))
+    return round(weighted_sum / denom, 2)
+
+
+def compute_status_badge(
+    momentum: float,
+    team_recent_fps: List[float],
+    league_avg_fp: float,
+    recent_form: List[str]
+) -> Tuple[str, str]:
+    """
+    Evaluates composite status badge (🔥, 📈, ⚖️, 📉, 🧊) and label.
+    """
+    last_3_fps = team_recent_fps[-3:] if len(team_recent_fps) >= 3 else team_recent_fps
+    avg_l3 = (sum(last_3_fps) / len(last_3_fps)) if last_3_fps else 0.0
+
+    last_res = recent_form[-1] if recent_form else ''
+    last_2_res = recent_form[-2:] if len(recent_form) >= 2 else []
+
+    if momentum >= 0.75 and avg_l3 >= (league_avg_fp + 2.0):
+        return '🔥', 'In Fiamme'
+    if momentum <= 0.15:
+        return '🧊', 'Crisi Nera'
+    if momentum >= 0.55 and last_res == 'W':
+        return '📈', 'In Salita'
+    if momentum <= 0.35 or (len(last_2_res) == 2 and last_2_res == ['L', 'L']):
+        return '📉', 'In Flessione'
+
+    return '⚖️', 'Stabile'
+
+
+def find_in_progress_season_info(root_dir: str) -> Optional[Dict[str, Any]]:
+    """
+    Dynamically scans data/seasons/ to find the in-progress season and its championship competition.
+    Returns dict with season, competitionId, totalRounds, season_file, ranking.
+    """
+    seasons_dir = os.path.join(root_dir, 'data', 'seasons')
+    if not os.path.exists(seasons_dir):
+        return None
+
+    season_files = [
+        os.path.join(seasons_dir, f) for f in os.listdir(seasons_dir)
+        if f.endswith('.json') and not f.startswith('.')
+    ]
+    if not season_files:
+        return None
+
+    loaded_seasons = []
+    for sf in season_files:
+        try:
+            with open(sf, 'r', encoding='utf-8') as f:
+                s_data = json.load(f)
+                loaded_seasons.append((sf, s_data))
+        except Exception:
+            continue
+
+    # Prefer season marked in_progress
+    target_tuple = None
+    for sf, s_data in loaded_seasons:
+        if s_data.get('in_progress') is True or s_data.get('status') == 'in_progress':
+            target_tuple = (sf, s_data)
+            break
+        for c in s_data.get('competitions', []):
+            if c.get('in_progress') is True or c.get('status') == 'in_progress':
+                target_tuple = (sf, s_data)
+                break
+        if target_tuple:
+            break
+
+    # Fallback to latest season chronologically by filename
+    if not target_tuple and loaded_seasons:
+        loaded_seasons.sort(key=lambda x: x[0], reverse=True)
+        target_tuple = loaded_seasons[0]
+
+    if not target_tuple:
+        return None
+
+    sf, s_data = target_tuple
+    season_name = s_data.get('season', '')
+    comps = s_data.get('competitions', [])
+
+    # Find the championship competition
+    target_comp = None
+    for c in comps:
+        cat = str(c.get('category', '')).lower()
+        name = str(c.get('name', '')).lower()
+        if 'campionato' in cat or 'serie' in name or c.get('ranking'):
+            target_comp = c
+            break
+
+    if not target_comp and comps:
+        target_comp = comps[0]
+
+    comp_id = target_comp.get('id') if target_comp else None
+
+    # Calculate total rounds dynamically
+    total_rounds = target_comp.get('totalRounds') if target_comp else None
+    if not total_rounds and target_comp and target_comp.get('ranking'):
+        num_teams = len(target_comp['ranking'])
+        total_rounds = (num_teams - 1) * 2 if num_teams > 1 else 26
+    if not total_rounds:
+        total_rounds = 26
+
+    return {
+        'season': season_name,
+        'competitionId': comp_id,
+        'totalRounds': total_rounds,
+        'season_file': sf,
+        'ranking': target_comp.get('ranking', []) if target_comp else []
+    }
+
+
+def load_season_teams_lookup(
+    root_dir: str,
+    season_name: Optional[str] = None,
+    competition_id: Optional[int] = None
+) -> Tuple[Dict[str, Dict[str, Any]], Dict[str, Dict[str, Any]]]:
+    """
+    Builds lookup tables for teams in the season:
+      (teams_by_manager_id, teams_by_team_name)
+    Each entry contains: { 'managerId', 'teamName', 'coach', 'logo' }.
+    Dynamically detects the in-progress season if season_name is not provided.
+    """
+    teams_by_mgr: Dict[str, Dict[str, Any]] = {}
+    teams_by_name: Dict[str, Dict[str, Any]] = {}
+
+    mgr_names: Dict[str, str] = {}
+    managers_file = os.path.join(root_dir, 'data', 'managers.json')
+    if os.path.exists(managers_file):
+        try:
+            with open(managers_file, 'r', encoding='utf-8') as f:
+                mgr_list = json.load(f)
+                if isinstance(mgr_list, list):
+                    for m in mgr_list:
+                        if isinstance(m, dict) and 'id' in m:
+                            mgr_names[m['id']] = m.get('name', '')
+        except Exception:
+            pass
+
+    # Dynamic fallback to active season info
+    active_info = find_in_progress_season_info(root_dir)
+    season_path = None
+    if season_name:
+        season_filename = season_name.replace('/', '-') + '.json'
+        p = os.path.join(root_dir, 'data', 'seasons', season_filename)
+        if os.path.exists(p):
+            season_path = p
+    if not season_path and active_info:
+        season_path = active_info.get('season_file')
+
+    if season_path and os.path.exists(season_path):
+        try:
+            with open(season_path, 'r', encoding='utf-8') as f:
+                s_data = json.load(f)
+                comps = s_data.get('competitions', [])
+                target_comp = None
+                for c in comps:
+                    if competition_id and c.get('id') == competition_id:
+                        target_comp = c
+                        break
+                if not target_comp:
+                    for c in comps:
+                        if c.get('ranking'):
+                            target_comp = c
+                            break
+
+                if target_comp and 'ranking' in target_comp:
+                    for t in target_comp['ranking']:
+                        mgr_id = t.get('managerId')
+                        t_name = t.get('teamName')
+                        coach = t.get('coach') or (mgr_names.get(mgr_id) if mgr_id else '')
+                        logo = t.get('logo')
+
+                        info = {
+                            'managerId': mgr_id,
+                            'teamName': t_name,
+                            'coach': coach,
+                            'logo': logo
+                        }
+                        if mgr_id:
+                            teams_by_mgr[mgr_id] = info
+                        if t_name:
+                            teams_by_name[t_name] = info
+        except Exception:
+            pass
+
+    return teams_by_mgr, teams_by_name
+
+
+def compile_live_season_details(
+    live_dir: Optional[str] = None,
+    output_path: Optional[str] = None,
+    root_dir: Optional[str] = None
+) -> Optional[Dict[str, Any]]:
+    """
+    Reads matchday round files from data/live/ and compiles deterministic standings
+    and metrics into public/live_season_details.json.
+    Dynamically identifies season metadata and rankings from data/seasons/.
+    """
+    if root_dir is None:
+        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+
+    if live_dir is None:
+        live_dir = os.path.join(root_dir, 'data', 'live')
+
+    if output_path is None:
+        output_path = os.path.join(root_dir, 'public', 'live_season_details.json')
+
+    if not os.path.exists(live_dir):
+        return None
+
+    round_files = [
+        os.path.join(live_dir, f) for f in os.listdir(live_dir)
+        if f.endswith('.json') and not f.startswith('.')
+    ]
+    if not round_files:
+        return None
+
+    # Filter out mock files if regular round files are present
+    non_mock_files = [
+        f for f in round_files
+        if not (f.endswith('_mock.json') or f.endswith('.mock.json') or '_mock' in os.path.basename(f))
+    ]
+    effective_files = non_mock_files if non_mock_files else round_files
+
+    # Dynamically find the active in-progress season configuration
+    active_info = find_in_progress_season_info(root_dir)
+    season_name = active_info['season'] if active_info else ''
+    competition_id = active_info['competitionId'] if active_info else 0
+    total_rounds = active_info['totalRounds'] if active_info else 26
+
+    # Deduplicate rounds across files by roundNumber
+    rounds_by_number: Dict[int, Dict[str, Any]] = {}
+
+    for rf in sorted(effective_files):
+        with open(rf, 'r', encoding='utf-8') as f:
+            try:
+                data = json.load(f)
+            except Exception:
+                continue
+
+            raw_rounds = []
+            if isinstance(data, dict):
+                if data.get('season'):
+                    season_name = data['season']
+                if data.get('competitionId'):
+                    competition_id = data['competitionId']
+                if data.get('totalRounds'):
+                    total_rounds = data['totalRounds']
+
+                if 'rounds' in data and isinstance(data['rounds'], list):
+                    raw_rounds = data['rounds']
+                elif 'roundNumber' in data:
+                    raw_rounds = [data]
+            elif isinstance(data, list):
+                raw_rounds = data
+
+            for r in raw_rounds:
+                r_num = r.get('roundNumber')
+                if r_num is not None and r_num not in rounds_by_number:
+                    rounds_by_number[r_num] = r
+
+    if not rounds_by_number:
+        return None
+
+    all_rounds = [rounds_by_number[k] for k in sorted(rounds_by_number.keys())]
+
+    # Remove unnecessary dates from matchday rounds for clean calendar display
+    for r in all_rounds:
+        r.pop('date', None)
+
+    # Load canonical team definitions from the season data (Single Source of Truth)
+    teams_by_mgr, teams_by_name = load_season_teams_lookup(root_dir, season_name, competition_id)
+
+    # Enrich and inherit teamName, coach, logo, managerId
+    for r in all_rounds:
+        for m in r.get('matches', []):
+            h_mgr_id = m.get('homeManagerId')
+            h_team = m.get('homeTeam')
+            if h_mgr_id and h_mgr_id in teams_by_mgr:
+                info = teams_by_mgr[h_mgr_id]
+                m['homeTeam'] = h_team or info.get('teamName', '')
+                m['homeCoach'] = m.get('homeCoach') or info.get('coach', '')
+                m['homeLogo'] = m.get('homeLogo') or info.get('logo')
+            elif h_team and h_team in teams_by_name:
+                info = teams_by_name[h_team]
+                m['homeManagerId'] = h_mgr_id or info.get('managerId')
+                m['homeCoach'] = m.get('homeCoach') or info.get('coach', '')
+                m['homeLogo'] = m.get('homeLogo') or info.get('logo')
+
+            a_mgr_id = m.get('awayManagerId')
+            a_team = m.get('awayTeam')
+            if a_mgr_id and a_mgr_id in teams_by_mgr:
+                info = teams_by_mgr[a_mgr_id]
+                m['awayTeam'] = a_team or info.get('teamName', '')
+                m['awayCoach'] = m.get('awayCoach') or info.get('coach', '')
+                m['awayLogo'] = m.get('awayLogo') or info.get('logo')
+            elif a_team and a_team in teams_by_name:
+                info = teams_by_name[a_team]
+                m['awayManagerId'] = a_mgr_id or info.get('managerId')
+                m['awayCoach'] = m.get('awayCoach') or info.get('coach', '')
+                m['awayLogo'] = m.get('awayLogo') or info.get('logo')
+
+    # Aggregate stats per team
+    teams_stats: Dict[str, Dict[str, Any]] = {}
+    total_league_fp = 0.0
+    total_team_matches = 0
+
+    for r in all_rounds:
+        matches = r.get('matches', [])
+        for m in matches:
+            home = m.get('homeTeam')
+            away = m.get('awayTeam')
+            if not home or not away:
+                continue
+
+            h_score = int(m.get('homeScore', 0))
+            a_score = int(m.get('awayScore', 0))
+            h_fp = float(m.get('homeFantaPoints', 0.0))
+            a_fp = float(m.get('awayFantaPoints', 0.0))
+
+            total_league_fp += (h_fp + a_fp)
+            total_team_matches += 2
+
+            for team_name, is_home, score_for, score_against, fp, opp_team in [
+                (home, True, h_score, a_score, h_fp, away),
+                (away, False, a_score, h_score, a_fp, home)
+            ]:
+                if team_name not in teams_stats:
+                    teams_stats[team_name] = {
+                        'teamName': team_name,
+                        'coach': m.get('homeCoach' if is_home else 'awayCoach', ''),
+                        'managerId': m.get('homeManagerId' if is_home else 'awayManagerId'),
+                        'logo': m.get('homeLogo' if is_home else 'awayLogo'),
+                        'played': 0,
+                        'won': 0,
+                        'drawn': 0,
+                        'lost': 0,
+                        'goalsFor': 0,
+                        'goalsAgainst': 0,
+                        'totalFantaPoints': 0.0,
+                        'allForm': [],
+                        'fantaPointsHistory': [],
+                        'points': 0
+                    }
+
+                st = teams_stats[team_name]
+                st['played'] += 1
+                st['goalsFor'] += score_for
+                st['goalsAgainst'] += score_against
+                st['totalFantaPoints'] += fp
+                st['fantaPointsHistory'].append(fp)
+
+                if score_for > score_against:
+                    st['won'] += 1
+                    st['points'] += 3
+                    st['allForm'].append('W')
+                elif score_for == score_against:
+                    st['drawn'] += 1
+                    st['points'] += 1
+                    st['allForm'].append('D')
+                else:
+                    st['lost'] += 1
+                    st['allForm'].append('L')
+
+    if not teams_stats:
+        return None
+
+    league_avg_fp = (total_league_fp / total_team_matches) if total_team_matches > 0 else 70.0
+
+    # Build standings list and sort by official ranking criteria
+    teams_list = list(teams_stats.values())
+    for t in teams_list:
+        t['goalDiff'] = t['goalsFor'] - t['goalsAgainst']
+        t['totalFantaPoints'] = round(t['totalFantaPoints'], 1)
+        t['avgFantaPoints'] = round(t['totalFantaPoints'] / t['played'], 2) if t['played'] > 0 else 0.0
+        t['recentForm'] = t['allForm'][-5:]
+        t['momentum'] = compute_momentum(t['recentForm'])
+        badge, label = compute_status_badge(
+            t['momentum'],
+            t['fantaPointsHistory'],
+            league_avg_fp,
+            t['recentForm']
+        )
+        t['statusBadge'] = badge
+        t['statusLabel'] = label
+
+    # Official sort: points DESC, goalDiff DESC, totalFantaPoints DESC, goalsFor DESC
+    teams_list.sort(
+        key=lambda x: (x['points'], x['goalDiff'], x['totalFantaPoints'], x['goalsFor']),
+        reverse=True
+    )
+    for idx, t in enumerate(teams_list, start=1):
+        t['rank'] = idx
+
+    # Expected sort: totalFantaPoints DESC, points DESC
+    exp_sorted = sorted(
+        teams_list,
+        key=lambda x: (x['totalFantaPoints'], x['points']),
+        reverse=True
+    )
+    for idx, t in enumerate(exp_sorted, start=1):
+        t['expectedRank'] = idx
+        t['deltaLuck'] = t['expectedRank'] - t['rank']
+
+    last_completed = max((r.get('roundNumber', 0) for r in all_rounds), default=0)
+
+    # Clean intermediate calculation fields from final JSON standings
+    final_standings = []
+    for t in teams_list:
+        final_standings.append({
+            'rank': t['rank'],
+            'managerId': t.get('managerId'),
+            'teamName': t['teamName'],
+            'coach': t.get('coach', ''),
+            'points': t['points'],
+            'played': t['played'],
+            'won': t['won'],
+            'drawn': t['drawn'],
+            'lost': t['lost'],
+            'goalsFor': t['goalsFor'],
+            'goalsAgainst': t['goalsAgainst'],
+            'goalDiff': t['goalDiff'],
+            'totalFantaPoints': t['totalFantaPoints'],
+            'avgFantaPoints': t['avgFantaPoints'],
+            'expectedRank': t['expectedRank'],
+            'deltaLuck': t['deltaLuck'],
+            'momentum': t['momentum'],
+            'recentForm': t['recentForm'],
+            'statusBadge': t['statusBadge'],
+            'statusLabel': t['statusLabel'],
+            'logo': t.get('logo')
+        })
+
+    compiled_details = {
+        'season': season_name,
+        'competitionId': competition_id,
+        'lastCompletedRound': last_completed,
+        'totalRounds': total_rounds,
+        'rounds': all_rounds,
+        'standings': final_standings
+    }
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(compiled_details, f, indent=2, ensure_ascii=False)
+
+    return compiled_details

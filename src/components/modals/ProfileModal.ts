@@ -8,6 +8,7 @@ import {
   exportProfileStoryHD
 } from '@/export';
 import { getH2HReturnContext, clearH2HReturnContext } from './h2h/HeadToHeadContext';
+import { getTeamMatchesReturnContext, clearTeamMatchesReturnContext } from '../board/seasons/TeamMatchesModal';
 
 /**
  * Switches between Tab 1 ('palmares') and Tab 2 ('career')
@@ -112,6 +113,18 @@ export function closeProfileModal(clearContext = true): void {
     if (url.searchParams.has('manager')) {
       url.searchParams.delete('manager');
       window.history.replaceState({}, '', url.toString());
+    }
+  }
+
+  // If opened from Team Matches breakdown, return back to Team Matches modal
+  const teamMatchesCtx = getTeamMatchesReturnContext();
+  if (teamMatchesCtx) {
+    clearTeamMatchesReturnContext();
+    if (typeof window !== 'undefined' && (window as unknown as { openTeamMatchesModal?: (id?: string, name?: string) => void }).openTeamMatchesModal) {
+      (window as unknown as { openTeamMatchesModal: (id?: string, name?: string) => void }).openTeamMatchesModal(
+        teamMatchesCtx.managerId,
+        teamMatchesCtx.teamName
+      );
     }
   }
 }

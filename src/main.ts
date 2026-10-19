@@ -126,7 +126,9 @@ import {
   switchMainViewTab,
   selectArchiveSeason,
   renderSeasonsArchive,
-  navigateToSeasonStandings
+  navigateToSeasonStandings,
+  openTeamMatchesModal,
+  closeTeamMatchesModal
 } from '@/components/board/seasonsArchive';
 import {
   filterRecordsCategory,
@@ -280,6 +282,8 @@ declare global {
     selectArchiveSeason: typeof selectArchiveSeason;
     renderSeasonsArchive: typeof renderSeasonsArchive;
     navigateToSeasonStandings: typeof navigateToSeasonStandings;
+    openTeamMatchesModal: typeof openTeamMatchesModal;
+    closeTeamMatchesModal: typeof closeTeamMatchesModal;
     filterRecordsCategory: typeof filterRecordsCategory;
     renderRecordsTab: typeof renderRecordsTab;
     searchRecords: typeof searchRecords;
@@ -531,6 +535,8 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     selectArchiveSeason,
     renderSeasonsArchive,
     navigateToSeasonStandings,
+    openTeamMatchesModal,
+    closeTeamMatchesModal,
     filterRecordsCategory,
     renderRecordsTab,
     searchRecords,

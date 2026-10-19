@@ -7,6 +7,10 @@ import { renderOtherTournamentsSection } from './tournamentCards';
 export * from './seasonSelector';
 export * from './standingsTable';
 export * from './tournamentCards';
+export * from './liveAnalytics';
+export * from './TeamMatchesModal';
+
+import { getLiveSeasonDetails, loadLiveSeasonDetails } from './liveAnalytics';
 
 import { renderRecordsTab } from '@/components/board/records';
 
@@ -200,6 +204,21 @@ export function renderSeasonsArchive(): void {
   // Unified Season Header & Stepper Summary
   const totalTeams = championship?.ranking?.length || comps[0]?.ranking?.length || 0;
   const isSeasonInProgress = comps.some(c => c.in_progress || c.status === 'in_progress');
+
+  if (isSeasonInProgress) {
+    const cachedLive = getLiveSeasonDetails();
+    if (!cachedLive || cachedLive.season !== currentSelectedSeason) {
+      loadLiveSeasonDetails(currentSelectedSeason).then(data => {
+        if (data && data.season === currentSelectedSeason) {
+          const containerCheck = document.getElementById('main-tab-seasons-content');
+          if (containerCheck && !containerCheck.classList.contains('hidden')) {
+            renderSeasonsArchive();
+          }
+        }
+      });
+    }
+  }
+
   const stepperHtml = renderSeasonStepper(seasons, currentSelectedSeason);
   const seasonSummaryHtml = renderSeasonHeaderSummary(currentSelectedSeason, comps.length, totalTeams, isSeasonInProgress, stepperHtml);
 

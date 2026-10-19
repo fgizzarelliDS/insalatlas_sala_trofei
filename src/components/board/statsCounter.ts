@@ -2,7 +2,6 @@ import { state } from '@/state';
 import { LEAGUE, getActiveCompetitions } from '@/config';
 import { getAvailableSeasons } from './seasons/seasonSelector';
 import { getManagerTrophyCount } from '@/score';
-import type { CompetitionDefinition } from '@/types';
 
 /**
  * Recalculates and updates header summary counters
@@ -79,14 +78,143 @@ export function updateStatistics(): void {
 
 /**
  * Dynamically renders the top summary cards based on the active competitions in COMPETITION_REGISTRY
+ * Grouping cup and supercup into the canonical "Coppe & Supercoppe" card to maintain the single-row 6-card layout.
  */
 export function renderTopStatsCards(): void {
   const container = document.getElementById('top-stats-cards-container');
   if (!container) return;
 
   const activeComps = getActiveCompetitions();
-  const numCards = 1 + activeComps.length;
+  const hasCup = activeComps.some(c => c.id === 'cup');
+  const hasSupercup = activeComps.some(c => c.id === 'supercup');
+  const combineCups = hasCup && hasSupercup;
 
+  interface StatCardDef {
+    id: string;
+    modalTarget: string;
+    title: string;
+    icon: string;
+    badgeStyle: string;
+    labelHtml: string;
+    counterId: string;
+    hasDetail?: boolean;
+    featureFlag?: boolean;
+  }
+
+  const cards: StatCardDef[] = [
+    {
+      id: 'seasons',
+      modalTarget: 'seasons',
+      title: 'Clicca per visualizzare la cronologia e i verdetti di tutte le stagioni',
+      icon: '📅',
+      badgeStyle: 'bg-indigo-500/20 text-indigo-400',
+      labelHtml: 'STAGIONI',
+      counterId: 'stat-total-seasons',
+      hasDetail: true,
+      featureFlag: true
+    }
+  ];
+
+  if (combineCups) {
+    if (activeComps.some(c => c.id === 'championship')) {
+      cards.push({
+        id: 'championship',
+        modalTarget: 'scudetti',
+        title: "Clicca per visualizzare l'Albo d'Oro e i podi storici dei Campionati",
+        icon: '🥇',
+        badgeStyle: 'bg-amber-500/20 text-amber-400',
+        labelHtml: 'Scudetti',
+        counterId: 'stat-total-scudetti',
+        featureFlag: true
+      });
+    }
+
+    cards.push({
+      id: 'cups',
+      modalTarget: 'cups',
+      title: "Clicca per visualizzare l'Albo d'Oro e le finali di Coppa e Supercoppa",
+      icon: '🏆',
+      badgeStyle: 'bg-blue-500/20 text-blue-400',
+      labelHtml: 'Coppe &amp;<br>Supercoppe',
+      counterId: 'stat-total-cups',
+      featureFlag: LEAGUE.features.cup || LEAGUE.features.supercup
+    });
+
+    if (activeComps.some(c => c.id === 'mundialito')) {
+      cards.push({
+        id: 'mundialito',
+        modalTarget: 'mundialito',
+        title: "Clicca per visualizzare l'Albo d'Oro e i finalisti del Mundialito",
+        icon: '🌍',
+        badgeStyle: 'bg-amber-700/20 text-amber-500',
+        labelHtml: 'Mundialito',
+        counterId: 'stat-total-mundialito',
+        featureFlag: LEAGUE.features.mundialito
+      });
+    }
+
+    if (activeComps.some(c => c.id === 'spoon')) {
+      cards.push({
+        id: 'spoon',
+        modalTarget: 'spoons',
+        title: 'Clicca per visualizzare il Muro dei Cucchiai di Legno (ultimi posti)',
+        icon: '🥄',
+        badgeStyle: 'bg-amber-800/20 text-amber-500',
+        labelHtml: 'Cucchiai Legno',
+        counterId: 'stat-total-spoons',
+        featureFlag: LEAGUE.features.spoon
+      });
+    }
+
+    if (activeComps.some(c => c.id === 'cartonato')) {
+      cards.push({
+        id: 'cartonato',
+        modalTarget: 'cartonato',
+        title: "Clicca per visualizzare l'Albo dei Cartonati e Playout",
+        icon: '📦',
+        badgeStyle: 'bg-blue-900/30 text-blue-400',
+        labelHtml: 'Banner Cartonato',
+        counterId: 'stat-total-cartonati',
+        featureFlag: LEAGUE.features.cartonato
+      });
+    }
+
+    const standardIds = new Set(['championship', 'cup', 'supercup', 'mundialito', 'spoon', 'cartonato']);
+    for (const comp of activeComps) {
+      if (!standardIds.has(comp.id)) {
+        cards.push({
+          id: comp.id,
+          modalTarget: comp.id,
+          title: `Clicca per visualizzare l'Albo d'Oro di ${comp.name}`,
+          icon: comp.cardIcon || '🏆',
+          badgeStyle: comp.cardBadgeStyle || 'bg-amber-500/20 text-amber-400',
+          labelHtml: comp.shortName,
+          counterId: `stat-total-${comp.id}`,
+          featureFlag: comp.enabled !== false
+        });
+      }
+    }
+  } else {
+    for (const comp of activeComps) {
+      const icon = comp.cardIcon || (comp.id === 'championship' ? '🥇' : comp.id === 'cup' ? '🏆' : comp.id === 'supercup' ? '⭐' : comp.id === 'mundialito' ? '🌍' : comp.id === 'spoon' ? '🥄' : comp.id === 'cartonato' ? '📦' : '🏆');
+      const badgeStyle = comp.cardBadgeStyle || (comp.id === 'championship' ? 'bg-amber-500/20 text-amber-400' : comp.id === 'cup' ? 'bg-blue-500/20 text-blue-400' : comp.id === 'supercup' ? 'bg-yellow-500/20 text-yellow-400' : comp.id === 'mundialito' ? 'bg-amber-700/20 text-amber-500' : comp.id === 'spoon' ? 'bg-amber-800/20 text-amber-500' : comp.id === 'cartonato' ? 'bg-blue-900/30 text-blue-400' : 'bg-amber-500/20 text-amber-400');
+      const counterId = comp.id === 'championship' ? 'stat-total-scudetti' : comp.id === 'spoon' ? 'stat-total-spoons' : comp.id === 'cartonato' ? 'stat-total-cartonati' : `stat-total-${comp.id}`;
+      const modalTarget = comp.id === 'championship' ? 'scudetti' : comp.id === 'spoon' ? 'spoons' : comp.id;
+
+      cards.push({
+        id: comp.id,
+        modalTarget,
+        title: `Clicca per visualizzare l'Albo d'Oro di ${comp.name}`,
+        icon,
+        badgeStyle,
+        labelHtml: comp.shortName,
+        counterId,
+        featureFlag: comp.enabled !== false
+      });
+    }
+  }
+
+  const numCards = cards.length;
   let lgColsClass = 'lg:grid-cols-6';
   if (numCards >= 7) {
     lgColsClass = 'lg:grid-cols-4';
@@ -100,80 +228,25 @@ export function renderTopStatsCards(): void {
 
   container.className = `grid grid-cols-2 sm:grid-cols-3 ${lgColsClass} gap-3 sm:gap-4 mb-6 max-w-5xl mx-auto`;
 
-  const getCompCardIcon = (comp: CompetitionDefinition): string => {
-    if (comp.cardIcon) return comp.cardIcon;
-    if (comp.id === 'championship') return '🥇';
-    if (comp.id === 'cup') return '🏆';
-    if (comp.id === 'supercup') return '⭐';
-    if (comp.id === 'mundialito') return '🌍';
-    if (comp.id === 'spoon') return '🥄';
-    if (comp.id === 'cartonato') return '📦';
-    if (comp.type === 'dishonor') return '🥄';
-    return '🏆';
-  };
-
-  const getCompCardBadgeStyle = (comp: CompetitionDefinition): string => {
-    if (comp.cardBadgeStyle) return comp.cardBadgeStyle;
-    if (comp.id === 'championship') return 'bg-amber-500/20 text-amber-400';
-    if (comp.id === 'cup') return 'bg-blue-500/20 text-blue-400';
-    if (comp.id === 'supercup') return 'bg-yellow-500/20 text-yellow-400';
-    if (comp.id === 'mundialito') return 'bg-amber-700/20 text-amber-500';
-    if (comp.id === 'spoon') return 'bg-amber-800/20 text-amber-500';
-    if (comp.id === 'cartonato') return 'bg-blue-900/30 text-blue-400';
-    return 'bg-amber-500/20 text-amber-400';
-  };
-
-  const seasonsCardHTML = `
-    <!-- Card 0: Stagioni Totali -->
-    <div onclick="window.openTrophyModal && window.openTrophyModal('seasons')"
-      title="Clicca per visualizzare la cronologia e i verdetti di tutte le stagioni"
+  container.innerHTML = cards.map(c => `
+    <div onclick="window.openTrophyModal && window.openTrophyModal('${c.modalTarget}')"
+      title="${c.title}"
       class="h-[76px] sm:h-[82px] px-3 py-2.5 rounded-2xl albo-table-wrap flex items-center gap-2.5 sm:gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
       <div
-        class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-base sm:text-lg font-black shrink-0 transition-transform group-hover:scale-110">
-        📅</div>
+        class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${c.badgeStyle} flex items-center justify-center text-base sm:text-lg font-black shrink-0 transition-transform group-hover:scale-110">
+        ${c.icon}</div>
       <div class="min-w-0 flex-1 flex flex-col justify-center text-center">
-        <div id="stat-total-seasons" class="font-sport font-extrabold text-lg sm:text-xl leading-none"
+        <div id="${c.counterId}" class="font-sport font-extrabold text-lg sm:text-xl leading-none"
           style="color: var(--text-main);">0</div>
         <div class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mt-1 leading-tight"
           style="color: var(--text-muted);">
-          STAGIONI
+          ${c.labelHtml}
         </div>
-        <div id="stat-seasons-detail" class="text-[9px] font-semibold lowercase opacity-75 mt-0.5 leading-tight"></div>
+        ${c.hasDetail ? '<div id="stat-seasons-detail" class="text-[9px] font-semibold lowercase opacity-75 mt-0.5 leading-tight"></div>' : ''}
       </div>
     </div>
-  `;
+  `).join('');
 
-  const compCardsHTML = activeComps.map(comp => {
-    const icon = getCompCardIcon(comp);
-    const badgeStyle = getCompCardBadgeStyle(comp);
-    const counterId = comp.id === 'championship'
-      ? 'stat-total-scudetti'
-      : comp.id === 'spoon'
-      ? 'stat-total-spoons'
-      : comp.id === 'cartonato'
-      ? 'stat-total-cartonati'
-      : `stat-total-${comp.id}`;
-
-    return `
-      <div onclick="window.openTrophyModal && window.openTrophyModal('${comp.id}')"
-        title="Clicca per visualizzare l'Albo d'Oro di ${comp.name}"
-        class="h-[76px] sm:h-[82px] px-3 py-2.5 rounded-2xl albo-table-wrap flex items-center gap-2.5 sm:gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
-        <div
-          class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${badgeStyle} flex items-center justify-center text-base sm:text-lg font-black shrink-0 transition-transform group-hover:scale-110">
-          ${icon}</div>
-        <div class="min-w-0 flex-1 flex flex-col justify-center text-center">
-          <div id="${counterId}" class="font-sport font-extrabold text-lg sm:text-xl leading-none"
-            style="color: var(--text-main);">0</div>
-          <div class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mt-1 leading-tight"
-            style="color: var(--text-muted);">
-            ${comp.shortName}
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  container.innerHTML = seasonsCardHTML + compCardsHTML;
   updateStatistics();
 }
 

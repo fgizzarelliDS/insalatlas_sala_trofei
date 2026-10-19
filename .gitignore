@@ -19,6 +19,7 @@ scripts/archive/teams/*
 scripts/archive/
 public/assets/trophies/*
 data/*.jpeg
+data/live/
 
 # Editor directories and files
 .vscode/

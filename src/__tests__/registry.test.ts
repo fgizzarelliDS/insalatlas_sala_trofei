@@ -335,11 +335,13 @@ describe('Dynamic Competition Registry Engine', () => {
       const container = elements['top-stats-cards-container'] as any;
       expect(container.innerHTML).toContain('STAGIONI');
       expect(container.innerHTML).toContain('stat-total-scudetti');
-      // With 7 cards (1 season + 6 active comps), grid should use lg:grid-cols-4
-      expect(container.className).toContain('lg:grid-cols-4');
+      expect(container.innerHTML).toContain('stat-total-cups');
+      // With 6 cards (1 season + 5 comp cards with combined cups), grid should use canonical single row lg:grid-cols-6
+      expect(container.className).toContain('lg:grid-cols-6');
 
       updateStatistics();
       expect(elements['stat-total-scudetti'].textContent).toBe('3');
+      expect(elements['stat-total-cups'].textContent).toBe('3');
       expect(elements['stat-total-spoons'].textContent).toBe('3');
     });
 
@@ -364,7 +366,7 @@ describe('Dynamic Competition Registry Engine', () => {
         const container = elements['top-stats-cards-container'];
         expect(container.innerHTML).toContain('🌟');
         expect(container.innerHTML).toContain('bg-orange-500/20 text-orange-400');
-        expect(container.innerHTML).toContain('Europa');
+        expect(container.innerHTML).toContain('Mock');
       } finally {
         const idx = COMPETITION_REGISTRY.indexOf(customComp);
         if (idx !== -1) COMPETITION_REGISTRY.splice(idx, 1);

@@ -1,6 +1,6 @@
 # 05 • Guida: Aggiungere una Nuova Competizione (Registry Dinamico)
 
-Il motore di **InsalAtlas Sala Trofei** integra un'architettura **Data-Driven ad $N$-Competizioni** (introdotta con la SPEC 16) che astrae completamente la gestione dei tornei. 
+Il motore di **InsalAtlas Sala Trofei** integra un'architettura **Data-Driven ad $N$-Competizioni** che astrae completamente la gestione dei tornei. 
 
 Non esistono più logiche o colonne cablate nel codice sorgente: ogni competizione è un cittadino di prima classe configurato all'interno del registro centrale (`COMPETITION_REGISTRY`), e tutti i moduli (tabellone, ordinamento, ranking rating, contatori, modali albo d'oro, esportazioni HD in canvas) si adattano dinamicamente in modo automatico.
 

@@ -204,3 +204,31 @@ L'applicazione include il supporto PWA per l'installazione nativa su desktop e d
   - **Cache-First**: Asset statici essenziali (shell HTML, Tailwind, FontAwesome, icone, 20 stemmi SVG locali e bundle Vite).
   - **Network-First**: Database `public/data.json`, servito con priorità di rete per garantire dati costantemente aggiornati, con fallback deterministico dalla cache locale offline (e chiave normalizzata anti-bloat).
   - **Banner di Installazione**: Riconoscimento dell'evento `beforeinstallprompt` con guida visuale per dispositivi iOS/Android ed engagement toast personalizzato.
+
+---
+
+## 11. Stagione In Corso & Live Analytics
+
+Per le stagioni contrassegnate come `in_progress: true`, il sistema compila e visualizza un motore live dedicato:
+
+1. **Top Cards Riassuntive a Riga Singola (6 Card)**:
+   - Griglia responsive desktop su un'unica riga (`lg:grid-cols-6`):
+     - `📅 STAGIONI` (Totale e dettaglio in corso)
+     - `🥇 SCUDETTI`
+     - `🏆 COPPE & SUPERCOPPE` (Accorpamento dinamico Coppa + Supercoppa)
+     - `🌍 MUNDIALITO`
+     - `🥄 CUCCHIAI LEGNO`
+     - `📦 BANNER CARTONATO`
+2. **Classifica Live In Corso (Configurazione Attiva)**:
+   - Desktop: `Pos`, `Squadra / Allenatore`, `Forma (L5)` (pallini colorati 🟢/🟡/🔴), `Stato` (badge dinamico 🔥/📈/⚖️/📉/🧊).
+   - Ordinamento: basato deterministicamente sui punti ufficiali e criteri di spareggio, omettendo la colonna punti per un'estetica pulita.
+   - Mobile: riga compatta `#Pos`, Club/Coach e Stato con sub-dettaglio per i pallini di forma recente.
+3. **Tabellino Partite Team Modal (`TeamMatchesModal.ts`)**:
+   - Espone il calendario gara per gara (`G 1`, `G 2`, ...) con avversario, stemma, allenatore, badge `CASA`/`TRASFERTA` e data.
+   - **Badge Esito Qualitativo**: mostra unicamente `VITTORIA` 🟢, `PAREGGIO` 🟡, `SCONFITTA` 🔴, senza punteggi numerici di gara (es. no 2-1) o fantapunti decimali.
+   - **Stack di Navigazione Circolare**: cliccando su "Vedi Profilo Storico Allenatore", alla chiusura del profilo l'utente torna automaticamente al tabellino partite della squadra selezionata.
+4. **TODO Backlog: Modalità Numerica Completa a 11 Colonne**:
+   - Predisposta e archiviata per riattivazione on-demand (o tramite flag `LEAGUE.features.liveExtendedStats`):
+     - 11 colonne: `Pos`, `Squadra / Allenatore`, `Pt`, `G`, `V`, `N`, `P`, `GF-GS`, `Tot FantaPt (Exp)`, `Forma (L5)`, `Stato`.
+     - $\Delta\text{Luck}$ / Indice di Calendario (merit rank per fantapunti effettivi).
+     - Ribbon a 4 pill nel modal (Record V-N-P, Reti Fatte/Subite, Totale FantaPunti, Media Gara FP/G) e punteggio numerico nei singoli match.

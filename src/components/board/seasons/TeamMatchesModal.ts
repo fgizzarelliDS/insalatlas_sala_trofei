@@ -1,5 +1,6 @@
 import {
   getLiveSeasonDetails,
+  loadLiveSeasonDetails,
   renderLuckBadgeHTML,
   renderDeltaPointsPillHTML
 } from './liveAnalytics';
@@ -148,16 +149,25 @@ export function openManagerProfileFromMatches(managerId: string, teamName: strin
 /**
  * Opens the interactive Team Matchday Breakdown Modal for a specific team
  */
-export function openTeamMatchesModal(managerId?: string, teamName?: string, isBackNav = false, updateUrl = true): void {
+export async function openTeamMatchesModal(managerId?: string, teamName?: string, isBackNav = false, updateUrl = true): Promise<void> {
   if (typeof document === 'undefined') return;
   ensureTeamMatchesModalMounted();
 
-  const liveData = getLiveSeasonDetails();
+  let liveData = getLiveSeasonDetails();
+  if (!liveData || !liveData.rounds) {
+    liveData = await loadLiveSeasonDetails();
+  }
   if (!liveData || !liveData.rounds) return;
 
-  // Locate team stats in standings
+  // Locate team stats in standings (resilient case-insensitive matching)
+  const searchName = teamName?.trim().toLowerCase();
   const teamMetric = liveData.standings.find(
-    s => (managerId && s.managerId === managerId) || (teamName && s.teamName === teamName)
+    s => (managerId && s.managerId === managerId) ||
+         (searchName && (
+           s.teamName.trim().toLowerCase() === searchName ||
+           (s.managerId && s.managerId.toLowerCase() === searchName) ||
+           (s.coach && s.coach.trim().toLowerCase() === searchName)
+         ))
   );
 
   const resolvedTeamName = teamMetric?.teamName || teamName || 'Squadra';

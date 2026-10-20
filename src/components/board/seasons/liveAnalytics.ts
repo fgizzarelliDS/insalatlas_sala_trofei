@@ -6,7 +6,7 @@ import type {
 } from '@/types';
 
 let cachedLiveSeasonDetails: LiveSeasonDetails | null = null;
-let isFetchingLiveDetails = false;
+let activeLiveFetchPromise: Promise<LiveSeasonDetails | null> | null = null;
 
 /**
  * Returns currently cached live season details (if any)
@@ -30,29 +30,36 @@ export async function loadLiveSeasonDetails(season?: string): Promise<LiveSeason
     return cachedLiveSeasonDetails;
   }
 
-  if (isFetchingLiveDetails) {
-    return cachedLiveSeasonDetails;
+  if (activeLiveFetchPromise) {
+    return activeLiveFetchPromise;
   }
 
-  isFetchingLiveDetails = true;
-  try {
-    const res = await fetch('live_season_details.json?t=' + Date.now());
-    if (!res.ok) {
+  activeLiveFetchPromise = (async () => {
+    try {
+      const baseUrl = (typeof window !== 'undefined' && window.location && window.location.pathname)
+        ? (window.location.pathname.endsWith('/') ? window.location.pathname : window.location.pathname + '/')
+        : './';
+      const fetchUrl = `${baseUrl}live_season_details.json?t=${Date.now()}`;
+      const res = await fetch(fetchUrl);
+      if (!res.ok) {
+        cachedLiveSeasonDetails = null;
+        return null;
+      }
+      const data = (await res.json()) as LiveSeasonDetails;
+      if (data && data.standings && Array.isArray(data.standings)) {
+        cachedLiveSeasonDetails = data;
+        return data;
+      }
+      return null;
+    } catch {
       cachedLiveSeasonDetails = null;
       return null;
+    } finally {
+      activeLiveFetchPromise = null;
     }
-    const data = (await res.json()) as LiveSeasonDetails;
-    if (data && data.standings && Array.isArray(data.standings)) {
-      cachedLiveSeasonDetails = data;
-      return data;
-    }
-    return null;
-  } catch {
-    cachedLiveSeasonDetails = null;
-    return null;
-  } finally {
-    isFetchingLiveDetails = false;
-  }
+  })();
+
+  return activeLiveFetchPromise;
 }
 
 /**

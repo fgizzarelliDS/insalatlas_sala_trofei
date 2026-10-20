@@ -1,7 +1,7 @@
 {
   "season": "2026/27",
   "competitionId": 863632,
-  "lastCompletedRound": 1,
+  "lastCompletedRound": 2,
   "totalRounds": 26,
   "rounds": [
     {
@@ -96,9 +96,9 @@
           "awayManagerId": "m_zatte",
           "homeLogo": "assets/teams/7823986_09569971.png",
           "awayLogo": "assets/teams/20613187_04209253.png",
-          "isPlayed": false,
-          "homeOutcome": null,
-          "awayOutcome": null
+          "isPlayed": true,
+          "homeOutcome": "L",
+          "awayOutcome": "W"
         },
         {
           "homeTeam": "A S CorradiAndBosuTeam",
@@ -107,9 +107,9 @@
           "awayManagerId": "m_sebba",
           "homeLogo": "assets/teams/2546265_07646962.png",
           "awayLogo": "assets/teams/2545541_04342571.png",
-          "isPlayed": false,
-          "homeOutcome": null,
-          "awayOutcome": null
+          "isPlayed": true,
+          "homeOutcome": "W",
+          "awayOutcome": "L"
         },
         {
           "homeTeam": "Posto INFNito FC",
@@ -118,9 +118,9 @@
           "awayManagerId": "m_peterdani",
           "homeLogo": "assets/teams/2549374_08789113.png",
           "awayLogo": "assets/teams/4862674_07729756.png",
-          "isPlayed": false,
-          "homeOutcome": null,
-          "awayOutcome": null
+          "isPlayed": true,
+          "homeOutcome": "L",
+          "awayOutcome": "W"
         },
         {
           "homeTeam": "Steven Bradbury FC",
@@ -129,9 +129,9 @@
           "awayManagerId": "m_scurcio",
           "homeLogo": "assets/teams/2545500_09340839.png",
           "awayLogo": "assets/teams/2544594_04501676.png",
-          "isPlayed": false,
-          "homeOutcome": null,
-          "awayOutcome": null
+          "isPlayed": true,
+          "homeOutcome": "D",
+          "awayOutcome": "D"
         },
         {
           "homeTeam": "Levrieri d Abruzzo",
@@ -140,9 +140,9 @@
           "awayManagerId": "m_pippo",
           "homeLogo": "assets/teams/16496754_03423498.png",
           "awayLogo": "assets/crests/anchor_bay.svg",
-          "isPlayed": false,
-          "homeOutcome": null,
-          "awayOutcome": null
+          "isPlayed": true,
+          "homeOutcome": "W",
+          "awayOutcome": "L"
         },
         {
           "homeTeam": "LEONE MAKAKO CORPORATION",
@@ -151,9 +151,9 @@
           "awayManagerId": "m_gigicholo",
           "homeLogo": "assets/teams/20614631_002972323.png",
           "awayLogo": "assets/teams/6150431_02386417.png",
-          "isPlayed": false,
-          "homeOutcome": null,
-          "awayOutcome": null
+          "isPlayed": true,
+          "homeOutcome": "D",
+          "awayOutcome": "D"
         },
         {
           "homeTeam": "Scalo San Genesio",
@@ -162,9 +162,9 @@
           "awayManagerId": "m_avvisatina",
           "homeLogo": "assets/teams/2543640_02914103.png",
           "awayLogo": "assets/crests/golden_griffin.svg",
-          "isPlayed": false,
-          "homeOutcome": null,
-          "awayOutcome": null
+          "isPlayed": true,
+          "homeOutcome": "L",
+          "awayOutcome": "W"
         }
       ]
     },
@@ -2140,32 +2140,33 @@
   "standings": [
     {
       "rank": 1,
-      "managerId": "m_tazio",
-      "teamName": "Kiwi Football Club",
-      "coach": "tazio13",
-      "logo": "assets/teams/7823986_09569971.png",
+      "managerId": "m_peterdani",
+      "teamName": "Sarviette FC",
+      "coach": "petrubik88",
+      "logo": "assets/teams/4862674_07729756.png",
       "recentForm": [
+        "W",
         "W"
       ],
-      "statusBadge": "🔥",
-      "statusLabel": "In Fiamme",
+      "statusBadge": "📈",
+      "statusLabel": "In Ascesa",
       "scheduleLuck": {
-        "xPoints": 3.0,
-        "xRank": 1,
-        "deltaRank": 0,
+        "xPoints": 2.46,
+        "xRank": 9,
+        "deltaRank": -8,
         "allPlayRecord": {
-          "played": 13,
-          "wins": 13,
-          "draws": 0,
-          "losses": 0,
-          "winPct": 100.0
+          "played": 26,
+          "wins": 8,
+          "draws": 8,
+          "losses": 10,
+          "winPct": 30.8
         },
-        "luckZScore": 0.0,
-        "luckBadge": "⚖️",
-        "luckLabel": "Neutro",
+        "luckZScore": 1.71,
+        "luckBadge": "🍀",
+        "luckLabel": "Favorevole",
         "monteCarlo": {
           "medianPoints": 3.0,
-          "stdDev": 0.0,
+          "stdDev": 1.76,
           "pPodiumPct": null,
           "pSpoonPct": null
         }
@@ -2178,27 +2179,28 @@
       "coach": "alfius91",
       "logo": "assets/teams/2545500_09340839.png",
       "recentForm": [
-        "W"
+        "W",
+        "D"
       ],
-      "statusBadge": "🔥",
-      "statusLabel": "In Fiamme",
+      "statusBadge": "⚖️",
+      "statusLabel": "Stabile",
       "scheduleLuck": {
-        "xPoints": 2.77,
+        "xPoints": 4.08,
         "xRank": 2,
         "deltaRank": 0,
         "allPlayRecord": {
-          "played": 13,
-          "wins": 12,
-          "draws": 0,
-          "losses": 1,
-          "winPct": 92.3
+          "played": 26,
+          "wins": 16,
+          "draws": 5,
+          "losses": 5,
+          "winPct": 61.5
         },
         "luckZScore": 0.0,
         "luckBadge": "⚖️",
         "luckLabel": "Neutro",
         "monteCarlo": {
-          "medianPoints": 3.0,
-          "stdDev": 0.8,
+          "medianPoints": 4.0,
+          "stdDev": 1.44,
           "pPodiumPct": null,
           "pSpoonPct": null
         }
@@ -2206,32 +2208,33 @@
     },
     {
       "rank": 3,
-      "managerId": "m_lucchetto",
-      "teamName": "Posto INFNito FC",
-      "coach": "Lucchetto",
-      "logo": "assets/teams/2549374_08789113.png",
+      "managerId": "m_gizzagustacito",
+      "teamName": "Levrieri d Abruzzo",
+      "coach": "Gizza",
+      "logo": "assets/teams/16496754_03423498.png",
       "recentForm": [
+        "D",
         "W"
       ],
       "statusBadge": "🔥",
       "statusLabel": "In Fiamme",
       "scheduleLuck": {
-        "xPoints": 2.08,
-        "xRank": 3,
-        "deltaRank": 0,
+        "xPoints": 4.54,
+        "xRank": 1,
+        "deltaRank": 2,
         "allPlayRecord": {
-          "played": 13,
-          "wins": 8,
-          "draws": 3,
-          "losses": 2,
-          "winPct": 61.5
+          "played": 26,
+          "wins": 18,
+          "draws": 5,
+          "losses": 3,
+          "winPct": 69.2
         },
         "luckZScore": 0.0,
         "luckBadge": "⚖️",
         "luckLabel": "Neutro",
         "monteCarlo": {
-          "medianPoints": 3.0,
-          "stdDev": 1.2,
+          "medianPoints": 4.0,
+          "stdDev": 1.57,
           "pPodiumPct": null,
           "pSpoonPct": null
         }
@@ -2244,27 +2247,28 @@
       "coach": "Dr cholo",
       "logo": "assets/teams/6150431_02386417.png",
       "recentForm": [
-        "W"
+        "W",
+        "D"
       ],
-      "statusBadge": "🔥",
-      "statusLabel": "In Fiamme",
+      "statusBadge": "⚖️",
+      "statusLabel": "Stabile",
       "scheduleLuck": {
-        "xPoints": 2.08,
-        "xRank": 4,
-        "deltaRank": 0,
+        "xPoints": 3.38,
+        "xRank": 3,
+        "deltaRank": 1,
         "allPlayRecord": {
-          "played": 13,
-          "wins": 8,
-          "draws": 3,
-          "losses": 2,
-          "winPct": 61.5
+          "played": 26,
+          "wins": 12,
+          "draws": 8,
+          "losses": 6,
+          "winPct": 46.2
         },
         "luckZScore": 0.0,
         "luckBadge": "⚖️",
         "luckLabel": "Neutro",
         "monteCarlo": {
-          "medianPoints": 3.0,
-          "stdDev": 1.2,
+          "medianPoints": 4.0,
+          "stdDev": 1.71,
           "pPodiumPct": null,
           "pSpoonPct": null
         }
@@ -2277,27 +2281,28 @@
       "coach": "Leone",
       "logo": "assets/teams/20614631_002972323.png",
       "recentForm": [
-        "W"
+        "W",
+        "D"
       ],
-      "statusBadge": "📈",
-      "statusLabel": "In Ascesa",
+      "statusBadge": "⚖️",
+      "statusLabel": "Stabile",
       "scheduleLuck": {
-        "xPoints": 1.15,
-        "xRank": 7,
-        "deltaRank": -2,
+        "xPoints": 2.46,
+        "xRank": 10,
+        "deltaRank": -5,
         "allPlayRecord": {
-          "played": 13,
-          "wins": 4,
-          "draws": 3,
-          "losses": 6,
+          "played": 26,
+          "wins": 8,
+          "draws": 8,
+          "losses": 10,
           "winPct": 30.8
         },
-        "luckZScore": 1.55,
-        "luckBadge": "🍀",
-        "luckLabel": "Favorevole",
+        "luckZScore": 0.57,
+        "luckBadge": "↗️",
+        "luckLabel": "Positivo",
         "monteCarlo": {
-          "medianPoints": 1.0,
-          "stdDev": 1.29,
+          "medianPoints": 3.0,
+          "stdDev": 1.76,
           "pPodiumPct": null,
           "pSpoonPct": null
         }
@@ -2305,32 +2310,33 @@
     },
     {
       "rank": 6,
-      "managerId": "m_peterdani",
-      "teamName": "Sarviette FC",
-      "coach": "petrubik88",
-      "logo": "assets/teams/4862674_07729756.png",
+      "managerId": "m_tazio",
+      "teamName": "Kiwi Football Club",
+      "coach": "tazio13",
+      "logo": "assets/teams/7823986_09569971.png",
       "recentForm": [
-        "W"
+        "W",
+        "L"
       ],
-      "statusBadge": "📈",
-      "statusLabel": "In Ascesa",
+      "statusBadge": "📉",
+      "statusLabel": "In Flessione",
       "scheduleLuck": {
-        "xPoints": 1.15,
-        "xRank": 8,
-        "deltaRank": -2,
+        "xPoints": 3.23,
+        "xRank": 5,
+        "deltaRank": 1,
         "allPlayRecord": {
-          "played": 13,
-          "wins": 4,
+          "played": 26,
+          "wins": 13,
           "draws": 3,
-          "losses": 6,
-          "winPct": 30.8
+          "losses": 10,
+          "winPct": 50.0
         },
-        "luckZScore": 1.55,
-        "luckBadge": "🍀",
-        "luckLabel": "Favorevole",
+        "luckZScore": 0.0,
+        "luckBadge": "⚖️",
+        "luckLabel": "Neutro",
         "monteCarlo": {
-          "medianPoints": 1.0,
-          "stdDev": 1.29,
+          "medianPoints": 3.0,
+          "stdDev": 0.42,
           "pPodiumPct": null,
           "pSpoonPct": null
         }
@@ -2338,32 +2344,33 @@
     },
     {
       "rank": 7,
-      "managerId": "m_scurcio",
-      "teamName": "TorLupara FC",
-      "coach": "cursimone",
-      "logo": "assets/teams/2544594_04501676.png",
+      "managerId": "m_zatte",
+      "teamName": "AS Qualo",
+      "coach": "Zatte",
+      "logo": "assets/teams/20613187_04209253.png",
       "recentForm": [
-        "D"
+        "L",
+        "W"
       ],
-      "statusBadge": "📉",
-      "statusLabel": "In Flessione",
+      "statusBadge": "📈",
+      "statusLabel": "In Ascesa",
       "scheduleLuck": {
-        "xPoints": 2.08,
-        "xRank": 5,
-        "deltaRank": 2,
+        "xPoints": 2.69,
+        "xRank": 7,
+        "deltaRank": 0,
         "allPlayRecord": {
-          "played": 13,
-          "wins": 8,
-          "draws": 3,
-          "losses": 2,
-          "winPct": 61.5
+          "played": 26,
+          "wins": 10,
+          "draws": 5,
+          "losses": 11,
+          "winPct": 38.5
         },
-        "luckZScore": -1.66,
-        "luckBadge": "⛈️",
-        "luckLabel": "Bersagliato",
+        "luckZScore": 0.0,
+        "luckBadge": "⚖️",
+        "luckLabel": "Neutro",
         "monteCarlo": {
           "medianPoints": 3.0,
-          "stdDev": 1.21,
+          "stdDev": 1.09,
           "pPodiumPct": null,
           "pSpoonPct": null
         }
@@ -2371,32 +2378,33 @@
     },
     {
       "rank": 8,
-      "managerId": "m_gizzagustacito",
-      "teamName": "Levrieri d Abruzzo",
-      "coach": "Gizza",
-      "logo": "assets/teams/16496754_03423498.png",
+      "managerId": "m_lucchetto",
+      "teamName": "Posto INFNito FC",
+      "coach": "Lucchetto",
+      "logo": "assets/teams/2549374_08789113.png",
       "recentForm": [
-        "D"
+        "W",
+        "L"
       ],
       "statusBadge": "📉",
       "statusLabel": "In Flessione",
       "scheduleLuck": {
-        "xPoints": 2.08,
-        "xRank": 6,
-        "deltaRank": 2,
+        "xPoints": 2.31,
+        "xRank": 12,
+        "deltaRank": -4,
         "allPlayRecord": {
-          "played": 13,
+          "played": 26,
           "wins": 8,
-          "draws": 3,
-          "losses": 2,
-          "winPct": 61.5
+          "draws": 6,
+          "losses": 12,
+          "winPct": 30.8
         },
-        "luckZScore": -1.65,
-        "luckBadge": "⛈️",
-        "luckLabel": "Bersagliato",
+        "luckZScore": 0.0,
+        "luckBadge": "⚖️",
+        "luckLabel": "Neutro",
         "monteCarlo": {
           "medianPoints": 3.0,
-          "stdDev": 1.21,
+          "stdDev": 1.27,
           "pPodiumPct": null,
           "pSpoonPct": null
         }
@@ -2409,27 +2417,28 @@
       "coach": "vannico",
       "logo": "assets/teams/2546265_07646962.png",
       "recentForm": [
-        "L"
+        "L",
+        "W"
       ],
-      "statusBadge": "🧊",
-      "statusLabel": "Crisi Nera",
+      "statusBadge": "📈",
+      "statusLabel": "In Ascesa",
       "scheduleLuck": {
-        "xPoints": 1.15,
-        "xRank": 9,
-        "deltaRank": 0,
+        "xPoints": 2.46,
+        "xRank": 11,
+        "deltaRank": -2,
         "allPlayRecord": {
-          "played": 13,
-          "wins": 4,
-          "draws": 3,
-          "losses": 6,
+          "played": 26,
+          "wins": 8,
+          "draws": 8,
+          "losses": 10,
           "winPct": 30.8
         },
-        "luckZScore": -0.78,
-        "luckBadge": "↘️",
-        "luckLabel": "Sfortunato",
+        "luckZScore": 0.0,
+        "luckBadge": "⚖️",
+        "luckLabel": "Neutro",
         "monteCarlo": {
-          "medianPoints": 1.0,
-          "stdDev": 1.28,
+          "medianPoints": 3.0,
+          "stdDev": 1.77,
           "pPodiumPct": null,
           "pSpoonPct": null
         }
@@ -2437,32 +2446,33 @@
     },
     {
       "rank": 10,
-      "managerId": "m_sebba",
-      "teamName": "Arcore 1936",
-      "coach": "sebbadavid",
-      "logo": "assets/teams/2545541_04342571.png",
+      "managerId": "m_avvisatina",
+      "teamName": "LoTUS FC",
+      "coach": "Juliet-91",
+      "logo": "assets/crests/golden_griffin.svg",
       "recentForm": [
-        "L"
+        "L",
+        "W"
       ],
-      "statusBadge": "🧊",
-      "statusLabel": "Crisi Nera",
+      "statusBadge": "📈",
+      "statusLabel": "In Ascesa",
       "scheduleLuck": {
-        "xPoints": 1.15,
-        "xRank": 10,
-        "deltaRank": 0,
+        "xPoints": 3.23,
+        "xRank": 6,
+        "deltaRank": 4,
         "allPlayRecord": {
-          "played": 13,
-          "wins": 4,
+          "played": 26,
+          "wins": 13,
           "draws": 3,
-          "losses": 6,
-          "winPct": 30.8
+          "losses": 10,
+          "winPct": 50.0
         },
-        "luckZScore": -0.77,
-        "luckBadge": "↘️",
-        "luckLabel": "Sfortunato",
+        "luckZScore": 0.0,
+        "luckBadge": "⚖️",
+        "luckLabel": "Neutro",
         "monteCarlo": {
-          "medianPoints": 1.0,
-          "stdDev": 1.29,
+          "medianPoints": 3.0,
+          "stdDev": 0.42,
           "pPodiumPct": null,
           "pSpoonPct": null
         }
@@ -2470,32 +2480,33 @@
     },
     {
       "rank": 11,
-      "managerId": "m_valery",
-      "teamName": "Scalo San Genesio",
-      "coach": "valeriodam",
-      "logo": "assets/teams/2543640_02914103.png",
+      "managerId": "m_scurcio",
+      "teamName": "TorLupara FC",
+      "coach": "cursimone",
+      "logo": "assets/teams/2544594_04501676.png",
       "recentForm": [
-        "L"
+        "D",
+        "D"
       ],
-      "statusBadge": "🧊",
-      "statusLabel": "Crisi Nera",
+      "statusBadge": "📉",
+      "statusLabel": "In Flessione",
       "scheduleLuck": {
-        "xPoints": 0.23,
-        "xRank": 11,
-        "deltaRank": 0,
+        "xPoints": 3.38,
+        "xRank": 4,
+        "deltaRank": 7,
         "allPlayRecord": {
-          "played": 13,
-          "wins": 0,
-          "draws": 3,
-          "losses": 10,
-          "winPct": 0.0
+          "played": 26,
+          "wins": 12,
+          "draws": 8,
+          "losses": 6,
+          "winPct": 46.2
         },
-        "luckZScore": 0.0,
-        "luckBadge": "⚖️",
-        "luckLabel": "Neutro",
+        "luckZScore": -0.59,
+        "luckBadge": "↘️",
+        "luckLabel": "Sfortunato",
         "monteCarlo": {
-          "medianPoints": 0.0,
-          "stdDev": 0.42,
+          "medianPoints": 3.0,
+          "stdDev": 1.69,
           "pPodiumPct": null,
           "pSpoonPct": null
         }
@@ -2503,32 +2514,33 @@
     },
     {
       "rank": 12,
-      "managerId": "m_zatte",
-      "teamName": "AS Qualo",
-      "coach": "Zatte",
-      "logo": "assets/teams/20613187_04209253.png",
+      "managerId": "m_sebba",
+      "teamName": "Arcore 1936",
+      "coach": "sebbadavid",
+      "logo": "assets/teams/2545541_04342571.png",
       "recentForm": [
+        "L",
         "L"
       ],
       "statusBadge": "🧊",
       "statusLabel": "Crisi Nera",
       "scheduleLuck": {
-        "xPoints": 0.23,
-        "xRank": 14,
-        "deltaRank": -2,
+        "xPoints": 1.38,
+        "xRank": 13,
+        "deltaRank": -1,
         "allPlayRecord": {
-          "played": 13,
-          "wins": 0,
-          "draws": 3,
-          "losses": 10,
-          "winPct": 0.0
+          "played": 26,
+          "wins": 4,
+          "draws": 6,
+          "losses": 16,
+          "winPct": 15.4
         },
-        "luckZScore": 0.0,
-        "luckBadge": "⚖️",
-        "luckLabel": "Neutro",
+        "luckZScore": -0.74,
+        "luckBadge": "↘️",
+        "luckLabel": "Sfortunato",
         "monteCarlo": {
-          "medianPoints": 0.0,
-          "stdDev": 0.42,
+          "medianPoints": 1.0,
+          "stdDev": 1.36,
           "pPodiumPct": null,
           "pSpoonPct": null
         }
@@ -2536,32 +2548,33 @@
     },
     {
       "rank": 13,
-      "managerId": "m_avvisatina",
-      "teamName": "LoTUS FC",
-      "coach": "Juliet-91",
-      "logo": "assets/crests/golden_griffin.svg",
+      "managerId": "m_valery",
+      "teamName": "Scalo San Genesio",
+      "coach": "valeriodam",
+      "logo": "assets/teams/2543640_02914103.png",
       "recentForm": [
+        "L",
         "L"
       ],
       "statusBadge": "🧊",
       "statusLabel": "Crisi Nera",
       "scheduleLuck": {
-        "xPoints": 0.23,
-        "xRank": 13,
-        "deltaRank": 0,
+        "xPoints": 2.69,
+        "xRank": 8,
+        "deltaRank": 5,
         "allPlayRecord": {
-          "played": 13,
-          "wins": 0,
-          "draws": 3,
-          "losses": 10,
-          "winPct": 0.0
+          "played": 26,
+          "wins": 10,
+          "draws": 5,
+          "losses": 11,
+          "winPct": 38.5
         },
-        "luckZScore": 0.0,
-        "luckBadge": "⚖️",
-        "luckLabel": "Neutro",
+        "luckZScore": -2.73,
+        "luckBadge": "⛈️",
+        "luckLabel": "Bersagliato",
         "monteCarlo": {
-          "medianPoints": 0.0,
-          "stdDev": 0.42,
+          "medianPoints": 3.0,
+          "stdDev": 1.1,
           "pPodiumPct": null,
           "pSpoonPct": null
         }
@@ -2574,19 +2587,20 @@
       "coach": "Paiden",
       "logo": "assets/crests/anchor_bay.svg",
       "recentForm": [
+        "L",
         "L"
       ],
       "statusBadge": "🧊",
       "statusLabel": "Crisi Nera",
       "scheduleLuck": {
-        "xPoints": 0.23,
-        "xRank": 12,
-        "deltaRank": 2,
+        "xPoints": 0.46,
+        "xRank": 14,
+        "deltaRank": 0,
         "allPlayRecord": {
-          "played": 13,
+          "played": 26,
           "wins": 0,
-          "draws": 3,
-          "losses": 10,
+          "draws": 6,
+          "losses": 20,
           "winPct": 0.0
         },
         "luckZScore": 0.0,
@@ -2594,7 +2608,7 @@
         "luckLabel": "Neutro",
         "monteCarlo": {
           "medianPoints": 0.0,
-          "stdDev": 0.42,
+          "stdDev": 0.6,
           "pPodiumPct": null,
           "pSpoonPct": null
         }

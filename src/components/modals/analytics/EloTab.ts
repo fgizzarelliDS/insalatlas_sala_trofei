@@ -31,7 +31,13 @@ export function retryEloFetch(): void {
 }
 
 // Chart state
-let selectedEloSeason: string = 'all';
+const getDefaultEloSeason = (): string =>
+  typeof window !== 'undefined' && typeof window.innerWidth === 'number' && window.innerWidth > 0 && window.innerWidth < 640
+    ? 'last10'
+    : 'all';
+
+let selectedEloSeason: string = getDefaultEloSeason();
+let eloSeasonUserModified = false;
 const hiddenManagerIds: Set<string> = new Set();
 
 // Leaderboard sort state
@@ -118,6 +124,7 @@ let lockedEloChartMatch: LockedEloChartMatch | null = null;
  */
 export function switchEloChartSeason(season: string): void {
   selectedEloSeason = season;
+  eloSeasonUserModified = true;
   if (lockedEloChartMatch && season !== 'all' && !season.startsWith('last') && lockedEloChartMatch.season !== season) {
     lockedEloChartMatch = null;
   }
@@ -499,10 +506,18 @@ export function renderEloTab(): string {
   const lowestTrack = getManagerEloTrack(lowestManager?.profile, activeMode);
   const spread = ((topTrack?.current ?? 1500) - (lowestTrack?.current ?? 1500)).toFixed(1);
 
+  // Adaptive mobile viewport detection (1:1 SVG coordinate space on mobile to avoid 50% downscaling)
+  const isMobile = typeof window !== 'undefined' && typeof window.innerWidth === 'number' && window.innerWidth > 0 && window.innerWidth < 640;
+  if (!eloSeasonUserModified) {
+    selectedEloSeason = isMobile ? 'last10' : 'all';
+  }
+
   // SVG Chart Dimensions
-  const svgWidth = 640;
-  const svgHeight = 280;
-  const pad = { top: 25, right: 35, bottom: 40, left: 45 };
+  const svgWidth = isMobile ? 360 : 640;
+  const svgHeight = isMobile ? 240 : 280;
+  const pad = isMobile
+    ? { top: 22, right: 20, bottom: 32, left: 38 }
+    : { top: 25, right: 35, bottom: 40, left: 45 };
   const innerW = svgWidth - pad.left - pad.right;
   const innerH = svgHeight - pad.top - pad.bottom;
 
@@ -608,7 +623,8 @@ export function renderEloTab(): string {
 
   // X Axis labels
   let xLabels = '';
-  const labelInterval = totalPointsCount > 20 ? Math.ceil(totalPointsCount / 10) : 1;
+  const maxXLabels = isMobile ? 6 : 10;
+  const labelInterval = totalPointsCount > maxXLabels ? Math.ceil(totalPointsCount / maxXLabels) : 1;
   orderedRounds.forEach((r, idx) => {
     const isSeasonStart = idx === 0 || r.season !== orderedRounds[idx - 1].season;
     if (idx % labelInterval === 0 || idx === totalPointsCount - 1 || isSeasonStart) {
@@ -617,12 +633,12 @@ export function renderEloTab(): string {
       if (isBoundary) {
         xLabels += `
           <line x1="${x}" y1="${pad.top}" x2="${x}" y2="${pad.top + innerH}" stroke="currentColor" stroke-opacity="0.25" stroke-dasharray="3,3" />
-          <text x="${x + 4}" y="${pad.top + 10}" font-size="8.5" font-weight="bold" fill="currentColor" opacity="0.7">${r.season}</text>
+          <text x="${x + 4}" y="${pad.top + 10}" font-size="9" font-weight="bold" fill="currentColor" opacity="0.7">${r.season}</text>
         `;
       }
       xLabels += `
         <line x1="${x}" y1="${pad.top}" x2="${x}" y2="${pad.top + innerH}" stroke="currentColor" stroke-opacity="0.05" />
-        <text x="${x}" y="${pad.top + innerH + 16}" text-anchor="middle" font-size="8.5" font-weight="bold" fill="currentColor" opacity="0.6">G${r.round}</text>
+        <text x="${x}" y="${pad.top + innerH + 16}" text-anchor="middle" font-size="9" font-weight="bold" fill="currentColor" opacity="0.6">G${r.round}</text>
       `;
     }
   });
@@ -652,6 +668,8 @@ export function renderEloTab(): string {
 
     if (!isHidden && trajectoryPts.length > 0) {
       let pathD = '';
+      const hitRadius = isMobile ? 15 : 12;
+
       trajectoryPts.forEach((pt, pIdx) => {
         const ptIdx = roundIndexMap.get(`${pt.season}-G${pt.round}`) ?? pIdx;
         const x = getX(ptIdx);
@@ -673,11 +691,13 @@ export function renderEloTab(): string {
           ? `<circle class="elo-active-ring" cx="${x}" cy="${y}" r="7" fill="none" stroke="#fbbf24" stroke-width="2" pointer-events="none"></circle>`
           : '';
 
-        // Visible node dot (pointer-events none) + transparent hit target circle (r=12)
+        const dotR = totalPointsCount > 20 ? 2.5 : 3.2;
+
+        // Visible node dot + transparent hit target circle
         dotsHTML += `
           ${ringHTML}
-          <circle cx="${x}" cy="${y}" r="3.2" fill="${color}" stroke="#0f172a" stroke-width="1.5" pointer-events="none"></circle>
-          <circle cx="${x}" cy="${y}" r="12" fill="transparent" stroke="transparent" class="cursor-pointer"
+          <circle cx="${x}" cy="${y}" r="${dotR}" fill="${color}" stroke="#0f172a" stroke-width="1.2" pointer-events="none"></circle>
+          <circle cx="${x}" cy="${y}" r="${hitRadius}" fill="transparent" stroke="transparent" class="cursor-pointer"
                   onclick="window.selectEloChartPoint && window.selectEloChartPoint('${pt.season}', ${pt.round}, '${escapedTeam}', '${escapedOpp}', '${pt.result || '-'}', ${pt.elo}, ${pt.delta}, ${pt.winProbPreMatch ?? 0})"
                   onmouseenter="window.showEloChartHover && window.showEloChartHover('${pt.season}', ${pt.round}, '${escapedTeam}', '${escapedOpp}', '${pt.result || '-'}', ${pt.elo}, ${pt.delta}, ${pt.winProbPreMatch ?? 0})"
                   onmouseleave="window.clearEloChartHover && window.clearEloChartHover()">

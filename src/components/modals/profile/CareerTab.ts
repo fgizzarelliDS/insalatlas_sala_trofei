@@ -203,7 +203,13 @@ export function populateHistoricalTeams(m: Manager): void {
   });
 }
 
-let profileEloSeason: string = 'all';
+const getDefaultProfileEloSeason = (): string =>
+  typeof window !== 'undefined' && typeof window.innerWidth === 'number' && window.innerWidth > 0 && window.innerWidth < 640
+    ? 'last10'
+    : 'all';
+
+let profileEloSeason: string = getDefaultProfileEloSeason();
+let profileEloSeasonUserModified = false;
 let currentProfileManager: Manager | null = null;
 let selectedProfileEloIndex: number | null = null;
 
@@ -234,6 +240,7 @@ export function refreshCareerEloSparkline(): void {
  */
 export function switchProfileEloSeason(season: string): void {
   profileEloSeason = season;
+  profileEloSeasonUserModified = true;
   selectedProfileEloIndex = null;
   if (lockedProfileEloMatch && season !== 'all' && !season.startsWith('last') && lockedProfileEloMatch.season !== season) {
     lockedProfileEloMatch = null;
@@ -436,14 +443,19 @@ export function renderEloTrajectorySparkline(
     return `<div class="p-6 text-center text-xs opacity-60 italic">${msg}</div>`;
   }
 
-  const width = 500;
-  const height = 130;
-  const padding = { top: 22, right: 35, bottom: 25, left: 45 };
+  const isMobile = typeof window !== 'undefined' && typeof window.innerWidth === 'number' && window.innerWidth > 0 && window.innerWidth < 640;
+  const width = isMobile ? 340 : 500;
+  const height = isMobile ? 150 : 130;
+  const padding = isMobile
+    ? { top: 22, right: 28, bottom: 25, left: 38 }
+    : { top: 22, right: 35, bottom: 25, left: 45 };
   const innerW = width - padding.left - padding.right;
   const innerH = height - padding.top - padding.bottom;
 
-  let minElo = Math.min(...displayPts.map(p => p.elo));
-  let maxElo = Math.max(...displayPts.map(p => p.elo));
+  const rawMinElo = Math.min(...displayPts.map(p => p.elo));
+  const rawMaxElo = Math.max(...displayPts.map(p => p.elo));
+  let minElo = rawMinElo;
+  let maxElo = rawMaxElo;
   if (maxElo - minElo < 20) {
     minElo -= 10;
     maxElo += 10;
@@ -465,6 +477,7 @@ export function renderEloTrajectorySparkline(
   let pathD = '';
   let dots = '';
   let seasonDividers = '';
+  const sliceW = count > 1 ? innerW / (count - 1) : innerW;
 
   displayPts.forEach((pt, idx) => {
     const x = getX(idx);
@@ -476,13 +489,13 @@ export function renderEloTrajectorySparkline(
     if (idx > 0 && pt.season !== displayPts[idx - 1].season) {
       seasonDividers += `
         <line x1="${x}" y1="${padding.top}" x2="${x}" y2="${padding.top + innerH}" stroke="currentColor" stroke-opacity="0.25" stroke-dasharray="3,3" />
-        <text x="${x + 4}" y="${padding.top + 8}" font-size="8" font-weight="bold" fill="currentColor" opacity="0.6">${pt.season}</text>
+        <text x="${x + 4}" y="${padding.top + 8}" font-size="9" font-weight="bold" fill="currentColor" opacity="0.6">${pt.season}</text>
       `;
     }
 
     const isFirst = idx === 0;
     const isLast = idx === count - 1;
-    const dotR = isLast ? 4.5 : 3;
+    const dotR = isLast ? 4.5 : (count > 20 ? 2.5 : 3);
     const dotColor = isLast ? '#fbbf24' : '#f59e0b';
     const escapedTeam = (teamName || '').replace(/'/g, "\\'");
     const escapedOpp = (pt.opponentTeamName || '').replace(/'/g, "\\'");
@@ -493,16 +506,17 @@ export function renderEloTrajectorySparkline(
     const ringHTML = isSelected
       ? `<circle class="elo-active-ring" cx="${x}" cy="${y}" r="7" fill="none" stroke="#fbbf24" stroke-width="2" pointer-events="none"></circle>`
       : '';
+    const sliceX = Math.max(padding.left, x - sliceW / 2);
 
     dots += `
       ${ringHTML}
-      <circle data-point-idx="${idx}" cx="${x}" cy="${y}" r="${dotR}" fill="${dotColor}" stroke="#0f172a" stroke-width="1.5" pointer-events="none"></circle>
-      <circle cx="${x}" cy="${y}" r="12" fill="transparent" stroke="transparent" class="cursor-pointer"
-              onclick="window.selectProfileEloPoint && window.selectProfileEloPoint(${idx}, '${pt.season}', ${pt.round}, '${escapedTeam}', '${escapedOpp}', '${pt.result || ''}', ${pt.elo}, ${pt.delta}, ${pt.winProbPreMatch || 0})"
-              onmouseenter="window.showProfileEloHover && window.showProfileEloHover('${pt.season}', ${pt.round}, '${escapedTeam}', '${escapedOpp}', '${pt.result || ''}', ${pt.elo}, ${pt.delta}, ${pt.winProbPreMatch || 0})"
-              onmouseleave="window.clearProfileEloHover && window.clearProfileEloHover()">
+      <circle data-point-idx="${idx}" cx="${x}" cy="${y}" r="${dotR}" fill="${dotColor}" stroke="#0f172a" stroke-width="1.2" pointer-events="none"></circle>
+      <rect x="${sliceX}" y="${padding.top}" width="${sliceW}" height="${innerH}" fill="transparent" class="cursor-pointer"
+            onclick="window.selectProfileEloPoint && window.selectProfileEloPoint(${idx}, '${pt.season}', ${pt.round}, '${escapedTeam}', '${escapedOpp}', '${pt.result || ''}', ${pt.elo}, ${pt.delta}, ${pt.winProbPreMatch || 0})"
+            onmouseenter="window.showProfileEloHover && window.showProfileEloHover('${pt.season}', ${pt.round}, '${escapedTeam}', '${escapedOpp}', '${pt.result || ''}', ${pt.elo}, ${pt.delta}, ${pt.winProbPreMatch || 0})"
+            onmouseleave="window.clearProfileEloHover && window.clearProfileEloHover()">
         <title>${pt.season} G${pt.round}: ${teamName} vs ${pt.opponentTeamName} (${pt.result}) ${pt.elo.toFixed(1)} (${pt.delta > 0 ? '+' : ''}${pt.delta.toFixed(1)})</title>
-      </circle>
+      </rect>
     `;
 
     if (isFirst || isLast) {
@@ -510,7 +524,7 @@ export function renderEloTrajectorySparkline(
       const textX = x;
       const textY = y > (padding.top + innerH / 2) ? y - 8 : y + 14;
       dots += `
-        <text x="${textX}" y="${textY}" text-anchor="${textAnchor}" font-size="8.5" font-family="monospace" font-weight="bold" fill="#f59e0b">
+        <text x="${textX}" y="${textY}" text-anchor="${textAnchor}" font-size="9.5" font-family="monospace" font-weight="bold" fill="#f59e0b">
           ${Math.round(pt.elo)}
         </text>
       `;
@@ -528,8 +542,8 @@ export function renderEloTrajectorySparkline(
       <!-- Gridlines -->
       <line x1="${padding.left}" y1="${getY(maxElo)}" x2="${padding.left + innerW}" y2="${getY(maxElo)}" stroke="currentColor" stroke-opacity="0.1" stroke-dasharray="2,2"/>
       <line x1="${padding.left}" y1="${getY(minElo)}" x2="${padding.left + innerW}" y2="${getY(minElo)}" stroke="currentColor" stroke-opacity="0.1" stroke-dasharray="2,2"/>
-      <text x="${padding.left - 6}" y="${getY(maxElo) + 3}" text-anchor="end" font-size="8" font-family="monospace" fill="currentColor" opacity="0.6">${Math.round(maxElo)}</text>
-      <text x="${padding.left - 6}" y="${getY(minElo) + 3}" text-anchor="end" font-size="8" font-family="monospace" fill="currentColor" opacity="0.6">${Math.round(minElo)}</text>
+      <text x="${padding.left - 6}" y="${getY(maxElo) + 3}" text-anchor="end" font-size="9" font-family="monospace" fill="currentColor" opacity="0.6">${Math.round(maxElo)}</text>
+      <text x="${padding.left - 6}" y="${getY(minElo) + 3}" text-anchor="end" font-size="9" font-family="monospace" fill="currentColor" opacity="0.6">${Math.round(minElo)}</text>
       ${seasonDividers}
       <!-- Sparkline path -->
       <path d="${pathD}" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -545,6 +559,9 @@ export function populateCareerTimeline(m: Manager): void {
   if (currentProfileManager?.id !== m.id) {
     selectedProfileEloIndex = null;
     lockedProfileEloMatch = null;
+    if (!profileEloSeasonUserModified) {
+      profileEloSeason = getDefaultProfileEloSeason();
+    }
   }
   currentProfileManager = m;
   const trajCard = document.getElementById('profile-trajectory-card');

@@ -575,5 +575,38 @@ describe('Dynamic Elo Engine Client Analytics', () => {
       expect(html).toContain('80% del rating viene preservato');
       expect(html).toContain('20% regredisce verso la media di lega (1400)');
     });
+
+    it('uses a 1:1 adaptive mobile viewBox when viewport width is < 640px and keeps all match circles visible', () => {
+      const prevWidth = (globalThis as any).window?.innerWidth;
+      (globalThis as any).window = { ...(globalThis as any).window, innerWidth: 375 };
+
+      try {
+        const denseTrajectory: EloTrajectoryPoint[] = Array.from({ length: 25 }, (_, i) => ({
+          round: i + 1,
+          season: '2025/26',
+          elo: i === 0 ? 1500 : i === 12 ? 1600 : i === 24 ? 1550 : 1520,
+          opponentId: `opp_${i}`,
+          opponentTeamName: `Rival ${i}`,
+          result: 'W' as const,
+          delta: 5.0,
+          winProbPreMatch: 50.0,
+          isHome: true
+        }));
+
+        const sparklineSvg = renderEloTrajectorySparkline(denseTrajectory, 'all', 'My Team');
+        expect(sparklineSvg).toContain('viewBox="0 0 340 150"');
+        // Points have their visible circles rendered with adaptive radius
+        expect(sparklineSvg).toContain('r="2.5"');
+        // Full-height hit slice rect is present
+        expect(sparklineSvg).toContain('<rect ');
+
+        const eloTabHtml = renderEloTab();
+        expect(eloTabHtml).toContain('viewBox="0 0 360 240"');
+      } finally {
+        if ((globalThis as any).window) {
+          (globalThis as any).window.innerWidth = prevWidth ?? 1024;
+        }
+      }
+    });
   });
 });

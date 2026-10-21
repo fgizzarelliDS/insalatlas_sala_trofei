@@ -1,6 +1,7 @@
 import { applyTitlesToDOM } from '@/ui';
 import { loadLeagueData } from '@/storage';
 import { loadLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
+import { loadAnalyticsEloData } from '@/analytics/analyticsCore';
 import {
   initModalMounts,
   initModalListeners,
@@ -92,6 +93,7 @@ export async function initApp(): Promise<void> {
   await loadLeagueData();
   // Prefetch live season details and dynamic Elo data eagerly
   loadLiveSeasonDetails().catch(() => {});
+  loadAnalyticsEloData().catch(() => {});
   applyTitlesToDOM();
   renderBoard();
   renderTopStatsCards();

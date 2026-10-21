@@ -10,18 +10,18 @@ from typing import Dict, Any, List, Optional, Tuple
 
 try:
     from core.luck_simulator import compute_schedule_luck_analytics
-    from core.elo_engine import run_dual_track_elo_pipeline, expected_score
+    from core.elo_engine import run_dual_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
     from core.convert_2025_matches import convert_2025_matches
     from core.config import LEAGUE_RULES
 except ImportError:
     try:
         from luck_simulator import compute_schedule_luck_analytics
-        from elo_engine import run_dual_track_elo_pipeline, expected_score
+        from elo_engine import run_dual_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
         from convert_2025_matches import convert_2025_matches
         from config import LEAGUE_RULES
     except ImportError:
         from scripts.core.luck_simulator import compute_schedule_luck_analytics
-        from scripts.core.elo_engine import run_dual_track_elo_pipeline, expected_score
+        from scripts.core.elo_engine import run_dual_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
         from scripts.core.convert_2025_matches import convert_2025_matches
         from scripts.core.config import LEAGUE_RULES
 
@@ -499,43 +499,51 @@ def compile_live_season_details(
             season_2025_rounds = []
 
     # If 2025 rounds are not present on disk (e.g. in CI/CD without raw match archives),
-    # recover the 2025/26 trackers directly from the pre-existing consolidated live details file
+    # recover the 2025/26 trackers directly from public/analytics_data.json or live details
     existing_2025_trackers = None
-    if not season_2025_rounds and os.path.exists(output_path):
+    analytics_output_path = os.path.join(root_dir, 'public', 'analytics_data.json')
+    source_path = analytics_output_path if os.path.exists(analytics_output_path) else output_path
+    if not season_2025_rounds and os.path.exists(source_path):
         try:
-            with open(output_path, 'r', encoding='utf-8') as f:
-                prev_details = json.load(f)
-            prev_profiles = {}
-            for s in prev_details.get('standings', []):
-                m_id = s.get('managerId')
-                if m_id and s.get('elo'):
-                    prev_profiles[m_id] = s['elo']
+            with open(source_path, 'r', encoding='utf-8') as f:
+                prev_data = json.load(f)
+            prev_profiles = prev_data.get('managers', {})
+            if not prev_profiles and 'standings' in prev_data:
+                prev_profiles = {}
+                for s in prev_data.get('standings', []):
+                    m_id = s.get('managerId')
+                    if m_id and s.get('elo'):
+                        prev_profiles[m_id] = s['elo']
 
             fb_flat = {}
             fb_hist = {}
             for m_id, prof in prev_profiles.items():
-                t_flat = [p for p in prof.get('flat', {}).get('trajectory', []) if p.get('season') == '2025/26']
+                t_flat = prof.get('flat', {}).get('seasons', {}).get('2025/26') or [
+                    p for p in prof.get('flat', {}).get('trajectory', []) if p.get('season') == '2025/26'
+                ]
                 if t_flat:
                     fb_flat[m_id] = {
                         'current': t_flat[-1]['elo'],
-                        'peak': prof['flat']['peak'],
-                        'floor': prof['flat']['floor'],
+                        'peak': prof['flat'].get('peak', {}),
+                        'floor': prof['flat'].get('floor', {}),
                         'lastDelta': t_flat[-1].get('delta', 0.0),
                         'trajectory': t_flat
                     }
-                t_hist = [p for p in prof.get('historical', {}).get('trajectory', []) if p.get('season') == '2025/26']
+                t_hist = prof.get('historical', {}).get('seasons', {}).get('2025/26') or [
+                    p for p in prof.get('historical', {}).get('trajectory', []) if p.get('season') == '2025/26'
+                ]
                 if t_hist:
                     fb_hist[m_id] = {
                         'current': t_hist[-1]['elo'],
-                        'peak': prof['historical']['peak'],
-                        'floor': prof['historical']['floor'],
+                        'peak': prof['historical'].get('peak', {}),
+                        'floor': prof['historical'].get('floor', {}),
                         'lastDelta': t_hist[-1].get('delta', 0.0),
                         'trajectory': t_hist
                     }
             if fb_flat and fb_hist:
                 existing_2025_trackers = (fb_flat, fb_hist)
         except Exception as e:
-            print(f"[WARN] Failed to recover 2025 Elo trackers from existing live file: {e}")
+            print(f"[WARN] Failed to recover 2025 Elo trackers from existing files: {e}")
 
     # Load managers with career history for historical seeding
     managers_list = []
@@ -665,7 +673,28 @@ def compile_live_season_details(
         t_name = t['teamName']
         m_id = t.get('managerId')
         luck_entry = schedule_luck_data.get(t_name, {})
-        elo_entry = elo_profiles.get(m_id, {})
+        elo_full = elo_profiles.get(m_id, {})
+        elo_entry = {}
+        if elo_full:
+            elo_entry = {
+                'managerId': elo_full.get('managerId', m_id),
+                'teamName': elo_full.get('teamName', t_name),
+                'coach': elo_full.get('coach', ''),
+            }
+            for track in ['flat', 'historical']:
+                if track in elo_full:
+                    src_track = elo_full[track]
+                    curr_traj = [
+                        p for p in src_track.get('trajectory', [])
+                        if p.get('season') == season_name
+                    ]
+                    elo_entry[track] = {
+                        'current': src_track.get('current', 1500.0),
+                        'peak': src_track.get('peak', {}),
+                        'floor': src_track.get('floor', {}),
+                        'lastDelta': src_track.get('lastDelta', 0.0),
+                        'trajectory': curr_traj
+                    }
         final_standings.append({
             'rank': t['rank'],
             'managerId': m_id,
@@ -690,20 +719,50 @@ def compile_live_season_details(
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(compiled_details, f, indent=2, ensure_ascii=False)
+        json.dump(compiled_details, f, separators=(',', ':'), ensure_ascii=False)
 
     # Also serialize analytics_data.json for dedicated analytics views
     analytics_output_path = os.path.join(root_dir, 'public', 'analytics_data.json')
+    active_elo_config = elo_config or DEFAULT_ELO_CONFIG
+
+    # Deduplicate payload: trajectory contains all points chronologically,
+    # so omit redundant per-season arrays to drastically reduce payload size.
+    serialized_managers = {}
+    for m_id, prof in elo_profiles.items():
+        clean_prof = {
+            'managerId': prof.get('managerId', m_id),
+            'teamName': prof.get('teamName', ''),
+            'coach': prof.get('coach', '')
+        }
+        for track in ['flat', 'historical']:
+            if track in prof:
+                src_track = prof[track]
+                clean_prof[track] = {
+                    'current': src_track.get('current', 1500.0),
+                    'peak': src_track.get('peak', {}),
+                    'floor': src_track.get('floor', {}),
+                    'lastDelta': src_track.get('lastDelta', 0.0),
+                    'trajectory': src_track.get('trajectory', [])
+                }
+        serialized_managers[m_id] = clean_prof
+
     analytics_payload = {
         'season': season_name,
         'competitionId': competition_id,
         'lastCompletedRound': last_completed,
         'totalRounds': total_rounds,
         'eloModeDefault': 'flat',
-        'managers': elo_profiles
+        'config': {
+            'baseRating': float(active_elo_config.get('base_rating', 1500.0)),
+            'scaleFactor': float(active_elo_config.get('scale_factor', 400.0)),
+            'carryoverAlpha': float(active_elo_config.get('carryover_alpha', 0.75)),
+            'historicalSeeding': active_elo_config.get('historical_seeding', {}),
+            'kFactors': active_elo_config.get('k_factors', {})
+        },
+        'managers': serialized_managers
     }
     with open(analytics_output_path, 'w', encoding='utf-8') as f:
-        json.dump(analytics_payload, f, indent=2, ensure_ascii=False)
+        json.dump(analytics_payload, f, separators=(',', ':'), ensure_ascii=False)
 
     return compiled_details
 

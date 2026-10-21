@@ -3,7 +3,7 @@
  * Client-side utilities and reactive state for League-Agnostic Dynamic Elo Analytics
  */
 
-import { EloTrackMode, ManagerEloProfile, EloTrackData } from '../types/analytics';
+import { EloTrackMode, ManagerEloProfile, EloTrackData, EloConfig } from '../types/analytics';
 import { LEAGUE } from '../config';
 
 const STORAGE_KEY = 'insalatlas_elo_mode';
@@ -75,14 +75,25 @@ export function computeEloWinProbability(
 }
 
 /**
- * Get manager's active track data depending on current or passed mode
+ * Get manager's active track data depending on current or passed mode.
+ * Automatically reconstructs the per-season index in memory if omitted in serialized payload.
  */
 export function getManagerEloTrack(
   profile?: ManagerEloProfile,
   mode: EloTrackMode = getEloMode()
 ): EloTrackData | undefined {
   if (!profile) return undefined;
-  return mode === 'historical' ? profile.historical : profile.flat;
+  const track = mode === 'historical' ? profile.historical : profile.flat;
+  if (track && !track.seasons && track.trajectory) {
+    track.seasons = {};
+    for (const pt of track.trajectory) {
+      if (pt.season) {
+        if (!track.seasons[pt.season]) track.seasons[pt.season] = [];
+        track.seasons[pt.season].push(pt);
+      }
+    }
+  }
+  return track;
 }
 
 /**
@@ -135,4 +146,71 @@ export function formatEloDelta(delta?: number): string {
   if (delta === undefined || isNaN(delta)) return '0.0';
   const sign = delta > 0 ? '+' : '';
   return `${sign}${delta.toFixed(1)}`;
+}
+
+let cachedAnalyticsManagers: Record<string, ManagerEloProfile> | null = null;
+let cachedAnalyticsConfig: EloConfig | null = null;
+let analyticsFetchPromise: Promise<Record<string, ManagerEloProfile> | null> | null = null;
+
+/**
+ * Loads analytics_data.json containing full multi-season Elo trajectories and profiles
+ */
+export async function loadAnalyticsEloData(): Promise<Record<string, ManagerEloProfile> | null> {
+  if (cachedAnalyticsManagers) return cachedAnalyticsManagers;
+  if (analyticsFetchPromise) return analyticsFetchPromise;
+
+  analyticsFetchPromise = (async () => {
+    const timestamp = Date.now();
+    const urls = [
+      `analytics_data.json?t=${timestamp}`,
+      `./analytics_data.json?t=${timestamp}`,
+      `/analytics_data.json?t=${timestamp}`
+    ];
+    for (const url of urls) {
+      try {
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.managers) {
+            cachedAnalyticsManagers = data.managers;
+            if (data.config) {
+              cachedAnalyticsConfig = data.config;
+            }
+            return cachedAnalyticsManagers;
+          }
+        }
+      } catch {
+        // try next candidate
+      }
+    }
+    return null;
+  })();
+
+  return analyticsFetchPromise;
+}
+
+export function getCachedAnalyticsManagers(): Record<string, ManagerEloProfile> | null {
+  return cachedAnalyticsManagers;
+}
+
+export function getCachedAnalyticsConfig(): EloConfig | null {
+  return cachedAnalyticsConfig;
+}
+
+export function getActiveEloConfig(): EloConfig {
+  return cachedAnalyticsConfig || (LEAGUE.elo as EloConfig);
+}
+
+export function setCachedAnalyticsManagers(
+  data: Record<string, ManagerEloProfile> | null,
+  config?: EloConfig | null
+): void {
+  cachedAnalyticsManagers = data;
+  if (config !== undefined) {
+    cachedAnalyticsConfig = config;
+  }
+}
+
+export function getCachedEloProfile(managerId: string): ManagerEloProfile | undefined {
+  return cachedAnalyticsManagers?.[managerId];
 }

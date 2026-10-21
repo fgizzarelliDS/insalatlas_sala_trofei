@@ -10,7 +10,7 @@ import type {
 } from '@/types';
 import { renderAnalyticsModalDOM } from './analytics';
 
-import { setEloMode } from '@/analytics/analyticsCore';
+import { setEloMode, getCachedAnalyticsManagers, loadAnalyticsEloData } from '@/analytics/analyticsCore';
 import { getLiveSeasonDetails, loadLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 
 let currentTab: AnalyticsTab = 'macro';
@@ -71,12 +71,21 @@ export function changeTab2Sort(field: Tab2SortField): void {
  */
 export function switchAnalyticsTab(tab: AnalyticsTab): void {
   currentTab = tab;
-  if (tab === 'elo' && !getLiveSeasonDetails()) {
-    loadLiveSeasonDetails().then(() => {
-      if (currentTab === 'elo') {
-        renderAnalyticsModalBody();
-      }
-    });
+  if (tab === 'elo') {
+    if (!getLiveSeasonDetails()) {
+      loadLiveSeasonDetails().then(() => {
+        if (currentTab === 'elo') {
+          renderAnalyticsModalBody();
+        }
+      });
+    }
+    if (!getCachedAnalyticsManagers()) {
+      loadAnalyticsEloData().then(() => {
+        if (currentTab === 'elo') {
+          renderAnalyticsModalBody();
+        }
+      });
+    }
   }
   renderAnalyticsModalBody();
 }
@@ -204,7 +213,22 @@ export function openConcentrationModal(targetTab: AnalyticsTab = 'macro'): void 
   if (!modal) return;
   currentTab = targetTab;
   currentMacroMetricMode = 'prestige';
-  if (targetTab === 'elo' || !getLiveSeasonDetails()) {
+  if (targetTab === 'elo') {
+    if (!getLiveSeasonDetails()) {
+      loadLiveSeasonDetails().then(() => {
+        if (currentTab === 'elo') {
+          renderAnalyticsModalBody();
+        }
+      });
+    }
+    if (!getCachedAnalyticsManagers()) {
+      loadAnalyticsEloData().then(() => {
+        if (currentTab === 'elo') {
+          renderAnalyticsModalBody();
+        }
+      });
+    }
+  } else if (!getLiveSeasonDetails()) {
     loadLiveSeasonDetails().then(() => {
       if (currentTab === 'elo') {
         renderAnalyticsModalBody();

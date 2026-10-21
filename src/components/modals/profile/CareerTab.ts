@@ -2,7 +2,13 @@ import type { Manager } from '@/types';
 import { state } from '@/state';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
 import { renderRankTrajectorySparkline } from './SparklineChart';
-import { getEloMode, getManagerEloTrack, formatElo } from '@/analytics/analyticsCore';
+import {
+  getEloMode,
+  getManagerEloTrack,
+  formatElo,
+  getCachedEloProfile,
+  loadAnalyticsEloData
+} from '@/analytics/analyticsCore';
 import { getLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 import type { EloTrajectoryPoint } from '@/types/analytics';
 
@@ -197,10 +203,22 @@ export function populateHistoricalTeams(m: Manager): void {
   });
 }
 
-let profileEloSeason: 'all' | '2026/27' | '2025/26' = 'all';
+let profileEloSeason: string = 'all';
 let currentProfileManager: Manager | null = null;
 let selectedProfileEloIndex: number | null = null;
-let lockedProfileEloDetail: string | null = null;
+
+interface LockedProfileEloMatch {
+  season: string;
+  round: number;
+  team: string;
+  opponent: string;
+  result: string;
+  elo: number;
+  delta: number;
+  winProb: number;
+  idx?: number;
+}
+let lockedProfileEloMatch: LockedProfileEloMatch | null = null;
 
 /**
  * Refreshes career Elo sparkline when mode or manager changes
@@ -212,12 +230,14 @@ export function refreshCareerEloSparkline(): void {
 }
 
 /**
- * Updates season filter ('all', '2026/27', '2025/26') and re-renders sparkline
+ * Updates season or recent window filter ('all', '2026/27', '2025/26', 'last10', etc.) and re-renders sparkline
  */
-export function switchProfileEloSeason(season: 'all' | '2026/27' | '2025/26'): void {
+export function switchProfileEloSeason(season: string): void {
   profileEloSeason = season;
   selectedProfileEloIndex = null;
-  lockedProfileEloDetail = null;
+  if (lockedProfileEloMatch && season !== 'all' && !season.startsWith('last') && lockedProfileEloMatch.season !== season) {
+    lockedProfileEloMatch = null;
+  }
   refreshCareerEloSparkline();
 }
 
@@ -244,29 +264,8 @@ export function selectProfileEloPoint(
   winProb: number
 ): void {
   selectedProfileEloIndex = idx;
-  const deltaSign = delta > 0 ? '+' : '';
-  const deltaColor = delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-rose-400' : 'text-slate-400';
-  const resBadge = result === 'W' ? 'text-emerald-400 font-bold' : result === 'L' ? 'text-rose-400 font-bold' : 'text-amber-400 font-bold';
-
-  lockedProfileEloDetail = `
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 w-full text-[11px] sm:text-xs">
-      <div class="flex items-center gap-1.5 font-bold min-w-0 flex-wrap">
-        <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] shrink-0">${season} G${round}</span>
-        <span class="truncate max-w-[110px] sm:max-w-none" style="color: var(--text-main);">${team}</span>
-        <span class="opacity-60 text-[10px] shrink-0" style="color: var(--text-muted);">vs</span>
-        <span class="truncate max-w-[110px] sm:max-w-none" style="color: var(--text-muted);">${opponent || 'Avversario'}</span>
-        <span class="${resBadge} shrink-0">(${result})</span>
-      </div>
-      <div class="flex items-center gap-2 font-mono shrink-0">
-        <span class="font-black text-amber-400 text-xs sm:text-sm">${elo.toFixed(1)} pt</span>
-        <span class="${deltaColor} font-bold text-[10px]">(${deltaSign}${delta.toFixed(1)})</span>
-        ${winProb > 0 ? `<span class="opacity-75 text-[10px] font-sans" style="color: var(--text-muted);">(Prob. ${winProb.toFixed(0)}%)</span>` : ''}
-      </div>
-    </div>
-  `;
-
-  const box = document.getElementById('profile-elo-hover-box');
-  if (box) box.innerHTML = lockedProfileEloDetail;
+  lockedProfileEloMatch = { season, round, team, opponent, result, elo, delta, winProb, idx };
+  showProfileEloHover(season, round, team, opponent, result, elo, delta, winProb);
 
   // Active ring on sparkline
   const svg = document.querySelector('#profile-elo-trajectory-sparkline svg');
@@ -339,8 +338,45 @@ export function clearProfileEloHover(): void {
   const box = document.getElementById('profile-elo-hover-box');
   if (!box) return;
 
-  if (lockedProfileEloDetail) {
-    box.innerHTML = lockedProfileEloDetail;
+  if (lockedProfileEloMatch) {
+    if (currentProfileManager) {
+      const activeMode = getEloMode();
+      const fullProfile = getCachedEloProfile(currentProfileManager.id);
+      const liveData = getLiveSeasonDetails();
+      const teamMetric = liveData?.standings.find(s => s.managerId === currentProfileManager?.id);
+      const eloTrack = getManagerEloTrack(fullProfile || teamMetric?.elo, activeMode);
+
+      if (eloTrack) {
+        const matchPt = eloTrack.trajectory.find(
+          p => p.season === lockedProfileEloMatch!.season && p.round === lockedProfileEloMatch!.round
+        );
+        if (matchPt) {
+          showProfileEloHover(
+            matchPt.season,
+            matchPt.round,
+            lockedProfileEloMatch.team,
+            matchPt.opponentTeamName || lockedProfileEloMatch.opponent,
+            matchPt.result || lockedProfileEloMatch.result || '',
+            matchPt.elo,
+            matchPt.delta,
+            matchPt.winProbPreMatch || 0
+          );
+          return;
+        }
+      }
+    }
+
+    // Fallback if matchPt cannot be re-resolved
+    showProfileEloHover(
+      lockedProfileEloMatch.season,
+      lockedProfileEloMatch.round,
+      lockedProfileEloMatch.team,
+      lockedProfileEloMatch.opponent,
+      lockedProfileEloMatch.result || '',
+      lockedProfileEloMatch.elo,
+      lockedProfileEloMatch.delta,
+      lockedProfileEloMatch.winProb || 0
+    );
     return;
   }
 
@@ -348,7 +384,8 @@ export function clearProfileEloHover(): void {
     const liveData = getLiveSeasonDetails();
     const teamMetric = liveData?.standings.find(s => s.managerId === currentProfileManager?.id);
     const activeMode = getEloMode();
-    const eloTrack = getManagerEloTrack(teamMetric?.elo, activeMode);
+    const fullProfile = getCachedEloProfile(currentProfileManager.id);
+    const eloTrack = getManagerEloTrack(fullProfile || teamMetric?.elo, activeMode);
     const curVal = eloTrack ? `${formatElo(eloTrack.current)} pt (${eloTrack.lastDelta >= 0 ? '+' : ''}${eloTrack.lastDelta.toFixed(1)})` : '';
 
     box.innerHTML = `
@@ -369,23 +406,34 @@ export function clearProfileEloHover(): void {
  */
 export function renderEloTrajectorySparkline(
   trajectory: EloTrajectoryPoint[],
-  seasonFilter: 'all' | '2026/27' | '2025/26' = 'all',
-  teamName: string = ''
+  seasonFilter: string = 'all',
+  teamName: string = '',
+  seasonsMap?: Record<string, EloTrajectoryPoint[]>
 ): string {
-  if (!trajectory || trajectory.length === 0) return '';
+  if ((!trajectory || trajectory.length === 0) && (!seasonsMap || Object.keys(seasonsMap).length === 0)) return '';
 
-  // Sort chronologically: 2025/26 first, then 2026/27
-  const sorted = [...trajectory].sort((a, b) => {
+  let displayPts: EloTrajectoryPoint[] = [];
+  const sorted = [...(trajectory || [])].sort((a, b) => {
     if (a.season !== b.season) return a.season.localeCompare(b.season);
     return a.round - b.round;
   });
 
-  const displayPts = seasonFilter === 'all'
-    ? sorted
-    : sorted.filter(p => p.season === seasonFilter);
+  if (seasonFilter === 'last10' || seasonFilter === 'last20' || seasonFilter === 'last30') {
+    const n = seasonFilter === 'last10' ? 10 : seasonFilter === 'last20' ? 20 : 30;
+    displayPts = sorted.slice(-n);
+  } else if (seasonFilter !== 'all' && seasonsMap?.[seasonFilter]) {
+    displayPts = seasonsMap[seasonFilter];
+  } else {
+    displayPts = seasonFilter === 'all'
+      ? sorted
+      : sorted.filter(p => p.season === seasonFilter);
+  }
 
   if (displayPts.length === 0) {
-    return `<div class="p-6 text-center text-xs opacity-60 italic">Nessun match disputato nella stagione selezionata (${seasonFilter}).</div>`;
+    const msg = seasonFilter.startsWith('last')
+      ? 'Nessun match disputato nella finestra recente selezionata.'
+      : `Nessun match disputato nella stagione selezionata (${seasonFilter}).`;
+    return `<div class="p-6 text-center text-xs opacity-60 italic">${msg}</div>`;
   }
 
   const width = 500;
@@ -439,7 +487,9 @@ export function renderEloTrajectorySparkline(
     const escapedTeam = (teamName || '').replace(/'/g, "\\'");
     const escapedOpp = (pt.opponentTeamName || '').replace(/'/g, "\\'");
 
-    const isSelected = selectedProfileEloIndex === idx;
+    const isSelected = lockedProfileEloMatch
+      ? (lockedProfileEloMatch.season === pt.season && lockedProfileEloMatch.round === pt.round)
+      : (selectedProfileEloIndex === idx);
     const ringHTML = isSelected
       ? `<circle class="elo-active-ring" cx="${x}" cy="${y}" r="7" fill="none" stroke="#fbbf24" stroke-width="2" pointer-events="none"></circle>`
       : '';
@@ -494,7 +544,7 @@ export function renderEloTrajectorySparkline(
 export function populateCareerTimeline(m: Manager): void {
   if (currentProfileManager?.id !== m.id) {
     selectedProfileEloIndex = null;
-    lockedProfileEloDetail = null;
+    lockedProfileEloMatch = null;
   }
   currentProfileManager = m;
   const trajCard = document.getElementById('profile-trajectory-card');
@@ -509,10 +559,42 @@ export function populateCareerTimeline(m: Manager): void {
   const liveData = getLiveSeasonDetails();
   const teamMetric = liveData?.standings.find(s => s.managerId === m.id);
   const activeMode = getEloMode();
-  const eloTrack = getManagerEloTrack(teamMetric?.elo, activeMode);
+  const fullProfile = getCachedEloProfile(m.id);
+  const eloTrack = getManagerEloTrack(fullProfile || teamMetric?.elo, activeMode);
 
-  if (eloTrajCard && eloTrajSparkline && eloTrack && eloTrack.trajectory.length > 0) {
-    const eloSvg = renderEloTrajectorySparkline(eloTrack.trajectory, profileEloSeason, teamMetric?.teamName || m.name);
+  // If full profile not cached yet, prefetch in background and update sparkline
+  if (!fullProfile) {
+    loadAnalyticsEloData().then(managers => {
+      if (managers && managers[m.id] && currentProfileManager?.id === m.id) {
+        const updatedTrack = getManagerEloTrack(managers[m.id], getEloMode());
+        if (updatedTrack && eloTrajSparkline && eloTrajCard) {
+          const eloSvg = renderEloTrajectorySparkline(
+            updatedTrack.trajectory,
+            profileEloSeason,
+            teamMetric?.teamName || m.name,
+            updatedTrack.seasons
+          );
+          if (eloSvg) {
+            eloTrajSparkline.innerHTML = eloSvg;
+            eloTrajCard.classList.remove('hidden');
+          }
+        }
+      }
+    }).catch(() => {});
+  }
+
+  const hasPoints = eloTrack && (
+    eloTrack.trajectory.length > 0 ||
+    (eloTrack.seasons && Object.keys(eloTrack.seasons).length > 0)
+  );
+
+  if (eloTrajCard && eloTrajSparkline && eloTrack && hasPoints) {
+    const eloSvg = renderEloTrajectorySparkline(
+      eloTrack.trajectory,
+      profileEloSeason,
+      teamMetric?.teamName || m.name,
+      eloTrack.seasons
+    );
     if (eloSvg) {
       eloTrajSparkline.innerHTML = eloSvg;
       if (eloBadgeEl) {

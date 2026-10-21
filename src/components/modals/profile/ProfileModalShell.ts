@@ -186,9 +186,16 @@ export function getProfileModalShellHTML(): string {
                       onchange="window.switchProfileEloSeason && window.switchProfileEloSeason(this.value)"
                       class="px-2.5 py-1 rounded-xl text-xs font-bold border transition cursor-pointer"
                       style="background-color: var(--input-bg); border-color: var(--table-border); color: var(--text-main);">
-                <option value="all">Tutte le stagioni (Continuo)</option>
-                <option value="2026/27">2026/27 (Corrente)</option>
-                <option value="2025/26">2025/26</option>
+                <optgroup label="Stagioni">
+                  <option value="all">Tutte le stagioni (Continuo)</option>
+                  <option value="2026/27">2026/27 (Corrente)</option>
+                  <option value="2025/26">2025/26</option>
+                </optgroup>
+                <optgroup label="Finestra Recente">
+                  <option value="last10">Ultimi 10 match</option>
+                  <option value="last20">Ultimi 20 match</option>
+                  <option value="last30">Ultimi 30 match</option>
+                </optgroup>
               </select>
               <button id="profile-elo-toggle-btn"
                       type="button"

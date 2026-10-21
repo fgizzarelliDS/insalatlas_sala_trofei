@@ -10,20 +10,28 @@ import {
   getManagerEloTrack,
   getEloBadgeClasses,
   getEloTierTitle,
-  formatElo
+  formatElo,
+  loadAnalyticsEloData,
+  getCachedAnalyticsManagers,
+  setCachedAnalyticsManagers,
+  getActiveEloConfig,
+  computeEloWinProbability
 } from '@/analytics/analyticsCore';
 import { getLiveSeasonDetails, loadLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 import type { ManagerEloProfile } from '@/types/analytics';
 
-let cachedAnalyticsManagers: Record<string, ManagerEloProfile> | null = null;
-let isFetchingElo = false;
+export { setCachedAnalyticsManagers };
 
-export function setCachedAnalyticsManagers(data: Record<string, ManagerEloProfile> | null): void {
-  cachedAnalyticsManagers = data;
+let isFetchingElo = false;
+let eloFetchError = false;
+
+export function retryEloFetch(): void {
+  eloFetchError = false;
+  prefetchEloData();
 }
 
 // Chart state
-let selectedEloSeason: 'all' | '2026/27' | '2025/26' = 'all';
+let selectedEloSeason: string = 'all';
 const hiddenManagerIds: Set<string> = new Set();
 
 // Leaderboard sort state
@@ -55,35 +63,20 @@ function refreshEloTab(): void {
 export function prefetchEloData(): void {
   if (isFetchingElo) return;
   isFetchingElo = true;
-
-  const timestamp = Date.now();
-  const analyticsUrls = [
-    `analytics_data.json?t=${timestamp}`,
-    `./analytics_data.json?t=${timestamp}`,
-    `/analytics_data.json?t=${timestamp}`
-  ];
-
-  const fetchAnalytics = async () => {
-    for (const url of analyticsUrls) {
-      try {
-        const res = await fetch(url);
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.managers) {
-            cachedAnalyticsManagers = data.managers;
-            return;
-          }
-        }
-      } catch {
-        // try next url
-      }
-    }
-  };
+  eloFetchError = false;
 
   Promise.all([
     loadLiveSeasonDetails().catch(() => null),
-    fetchAnalytics().catch(() => null)
-  ]).finally(() => {
+    loadAnalyticsEloData().catch(() => null)
+  ]).then(([_, analytics]) => {
+    if (!analytics && !getCachedAnalyticsManagers()) {
+      eloFetchError = true;
+    }
+  }).catch(() => {
+    if (!getCachedAnalyticsManagers()) {
+      eloFetchError = true;
+    }
+  }).finally(() => {
     isFetchingElo = false;
     refreshEloTab();
   });
@@ -107,14 +100,27 @@ const MANAGER_COLORS = [
   '#64748b'  // slate
 ];
 
-let lockedEloChartDetail: string | null = null;
+interface LockedEloChartMatch {
+  season: string;
+  round: number;
+  team: string;
+  opponent: string;
+  result?: string;
+  elo?: number;
+  delta?: number;
+  winProb?: number;
+}
+
+let lockedEloChartMatch: LockedEloChartMatch | null = null;
 
 /**
- * Switches season filter on the SVG trajectory chart
+ * Switches season or recent window filter on the SVG trajectory chart
  */
-export function switchEloChartSeason(season: 'all' | '2026/27' | '2025/26'): void {
+export function switchEloChartSeason(season: string): void {
   selectedEloSeason = season;
-  lockedEloChartDetail = null;
+  if (lockedEloChartMatch && season !== 'all' && !season.startsWith('last') && lockedEloChartMatch.season !== season) {
+    lockedEloChartMatch = null;
+  }
   refreshEloTab();
 }
 
@@ -156,29 +162,8 @@ export function selectEloChartPoint(
   delta: number,
   winProb: number
 ): void {
-  const deltaSign = delta > 0 ? '+' : '';
-  const deltaColor = delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-rose-400' : 'text-slate-400';
-  const resBadge = result === 'W' ? 'text-emerald-400 font-bold' : result === 'L' ? 'text-rose-400 font-bold' : 'text-amber-400 font-bold';
-
-  lockedEloChartDetail = `
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 w-full text-[11px] sm:text-xs">
-      <div class="flex items-center gap-1.5 font-bold min-w-0 flex-wrap">
-        <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] shrink-0">${season} G${round}</span>
-        <span style="color: var(--text-main);" class="truncate max-w-[110px] sm:max-w-none">${team}</span>
-        <span class="opacity-60 text-[10px] shrink-0">vs</span>
-        <span style="color: var(--text-muted);" class="truncate max-w-[110px] sm:max-w-none">${opponent || 'Avversario'}</span>
-        <span class="${resBadge} shrink-0">(${result})</span>
-      </div>
-      <div class="flex items-center gap-2 font-mono shrink-0">
-        <span class="font-black text-amber-400 text-xs sm:text-sm">${elo.toFixed(1)} pt</span>
-        <span class="${deltaColor} font-bold text-[11px]">(${deltaSign}${delta.toFixed(1)})</span>
-        ${winProb > 0 ? `<span class="opacity-75 text-[10px] font-sans" style="color: var(--text-muted);">(Prob. ${winProb.toFixed(0)}%)</span>` : ''}
-      </div>
-    </div>
-  `;
-
-  const banner = document.getElementById('elo-chart-hover-box');
-  if (banner) banner.innerHTML = lockedEloChartDetail;
+  lockedEloChartMatch = { season, round, team, opponent, result, elo, delta, winProb };
+  showEloChartHover(season, round, team, opponent, result, elo, delta, winProb);
 }
 
 /**
@@ -221,10 +206,58 @@ export function showEloChartHover(
 export function clearEloChartHover(): void {
   const banner = document.getElementById('elo-chart-hover-box');
   if (!banner) return;
-  if (lockedEloChartDetail) {
-    banner.innerHTML = lockedEloChartDetail;
-    return;
+
+  if (lockedEloChartMatch) {
+    const activeMode = getEloMode();
+    const liveData = getLiveSeasonDetails();
+    const cachedAnalytics = getCachedAnalyticsManagers();
+    let matchPt: any = null;
+
+    const allProfiles = cachedAnalytics
+      ? Object.values(cachedAnalytics)
+      : (liveData?.standings || []).map(s => s.elo).filter(Boolean);
+
+    for (const prof of allProfiles) {
+      if (!prof) continue;
+      const tName = (prof as any).teamName;
+      if (tName === lockedEloChartMatch.team) {
+        const tr = getManagerEloTrack(prof as any, activeMode);
+        if (tr) {
+          matchPt = tr.trajectory.find(
+            p => p.season === lockedEloChartMatch!.season && p.round === lockedEloChartMatch!.round
+          );
+          if (matchPt) break;
+        }
+      }
+    }
+
+    if (matchPt) {
+      showEloChartHover(
+        matchPt.season,
+        matchPt.round,
+        lockedEloChartMatch.team,
+        matchPt.opponentTeamName || lockedEloChartMatch.opponent,
+        matchPt.result || lockedEloChartMatch.result || '',
+        matchPt.elo,
+        matchPt.delta,
+        matchPt.winProbPreMatch || 0
+      );
+      return;
+    } else {
+      showEloChartHover(
+        lockedEloChartMatch.season,
+        lockedEloChartMatch.round,
+        lockedEloChartMatch.team,
+        lockedEloChartMatch.opponent,
+        lockedEloChartMatch.result || '',
+        lockedEloChartMatch.elo ?? 1500,
+        lockedEloChartMatch.delta ?? 0,
+        lockedEloChartMatch.winProb ?? 50
+      );
+      return;
+    }
   }
+
   banner.innerHTML = `
     <span class="opacity-70 truncate"><i class="fa-solid fa-hand-pointer mr-1.5 text-amber-500"></i>Tocca o passa sui punti per visualizzare i dettagli del match</span>
   `;
@@ -252,14 +285,135 @@ export function sortEloLeaderboard(field: EloTableSortField): void {
 }
 
 /**
+ * Formats competition K-Factors dynamically into a badge and descriptive Italian text
+ */
+export function formatKFactorsGuide(kFactors: Record<string, number>): { badge: string; description: string } {
+  const nameMap: Record<string, string> = {
+    Campionato: 'il Campionato',
+    Mundialito: 'il Mundialito',
+    Coppa: 'le gare di Coppa',
+    Supercoppa: 'la Supercoppa',
+    Coppa_Knockout: 'le Fasi Finali di Coppa',
+    Perdenti: 'il Torneo Perdenti'
+  };
+
+  const badgeNameMap: Record<string, string> = {
+    Campionato: 'Campionato',
+    Mundialito: 'Mundialito',
+    Coppa: 'Coppa',
+    Supercoppa: 'Supercoppa',
+    Coppa_Knockout: 'Coppa KO',
+    Perdenti: 'Perdenti'
+  };
+
+  const groupsByK = new Map<number, string[]>();
+  const badgeGroupsByK = new Map<number, string[]>();
+
+  for (const [comp, kVal] of Object.entries(kFactors)) {
+    if (comp === 'default') continue;
+    const label = nameMap[comp] || comp;
+    const badgeLabel = badgeNameMap[comp] || comp;
+    if (!groupsByK.has(kVal)) {
+      groupsByK.set(kVal, []);
+      badgeGroupsByK.set(kVal, []);
+    }
+    groupsByK.get(kVal)!.push(label);
+    badgeGroupsByK.get(kVal)!.push(badgeLabel);
+  }
+
+  const sortedKs = Array.from(groupsByK.keys()).sort((a, b) => b - a);
+
+  const badgeParts = sortedKs.map(k => {
+    const comps = badgeGroupsByK.get(k)!;
+    return `${comps.join(' / ')}: K=${k}`;
+  });
+  const badge = badgeParts.join(' • ') || 'K=32';
+
+  const clauses: string[] = [];
+  sortedKs.forEach((k) => {
+    const comps = groupsByK.get(k)!;
+    const compsText = comps.length > 1
+      ? `${comps.slice(0, -1).join(', ')} e ${comps[comps.length - 1]}`
+      : comps[0];
+    const isPlural = comps.length > 1 || comps[0].startsWith('le ') || comps[0].startsWith('i ');
+    const verb = isPlural ? 'hanno' : 'ha';
+
+    if (k >= 40) {
+      clauses.push(`${compsText} ${verb} K=${k} (massimo impatto per le sfide decisive a eliminazione diretta)`);
+    } else if (k >= 32) {
+      clauses.push(`${compsText} ${verb} K=${k} (massima rilevanza per la stagione regolare)`);
+    } else if (k >= 24) {
+      clauses.push(`${compsText} ${verb} K=${k} per moderare la volatilità dei match di coppa`);
+    } else {
+      clauses.push(`${compsText} ${verb} K=${k} (impatto contenuto per i tornei secondari)`);
+    }
+  });
+
+  const description = `Il fattore K definisce il peso del torneo: ${clauses.join(', mentre ')}.`;
+  return { badge, description };
+}
+
+/**
  * Renders Tab 5 (Elo Rating & Forma) HTML content
  */
 export function renderEloTab(): string {
+  const cachedAnalytics = getCachedAnalyticsManagers();
+
+  // If full multi-season analytics data is not ready, handle loading or error state
+  if (!cachedAnalytics) {
+    if (eloFetchError) {
+      return `
+        <div class="p-8 text-center text-xs opacity-90 flex flex-col items-center justify-center gap-3">
+          <i class="fa-solid fa-triangle-exclamation text-rose-500 text-3xl"></i>
+          <div class="font-bold text-sm" style="color: var(--text-main);">Impossibile caricare i dati Elo completi</div>
+          <p class="text-[11px] opacity-75 max-w-sm" style="color: var(--text-muted);">
+            Si è verificato un errore durante il recupero delle metriche e delle traiettorie multi-stagione.
+          </p>
+          <button type="button"
+                  onclick="window.retryEloFetch && window.retryEloFetch()"
+                  class="mt-2 px-3 py-1.5 rounded-xl text-xs font-bold border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition cursor-pointer">
+            <i class="fa-solid fa-rotate-right mr-1.5"></i>
+            <span>Riprova</span>
+          </button>
+        </div>
+      `;
+    }
+
+    prefetchEloData();
+
+    return `
+      <div class="p-8 text-center text-xs opacity-80 flex flex-col items-center justify-center gap-3">
+        <i class="fa-solid fa-spinner fa-spin text-amber-500 text-2xl"></i>
+        <div class="font-bold text-sm" style="color: var(--text-main);">Caricamento dati Elo in corso...</div>
+        <p class="text-[11px] opacity-70 max-w-sm" style="color: var(--text-muted);">
+          Recupero valutazioni dinamiche e traiettorie forma per tutti i manager della lega.
+        </p>
+        <button type="button"
+                onclick="window.retryEloFetch && window.retryEloFetch()"
+                class="mt-2 px-3 py-1.5 rounded-xl text-xs font-bold border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition cursor-pointer">
+          <i class="fa-solid fa-rotate-right mr-1"></i>
+          <span>Riprova</span>
+        </button>
+      </div>
+    `;
+  }
+
   const liveData = getLiveSeasonDetails();
   const standings = liveData?.standings || [];
   const activeMode = getEloMode();
 
-  // Extract manager profiles from live standings or cached analytics
+  // Active Elo configuration parameters for guide & formulas
+  const eloConfig = getActiveEloConfig();
+  const scaleFactor = eloConfig.scaleFactor || 400;
+  const baseRating = eloConfig.baseRating || 1500;
+  const carryoverAlpha = eloConfig.carryoverAlpha ?? 0.75;
+  const carryoverBetaStr = (1 - carryoverAlpha).toFixed(2);
+  const carryoverPreservedPct = Math.round(carryoverAlpha * 100);
+  const carryoverRegressedPct = Math.round((1 - carryoverAlpha) * 100);
+  const probDiff100 = computeEloWinProbability(baseRating + 100, baseRating, scaleFactor).toFixed(0);
+  const kGuide = formatKFactorsGuide(eloConfig.kFactors || {});
+
+  // Extract manager profiles combining live standings metadata with full multi-season analytics
   const profiles: Array<{
     managerId: string;
     teamName: string;
@@ -270,7 +424,7 @@ export function renderEloTab(): string {
 
   if (standings.length > 0) {
     for (const s of standings) {
-      const eloProfile = s.elo || (cachedAnalyticsManagers && (s.managerId ? cachedAnalyticsManagers[s.managerId] : null));
+      const eloProfile = (s.managerId ? cachedAnalytics[s.managerId] : null) || s.elo;
       if (eloProfile && eloProfile.flat && eloProfile.historical) {
         profiles.push({
           managerId: s.managerId || s.teamName,
@@ -281,8 +435,8 @@ export function renderEloTab(): string {
         });
       }
     }
-  } else if (cachedAnalyticsManagers) {
-    for (const [mId, prof] of Object.entries(cachedAnalyticsManagers)) {
+  } else {
+    for (const [mId, prof] of Object.entries(cachedAnalytics)) {
       if (prof && prof.flat && prof.historical) {
         profiles.push({
           managerId: mId,
@@ -295,23 +449,14 @@ export function renderEloTab(): string {
     }
   }
 
-  // Trigger eager fetch and render spinner if data not ready yet
   if (profiles.length === 0) {
-    prefetchEloData();
-
     return `
       <div class="p-8 text-center text-xs opacity-80 flex flex-col items-center justify-center gap-3">
-        <i class="fa-solid fa-spinner fa-spin text-amber-500 text-2xl"></i>
-        <div class="font-bold text-sm" style="color: var(--text-main);">Caricamento dati Elo in corso...</div>
+        <i class="fa-solid fa-circle-info text-amber-500 text-2xl"></i>
+        <div class="font-bold text-sm" style="color: var(--text-main);">Nessun dato Elo disponibile</div>
         <p class="text-[11px] opacity-70 max-w-sm" style="color: var(--text-muted);">
-          Recupero valutazioni dinamiche e traiettorie forma per tutti i manager della lega.
+          Nessuna valutazione registrata per la stagione corrente.
         </p>
-        <button type="button"
-                onclick="window.switchAnalyticsTab && window.switchAnalyticsTab('elo')"
-                class="mt-2 px-3 py-1.5 rounded-xl text-xs font-bold border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition cursor-pointer">
-          <i class="fa-solid fa-rotate-right mr-1"></i>
-          <span>Riprova</span>
-        </button>
       </div>
     `;
   }
@@ -361,31 +506,78 @@ export function renderEloTab(): string {
   const innerW = svgWidth - pad.left - pad.right;
   const innerH = svgHeight - pad.top - pad.bottom;
 
-  // Filter trajectory points according to selected season
-  let minRating = 1400;
-  let maxRating = 1650;
-
-  // First collect and order all distinct (season, round) labels in dataset
-  const roundsSet = new Map<string, { season: string; round: number }>();
+  // Collect all distinct global (season, round) pairs present across managers
+  const allGlobalRoundsMap = new Map<string, { season: string; round: number }>();
   kpiProfiles.forEach(p => {
     const tr = getManagerEloTrack(p.profile, activeMode);
     if (!tr) return;
     tr.trajectory.forEach(pt => {
-      if (selectedEloSeason === 'all' || pt.season === selectedEloSeason) {
-        const key = `${pt.season}-G${pt.round}`;
-        if (!roundsSet.has(key)) {
-          roundsSet.set(key, { season: pt.season, round: pt.round });
-        }
-        if (pt.elo < minRating) minRating = Math.floor(pt.elo - 20);
-        if (pt.elo > maxRating) maxRating = Math.ceil(pt.elo + 20);
+      const key = `${pt.season}-G${pt.round}`;
+      if (!allGlobalRoundsMap.has(key)) {
+        allGlobalRoundsMap.set(key, { season: pt.season, round: pt.round });
       }
     });
   });
 
-  const orderedRounds = Array.from(roundsSet.values()).sort((a, b) => {
+  const allOrderedGlobalRounds = Array.from(allGlobalRoundsMap.values()).sort((a, b) => {
     if (a.season !== b.season) return a.season.localeCompare(b.season);
     return a.round - b.round;
   });
+
+  const isLastN = selectedEloSeason.startsWith('last');
+  const lastNCount = isLastN
+    ? (selectedEloSeason === 'last10' ? 10 : selectedEloSeason === 'last20' ? 20 : 30)
+    : null;
+
+  let orderedRounds: Array<{ season: string; round: number }> = [];
+  let allowedRoundKeys: Set<string> | null = null;
+
+  if (lastNCount !== null) {
+    orderedRounds = allOrderedGlobalRounds.slice(-lastNCount);
+    allowedRoundKeys = new Set(orderedRounds.map(r => `${r.season}-G${r.round}`));
+  } else {
+    const roundsSet = new Map<string, { season: string; round: number }>();
+    kpiProfiles.forEach(p => {
+      const tr = getManagerEloTrack(p.profile, activeMode);
+      if (!tr) return;
+      const pts = (selectedEloSeason !== 'all' && tr.seasons?.[selectedEloSeason])
+        ? tr.seasons[selectedEloSeason]
+        : tr.trajectory.filter(pt => selectedEloSeason === 'all' || pt.season === selectedEloSeason);
+      pts.forEach(pt => {
+        const key = `${pt.season}-G${pt.round}`;
+        if (!roundsSet.has(key)) {
+          roundsSet.set(key, { season: pt.season, round: pt.round });
+        }
+      });
+    });
+    orderedRounds = Array.from(roundsSet.values()).sort((a, b) => {
+      if (a.season !== b.season) return a.season.localeCompare(b.season);
+      return a.round - b.round;
+    });
+  }
+
+  // Calculate dynamic min/max Elo rating for visible points in window
+  let minRating = 9999;
+  let maxRating = -9999;
+
+  kpiProfiles.forEach(p => {
+    const tr = getManagerEloTrack(p.profile, activeMode);
+    if (!tr) return;
+    const pts = allowedRoundKeys !== null
+      ? tr.trajectory.filter(pt => allowedRoundKeys!.has(`${pt.season}-G${pt.round}`))
+      : (selectedEloSeason !== 'all' && tr.seasons?.[selectedEloSeason])
+        ? tr.seasons[selectedEloSeason]
+        : tr.trajectory.filter(pt => selectedEloSeason === 'all' || pt.season === selectedEloSeason);
+    pts.forEach(pt => {
+      if (pt.elo < minRating) minRating = Math.floor(pt.elo - 20);
+      if (pt.elo > maxRating) maxRating = Math.ceil(pt.elo + 20);
+    });
+  });
+
+  if (minRating === 9999 || maxRating === -9999) {
+    minRating = 1400;
+    maxRating = 1650;
+  }
 
   const totalPointsCount = orderedRounds.length;
   const roundIndexMap = new Map<string, number>();
@@ -447,12 +639,16 @@ export function renderEloTab(): string {
 
     const isHidden = hiddenManagerIds.has(p.managerId);
 
-    const trajectoryPts = tr.trajectory
-      .filter(pt => selectedEloSeason === 'all' || pt.season === selectedEloSeason)
-      .sort((a, b) => {
-        if (a.season !== b.season) return a.season.localeCompare(b.season);
-        return a.round - b.round;
-      });
+    const ptsSource = allowedRoundKeys !== null
+      ? tr.trajectory.filter(pt => allowedRoundKeys!.has(`${pt.season}-G${pt.round}`))
+      : (selectedEloSeason !== 'all' && tr.seasons?.[selectedEloSeason])
+        ? tr.seasons[selectedEloSeason]
+        : tr.trajectory.filter(pt => selectedEloSeason === 'all' || pt.season === selectedEloSeason);
+
+    const trajectoryPts = [...ptsSource].sort((a, b) => {
+      if (a.season !== b.season) return a.season.localeCompare(b.season);
+      return a.round - b.round;
+    });
 
     if (!isHidden && trajectoryPts.length > 0) {
       let pathD = '';
@@ -469,8 +665,17 @@ export function renderEloTab(): string {
         const escapedTeam = p.teamName.replace(/'/g, "\\'");
         const escapedOpp = (pt.opponentTeamName || '').replace(/'/g, "\\'");
 
+        const isSelected = lockedEloChartMatch &&
+          lockedEloChartMatch.team === p.teamName &&
+          lockedEloChartMatch.season === pt.season &&
+          lockedEloChartMatch.round === pt.round;
+        const ringHTML = isSelected
+          ? `<circle class="elo-active-ring" cx="${x}" cy="${y}" r="7" fill="none" stroke="#fbbf24" stroke-width="2" pointer-events="none"></circle>`
+          : '';
+
         // Visible node dot (pointer-events none) + transparent hit target circle (r=12)
         dotsHTML += `
+          ${ringHTML}
           <circle cx="${x}" cy="${y}" r="3.2" fill="${color}" stroke="#0f172a" stroke-width="1.5" pointer-events="none"></circle>
           <circle cx="${x}" cy="${y}" r="12" fill="transparent" stroke="transparent" class="cursor-pointer"
                   onclick="window.selectEloChartPoint && window.selectEloChartPoint('${pt.season}', ${pt.round}, '${escapedTeam}', '${escapedOpp}', '${pt.result || '-'}', ${pt.elo}, ${pt.delta}, ${pt.winProbPreMatch ?? 0})"
@@ -667,6 +872,44 @@ export function renderEloTab(): string {
     return `<i class="fa-solid ${eloTableSortDirection === 'desc' ? 'fa-arrow-down' : 'fa-arrow-up'} text-[9px] ml-1 text-amber-400"></i>`;
   };
 
+  let hoverBoxContent = `<span class="opacity-70 truncate"><i class="fa-solid fa-hand-pointer mr-1.5 text-amber-500"></i>Tocca o passa sui punti per visualizzare i dettagli del match</span>`;
+  if (lockedEloChartMatch) {
+    let matchPt: any = null;
+    for (const p of profiles) {
+      if (p.teamName === lockedEloChartMatch.team) {
+        const tr = getManagerEloTrack(p.profile, activeMode);
+        if (tr) {
+          matchPt = tr.trajectory.find(
+            pt => pt.season === lockedEloChartMatch!.season && pt.round === lockedEloChartMatch!.round
+          );
+          if (matchPt) break;
+        }
+      }
+    }
+    if (matchPt) {
+      const deltaSign = matchPt.delta > 0 ? '+' : '';
+      const deltaColor = matchPt.delta > 0 ? 'text-emerald-400' : matchPt.delta < 0 ? 'text-rose-400' : 'text-slate-400';
+      const resBadge = matchPt.result === 'W' ? 'text-emerald-400 font-bold' : matchPt.result === 'L' ? 'text-rose-400 font-bold' : 'text-amber-400 font-bold';
+      const winProb = matchPt.winProbPreMatch ?? 0;
+      hoverBoxContent = `
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 w-full text-[11px] sm:text-xs">
+          <div class="flex items-center gap-1.5 font-bold min-w-0 flex-wrap">
+            <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] shrink-0">${matchPt.season} G${matchPt.round}</span>
+            <span style="color: var(--text-main);" class="truncate max-w-[110px] sm:max-w-none">${lockedEloChartMatch.team}</span>
+            <span class="opacity-60 text-[10px] shrink-0">vs</span>
+            <span style="color: var(--text-muted);" class="truncate max-w-[110px] sm:max-w-none">${matchPt.opponentTeamName || lockedEloChartMatch.opponent}</span>
+            <span class="${resBadge} shrink-0">(${matchPt.result || '-'})</span>
+          </div>
+          <div class="flex items-center gap-2 font-mono shrink-0">
+            <span class="font-black text-amber-400 text-xs sm:text-sm">${matchPt.elo.toFixed(1)} pt</span>
+            <span class="${deltaColor} font-bold text-[11px]">(${deltaSign}${matchPt.delta.toFixed(1)})</span>
+            ${winProb > 0 ? `<span class="opacity-75 text-[10px] font-sans" style="color: var(--text-muted);">(Prob. ${winProb.toFixed(0)}%)</span>` : ''}
+          </div>
+        </div>
+      `;
+    }
+  }
+
   return `
     <div class="p-3.5 sm:p-5 flex flex-col gap-4 animate-fadeIn">
       <!-- Mode Switcher & Explanation Banner -->
@@ -762,9 +1005,16 @@ export function renderEloTab(): string {
             <select onchange="window.switchEloChartSeason && window.switchEloChartSeason(this.value)"
                     class="px-2.5 py-1 rounded-xl text-xs font-bold border transition cursor-pointer"
                     style="background-color: var(--input-bg); border-color: var(--table-border); color: var(--text-main);">
-              <option value="all" ${selectedEloSeason === 'all' ? 'selected' : ''}>Tutte le stagioni (Continuo)</option>
-              <option value="2026/27" ${selectedEloSeason === '2026/27' ? 'selected' : ''}>2026/27 (Corrente)</option>
-              <option value="2025/26" ${selectedEloSeason === '2025/26' ? 'selected' : ''}>2025/26</option>
+              <optgroup label="Stagioni">
+                <option value="all" ${selectedEloSeason === 'all' ? 'selected' : ''}>Tutte le stagioni (Continuo)</option>
+                <option value="2026/27" ${selectedEloSeason === '2026/27' ? 'selected' : ''}>2026/27 (Corrente)</option>
+                <option value="2025/26" ${selectedEloSeason === '2025/26' ? 'selected' : ''}>2025/26</option>
+              </optgroup>
+              <optgroup label="Finestra Recente">
+                <option value="last10" ${selectedEloSeason === 'last10' ? 'selected' : ''}>Ultimi 10 match</option>
+                <option value="last20" ${selectedEloSeason === 'last20' ? 'selected' : ''}>Ultimi 20 match</option>
+                <option value="last30" ${selectedEloSeason === 'last30' ? 'selected' : ''}>Ultimi 30 match</option>
+              </optgroup>
             </select>
 
             <button type="button"
@@ -784,7 +1034,7 @@ export function renderEloTab(): string {
         <div id="elo-chart-hover-box"
              class="min-h-[44px] sm:min-h-[38px] px-3 py-1.5 rounded-xl border flex items-center justify-center text-xs font-semibold text-center transition-colors"
              style="background-color: var(--input-bg); border-color: var(--table-border); color: var(--text-muted);">
-          <span class="opacity-70 truncate"><i class="fa-solid fa-hand-pointer mr-1.5 text-amber-500"></i>Tocca o passa sui punti per visualizzare i dettagli del match</span>
+          ${hoverBoxContent}
         </div>
 
         <!-- Responsive SVG Chart -->
@@ -906,10 +1156,10 @@ export function renderEloTab(): string {
           <div>
             <div class="flex items-center justify-between flex-wrap gap-1">
               <strong class="font-semibold text-xs" style="color: var(--text-main);">1. Probabilità Attesa di Vittoria (Curva Logistica):</strong>
-              <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">E_A = 1 / (1 + 10^((R_B - R_A) / 400))</code>
+              <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">E_A = 1 / (1 + 10^((R_B - R_A) / ${scaleFactor}))</code>
             </div>
             <p class="mt-1 text-[11px] leading-relaxed">
-              Stima la probabilità percentuale di successo prima del calcio d'inizio. Se due squadre hanno pari punteggio, entrambe partono al 50.0%. Un vantaggio di +100 pt Elo attribuisce circa il 64% di probabilità stimata alla squadra favorita.
+              Stima la probabilità percentuale di successo prima del calcio d'inizio. Se due squadre hanno pari punteggio, entrambe partono al 50.0%. Un vantaggio di +100 pt Elo attribuisce circa il ${probDiff100}% di probabilità stimata alla squadra favorita.
             </p>
           </div>
 
@@ -926,20 +1176,20 @@ export function renderEloTab(): string {
           <div>
             <div class="flex items-center justify-between flex-wrap gap-1">
               <strong class="font-semibold text-xs" style="color: var(--text-main);">3. Sensibilità K-Factor per Competizione:</strong>
-              <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">Campionato: K=32 • Coppe: K=24</code>
+              <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">${kGuide.badge}</code>
             </div>
             <p class="mt-1 text-[11px] leading-relaxed">
-              Il fattore K definisce il peso del torneo: il Campionato e il Mundialito hanno K=32 (massima rilevanza), mentre le gare di Coppa e Supercoppa hanno K=24 per moderare la volatilità dei match a eliminazione diretta.
+              ${kGuide.description}
             </p>
           </div>
 
           <div>
             <div class="flex items-center justify-between flex-wrap gap-1">
               <strong class="font-semibold text-xs" style="color: var(--text-main);">4. Architettura Dual-Track (Puro vs Storico):</strong>
-              <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">⚡ Puro: 1500 baseline • 🏛️ Storico: Seed Albo d'Oro</code>
+              <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">⚡ Puro: ${baseRating} baseline • 🏛️ Storico: Seed Albo d'Oro</code>
             </div>
             <p class="mt-1 text-[11px] leading-relaxed">
-              <strong>⚡ Elo Puro:</strong> Reset a 1500 per tutti a inizio 2025/26, misura unicamente la prestazione sportiva sul campo senza considerare il passato.<br/>
+              <strong>⚡ Elo Puro:</strong> Reset a ${baseRating} per tutti a inizio 2025/26, misura unicamente la prestazione sportiva sul campo senza considerare il passato.<br/>
               <strong>🏛️ Elo Storico:</strong> Inizializza i manager con un bonus/malus calcolato sull'Indice di Prestigio del Palmarès storico (Scudetti, Coppe e podi), ponderando la tradizione di lega.
             </p>
           </div>
@@ -947,10 +1197,10 @@ export function renderEloTab(): string {
           <div>
             <div class="flex items-center justify-between flex-wrap gap-1">
               <strong class="font-semibold text-xs" style="color: var(--text-main);">5. Regressione alla Media Inter-Stagionale (Carryover):</strong>
-              <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">R_start = 0.75 · R_end + 0.25 · 1500</code>
+              <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">R_start = ${carryoverAlpha} · R_end + ${carryoverBetaStr} · ${baseRating}</code>
             </div>
             <p class="mt-1 text-[11px] leading-relaxed">
-              A ogni cambio di stagione il 75% del rating viene preservato, mentre il 25% regredisce verso la media di lega (1500). Questo simula fedelmente l'effetto livellante delle aste estive e dei nuovi acquisti di mercato.
+              A ogni cambio di stagione il ${carryoverPreservedPct}% del rating viene preservato, mentre il ${carryoverRegressedPct}% regredisce verso la media di lega (${baseRating}). Questo simula fedelmente l'effetto livellante delle aste estive e dei nuovi acquisti di mercato.
             </p>
           </div>
         </div>
@@ -971,4 +1221,5 @@ if (typeof window !== 'undefined') {
   w.showEloChartHover = showEloChartHover;
   w.clearEloChartHover = clearEloChartHover;
   w.sortEloLeaderboard = sortEloLeaderboard;
+  w.retryEloFetch = retryEloFetch;
 }

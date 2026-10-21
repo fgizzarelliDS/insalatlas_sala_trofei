@@ -24,6 +24,7 @@ export interface EloTrackData {
   floor: { value: number; season: string; round: number };
   lastDelta: number;
   trajectory: EloTrajectoryPoint[];
+  seasons?: Record<string, EloTrajectoryPoint[]>;
 }
 
 export interface ManagerEloProfile {
@@ -50,5 +51,6 @@ export interface LeagueEloDatabase {
   lastUpdatedSeason: string;
   lastUpdatedRound: number;
   eloModeDefault: EloTrackMode;
+  config?: EloConfig;
   managers: Record<string, ManagerEloProfile>;
 }

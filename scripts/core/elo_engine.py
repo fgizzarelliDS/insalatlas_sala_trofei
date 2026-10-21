@@ -9,26 +9,16 @@ import math
 import statistics
 from typing import Dict, Any, List, Optional, Tuple
 
-# Default fallback config if not provided
-DEFAULT_ELO_CONFIG = {
-    "base_rating": 1500.0,
-    "scale_factor": 400.0,
-    "carryover_alpha": 0.75,
-    "historical_seeding": {
-        "scale": 75.0,
-        "min_rating": 1350.0,
-        "max_rating": 1650.0
-    },
-    "k_factors": {
-        "Campionato": 32.0,
-        "Coppa_Knockout": 40.0,
-        "Coppa": 24.0,
-        "Supercoppa": 24.0,
-        "Mundialito": 32.0,
-        "Perdenti": 16.0,
-        "default": 32.0
-    }
-}
+try:
+    from core.config import LEAGUE_RULES
+except ImportError:
+    try:
+        from config import LEAGUE_RULES
+    except ImportError:
+        from scripts.core.config import LEAGUE_RULES
+
+# Canonical Elo configuration loaded from config.py
+DEFAULT_ELO_CONFIG = LEAGUE_RULES.get("elo", {})
 
 DEFAULT_SCORING_WEIGHTS = {
     "gold": 3.0,
@@ -549,6 +539,19 @@ def run_dual_track_elo_pipeline(
             "lastDelta": 0.0,
             "trajectory": []
         })
+
+        # Partition trajectory points by season for instant O(1) seasonal lookup
+        flat_seasons: Dict[str, List[Dict[str, Any]]] = {}
+        for pt in flat_data.get("trajectory", []):
+            s_label = pt.get("season", "unknown")
+            flat_seasons.setdefault(s_label, []).append(pt)
+        flat_data["seasons"] = flat_seasons
+
+        hist_seasons: Dict[str, List[Dict[str, Any]]] = {}
+        for pt in hist_data.get("trajectory", []):
+            s_label = pt.get("season", "unknown")
+            hist_seasons.setdefault(s_label, []).append(pt)
+        hist_data["seasons"] = hist_seasons
 
         result_profiles[m_id] = {
             "managerId": m_id,

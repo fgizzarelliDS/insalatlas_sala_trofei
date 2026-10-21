@@ -22,7 +22,9 @@ import {
   renderEloTab,
   selectEloChartPoint,
   clearEloChartHover,
-  setCachedAnalyticsManagers
+  setCachedAnalyticsManagers,
+  formatKFactorsGuide,
+  switchEloChartSeason
 } from '@/components/modals/analytics/EloTab';
 import type { ManagerEloProfile, EloTrajectoryPoint } from '@/types/analytics';
 
@@ -128,6 +130,36 @@ describe('Dynamic Elo Engine Client Analytics', () => {
 
       expect(getManagerEloTrack(mockProfile, 'flat')?.current).toBe(1540.0);
       expect(getManagerEloTrack(mockProfile, 'historical')?.current).toBe(1610.0);
+    });
+
+    it('lazily reconstructs seasons map from trajectory when omitted from payload', () => {
+      const mockProfile: ManagerEloProfile = {
+        managerId: 'm1',
+        teamName: 'Team One',
+        flat: {
+          current: 1540.0,
+          peak: { value: 1560.0, season: '2025/26', round: 10 },
+          floor: { value: 1490.0, season: '2025/26', round: 3 },
+          lastDelta: 8.5,
+          trajectory: [
+            { season: '2024/25', round: 1, elo: 1510.0, delta: 10.0, opponentId: 'm2', opponentTeamName: 'T2', winProbPreMatch: 52.0, isHome: true, result: 'W' },
+            { season: '2025/26', round: 1, elo: 1525.0, delta: 15.0, opponentId: 'm3', opponentTeamName: 'T3', winProbPreMatch: 48.0, isHome: false, result: 'W' }
+          ]
+        },
+        historical: {
+          current: 1610.0,
+          peak: { value: 1630.0, season: '2025/26', round: 10 },
+          floor: { value: 1570.0, season: '2025/26', round: 3 },
+          lastDelta: 9.0,
+          trajectory: []
+        }
+      };
+
+      const track = getManagerEloTrack(mockProfile, 'flat');
+      expect(track?.seasons).toBeDefined();
+      expect(track?.seasons?.['2024/25']?.length).toBe(1);
+      expect(track?.seasons?.['2025/26']?.length).toBe(1);
+      expect(track?.seasons?.['2024/25']?.[0].round).toBe(1);
     });
   });
 
@@ -339,6 +371,16 @@ describe('Dynamic Elo Engine Client Analytics', () => {
       expect(svg).toContain('Nessun match disputato nella stagione selezionata');
     });
 
+    it('filters by recent match window (last10, last20, last30)', () => {
+      const svgLast10 = renderEloTrajectorySparkline(mockTrajectory, 'last10', 'My Team');
+      expect(svgLast10).toContain('<svg');
+      expect(svgLast10).toContain('1520');
+
+      const svgLast20 = renderEloTrajectorySparkline(mockTrajectory, 'last20', 'My Team');
+      expect(svgLast20).toContain('<svg');
+      expect(svgLast20).toContain('1520');
+    });
+
     it('locks on clicked point and keeps match details visible without reverting to idle prompt', () => {
       class MockBox {
         innerHTML = '';
@@ -419,6 +461,119 @@ describe('Dynamic Elo Engine Client Analytics', () => {
       expect(html).toContain('Probabilità Attesa di Vittoria');
       expect(html).toContain('Sensibilità K-Factor per Competizione');
       expect(html).toContain('Regressione alla Media Inter-Stagionale');
+    });
+
+    it('switches multi-manager trajectory window to last10 and renders properly', () => {
+      setCachedAnalyticsManagers({
+        m1: {
+          managerId: 'm1',
+          teamName: 'Team One',
+          coach: 'Coach One',
+          flat: {
+            current: 1550.0,
+            peak: { value: 1560.0, season: '2025/26', round: 10 },
+            floor: { value: 1490.0, season: '2025/26', round: 3 },
+            lastDelta: 8.5,
+            trajectory: [
+              { round: 1, season: '2025/26', elo: 1510.0, opponentId: 'm2', opponentTeamName: 'Team Two', result: 'W', delta: 10.0, winProbPreMatch: 50.0, isHome: true },
+              { round: 2, season: '2025/26', elo: 1520.0, opponentId: 'm2', opponentTeamName: 'Team Two', result: 'W', delta: 10.0, winProbPreMatch: 50.0, isHome: false },
+              { round: 1, season: '2026/27', elo: 1530.0, opponentId: 'm2', opponentTeamName: 'Team Two', result: 'W', delta: 10.0, winProbPreMatch: 50.0, isHome: true }
+            ]
+          },
+          historical: {
+            current: 1610.0,
+            peak: { value: 1630.0, season: '2025/26', round: 10 },
+            floor: { value: 1570.0, season: '2025/26', round: 3 },
+            lastDelta: 9.0,
+            trajectory: [
+              { round: 1, season: '2025/26', elo: 1600.0, opponentId: 'm2', opponentTeamName: 'Team Two', result: 'W', delta: 10.0, winProbPreMatch: 50.0, isHome: true },
+              { round: 2, season: '2025/26', elo: 1610.0, opponentId: 'm2', opponentTeamName: 'Team Two', result: 'W', delta: 10.0, winProbPreMatch: 50.0, isHome: false }
+            ]
+          }
+        }
+      });
+
+      switchEloChartSeason('last10');
+      const html = renderEloTab();
+      expect(html).toContain('value="last10" selected');
+      expect(html).toContain('<svg');
+      expect(html).toContain('G1');
+    });
+    it('renders loading spinner in Tab 5 when cachedAnalytics is null', () => {
+      setCachedAnalyticsManagers(null);
+      const html = renderEloTab();
+      expect(html).toContain('Caricamento dati Elo in corso...');
+      expect(html).toContain('fa-spinner');
+    });
+
+    it('formats K-Factors guide dynamically with tournament grouping', () => {
+      const guide = formatKFactorsGuide({
+        Coppa_Knockout: 40,
+        Campionato: 32,
+        Coppa: 24,
+        Supercoppa: 24,
+        Mundialito: 16,
+        Perdenti: 16
+      });
+
+      expect(guide.badge).toContain('Coppa KO: K=40');
+      expect(guide.badge).toContain('Campionato: K=32');
+      expect(guide.badge).toContain('Coppa / Supercoppa: K=24');
+      expect(guide.badge).toContain('Mundialito / Perdenti: K=16');
+      expect(guide.description).toContain('le Fasi Finali di Coppa hanno K=40');
+      expect(guide.description).toContain('il Campionato ha K=32');
+      expect(guide.description).toContain('le gare di Coppa e la Supercoppa hanno K=24');
+      expect(guide.description).toContain('il Mundialito e il Torneo Perdenti hanno K=16');
+    });
+
+    it('renders the educational guide with dynamically injected config parameters', () => {
+      setCachedAnalyticsManagers(
+        {
+          m1: {
+            managerId: 'm1',
+            teamName: 'Team One',
+            coach: 'Coach One',
+            flat: {
+              current: 1620.0,
+              peak: { value: 1620.0, season: '2025/26', round: 1 },
+              floor: { value: 1600.0, season: '2025/26', round: 1 },
+              lastDelta: 5.0,
+              trajectory: []
+            },
+            historical: {
+              current: 1650.0,
+              peak: { value: 1650.0, season: '2025/26', round: 1 },
+              floor: { value: 1600.0, season: '2025/26', round: 1 },
+              lastDelta: 5.0,
+              trajectory: []
+            }
+          }
+        },
+        {
+          baseRating: 1400.0,
+          scaleFactor: 500.0,
+          carryoverAlpha: 0.80,
+          historicalSeeding: { scale: 50, minRating: 1300, maxRating: 1500 },
+          kFactors: {
+            Campionato: 40.0,
+            Coppa: 20.0
+          }
+        }
+      );
+
+      const html = renderEloTab();
+      // Section 1: scaleFactor 500
+      expect(html).toContain('(R_B - R_A) / 500');
+      // Section 3: K=40 and K=20
+      expect(html).toContain('K=40');
+      expect(html).toContain('K=20');
+      // Section 4: baseRating 1400
+      expect(html).toContain('⚡ Puro: 1400 baseline');
+      expect(html).toContain('Reset a 1400 per tutti');
+      // Section 5: carryoverAlpha 0.8 / 80% / 20%
+      expect(html).toContain('R_start = 0.8 · R_end + 0.20 · 1400');
+      expect(html).toContain('80% del rating viene preservato');
+      expect(html).toContain('20% regredisce verso la media di lega (1400)');
     });
   });
 });

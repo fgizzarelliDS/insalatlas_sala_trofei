@@ -139,5 +139,54 @@ class TestEloEngine(unittest.TestCase):
             self.assertGreaterEqual(seed, 1350.0)
             self.assertLessEqual(seed, 1650.0)
 
+    def test_pipeline_seasons_partitioning(self):
+        s25_rounds = [
+            {
+                'roundNumber': 1,
+                'matches': [
+                    {
+                        'homeManagerId': 'm_a',
+                        'awayManagerId': 'm_b',
+                        'homeScore': 2,
+                        'awayScore': 1,
+                        'homeFantaPoints': 75.0,
+                        'awayFantaPoints': 68.0,
+                        'isPlayed': True
+                    }
+                ]
+            }
+        ]
+        s26_rounds = [
+            {
+                'roundNumber': 1,
+                'matches': [
+                    {
+                        'homeManagerId': 'm_a',
+                        'awayManagerId': 'm_b',
+                        'homeScore': 0,
+                        'awayScore': 1,
+                        'homeFantaPoints': 64.0,
+                        'awayFantaPoints': 70.0,
+                        'isPlayed': True
+                    }
+                ]
+            }
+        ]
+        managers = [{'id': 'm_a', 'name': 'A'}, {'id': 'm_b', 'name': 'B'}]
+        profiles = run_dual_track_elo_pipeline(
+            season_2025_rounds=s25_rounds,
+            season_2026_rounds=s26_rounds,
+            managers_list=managers
+        )
+
+        self.assertIn('m_a', profiles)
+        prof_a = profiles['m_a']
+        self.assertIn('seasons', prof_a['flat'])
+        self.assertIn('2025/26', prof_a['flat']['seasons'])
+        self.assertIn('2026/27', prof_a['flat']['seasons'])
+        self.assertEqual(len(prof_a['flat']['seasons']['2025/26']), 1)
+        self.assertEqual(len(prof_a['flat']['seasons']['2026/27']), 1)
+        self.assertEqual(len(prof_a['flat']['trajectory']), 2)
+
 if __name__ == '__main__':
     unittest.main()

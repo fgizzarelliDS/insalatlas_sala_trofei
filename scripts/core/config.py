@@ -101,7 +101,7 @@ LEAGUE_RULES = {
             "Coppa_Knockout": 40.0,
             "Coppa": 24.0,
             "Supercoppa": 24.0,
-            "Mundialito": 32.0,
+            "Mundialito": 16.0,
             "Perdenti": 16.0,
             "default": 32.0
         }

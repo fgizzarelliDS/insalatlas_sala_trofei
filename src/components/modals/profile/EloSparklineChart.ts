@@ -165,12 +165,12 @@ export function showProfileEloHover(
         : '';
 
   hoverBox.innerHTML = `
-    <div class="flex items-center justify-between gap-2 w-full text-xs">
-      <div class="flex items-center gap-1.5 font-bold min-w-0">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 w-full text-[11px] sm:text-xs">
+      <div class="flex items-center gap-1.5 font-bold min-w-0 flex-wrap">
         <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] shrink-0 font-mono">${season} G${round}</span>
-        <span class="truncate" style="color: var(--text-main);">${team}</span>
+        <span class="truncate max-w-[110px] sm:max-w-none" style="color: var(--text-main);">${team}</span>
         <span class="opacity-60 text-[10px] shrink-0">vs</span>
-        <span class="truncate" style="color: var(--text-muted);">${opponent || 'Avversario'}</span>
+        <span class="truncate max-w-[110px] sm:max-w-none" style="color: var(--text-muted);">${opponent || 'Avversario'}</span>
         ${resBadge}
       </div>
       <div class="flex items-center gap-2 font-mono shrink-0">
@@ -264,10 +264,10 @@ export function renderEloTrajectorySparkline(
 
   const isMobile = typeof window !== 'undefined' && typeof window.innerWidth === 'number' && window.innerWidth > 0 && window.innerWidth < 640;
   const width = isMobile ? 340 : 500;
-  const height = isMobile ? 150 : 130;
+  const height = isMobile ? 165 : 145;
   const padding = isMobile
-    ? { top: 22, right: 28, bottom: 25, left: 38 }
-    : { top: 22, right: 35, bottom: 25, left: 45 };
+    ? { top: 22, right: 28, bottom: 35, left: 38 }
+    : { top: 22, right: 35, bottom: 32, left: 45 };
   const innerW = width - padding.left - padding.right;
   const innerH = height - padding.top - padding.bottom;
 
@@ -296,7 +296,10 @@ export function renderEloTrajectorySparkline(
   let pathD = '';
   let dots = '';
   let seasonDividers = '';
+  let xLabels = '';
   const sliceW = count > 1 ? innerW / (count - 1) : innerW;
+  const maxXLabels = isMobile ? 6 : 9;
+  const labelInterval = count > maxXLabels ? Math.ceil(count / maxXLabels) : 1;
 
   displayPts.forEach((pt, idx) => {
     const x = getX(idx);
@@ -348,6 +351,16 @@ export function renderEloTrajectorySparkline(
         </text>
       `;
     }
+
+    // X-axis round label and tick
+    const isStep = idx % labelInterval === 0;
+    const wouldCollideWithStep = isLast && (idx % labelInterval !== 0) && ((idx % labelInterval) < Math.max(2, Math.floor(labelInterval / 2)));
+    if (isStep || (isLast && !wouldCollideWithStep)) {
+      xLabels += `
+        <line x1="${x}" y1="${padding.top}" x2="${x}" y2="${padding.top + innerH}" stroke="currentColor" stroke-opacity="0.06" />
+        <text x="${x}" y="${padding.top + innerH + 16}" text-anchor="middle" font-size="8.5" font-weight="bold" fill="currentColor" opacity="0.6">G${pt.round}</text>
+      `;
+    }
   });
 
   return `
@@ -363,6 +376,7 @@ export function renderEloTrajectorySparkline(
       <line x1="${padding.left}" y1="${getY(minElo)}" x2="${padding.left + innerW}" y2="${getY(minElo)}" stroke="currentColor" stroke-opacity="0.1" stroke-dasharray="2,2"/>
       <text x="${padding.left - 6}" y="${getY(maxElo) + 3}" text-anchor="end" font-size="9" font-family="monospace" fill="currentColor" opacity="0.6">${Math.round(maxElo)}</text>
       <text x="${padding.left - 6}" y="${getY(minElo) + 3}" text-anchor="end" font-size="9" font-family="monospace" fill="currentColor" opacity="0.6">${Math.round(minElo)}</text>
+      ${xLabels}
       ${seasonDividers}
       <!-- Sparkline path -->
       <path d="${pathD}" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>

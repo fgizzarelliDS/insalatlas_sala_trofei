@@ -408,10 +408,10 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
               </span>
             ` : ''}
           </div>
-          <div class="text-xs font-semibold flex items-center gap-1.5 mt-0.5" style="color: var(--text-muted);">
+          <div class="text-xs font-semibold flex items-center gap-1.5 mt-0.5 flex-wrap" style="color: var(--text-muted);">
             <i class="fa-solid fa-user-tie text-[10px] opacity-70 shrink-0" style="color: var(--accent-color);"></i>
             <span class="font-bold" style="color: var(--accent-color);">${managerDisplayName}</span>
-            ${teamMetric ? `<span class="opacity-60 text-[11px]">• #${teamMetric.rank} in classifica (${teamMetric.points !== undefined && teamMetric.points !== null ? `${teamMetric.points} pt` : '- pt'})</span>` : ''}
+            ${teamMetric ? `<span class="opacity-60 text-[11px] whitespace-nowrap">• #${teamMetric.rank} in classifica (${teamMetric.points !== undefined && teamMetric.points !== null ? `${teamMetric.points} pt` : '- pt'})</span>` : ''}
           </div>
         </div>
       </div>

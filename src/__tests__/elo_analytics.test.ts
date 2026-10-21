@@ -594,11 +594,13 @@ describe('Dynamic Elo Engine Client Analytics', () => {
         }));
 
         const sparklineSvg = renderEloTrajectorySparkline(denseTrajectory, 'all', 'My Team');
-        expect(sparklineSvg).toContain('viewBox="0 0 340 150"');
+        expect(sparklineSvg).toContain('viewBox="0 0 340 165"');
         // Points have their visible circles rendered with adaptive radius
         expect(sparklineSvg).toContain('r="2.5"');
         // Full-height hit slice rect is present
         expect(sparklineSvg).toContain('<rect ');
+        // X-axis round labels are rendered
+        expect(sparklineSvg).toContain('G1');
 
         const eloTabHtml = renderEloTab();
         expect(eloTabHtml).toContain('viewBox="0 0 360 240"');

@@ -719,7 +719,7 @@ def compile_live_season_details(
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(compiled_details, f, separators=(',', ':'), ensure_ascii=False)
+        json.dump(compiled_details, f, separators=(',', ':'), ensure_ascii=False, sort_keys=True)
 
     # Also serialize analytics_data.json for dedicated analytics views
     analytics_output_path = os.path.join(root_dir, 'public', 'analytics_data.json')
@@ -728,7 +728,7 @@ def compile_live_season_details(
     # Deduplicate payload: trajectory contains all points chronologically,
     # so omit redundant per-season arrays to drastically reduce payload size.
     serialized_managers = {}
-    for m_id, prof in elo_profiles.items():
+    for m_id, prof in sorted(elo_profiles.items()):
         clean_prof = {
             'managerId': prof.get('managerId', m_id),
             'teamName': prof.get('teamName', ''),
@@ -762,7 +762,7 @@ def compile_live_season_details(
         'managers': serialized_managers
     }
     with open(analytics_output_path, 'w', encoding='utf-8') as f:
-        json.dump(analytics_payload, f, separators=(',', ':'), ensure_ascii=False)
+        json.dump(analytics_payload, f, separators=(',', ':'), ensure_ascii=False, sort_keys=True)
 
     return compiled_details
 

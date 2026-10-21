@@ -121,7 +121,10 @@ export interface LeagueProfile {
     };
     categoryIdMap: Record<string, string>;
   };
+  elo?: import('./types/analytics').EloConfig;
 }
+
+export * from './types/analytics';
 
 export interface CompetitionRankingItem {
   rank: number | null;
@@ -239,7 +242,7 @@ export interface ScoringWeights {
   cartonato: number;
 }
 
-export type AnalyticsTab = 'macro' | 'clutch' | 'risk' | 'chronology';
+export type AnalyticsTab = 'macro' | 'clutch' | 'risk' | 'chronology' | 'elo';
 export type Tab2SortField = 'name' | 'podiumRate' | 'killerInstinct' | 'clutch' | 'gci';
 export type Tab2SortDirection = 'asc' | 'desc';
 export type MacroMetricMode = 'prestige' | 'raw';
@@ -611,6 +614,10 @@ export interface MatchdayMatch {
   awayFantaPoints?: number;
   homeLogo?: string;
   awayLogo?: string;
+  winProbHomeFlat?: number;
+  winProbHomeHistorical?: number;
+  eloDeltaHomeFlat?: number;
+  eloDeltaHomeHistorical?: number;
 }
 
 export interface MatchdayRound {
@@ -629,6 +636,7 @@ export interface LiveTeamMetrics {
   statusLabel: string;
   logo?: string;
   scheduleLuck?: ScheduleLuckAnalytics;
+  elo?: import('./types/analytics').ManagerEloProfile;
   points?: number;
   played?: number;
   won?: number;

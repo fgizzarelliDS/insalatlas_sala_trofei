@@ -467,7 +467,83 @@ Nelle prime 4 giornate, le percentuali rimangono neutre (`Dalla 5ª g.`) per pre
 
 ---
 
-## 10. Roadmap & Evoluzioni Future
+## 10. Motore Dinamico Elo Rating & Previsioni Partita
+
+Il **Dynamic Elo Rating Engine** (`scripts/core/elo_engine.py` e `src/components/modals/analytics/EloTab.ts`) calcola l'evoluzione temporale della competitività delle squadre match dopo match su base multi-stagione, fornendo stime probabilistiche oggettive sui singoli incontri e storicizzando la traiettoria di rendimento.
+
+### 10.1 Curva Logistica di Vittoria Attesa ($E_A$)
+Per ciascun incontro disputato tra la Squadra A (con rating pre-match $R_A$) e la Squadra B (con rating $R_B$), la probabilità attesa di vittoria $E_A \in (0.0, 1.0)$ è modellata tramite la funzione logistica standard con fattore di scala $\sigma = 400$:
+
+$$E_A = \frac{1}{1 + 10^{\frac{R_B - R_A}{400}}}$$
+
+La probabilità attesa dell'avversario soddisfa l'invariante di partizione completa:
+$$E_B = 1 - E_A$$
+
+#### Esempi di Riferimento Pre-Match:
+- $\Delta R = R_A - R_B = 0 \implies E_A = 50.0\%$ (sfida perfettamente equilibrata).
+- $\Delta R = +100 \implies E_A \approx 64.0\%$ (leggero vantaggio tecnico per la Squadra A).
+- $\Delta R = +200 \implies E_A \approx 76.0\%$ (netta favorita la Squadra A).
+- $\Delta R = +400 \implies E_A \approx 90.9\%$ (pronostico quasi a senso unico).
+
+---
+
+### 10.2 Formula di Aggiornamento Match-by-Match
+Al termine dell'incontro, il risultato ufficiale $S_A$ viene convertito nel dominio $[0.0, 1.0]$:
+$$S_A = \begin{cases}
+1.0 & \text{se la Squadra A vince} \\
+0.5 & \text{in caso di pareggio} \\
+0.0 & \text{se la Squadra A perde}
+\end{cases}$$
+
+La variazione del rating ($\Delta$) e il nuovo punteggio post-partita ($R'_A$) sono determinati dalla deviazione tra risultato effettivo e aspettativa:
+$$\Delta = K \cdot (S_A - E_A)$$
+$$R'_A = R_A + \Delta, \qquad R'_B = R_B - \Delta$$
+
+> [!NOTE]
+> **Invariante a Somma Zero**: All'interno del singolo match vale rigorosamente $\Delta_A + \Delta_B = 0$. Nessun rating viene creato o distrutto a livello di sistema durante la disputa delle gare.
+
+---
+
+### 10.3 Ponderazione per Competizione (Fattori $K$)
+Il coefficiente di volatilità $K$ riflette il peso strutturale e la posta in palio delle diverse manifestazioni ufficiali:
+
+| Competizione | Fattore $K$ | Ratio Tattica & Analitica |
+| :--- | :---: | :--- |
+| **Campionato di Lega** | **$32.0$** | Torneo a girone unico maratona; calibrazione standard per sport di squadra. |
+| **Mundialito** | **$32.0$** | Mini-torneo internazionale o prestagionale a gironi/tappe. |
+| **Coppa di Lega** | **$24.0$** | Torneo a eliminazione diretta (con valore fino a $40.0$ per finali secche). |
+| **Supercoppa di Lega** | **$24.0$** | Sfida secca di apertura stagione tra vincitori in carica. |
+
+Una vittoria contro una squadra di pari livello ($\Delta R = 0 \implies E = 0.5$) in campionato assegna $\Delta = 32 \cdot (1.0 - 0.5) = +16.0$ punti Elo; battere una netta favorita con $E = 0.25$ frutta $\Delta = 32 \cdot (1.0 - 0.25) = +24.0$ punti.
+
+---
+
+### 10.4 Architettura a Doppia Traccia (Dual-Track System)
+Per conciliare la purezza del rendimento immediato con il prestigio ultradecennale della lega, il motore supporta due binari analitici indipendenti:
+
+1. **⚡ Elo Puro (Flat Baseline 1500)**:
+   - Tutte le squadre iniziano a quota $R_0 = 1500.0$ all'avvio della stagione 2025/26 (o alla loro prima apparizione).
+   - Misura l'efficienza pura sul campo priva di qualsiasi bias storico o di anzianità.
+2. **🏛️ Elo Storico (Historical Seeding)**:
+   - Seeding iniziale calibrato sulla bacheca trofei del decennio precedente (2015/16 – 2024/25) tramite il Silverware Prestige Index (SPI):
+     $$R_{\text{storico}, 0, i} = \text{clamp}\left(1500 + \text{z-score}(\text{SPI}_i) \times 75.0, \, 1350.0, \, 1650.0\right)$$
+   - I club storicamente pluridecorati partono da una fascia nobile ($1580 \dots 1650$), mentre le squadre a secco di titoli o matricole iniziano da una fascia di rincorsa ($1350 \dots 1450$).
+
+---
+
+### 10.5 Transizione Inter-Stagionale & Mean Reversion (Carryover 75/25)
+Tra la conclusione di una stagione $t$ e l'inizio della successiva $t+1$, l'asta estiva e il rinnovamento delle rose azzerano parte dell'inerzia acquisita, pur senza cancellare il livello del club. Il sistema applica una regressione verso la media del 25% con persistenza del 75%:
+
+$$R_{\text{start}, t+1} = 0.75 \cdot R_{\text{end}, t} + 0.25 \cdot 1500.0$$
+
+- Una squadra che chiude a **1620 pt** ripartirà l'annata seguente da $0.75 \cdot 1620 + 0.25 \cdot 1500 = \mathbf{1590 \text{ pt}}$.
+- Una squadra in crisi che chiude a **1380 pt** risalirà verso $0.75 \cdot 1380 + 0.25 \cdot 1500 = \mathbf{1410 \text{ pt}}$.
+
+Questo modello garantisce la conservazione a lungo termine della massa Elo complessiva della lega attorno a 1500 punti per squadra attiva.
+
+---
+
+## 11. Roadmap & Evoluzioni Future
 
 - **Integrazione Storico Mundialito**: Formalizzazione dello storico finale Mundialito (vinti e persi) per completare il set di dati delle coppe della lega quando i dati delle prime edizioni saranno integralmente reperiti.
 

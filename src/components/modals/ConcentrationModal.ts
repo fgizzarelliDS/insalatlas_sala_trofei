@@ -10,6 +10,9 @@ import type {
 } from '@/types';
 import { renderAnalyticsModalDOM } from './analytics';
 
+import { setEloMode } from '@/analytics/analyticsCore';
+import { getLiveSeasonDetails, loadLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
+
 let currentTab: AnalyticsTab = 'macro';
 let tab2SortField: Tab2SortField = 'gci';
 let tab2SortDirection: Tab2SortDirection = 'desc';
@@ -68,6 +71,21 @@ export function changeTab2Sort(field: Tab2SortField): void {
  */
 export function switchAnalyticsTab(tab: AnalyticsTab): void {
   currentTab = tab;
+  if (tab === 'elo' && !getLiveSeasonDetails()) {
+    loadLiveSeasonDetails().then(() => {
+      if (currentTab === 'elo') {
+        renderAnalyticsModalBody();
+      }
+    });
+  }
+  renderAnalyticsModalBody();
+}
+
+/**
+ * Switches Elo tracking mode in Analytics Modal ('flat' | 'historical')
+ */
+export function switchEloMode(mode: 'flat' | 'historical'): void {
+  setEloMode(mode);
   renderAnalyticsModalBody();
 }
 
@@ -186,6 +204,13 @@ export function openConcentrationModal(targetTab: AnalyticsTab = 'macro'): void 
   if (!modal) return;
   currentTab = targetTab;
   currentMacroMetricMode = 'prestige';
+  if (targetTab === 'elo' || !getLiveSeasonDetails()) {
+    loadLiveSeasonDetails().then(() => {
+      if (currentTab === 'elo') {
+        renderAnalyticsModalBody();
+      }
+    });
+  }
   renderAnalyticsModalBody();
   modal.classList.remove('hidden');
   modal.classList.add('flex');

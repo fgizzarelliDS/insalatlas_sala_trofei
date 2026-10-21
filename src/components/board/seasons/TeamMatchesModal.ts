@@ -6,6 +6,13 @@ import {
 } from './liveAnalytics';
 import { state } from '@/state';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
+import {
+  getEloMode,
+  getManagerEloTrack,
+  getEloBadgeClasses,
+  formatElo,
+  formatEloDelta
+} from '@/analytics/analyticsCore';
 
 /**
  * Return context preserved when navigating from Team Matches breakdown to a manager profile
@@ -219,6 +226,10 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
   }
 
   // Extract matches for this team across all rounds
+  const activeMode = getEloMode();
+  const eloTrack = getManagerEloTrack(teamMetric?.elo, activeMode);
+  const eloBadge = eloTrack ? getEloBadgeClasses(eloTrack.current) : { bg: '', text: '', border: '' };
+
   const matchesPlayed: Array<{
     roundNumber: number;
     isHome: boolean;
@@ -228,6 +239,8 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
     oppLogo?: string;
     outcome: 'W' | 'D' | 'L' | null;
     isPlayed: boolean;
+    winProb: number | null;
+    eloDelta: number | null;
   }> = [];
 
   for (const r of liveData.rounds) {
@@ -266,6 +279,19 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
         }
       }
 
+      const rawWinProb = activeMode === 'historical' ? m.winProbHomeHistorical : m.winProbHomeFlat;
+      const rawDelta = activeMode === 'historical' ? m.eloDeltaHomeHistorical : m.eloDeltaHomeFlat;
+
+      let winProb: number | null = null;
+      let eloDelta: number | null = null;
+
+      if (rawWinProb !== undefined && rawWinProb !== null) {
+        winProb = isHome ? rawWinProb : Math.round((100.0 - rawWinProb) * 10) / 10;
+      }
+      if (rawDelta !== undefined && rawDelta !== null) {
+        eloDelta = isHome ? rawDelta : -rawDelta;
+      }
+
       matchesPlayed.push({
         roundNumber: r.roundNumber,
         isHome,
@@ -273,7 +299,9 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
         oppManagerId: oppMgrId,
         oppLogo,
         outcome,
-        isPlayed
+        isPlayed,
+        winProb,
+        eloDelta
       });
     }
   }
@@ -296,6 +324,7 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
 
     const oppLogo = resolveTeamLogo(match.oppTeamName, match.oppLogo);
     const escapedOppTeamName = match.oppTeamName.replace(/'/g, "\\'");
+    const eloDeltaColor = match.eloDelta && match.eloDelta > 0 ? 'text-emerald-400' : match.eloDelta && match.eloDelta < 0 ? 'text-rose-400' : 'text-slate-400';
 
     return `
       <div onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${match.oppManagerId || ''}', '${escapedOppTeamName}');"
@@ -303,28 +332,39 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
            style="border-color: var(--table-border); background-color: var(--table-surface);"
            title="Vedi calendario di ${match.oppTeamName}">
         <!-- Round number & Opponent (Logo + Name side by side) -->
-        <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-          <div class="min-w-[2.25rem] sm:min-w-[2.5rem] h-7 sm:h-8 px-1.5 rounded-xl flex items-center justify-center shrink-0 border shadow-xs bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/30">
+        <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+          <div class="w-8 sm:w-10 h-7 sm:h-8 rounded-xl flex items-center justify-center shrink-0 border shadow-xs bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/30">
             <span class="font-sport font-black text-xs sm:text-sm tracking-tight">G${match.roundNumber}</span>
           </div>
 
-          <div class="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
+          <div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0 flex-1">
             <img src="${oppLogo}" alt="${match.oppTeamName}"
-                 class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-contain shrink-0 bg-white/10 border border-slate-300 dark:border-slate-700 shadow-xs"
+                 class="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-contain shrink-0 bg-white/10 border border-slate-300 dark:border-slate-700 shadow-xs"
                  onerror="this.onerror=null; this.src='${getTeamFallbackCrest(match.oppTeamName)}'">
-            <span class="font-bold text-xs sm:text-sm truncate" style="color: var(--text-main);">${match.oppTeamName}</span>
+            <span class="font-bold text-xs sm:text-sm leading-snug break-words" style="color: var(--text-main);">${match.oppTeamName}</span>
           </div>
         </div>
 
-        <!-- Outcome Badge ONLY (no numeric score) or simple '-' if not yet played -->
-        <div class="shrink-0 flex items-center justify-end min-w-[2rem]">
-          ${match.isPlayed && match.outcome ? `
-            <span class="px-2.5 py-1 rounded-xl text-xs font-black tracking-wider uppercase border flex items-center gap-1.5 shadow-xs ${outcomeBadgeClass}">
-              <i class="fa-solid ${outcomeIcon} text-[10px]"></i>
+        <!-- Outcome Badge & Elo Rating Impact -->
+        <div class="shrink-0 flex items-center justify-end gap-1.5 sm:gap-2">
+          ${match.isPlayed ? `
+            ${match.eloDelta !== null && match.eloDelta !== undefined ? `
+              <div class="flex flex-col items-end text-right shrink-0">
+                <span class="text-[10px] sm:text-[11px] font-mono font-bold ${eloDeltaColor}">${formatEloDelta(match.eloDelta)} pt</span>
+                ${match.winProb !== null ? `<span class="text-[9px] opacity-75 font-semibold cursor-help whitespace-nowrap" style="color: var(--text-muted);" title="Probabilità stimata dal modello Elo prima del fischio d'inizio">${match.winProb.toFixed(0)}% prob.</span>` : ''}
+              </div>
+            ` : ''}
+            <span class="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-xl text-[10px] sm:text-xs font-black tracking-wider uppercase border flex items-center gap-1 shadow-xs shrink-0 ${outcomeBadgeClass}">
+              <i class="fa-solid ${outcomeIcon} text-[9px] sm:text-[10px]"></i>
               <span>${outcomeText}</span>
             </span>
           ` : `
-            <span class="text-sm font-bold text-slate-400 dark:text-slate-500 px-3 py-1 select-none">-</span>
+            ${match.winProb !== null && match.winProb !== undefined ? `
+              <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold border bg-blue-500/10 text-blue-400 border-blue-500/30 shrink-0" title="Probabilità di vittoria stimata dal modello Elo prima del match">
+                ${match.winProb.toFixed(0)}% prob.
+              </span>
+            ` : ''}
+            <span class="text-xs font-bold text-slate-400 dark:text-slate-500 px-2 py-1 shrink-0 select-none">-</span>
           `}
         </div>
       </div>
@@ -361,6 +401,12 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
               <span>${statusBadge}</span>
               <span class="text-[10px] uppercase font-bold">${statusLabel}</span>
             </span>
+            ${eloTrack ? `
+              <span class="px-2 py-0.5 rounded-full text-xs font-bold font-mono border flex items-center gap-1 shadow-xs ${eloBadge.bg} ${eloBadge.text} ${eloBadge.border}">
+                <i class="fa-solid fa-bolt text-[10px]"></i>
+                <span>${formatElo(eloTrack.current)} Elo</span>
+              </span>
+            ` : ''}
           </div>
           <div class="text-xs font-semibold flex items-center gap-1.5 mt-0.5" style="color: var(--text-muted);">
             <i class="fa-solid fa-user-tie text-[10px] opacity-70 shrink-0" style="color: var(--accent-color);"></i>

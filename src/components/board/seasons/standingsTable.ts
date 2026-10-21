@@ -5,12 +5,18 @@ import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
 import { LEAGUE } from '@/config';
 import { getLiveSeasonDetails } from './liveAnalytics';
 import { buildLiveStandingsGuideHTML, toggleLiveStandingsGuide } from './liveStandingsGuide';
-import { renderRealViewContainer } from './liveRealView';
-import { renderMeritViewContainer, switchMeritSort, toggleMobileMeritSort } from './liveMeritView';
+import { renderRealViewContainer, switchRealSort, toggleRealEloMode } from './liveRealView';
+import {
+  renderMeritViewContainer,
+  switchMeritSort,
+  toggleMobileMeritSort,
+  toggleMeritEloMode
+} from './liveMeritView';
 
 // Re-export submodules for 100% backward compatibility
 export { toggleLiveStandingsGuide } from './liveStandingsGuide';
-export { switchMeritSort, toggleMobileMeritSort } from './liveMeritView';
+export { switchRealSort, toggleRealEloMode } from './liveRealView';
+export { switchMeritSort, toggleMobileMeritSort, toggleMeritEloMode } from './liveMeritView';
 
 /**
  * Renders the enhanced Live In-Progress Standings Table (Desktop & Mobile)
@@ -450,8 +456,11 @@ declare global {
   interface Window {
     toggleLiveStandingsGuide?: () => void;
     switchLiveStandingsView?: (mode: 'real' | 'merit', updateUrl?: boolean) => void;
-    switchMeritSort?: (order: 'xpts' | 'luck') => void;
+    switchRealSort?: (order: 'rank' | 'elo') => void;
+    toggleRealEloMode?: (event?: Event) => void;
+    switchMeritSort?: (order: 'xpts' | 'luck' | 'elo') => void;
     toggleMobileMeritSort?: () => void;
+    toggleMeritEloMode?: (event?: Event) => void;
     toggleMeritShareDropdown?: (target: 'desktop' | 'mobile') => void;
     closeMeritShareDropdown?: () => void;
     toggleStandingsShareDropdown?: (target: 'desktop' | 'mobile') => void;
@@ -462,8 +471,11 @@ declare global {
 if (typeof window !== 'undefined') {
   window.toggleLiveStandingsGuide = toggleLiveStandingsGuide;
   window.switchLiveStandingsView = switchLiveStandingsView;
+  window.switchRealSort = switchRealSort;
+  window.toggleRealEloMode = toggleRealEloMode;
   window.switchMeritSort = switchMeritSort;
   window.toggleMobileMeritSort = toggleMobileMeritSort;
+  window.toggleMeritEloMode = toggleMeritEloMode;
   window.toggleMeritShareDropdown = toggleMeritShareDropdown;
   window.closeMeritShareDropdown = closeMeritShareDropdown;
   window.toggleStandingsShareDropdown = toggleStandingsShareDropdown;

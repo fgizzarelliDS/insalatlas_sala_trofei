@@ -102,6 +102,36 @@ export function getProfileModalShellHTML(): string {
           </div>
         </div>
 
+        <!-- Elo Rating & Forma Dinamica -->
+        <div id="profile-elo-section" class="mb-4 sm:mb-5 p-3 sm:p-3.5 rounded-2xl border hidden"
+             style="background-color: var(--table-surface); border-color: var(--table-border);">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <div class="flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider text-amber-500">
+              <i class="fa-solid fa-bolt"></i>
+              <span>Elo Rating</span>
+            </div>
+            <button id="btn-profile-elo-mode-toggle" type="button" onclick="window.toggleProfileEloMode && window.toggleProfileEloMode()"
+                    class="px-2 py-0.5 rounded-full text-[10px] font-bold border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition cursor-pointer"
+                    title="Passa da Elo Puro a Elo Storico">
+              <span id="profile-elo-mode-label">⚡ Elo Puro</span>
+            </button>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="p-2 rounded-xl bg-black/5 dark:bg-white/5 border border-slate-300/30 dark:border-slate-700/40">
+              <div id="profile-elo-current" class="font-sport font-black text-lg text-amber-400 leading-none">1500.0</div>
+              <div class="text-[9px] font-bold uppercase tracking-wider mt-0.5 opacity-60">Attuale</div>
+            </div>
+            <div class="p-2 rounded-xl bg-black/5 dark:bg-white/5 border border-slate-300/30 dark:border-slate-700/40">
+              <div id="profile-elo-peak" class="font-sport font-black text-lg text-purple-400 leading-none">1500.0</div>
+              <div class="text-[9px] font-bold uppercase tracking-wider mt-0.5 opacity-60">Picco Massimo</div>
+            </div>
+            <div class="p-2 rounded-xl bg-black/5 dark:bg-white/5 border border-slate-300/30 dark:border-slate-700/40">
+              <div id="profile-elo-floor" class="font-sport font-black text-lg text-rose-400 leading-none">1500.0</div>
+              <div class="text-[9px] font-bold uppercase tracking-wider mt-0.5 opacity-60">Minimo Storico</div>
+            </div>
+          </div>
+        </div>
+
         <!-- Badge Onorari Assegnati -->
         <div class="mb-5">
           <div class="text-xs font-bold uppercase tracking-wider mb-2 opacity-75 flex items-center gap-1.5">
@@ -142,6 +172,40 @@ export function getProfileModalShellHTML(): string {
             <span id="profile-historical-teams-count" class="text-[10px] opacity-60 font-semibold"></span>
           </div>
           <div id="profile-historical-teams-list" class="flex flex-wrap gap-1.5"></div>
+        </div>
+
+        <!-- Traiettoria Elo Sparkline Card -->
+        <div id="profile-elo-trajectory-card" class="p-4 rounded-2xl border mb-5 hidden"
+          style="background-color: var(--table-surface); border-color: var(--table-border);">
+          <div class="flex items-center justify-between gap-2 flex-wrap mb-2.5">
+            <span class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider opacity-90">
+              <i class="fa-solid fa-chart-line text-amber-400"></i> Traiettoria Elo
+            </span>
+            <div class="flex items-center gap-2">
+              <select id="profile-elo-season-select"
+                      onchange="window.switchProfileEloSeason && window.switchProfileEloSeason(this.value)"
+                      class="px-2.5 py-1 rounded-xl text-xs font-bold border transition cursor-pointer"
+                      style="background-color: var(--input-bg); border-color: var(--table-border); color: var(--text-main);">
+                <option value="all">Tutte le stagioni (Continuo)</option>
+                <option value="2026/27">2026/27 (Corrente)</option>
+                <option value="2025/26">2025/26</option>
+              </select>
+              <button id="profile-elo-toggle-btn"
+                      type="button"
+                      onclick="window.toggleProfileEloMode && window.toggleProfileEloMode()"
+                      class="px-2.5 py-1 rounded-xl text-xs font-bold border transition cursor-pointer bg-slate-500/10 hover:bg-amber-500/20 text-slate-300 hover:text-amber-400 border-slate-600/40 hover:border-amber-500/30 active:scale-95"
+                      title="Tocca per alternare Elo Puro e Storico">
+                <span id="profile-elo-trajectory-badge">⚡ Puro</span>
+              </button>
+            </div>
+          </div>
+          <!-- Interactive hover banner / info box -->
+          <div id="profile-elo-hover-box"
+               class="p-2 sm:p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs min-h-[44px] sm:min-h-[38px] transition-all mb-2"
+               style="background-color: var(--input-bg); border-color: var(--table-border); color: var(--text-muted);">
+            <!-- Populated dynamically by CareerTab -->
+          </div>
+          <div id="profile-elo-trajectory-sparkline" class="w-full overflow-x-auto py-1"></div>
         </div>
 
         <!-- Piazzamenti -->

@@ -17,6 +17,7 @@ import {
   openConcentrationModal,
   closeConcentrationModal,
   switchAnalyticsTab,
+  switchEloMode,
   switchChronologyView,
   setManagerFilter,
   toggleChronologySort,
@@ -85,7 +86,13 @@ import {
   toggleTrophyShareDropdown,
   closeTrophyShareDropdown,
   exportTrophyModalHD,
-  copyTrophyModalToClipboard
+  copyTrophyModalToClipboard,
+  switchProfileEloSeason,
+  showProfileEloHover,
+  clearProfileEloHover,
+  selectProfileEloPoint,
+  selectEloChartPoint,
+  toggleProfileEloMode
 } from '@/components/modals';
 import {
   exportGraphicHD,
@@ -169,6 +176,7 @@ declare global {
     handleManagerSelectChange: typeof handleManagerSelectChange;
     toggleSeasonSection: typeof toggleSeasonSection;
     switchAnalyticsTab: typeof switchAnalyticsTab;
+    switchEloMode: typeof switchEloMode;
     switchChronologyView: typeof switchChronologyView;
     setManagerFilter: typeof setManagerFilter;
     setNemesisFilter: typeof setNemesisFilter;
@@ -280,6 +288,12 @@ declare global {
     shareStandingsWhatsApp: typeof shareStandingsWhatsApp;
     exportTeamMatchesPNG: typeof exportTeamMatchesPNG;
     copyTeamMatchesToClipboard: typeof copyTeamMatchesToClipboard;
+    switchProfileEloSeason: typeof switchProfileEloSeason;
+    showProfileEloHover: typeof showProfileEloHover;
+    clearProfileEloHover: typeof clearProfileEloHover;
+    selectProfileEloPoint: typeof selectProfileEloPoint;
+    selectEloChartPoint: typeof selectEloChartPoint;
+    toggleProfileEloMode: typeof toggleProfileEloMode;
   }
 }
 
@@ -310,6 +324,7 @@ export function registerGlobalWindowHandlers(): void {
     handleManagerSelectChange,
     toggleSeasonSection,
     switchAnalyticsTab,
+    switchEloMode,
     switchChronologyView,
     setManagerFilter,
     setNemesisFilter,
@@ -423,6 +438,12 @@ export function registerGlobalWindowHandlers(): void {
     copyStandingsToClipboard,
     shareStandingsWhatsApp,
     exportTeamMatchesPNG,
-    copyTeamMatchesToClipboard
+    copyTeamMatchesToClipboard,
+    switchProfileEloSeason,
+    showProfileEloHover,
+    clearProfileEloHover,
+    selectProfileEloPoint,
+    selectEloChartPoint,
+    toggleProfileEloMode
   });
 }

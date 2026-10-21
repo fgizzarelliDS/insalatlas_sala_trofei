@@ -4,6 +4,56 @@ import { renderTrophySVG, renderCoachBanner } from '@/trophies';
 import { computeManagerBadges, computeManagerRivalries } from '@/analytics';
 import { resolveManagerRecordCrest } from '@/analytics/records/helpers';
 import { state } from '@/state';
+import {
+  getEloMode,
+  setEloMode,
+  getManagerEloTrack,
+  formatElo
+} from '@/analytics/analyticsCore';
+import type { EloTrackMode } from '@/types/analytics';
+import { getLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
+import { refreshCareerEloSparkline } from './CareerTab';
+
+let activeProfileManagerId: string | null = null;
+
+export function updateProfileEloDisplay(managerId?: string): void {
+  const mId = managerId || activeProfileManagerId;
+  if (!mId) return;
+
+  const liveData = getLiveSeasonDetails();
+  const teamMetric = liveData?.standings.find(s => s.managerId === mId);
+  const eloSec = document.getElementById('profile-elo-section');
+
+  if (!teamMetric?.elo || !eloSec) {
+    if (eloSec) eloSec.classList.add('hidden');
+    return;
+  }
+
+  eloSec.classList.remove('hidden');
+  const activeMode = getEloMode();
+  const track = getManagerEloTrack(teamMetric.elo, activeMode);
+
+  const curEl = document.getElementById('profile-elo-current');
+  const peakEl = document.getElementById('profile-elo-peak');
+  const floorEl = document.getElementById('profile-elo-floor');
+  const modeLabelEl = document.getElementById('profile-elo-mode-label');
+
+  if (curEl && track) curEl.textContent = formatElo(track.current);
+  if (peakEl && track) peakEl.textContent = `${formatElo(track.peak.value)}`;
+  if (floorEl && track) floorEl.textContent = `${formatElo(track.floor.value)}`;
+  if (modeLabelEl) modeLabelEl.textContent = activeMode === 'flat' ? '⚡ ELO Puro' : '🏛️ Elo Storico';
+}
+
+export function toggleProfileEloMode(): void {
+  const nextMode: EloTrackMode = getEloMode() === 'flat' ? 'historical' : 'flat';
+  setEloMode(nextMode);
+  updateProfileEloDisplay();
+  refreshCareerEloSparkline();
+}
+
+if (typeof window !== 'undefined') {
+  (window as unknown as { toggleProfileEloMode?: () => void }).toggleProfileEloMode = toggleProfileEloMode;
+}
 
 /**
  * Updates DOM elements for vital stats, badges, and trophy shelf inside the profile modal (Palmares tab)
@@ -21,6 +71,10 @@ export function populatePalmaresDOM(m: Manager, score: number, totalMajor: numbe
   if (scoreEl) scoreEl.textContent = `${formatScore(score)} pt`;
   if (rateEl) rateEl.textContent = `${successRate}%`;
   if (totalEl) totalEl.textContent = String(totalMajor);
+
+  // 1.1 Elo Form Metrics
+  activeProfileManagerId = m.id;
+  updateProfileEloDisplay(m.id);
 
   // 2. Honorary and Behavioral Badges
   const badgesContainer = document.getElementById('profile-badges-container');

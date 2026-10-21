@@ -2,7 +2,7 @@
 
 [![Deploy to GitHub Pages](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/deploy.yml/badge.svg)](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/deploy.yml)
 [![Continuous Integration](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/ci.yml/badge.svg)](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/ci.yml)
-[![Version: 1.5.3](https://img.shields.io/badge/version-1.5.3-emerald.svg)](package.json)
+[![Version: 1.7.0](https://img.shields.io/badge/version-1.7.0-emerald.svg)](package.json)
 [![TypeScript Strict](https://img.shields.io/badge/TypeScript-5.x_Strict-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -20,6 +20,7 @@
 L'applicazione offre un'interfaccia interattiva per desktop e mobile:
 
 - **Dynamic N-Competitions Engine**: Architettura data-driven unificata (`src/config.ts`) con supporto per $N$ tornei e disonori arbitrari basati su 5 archetipi (`tier3`, `tier2`, `single`, `dishonor`, `banners`), pesi di punteggio personalizzabili, griglia CSS reattiva auto-sincronizzante, ordinamenti dinamici e modali albo d'oro con zero duplicazione di codice.
+- **Dynamic Elo Rating Engine & Previsioni Partita**: Sistema di rating dinamico a doppia traccia (*⚡ Elo Puro* da baseline 1500 vs *🏛️ Elo Storico* calibrato sul Silverware Prestige Index SPI), aggiornato match-by-match con logistica standard a fattore $K \in \{24, 32\}$, transizione inter-stagionale con mean reversion (75/25), previsioni di probabilità pre-partita $P(\text{Win})$, traiettorie multi-squadra SVG interattive, ordinamento dinamico completo e toggle integrato nelle classifiche reale e merito.
 - **In-Progress Form Index, Schedule Luck & Live Analytics**: Motore di analisi in tempo reale per la stagione in corso con calcolo deterministico giornata per giornata di forma recente (L5), Indice di Momentum pesato $\in [0, 1]$, Fortuna di Calendario ($\Delta\text{Luck}$), badge di stato compositi (🔥/📈/⚖️/📉/🧊), tabella responsive a 11 colonne con fallback aggraziato e modale per visualizzare il tabellino partita per partita di ciascuna squadra.
 - **Architettura League-Agnostic**: Configurazione centralizzata (`src/config.ts`), colonne del tabellone dinamiche con griglia CSS reattiva, isolamento multi-tenant in local storage e supporto chiavi in mano per leghe arbitrarie.
 - **Albo d'Oro Storico Decennale**: Bacheca trofei consolidata, rating storico e schede manager ad alta risoluzione (HD) condivisibili.
@@ -29,8 +30,8 @@ L'applicazione offre un'interfaccia interattiva per desktop e mobile:
   - *Tavolo dei Rivali (Multi-Manager)*: confronto fino a **6 manager contemporanei** con multi-radar cromatico, mini-torneo incrociato a punti o PPG (con switch Contemporanee/Tutte) e tabella comparativa a colonne parallele (ottimizzata mobile con colonna metrica fissa e zero scroll su desktop).
   - *Matrice Nemesi N×N*: mappa globale delle bestie nere e vittime preferite con filtri di confidenza.
 - **Social Story Engine (9:16 HD)**: Generazione istantanea di schede verticali 1080×1920 con safe-zone Instagram & WhatsApp per Profilo Manager, Duello H2H, Tavolo dei Rivali, singolo Record Storico (con stemmi e medaglie nel Podio Storico) e Top Primati Marquee Poster.
-- **Archivio Stagioni & Classifiche**: Consultazione cronologica delle singole annate con classifiche ufficiali e finaliste delle coppe.
-- **Dinamica Storica & Cronologia (Tab 4)**: Analisi longitudinale delle carriere (piazzamento medio storico, fasce di rendimento a 4 livelli, baricentro e oscillazione) ed evoluzione dell'equilibrio competitivo stagionale (compattezza, step gap e verdetti chiave).
+- **Archivio Stagioni & Classifiche Live**: Consultazione cronologica delle singole annate con classifiche ufficiali, finaliste delle coppe e vista Live Standings con colonna Elo integrata (Reale e Merito con toggle header).
+- **Hub Analitico a 5 Tab**: Analisi longitudinale ed econometrica avanzata: Macro-Equilibrio, Cinismo GCI, Archetipi di Rischio, Dinamica Storica decennale e il nuovo **Motore Dinamico Elo Rating** (traiettorie multi-squadra SVG, previsioni pre-match, classifica dinamica ordinabile desktop/mobile e guida interattiva).
 - **Gestione Stagioni In Corso & Debuttanti**: Isolamento delle annate attive dalle valutazioni consolidate di carriera per non penalizzare l'efficienza dei veterani e gestione asintotica dei debuttanti.
 - **Vector Crest**: Catalogo di stemmi vettoriali ad alta definizione (`public/assets/crests/`) per rappresentare ogni squadra priva di logo personalizzato.
 - **Econometria & Rischio**: Motore di analisi competitiva basato su teoria economica e modellazione del rischio.
@@ -49,7 +50,7 @@ Struttura a **colonne native** (`.albo-grid-row`), il motore di theming basato s
 
 ### 2. [Funzionalità & Esperienza Utente](docs/02-features-and-ui.md)
 
-Guida ai moduli applicativi: albo d'oro interattivo con ordinamento multi-criterio, archivio cronologico delle stagioni e coppe, dinamica storica a doppia prospettiva (Manager vs. Stagioni), motore di fallback per stemmi vettoriali (`src/crests.ts`), rendering off-screen nativo in HD tramite `html-to-image`, copia istantanea negli appunti, condivisione WhatsApp e modalità modifica.
+Guida ai moduli applicativi: albo d'oro interattivo con ordinamento multi-criterio, archivio cronologico delle stagioni e coppe, Hub Analitico a 5 Tab (incluso il motore Dinamico Elo Rating con classifiche e traiettorie SVG), dinamica storica a doppia prospettiva (Manager vs. Stagioni), motore di fallback per stemmi vettoriali (`src/crests.ts`), rendering off-screen nativo in HD tramite `html-to-image`, copia istantanea negli appunti, condivisione WhatsApp e modalità modifica.
 
 ### 3. [Econometria, Cinismo & Modelli di Rischio](docs/03-analytics-and-econometrics.md)
 
@@ -61,6 +62,7 @@ Approfondimento matematico del modulo analitico:
 - **Modellazione di Coda (Tail Risk)**: Feast-or-Famine Bayesiano ($\widetilde{FF}$), Net Tail Skew ($NTS$) e indice unificato Net Tail Index ($NTI$).
 - **Tassonomia degli Archetipi**: Waterfall deterministico per la classificazione comportamentale dei manager.
 - **Dinamica Storica, Stagioni In Corso & Debuttanti**: Metriche di baricentro, oscillazione posizioni ($\sigma_{\text{rank}}$), parità stagionale e neutralizzazione delle annate non concluse.
+- **Motore Dinamico Elo Rating**: Curva logistica di vittoria attesa ($E_A$), K-factors ponderati per torneo, architettura Dual-Track (*Puro* vs *Storico* calibrato su SPI) e carryover inter-stagionale con mean reversion al 25%.
 
 ### 4. [Data Schema & Validazione CI/CD](docs/04-data-schema-and-ci.md)
 

@@ -29,22 +29,25 @@ La vista principale offre una bacheca dinamica ad alta leggibilità sportiva:
 
 ---
 
-## 2. Archivio Storico Stagioni & Coppe (Classifiche Tornei)
+## 2. Archivio Storico Stagioni, Coppe & Live Standings (Classifiche Tornei)
 
-Il componente `src/components/board/seasonsArchive.ts` gestisce la consultazione storica dettagliata di tutte le edizioni di campionato, coppa e supercoppa disputate dalla lega:
+Il componente `src/components/board/seasonsArchive.ts` gestisce la consultazione storica dettagliata di tutte le edizioni di campionato, coppa e supercoppa disputate dalla lega, oltre alla visualizzazione in tempo reale della stagione in corso:
 
-- **Raggruppamento Cronologico**: Navigazione delle stagioni dalla fondazione (2015/16) all'edizione corrente (2024/25), con scomposizione per tipologia di torneo (Campionato, Coppa di Lega, Supercoppa).
+- **Raggruppamento Cronologico**: Navigazione delle stagioni dalla fondazione (2015/16) all'edizione corrente (2025/26), con scomposizione per tipologia di torneo (Campionato, Coppa di Lega, Supercoppa).
 - **Layout a 3 Colonne & Armonizzazione Mobile**:
   - Struttura tabellare responsive: colonna piazzamento (`Pos`), colonna club (`Squadra`) e colonna punteggio (`Punti`).
   - Ottimizzazione viewport compatti (360px–430px): larghezze flessibili (`w-14 sm:w-28` per la posizione, `w-14 sm:w-20` per i punti) e padding compatto (`px-1.5 sm:px-3`).
   - Badge di podio responsive: etichette abbreviate su schermi stretti (`🥇 1°`) che si espandono sui display desktop (`🥇 1° Scudetto`).
   - Tolleranza a nomi lunghi o composti: la colonna centrale del club adotta `min-w-0 flex-1 break-words`, consentendo il wrap del testo su più linee ed evitando l'attivazione di scroll orizzontale o il taglio della colonna punti fuori dallo schermo su dispositivi mobili.
+- **Integrazione Dinamica Elo nelle Classifiche Live (Reale & Merito)**:
+  - Nelle viste della stagione in corso (*Classifica Reale* e *Classifica Merito*), il rating dinamico è integrato direttamente tramite un **pulsante toggle nell'intestazione di colonna** (`[⚡ Elo]`).
+  - L'attivazione/disattivazione della colonna Elo preserva la compattezza visiva senza richiedere righe secondarie di controllo ridondanti e si adatta automaticamente ai layout mobile e desktop.
 
 ---
 
-## 3. Hub Analitico & Dinamica Storica (Modale a 4 Tab)
+## 3. Hub Analitico & Dinamica Storica (Modale a 5 Tab)
 
-L'hub econometrico e longitudinale (`src/components/modals/analytics/index.ts`) fornisce una suite completa di metriche competitive avanzate articolata su 4 sezioni:
+L'hub econometrico e longitudinale (`src/components/modals/analytics/index.ts`) fornisce una suite completa di metriche competitive avanzate articolata su 5 sezioni:
 
 - **Tab 1: Equilibrio & Macro**: Indici di Gini bivariati ($G_{\text{prestige}}$, $G_{\text{rating}}$), concentrazione $CR_3$, Herfindahl-Hirschman Index ($\text{HHI}$) ed entropia relativa ($H_{\text{rel}}$) con diagnosi qualitativa a 4 scenari.
 - **Tab 2: Cinismo & Freddezza (Global Clutch Index)**:
@@ -65,6 +68,21 @@ L'hub econometrico e longitudinale (`src/components/modals/analytics/index.ts`) 
     - Tabella storica di comparazione dell'equilibrio competitivo annuale: step gap (gradino medio pt/posizione), indice di compattezza normalizzato (0–100), forbice totale 1°-ultimo, volata podio (1°-3°) e playout thriller (penultimo-ultimo).
     - Verdetti stagionali con associazione nominale dei fantallenatori reali (non username tecnici).
     - *Esclusione Automatica Stagioni In Corso*: le competizioni con `in_progress: true` vengono filtrate per evitare anomalie con punteggi a zero e compattezza artificiale.
+- **Tab 5: Elo Rating & Dinamica Forma**:
+  - **Architettura a Doppia Traccia (Dual-Track Switcher)**:
+    - *⚡ Elo Puro*: Calcolo standard da quota 1500 per tutti i team dal 2025/26 in avanti (efficienza pura sul campo).
+    - *🏛️ Elo Storico*: Seeding iniziale differenziato basato sul Silverware Prestige Index (SPI) accumulato nei dieci anni precedenti.
+  - **Traiettoria Multi-Squadra Interattiva (SVG)**:
+    - Grafico vettoriale multi-linea con tracciamento temporale dell'Elo partita per partita.
+    - Selettore stagionale (`Tutte`, `2026/27`, `2025/26`).
+    - Toggle manager interattivo: click sul badge per accendere/spegnere la traccia del singolo club senza provocare salti di scroll della finestra.
+    - Box dettagli interattivo con altezza dinamica protetta (`min-h-[44px]`): al passaggio del mouse o al tap sul singolo punto vengono visualizzati giornata, avversario, punteggio reale, esito (W/D/L), probabilità attesa pre-gara $P(\text{pre})$ e variazione $\Delta\text{Elo}$.
+    - *Locking su Tap/Click*: Il click o tap sul punto blocca la selezione, nasconde in modo permanente l'invito a passare il mouse ed evidenzia il punto attivo con anello ad alto contrasto.
+  - **Classifica Dinamica Elo Responsive**:
+    - *Vista Desktop*: Tabella completa a 8 colonne (`Pos`, `Squadra`, `Mister`, `Elo Attuale`, `Δ Ultima G.`, `Picco Max`, `Minimo`, `Stagioni`) con ordinamento interattivo bidirezionale (ascendente/discendente) cliccando sull'intestazione di colonna.
+    - *Vista Mobile*: Card compatte a sviluppo verticale ottimizzate per smartphone con pill-bar orizzontale di riordino rapido (`[# Pos] [⚡ Elo] [Δ Ultima] [Picco] [Minimo]`), badge di delta cromatici e zero troncamenti di testo.
+  - **Guida Didattica Pieghevole**:
+    - Pannello a scomparsa integrato contenente le formule logiche e matematiche (probabilità attesa $E_A$, formula di aggiornamento $\Delta = K \cdot (S - E)$, fattori $K=32$ per campionato e $K=24$ per coppe, e carryover inter-stagionale con regressione verso la media del 25%).
 
 ---
 
@@ -87,6 +105,11 @@ Il sistema assegna a ogni club uno stemma visivo distintivo senza ricorrere a se
 Dalla modale di profilo di ogni fantallenatore (`src/components/modals/ProfileModal.ts` & `ProfileModalTemplate.ts`) è possibile consultare i dettagli completi di carriera:
 
 - **Bump Chart Storica Decennale**: Visualizzazione interattiva dei piazzamenti ottenuti stagione per stagione (10 stagioni complessive). Le annate in cui il manager non ha preso parte alla competizione sono gestite esplicitamente come `N/D` con nodi visivi disconnessi per evitare distorsioni analitiche.
+- **Traiettoria Elo (Forma Dinamica & Match-by-Match)**:
+  - Sparkline interattiva della serie storica Elo della squadra del manager nel tab Piazzamenti/Carriera.
+  - Selettore stagionale dedicato (`all`, `2026/27`, `2025/26`) per isolare singoli campionati o analizzare la continuità pluriennale.
+  - Hover & tap details box responsive: avversario, punteggio reale, esito (W/D/L), probabilità attesa pre-gara $P(\text{pre})$ e variazione $\Delta\text{Elo}$.
+  - Target di tocco touch-friendly maggiorati (`r=12`), locking su click con rimozione permanente dell'invito testuale ed evidenziazione ad anello del match selezionato.
 - **Squadre Utilizzate nel Tempo**: Mensola a pillole con aggregazione automatica degli intervalli cronologici consecutivi (es. `NomeClub (2016-2018)`), visualizzando il logo personalizzato o lo stemma vettoriale corrispondente.
 - **Bacheca Trofei & Metriche di Carriera**: Tasso di conversione, piazzamenti podio, cucchiai di legno e banner personalizzati.
 - **Badge Analitici Unificati (4 Dimensioni)**:

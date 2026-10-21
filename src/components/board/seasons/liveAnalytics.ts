@@ -36,20 +36,42 @@ export async function loadLiveSeasonDetails(season?: string): Promise<LiveSeason
 
   activeLiveFetchPromise = (async () => {
     try {
-      const baseUrl = (typeof window !== 'undefined' && window.location && window.location.pathname)
-        ? (window.location.pathname.endsWith('/') ? window.location.pathname : window.location.pathname + '/')
-        : './';
-      const fetchUrl = `${baseUrl}live_season_details.json?t=${Date.now()}`;
-      const res = await fetch(fetchUrl);
-      if (!res.ok) {
-        cachedLiveSeasonDetails = null;
-        return null;
+      const timestamp = Date.now();
+      const candidates: string[] = [
+        `live_season_details.json?t=${timestamp}`,
+        `./live_season_details.json?t=${timestamp}`,
+        `/live_season_details.json?t=${timestamp}`
+      ];
+
+      if (typeof window !== 'undefined' && window.location && window.location.pathname) {
+        const p = window.location.pathname;
+        const dir = p.substring(0, p.lastIndexOf('/') + 1);
+        if (dir && !candidates.includes(`${dir}live_season_details.json?t=${timestamp}`)) {
+          candidates.unshift(`${dir}live_season_details.json?t=${timestamp}`);
+        }
       }
-      const data = (await res.json()) as LiveSeasonDetails;
-      if (data && data.standings && Array.isArray(data.standings)) {
+
+      let data: LiveSeasonDetails | null = null;
+      for (const url of candidates) {
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            const parsed = (await res.json()) as LiveSeasonDetails;
+            if (parsed && parsed.standings && Array.isArray(parsed.standings)) {
+              data = parsed;
+              break;
+            }
+          }
+        } catch {
+          // try next candidate
+        }
+      }
+
+      if (data) {
         cachedLiveSeasonDetails = data;
         return data;
       }
+      cachedLiveSeasonDetails = null;
       return null;
     } catch {
       cachedLiveSeasonDetails = null;

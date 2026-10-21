@@ -53,6 +53,25 @@ export const LEAGUE: LeagueProfile = {
       '348808': 'Mundialito',
       '348805': 'Perdenti'
     }
+  },
+  elo: {
+    baseRating: 1500.0,
+    scaleFactor: 400.0,
+    carryoverAlpha: 0.75,
+    historicalSeeding: {
+      scale: 75.0,
+      minRating: 1350.0,
+      maxRating: 1650.0
+    },
+    kFactors: {
+      Campionato: 32.0,
+      Coppa_Knockout: 40.0,
+      Coppa: 24.0,
+      Supercoppa: 24.0,
+      Mundialito: 32.0,
+      Perdenti: 16.0,
+      default: 32.0
+    }
   }
 };
 

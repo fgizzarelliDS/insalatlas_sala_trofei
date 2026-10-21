@@ -8,3 +8,4 @@ export * from './nemesis';
 export * from './radarAxes';
 export * from './multiManager';
 export * from './records';
+export * from './analyticsCore';

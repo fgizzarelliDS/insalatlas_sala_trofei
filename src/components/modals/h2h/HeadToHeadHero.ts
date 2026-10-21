@@ -1,5 +1,12 @@
 import type { Manager, HeadToHeadStats } from '@/types';
 import { formatScore } from '@/score';
+import {
+  getEloMode,
+  getManagerEloTrack,
+  computeEloWinProbability,
+  formatElo
+} from '@/analytics/analyticsCore';
+import { getLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 
 /**
  * Extracts initials for manager avatar
@@ -22,6 +29,21 @@ export function renderHeadToHeadHero(
   const { managerA, managerB, metricsA, metricsB } = stats;
   const initialsA = getInitials(managerA.name);
   const initialsB = getInitials(managerB.name);
+
+  // Extract Elo ratings and pre-match win probability
+  const liveData = getLiveSeasonDetails();
+  const eloA = liveData?.standings.find(s => s.managerId === managerA.id)?.elo;
+  const eloB = liveData?.standings.find(s => s.managerId === managerB.id)?.elo;
+  const activeMode = getEloMode();
+  const trackA = getManagerEloTrack(eloA, activeMode);
+  const trackB = getManagerEloTrack(eloB, activeMode);
+
+  let winProbA = 50.0;
+  let winProbB = 50.0;
+  if (trackA && trackB) {
+    winProbA = computeEloWinProbability(trackA.current, trackB.current);
+    winProbB = Math.round((100.0 - winProbA) * 10) / 10;
+  }
 
   // Options for dropdowns
   const optionsA = allManagers
@@ -128,6 +150,29 @@ export function renderHeadToHeadHero(
           </div>
         </div>
       </div>
+
+      <!-- Pre-Match Elo Win Probability Bar -->
+      ${trackA && trackB ? `
+        <div class="mt-3 pt-2.5 border-t" style="border-color: var(--table-border);">
+          <div class="flex items-center justify-between text-[11px] font-bold mb-1">
+            <span class="flex items-center gap-1 font-mono" style="color: var(--h2h-contender-a);">
+              <span>⚡ ${formatElo(trackA.current)}</span>
+              <span>(${winProbA.toFixed(1)}%)</span>
+            </span>
+            <span class="text-[9px] uppercase tracking-wider opacity-60 font-semibold" style="color: var(--text-muted);">
+              Probabilità Vittoria Elo
+            </span>
+            <span class="flex items-center gap-1 font-mono" style="color: var(--h2h-contender-b);">
+              <span>(${winProbB.toFixed(1)}%)</span>
+              <span>${formatElo(trackB.current)} ⚡</span>
+            </span>
+          </div>
+          <div class="w-full h-2 rounded-full overflow-hidden flex bg-slate-800">
+            <div style="width: ${winProbA}%; background-color: var(--h2h-contender-a);" class="h-full transition-all duration-300"></div>
+            <div style="width: ${winProbB}%; background-color: var(--h2h-contender-b);" class="h-full transition-all duration-300"></div>
+          </div>
+        </div>
+      ` : ''}
     </div>
   `;
 }

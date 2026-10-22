@@ -3,6 +3,7 @@ import { LEAGUE } from '@/config';
 import { computeAllLeagueRecords, filterRecordsByCategory } from '@/analytics/records';
 import { getLeagueYearSpan } from '@/analytics/records/helpers';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
+import { escapeHtml } from '@/utils/dom';
 import type { LeagueRecord, RecordCategory, RecordHolder } from '@/types';
 
 /**
@@ -468,7 +469,7 @@ export function filterRecordsBySearch(records: LeagueRecord[], query: string): L
  * Generates empty state markup when no records match search query
  */
 export function renderRecordsEmptyState(query: string): string {
-  const safeQuery = query.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const safeQuery = escapeHtml(query);
   return `
     <div class="col-span-full py-12 px-4 text-center rounded-2xl border border-dashed border-slate-700/60 bg-black/10 dark:bg-white/5">
       <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center text-xl">

@@ -1,12 +1,6 @@
 import { state } from '@/state';
 import { calculateManagerScore } from '@/score';
 import { populateProfileModalDOM } from './profile';
-import {
-  shareViaWhatsApp,
-  exportProfileModalHD,
-  copyProfileModalToClipboard,
-  exportProfileStoryHD
-} from '@/export';
 import { getH2HReturnContext, clearH2HReturnContext } from './h2h/HeadToHeadContext';
 import { getTeamMatchesReturnContext, clearTeamMatchesReturnContext } from '../board/seasons/TeamMatchesModal';
 
@@ -159,6 +153,7 @@ export async function exportCurrentProfileModalHD(): Promise<void> {
   if (!state.selectedManagerId) return;
   const manager = state.managers.find(m => m.id === state.selectedManagerId);
   if (manager) {
+    const { exportProfileModalHD } = await import('@/export');
     await exportProfileModalHD(manager);
   }
 }
@@ -170,6 +165,7 @@ export async function copyCurrentProfileModalToClipboard(): Promise<void> {
   if (!state.selectedManagerId) return;
   const manager = state.managers.find(m => m.id === state.selectedManagerId);
   if (manager) {
+    const { copyProfileModalToClipboard } = await import('@/export');
     await copyProfileModalToClipboard(manager);
   }
 }
@@ -184,10 +180,11 @@ export async function exportCurrentManagerCard(): Promise<void> {
 /**
  * Triggers direct WhatsApp share for currently opened profile
  */
-export function shareCurrentManagerWhatsApp(): void {
+export async function shareCurrentManagerWhatsApp(): Promise<void> {
   if (!state.selectedManagerId) return;
   const manager = state.managers.find(m => m.id === state.selectedManagerId);
   if (manager) {
+    const { shareViaWhatsApp } = await import('@/export');
     shareViaWhatsApp(manager);
   }
 }
@@ -327,6 +324,7 @@ export async function exportCurrentProfileStoryHD(): Promise<void> {
   if (!currentId) return;
   const m = state.managers.find(item => item.id === currentId);
   if (m) {
+    const { exportProfileStoryHD } = await import('@/export');
     await exportProfileStoryHD(m);
   }
 }

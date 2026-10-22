@@ -1,6 +1,6 @@
 import type { Manager } from '@/types';
 import { calculateManagerScore } from '@/score';
-import { computeGlobalClutchIndex, getClutchTier } from './econometrics';
+import { computeManagerClutchMetrics } from './econometrics';
 import { computeTailRiskProfile } from './tailRisk';
 import { computeStabilityProfile } from './badges';
 import { getManagerArchetype } from './archetypes';
@@ -73,21 +73,8 @@ export function computeManagerAxes(
   benchmarkScore: number,
   color: string
 ): MultiManagerProfileData {
-  const completedYears = manager.history && manager.history.length > 0
-    ? manager.history.filter(h => !h.in_progress && h.status !== 'in_progress').length
-    : (manager.years || 0);
-
-  const podiums = (manager.gold || 0) + (manager.silver || 0) + (manager.bronze || 0);
-  const finalsWon = (manager.cup_gold || 0) + (manager.supercup || 0);
-  const finalsPlayed = finalsWon + (manager.cup_silver || 0) + (manager.supercup_silver || 0);
-
+  const clutchMetrics = computeManagerClutchMetrics(manager);
   const score = calculateManagerScore(manager);
-  const gci = computeGlobalClutchIndex(manager.gold || 0, podiums, finalsWon, finalsPlayed, completedYears);
-  const clutch = getClutchTier(gci, completedYears);
-
-  const kiPct = podiums > 0 ? parseFloat((((manager.gold || 0) / podiums) * 100).toFixed(1)) : 0;
-  const crPct = finalsPlayed > 0 ? parseFloat(((finalsWon / finalsPlayed) * 100).toFixed(1)) : 0;
-
   const risk = computeTailRiskProfile(manager);
   const stability = computeStabilityProfile(manager);
 
@@ -114,12 +101,12 @@ export function computeManagerAxes(
     axes,
     metrics: {
       score,
-      gci,
-      clutchLabel: clutch.label,
-      clutchIcon: clutch.icon,
-      clutchColor: clutch.color,
-      kiPct,
-      crPct,
+      gci: clutchMetrics.gci,
+      clutchLabel: clutchMetrics.clutch.label,
+      clutchIcon: clutchMetrics.clutch.icon,
+      clutchColor: clutchMetrics.clutch.color,
+      kiPct: clutchMetrics.kiPct,
+      crPct: clutchMetrics.crPct,
       nti: risk.nti,
       polarityLabel: risk.label,
       polarityIcon: risk.icon,
@@ -130,8 +117,8 @@ export function computeManagerAxes(
       archetypeTag: arch.tag,
       archetypeIcon: arch.icon,
       archetypeColor: arch.color,
-      completedYears,
-      podiums,
+      completedYears: clutchMetrics.completedYears,
+      podiums: clutchMetrics.podiums,
       bestRank
     }
   };

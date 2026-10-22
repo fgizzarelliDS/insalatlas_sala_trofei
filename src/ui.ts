@@ -2,7 +2,7 @@ import { ThemeKey, TitlesConfig } from '@/types';
 import { state } from '@/state';
 import { verifyAdminPassword } from '@/config';
 import { saveTitles } from '@/storage';
-import { renderBoard } from '@/main';
+import { renderBoard } from '@/components/board/tableBoard';
 
 /**
  * Changes active visual theme, adjusts body class, re-renders board and notifies user
@@ -195,5 +195,16 @@ export function applyTitlesToDOM(titles: TitlesConfig = state.titles): void {
   for (const [id, val] of Object.entries(map)) {
     const el = document.getElementById(id);
     if (el && val !== undefined) el.textContent = val;
+  }
+
+  // Also apply any dynamic column titles mapped by data-title-key
+  if (typeof document !== 'undefined' && document.querySelectorAll) {
+    const dynamicHeaders = document.querySelectorAll<HTMLElement>('[data-title-key]');
+    dynamicHeaders.forEach(el => {
+      const key = el.dataset.titleKey;
+      if (key && titles[key] && typeof titles[key] === 'string') {
+        el.textContent = titles[key] as string;
+      }
+    });
   }
 }

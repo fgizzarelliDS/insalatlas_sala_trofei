@@ -85,7 +85,20 @@ export default defineConfig({
     target: 'es2022',
     sourcemap: false,
     minify: 'esbuild',
-    emptyOutDir: true
+    emptyOutDir: true,
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+          if (id.includes('src/analytics/')) {
+            return 'analytics-core';
+          }
+        }
+      }
+    }
   },
   server: {
     host: true,

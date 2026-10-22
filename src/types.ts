@@ -190,6 +190,9 @@ export interface TitlesConfig {
   col5?: string;
   col6?: string;
   col7?: string;
+  // Dynamic competition titles mapped by competition ID or custom column key
+  competitions?: Record<string, string>;
+  [key: string]: string | Record<string, string> | undefined;
 }
 
 export interface LeagueData {

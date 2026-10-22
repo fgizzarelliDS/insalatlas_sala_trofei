@@ -3,7 +3,7 @@ import { state } from '@/state';
 import { computeHeadToHead } from '@/analytics';
 import { renderHeadToHeadModalHTML, type H2HTabMode } from './HeadToHeadTemplate';
 import { closeProfileModal } from '@/components/modals/ProfileModal';
-import { buildH2HWhatsAppShareText, buildMultiManagerWhatsAppShareText } from '@/export/share';
+import { buildH2HWhatsAppShareText, buildMultiManagerWhatsAppShareText } from '@/export/share/h2hText';
 
 let selectedManagerIdA: string | null = null;
 let selectedManagerIdB: string | null = null;

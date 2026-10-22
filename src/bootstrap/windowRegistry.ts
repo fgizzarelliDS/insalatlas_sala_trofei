@@ -94,26 +94,33 @@ import {
   selectEloChartPoint,
   toggleProfileEloMode
 } from '@/components/modals';
-import {
-  exportGraphicHD,
-  exportManagerCardById,
-  copyManagerCardById,
-  shareManagerWhatsAppById,
-  shareRecordWhatsApp,
-  exportRecordStoryHD,
-  exportRecordsSummaryStoryHD,
-  exportHallOfFamePosterHD,
-  copyHallOfFamePosterToClipboard,
-  exportAlboHD,
-  copyAlboToClipboard,
-  shareAlboWhatsApp,
-  sharePosterWhatsApp,
-  exportStandingsPNG,
-  copyStandingsToClipboard,
-  shareStandingsWhatsApp,
-  exportTeamMatchesPNG,
-  copyTeamMatchesToClipboard
-} from '@/export';
+// Lazy export bindings to decouple canvas, svg foreignObject, and html-to-image from main bundle chunk
+type ExportModule = typeof import('@/export');
+const lazyExport = <K extends keyof ExportModule>(name: K): ExportModule[K] => {
+  return (async (...args: any[]) => {
+    const mod = await import('@/export');
+    return (mod[name] as any)(...args);
+  }) as ExportModule[K];
+};
+
+const exportGraphicHD = lazyExport('exportGraphicHD');
+const exportManagerCardById = lazyExport('exportManagerCardById');
+const copyManagerCardById = lazyExport('copyManagerCardById');
+const shareManagerWhatsAppById = lazyExport('shareManagerWhatsAppById');
+const shareRecordWhatsApp = lazyExport('shareRecordWhatsApp');
+const exportRecordStoryHD = lazyExport('exportRecordStoryHD');
+const exportRecordsSummaryStoryHD = lazyExport('exportRecordsSummaryStoryHD');
+const exportHallOfFamePosterHD = lazyExport('exportHallOfFamePosterHD');
+const copyHallOfFamePosterToClipboard = lazyExport('copyHallOfFamePosterToClipboard');
+const exportAlboHD = lazyExport('exportAlboHD');
+const copyAlboToClipboard = lazyExport('copyAlboToClipboard');
+const shareAlboWhatsApp = lazyExport('shareAlboWhatsApp');
+const sharePosterWhatsApp = lazyExport('sharePosterWhatsApp');
+const exportStandingsPNG = lazyExport('exportStandingsPNG');
+const copyStandingsToClipboard = lazyExport('copyStandingsToClipboard');
+const shareStandingsWhatsApp = lazyExport('shareStandingsWhatsApp');
+const exportTeamMatchesPNG = lazyExport('exportTeamMatchesPNG');
+const copyTeamMatchesToClipboard = lazyExport('copyTeamMatchesToClipboard');
 import {
   changeSort,
   toggleDisplayMode,

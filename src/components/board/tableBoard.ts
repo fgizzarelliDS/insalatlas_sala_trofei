@@ -12,6 +12,7 @@ import {
 import { openManagerModal, openProfileModal } from '@/components/modals';
 import { LEAGUE, ALBO_COLUMNS, getActiveCompetitions, getCompetitionDef } from '@/config';
 import { renderTopStatsCards } from '@/components/board/statsCounter';
+import { escapeHtml } from '@/utils/dom';
 
 /**
  * Changes active sorting criterion and updates table
@@ -168,6 +169,7 @@ function renderManagerCell(
   totalMajor: number,
   score: number
 ): string {
+  const safeName = escapeHtml(m.name);
   return `
     <div class="sticky left-0 z-10 px-2 sm:pl-4 sm:pr-3 self-stretch flex items-center justify-between pb-2 overflow-hidden border-r shadow-[3px_0_6px_-2px_rgba(0,0,0,0.20)]"
          style="background-color: var(--table-surface); border-color: var(--shelf-line);">
@@ -176,8 +178,8 @@ function renderManagerCell(
           ${index + 1}
         </span>
         <div class="flex flex-col justify-center min-w-0 flex-1">
-          <div class="font-sport font-bold text-xs sm:text-base tracking-normal uppercase leading-tight truncate" style="color: var(--text-main);" title="${m.name} (${m.years})">
-            ${m.name} <span class="font-semibold text-[10px] sm:text-xs opacity-75">(${m.years})</span>
+          <div class="font-sport font-bold text-xs sm:text-base tracking-normal uppercase leading-tight truncate" style="color: var(--text-main);" title="${safeName} (${m.years})">
+            ${safeName} <span class="font-semibold text-[10px] sm:text-xs opacity-75">(${m.years})</span>
           </div>
           <div class="text-[10px] sm:text-[11px] font-bold leading-tight mt-0.5 flex items-center gap-1 sm:gap-1.5 truncate">
             ${totalMajor > 0 ? `
@@ -466,23 +468,15 @@ export async function navigateToHome(event?: Event): Promise<void> {
   }
 
   // 1. Close any open modals
-  const {
-    closeProfileModal,
-    closeHeadToHeadModal,
-    closeConcentrationModal,
-    closeSeasonModal,
-    closeTierInfo
-  } = await import('@/components/modals');
-
-  closeProfileModal();
-  closeHeadToHeadModal();
-  closeConcentrationModal();
-  closeSeasonModal();
-  closeTierInfo();
-
-  // 2. Switch main tab to albo d'oro
-  const { switchMainViewTab } = await import('@/components/board/seasons');
-  switchMainViewTab('albo', false);
+  if (typeof window !== 'undefined') {
+    window.closeProfileModal?.();
+    window.closeHeadToHeadModal?.();
+    window.closeConcentrationModal?.();
+    window.closeSeasonModal?.();
+    window.closeTierInfo?.();
+    // 2. Switch main tab to albo d'oro
+    window.switchMainViewTab?.('albo', false);
+  }
 
   // 3. Smooth scroll to top of window
   if (typeof window !== 'undefined') {

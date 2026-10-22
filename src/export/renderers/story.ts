@@ -2,8 +2,8 @@ import type { Manager, LeagueRecord } from '@/types';
 import { state } from '@/state';
 import { calculateManagerScore, formatScore } from '@/score';
 import {
-  computeGlobalClutchIndex,
-  getClutchTier,
+  computeManagerClutchMetrics,
+  computeSingleManagerRadarAxes,
   computeTailRiskProfile,
   computeStabilityProfile,
   getManagerArchetype,
@@ -15,7 +15,7 @@ import {
   type MultiManagerAnalysis
 } from '@/analytics/multiManager';
 import { renderMultiManagerRadarSVG } from '@/components/modals/h2h/MultiManagerRadar';
-import { computeH2HAxes, renderH2HRadarSVG } from '@/components/modals/h2h/HeadToHeadRadar';
+import { computeH2HAxes, renderH2HRadarSVG, type H2HAxisData } from '@/components/modals/h2h/HeadToHeadRadar';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
 import { renderNodeToCanvas } from './core';
 import { LEAGUE, LEAGUE_SITE_HOST } from '@/config';
@@ -109,15 +109,7 @@ export async function renderManagerStoryCanvas(manager: Manager): Promise<HTMLCa
   const efficiency = manager.years > 0 ? parseFloat((totalMajor / manager.years).toFixed(2)) : 0;
   const arch = getManagerArchetype(manager, totalMajor, efficiency);
 
-  const completedYears = manager.history && manager.history.length > 0
-    ? manager.history.filter(h => !h.in_progress && h.status !== 'in_progress').length
-    : (manager.years || 0);
-
-  const podiums = (manager.gold || 0) + (manager.silver || 0) + (manager.bronze || 0);
-  const finalsWon = (manager.cup_gold || 0) + (manager.supercup || 0);
-  const finalsPlayed = finalsWon + (manager.cup_silver || 0) + (manager.supercup_silver || 0);
-  const gci = computeGlobalClutchIndex(manager.gold || 0, podiums, finalsWon, finalsPlayed, completedYears);
-  const clutch = getClutchTier(gci, completedYears);
+  const clutchMetrics = computeManagerClutchMetrics(manager);
   const risk = computeTailRiskProfile(manager);
   const stability = computeStabilityProfile(manager);
 
@@ -126,52 +118,19 @@ export async function renderManagerStoryCanvas(manager: Manager): Promise<HTMLCa
     : manager.name;
   const logoUrl = resolveTeamLogo(latestTeam);
 
-  // Compute 6 normalized axes for radar
-  const kiPct = podiums > 0 ? parseFloat((((manager.gold || 0) / podiums) * 100).toFixed(1)) : 0;
-  const crPct = finalsPlayed > 0 ? parseFloat(((finalsWon / finalsPlayed) * 100).toFixed(1)) : 0;
+  // Compute 6 normalized axes for radar directly without any mock H2H stats
+  const singleAxes = computeSingleManagerRadarAxes(manager, 40);
+  const axes: H2HAxisData[] = singleAxes.map(ax => ({
+    key: ax.key,
+    label: ax.label,
+    shortTitle: ax.shortTitle,
+    acronym: ax.acronym,
+    valA: ax.val,
+    valB: 0,
+    rawA: ax.raw,
+    rawB: ''
+  }));
 
-  const mockH2HStats = {
-    metricsA: {
-      score,
-      gci,
-      clutchLabel: clutch.label,
-      clutchIcon: clutch.icon,
-      clutchColor: clutch.color,
-      kiPct,
-      crPct,
-      nti: risk.nti,
-      polarityLabel: risk.label,
-      polarityIcon: risk.icon,
-      polarityColor: risk.color,
-      stabilityCategory: stability.category,
-      stabilityIcon: stability.icon,
-      stdDevRank: stability.stdDevRank,
-      archetypeTag: arch.tag,
-      archetypeIcon: arch.icon,
-      archetypeColor: arch.color
-    },
-    metricsB: {
-      score,
-      gci,
-      clutchLabel: clutch.label,
-      clutchIcon: clutch.icon,
-      clutchColor: clutch.color,
-      kiPct,
-      crPct,
-      nti: risk.nti,
-      polarityLabel: risk.label,
-      polarityIcon: risk.icon,
-      polarityColor: risk.color,
-      stabilityCategory: stability.category,
-      stabilityIcon: stability.icon,
-      stdDevRank: stability.stdDevRank,
-      archetypeTag: arch.tag,
-      archetypeIcon: arch.icon,
-      archetypeColor: arch.color
-    }
-  };
-
-  const axes = computeH2HAxes(mockH2HStats as any, 40);
   const radarSvg = renderH2HRadarSVG(axes, manager.name, '', 860, 680);
 
   contentBox.innerHTML = `
@@ -194,7 +153,7 @@ export async function renderManagerStoryCanvas(manager: Manager): Promise<HTMLCa
           <i class="fa-solid ${arch.icon} mr-1"></i>${arch.tag}
         </span>
         <span class="px-3 py-1 rounded-full font-bold text-xs bg-slate-800 text-cyan-300 border border-cyan-500/30">
-          ${clutch.icon} ${clutch.label}
+          ${clutchMetrics.clutch.icon} ${clutchMetrics.clutch.label}
         </span>
       </div>
     </div>

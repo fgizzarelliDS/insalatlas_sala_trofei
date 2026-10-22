@@ -1,6 +1,6 @@
 import type { Manager, HeadToHeadStats } from '@/types';
 import { calculateManagerScore, formatScore } from '@/score';
-import { computeGlobalClutchIndex, getClutchTier } from './econometrics';
+import { computeManagerClutchMetrics } from './econometrics';
 import { computeTailRiskProfile } from './tailRisk';
 import { computeStabilityProfile } from './badges';
 
@@ -96,30 +96,16 @@ export function computeSingleManagerRadarAxes(
   manager: Manager,
   benchmarkScore: number
 ): SingleRadarAxisValue[] {
-  const history = manager?.history || [];
-  const completedYears = history.length > 0
-    ? history.filter(h => !h.in_progress && h.status !== 'in_progress').length
-    : (manager?.years || 0);
-
-  const podiums = (manager?.gold || 0) + (manager?.silver || 0) + (manager?.bronze || 0);
-  const finalsWon = (manager?.cup_gold || 0) + (manager?.supercup || 0);
-  const finalsPlayed = finalsWon + (manager?.cup_silver || 0) + (manager?.supercup_silver || 0);
-
+  const clutchMetrics = computeManagerClutchMetrics(manager);
   const score = calculateManagerScore(manager);
-  const gci = computeGlobalClutchIndex(manager?.gold || 0, podiums, finalsWon, finalsPlayed, completedYears);
-  const clutch = getClutchTier(gci, completedYears);
-
-  const kiPct = podiums > 0 ? parseFloat((((manager?.gold || 0) / podiums) * 100).toFixed(1)) : 0;
-  const crPct = finalsPlayed > 0 ? parseFloat(((finalsWon / finalsPlayed) * 100).toFixed(1)) : 0;
-
   const risk = computeTailRiskProfile(manager);
   const stability = computeStabilityProfile(manager);
 
   const safeBenchmark = Math.max(benchmarkScore, 10);
   const prestigeVal = Math.min(100, Math.max(0, Math.round((score / safeBenchmark) * 100)));
-  const gciVal = Math.min(100, Math.max(0, Math.round(gci)));
-  const kiVal = Math.min(100, Math.max(0, Math.round(kiPct)));
-  const crVal = Math.min(100, Math.max(0, Math.round(crPct)));
+  const gciVal = Math.min(100, Math.max(0, Math.round(clutchMetrics.gci)));
+  const kiVal = Math.min(100, Math.max(0, Math.round(clutchMetrics.kiPct)));
+  const crVal = Math.min(100, Math.max(0, Math.round(clutchMetrics.crPct)));
   const stabilityVal = Math.min(100, Math.max(0, Math.round(Math.max(0, 100 - stability.stdDevRank * 18))));
   const ntiVal = Math.min(100, Math.max(0, Math.round(50 + risk.nti * 50)));
 
@@ -138,7 +124,7 @@ export function computeSingleManagerRadarAxes(
       shortTitle: RADAR_CANONICAL_AXES[1].shortTitle,
       acronym: RADAR_CANONICAL_AXES[1].acronym,
       val: gciVal,
-      raw: `${clutch.label} (${Math.round(gci)})`
+      raw: `${clutchMetrics.clutch.label} (${Math.round(clutchMetrics.gci)})`
     },
     {
       key: RADAR_CANONICAL_AXES[2].key,
@@ -146,7 +132,7 @@ export function computeSingleManagerRadarAxes(
       shortTitle: RADAR_CANONICAL_AXES[2].shortTitle,
       acronym: RADAR_CANONICAL_AXES[2].acronym,
       val: kiVal,
-      raw: `${kiPct}%`
+      raw: `${clutchMetrics.kiPct}%`
     },
     {
       key: RADAR_CANONICAL_AXES[3].key,
@@ -154,7 +140,7 @@ export function computeSingleManagerRadarAxes(
       shortTitle: RADAR_CANONICAL_AXES[3].shortTitle,
       acronym: RADAR_CANONICAL_AXES[3].acronym,
       val: crVal,
-      raw: `${crPct}%`
+      raw: `${clutchMetrics.crPct}%`
     },
     {
       key: RADAR_CANONICAL_AXES[4].key,

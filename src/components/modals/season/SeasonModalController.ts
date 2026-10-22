@@ -22,6 +22,7 @@ import {
   renderSeasonModalContent,
   renderChampionshipRowsHTML
 } from './SeasonModalTemplate';
+import { escapeHtml } from '@/utils/dom';
 
 /**
  * Opens the Season Creation modal, prompting for admin password if not yet in edit mode
@@ -74,7 +75,7 @@ function populateAllDatalists(teamCount: number): void {
     const datalistEl = document.getElementById(`season-team-list-${i}`);
     if (selectEl && selectEl.value && datalistEl) {
       const defaults = getManagerHistoricalDefaults(selectEl.value, state.managers, state.competitions);
-      datalistEl.innerHTML = defaults.allTeams.map(t => `<option value="${t.replace(/"/g, '&quot;')}"></option>`).join('');
+      datalistEl.innerHTML = defaults.allTeams.map(t => `<option value="${escapeHtml(t)}"></option>`).join('');
     }
   }
 }
@@ -111,7 +112,7 @@ export function handleManagerSelectChange(rowIdx: number, managerId: string): vo
 
   // Populate datalist with all historical teams
   if (datalistEl) {
-    datalistEl.innerHTML = defaults.allTeams.map(t => `<option value="${t.replace(/"/g, '&quot;')}"></option>`).join('');
+    datalistEl.innerHTML = defaults.allTeams.map(t => `<option value="${escapeHtml(t)}"></option>`).join('');
   }
 }
 

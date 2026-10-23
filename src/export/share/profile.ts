@@ -60,8 +60,8 @@ export function buildWhatsAppShareText(manager: Manager, customBaseUrl?: string)
  * Captures the #manager-profile-card element in high definition and downloads PNG directly
  */
 export async function exportProfileModalHD(manager: Manager): Promise<void> {
-  if (state.selectedManagerId !== manager.id && typeof window !== 'undefined' && (window as unknown as { openProfileModal?: (id: string) => void }).openProfileModal) {
-    (window as unknown as { openProfileModal: (id: string) => void }).openProfileModal(manager.id);
+  if (state.selectedManagerId !== manager.id && typeof window !== 'undefined' && window.openProfileModal) {
+    window.openProfileModal(manager.id);
   }
 
   const card = document.getElementById('manager-profile-card');
@@ -95,8 +95,8 @@ export async function exportProfileModalHD(manager: Manager): Promise<void> {
  * Captures the #manager-profile-card element in high definition and copies PNG to clipboard
  */
 export async function copyProfileModalToClipboard(manager: Manager): Promise<boolean> {
-  if (state.selectedManagerId !== manager.id && typeof window !== 'undefined' && (window as unknown as { openProfileModal?: (id: string) => void }).openProfileModal) {
-    (window as unknown as { openProfileModal: (id: string) => void }).openProfileModal(manager.id);
+  if (state.selectedManagerId !== manager.id && typeof window !== 'undefined' && window.openProfileModal) {
+    window.openProfileModal(manager.id);
   }
 
   const card = document.getElementById('manager-profile-card');

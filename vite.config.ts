@@ -103,12 +103,12 @@ export default defineConfig({
   server: {
     host: true,
     port: 5500,
-    strictPort: true,
+    strictPort: false,
     open: true
   },
   preview: {
     host: true,
     port: 5500,
-    strictPort: true
+    strictPort: false
   }
 });

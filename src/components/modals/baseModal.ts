@@ -5,6 +5,36 @@ import { closeSeasonModal } from './season/SeasonModalController';
 import { closeHeadToHeadModal, closeH2HShareDropdown } from './h2h/HeadToHeadModal';
 import { closeAllRecordShareDropdowns } from '@/components/board/records';
 
+// Modal stack to support strict LIFO modal dismissal
+type ModalCloseFn = () => void;
+interface ModalStackEntry {
+  id: string;
+  close: ModalCloseFn;
+}
+
+const modalStack: ModalStackEntry[] = [];
+
+/**
+ * Pushes a modal onto the active LIFO stack
+ */
+export function pushOpenModal(id: string, close: ModalCloseFn): void {
+  const existingIdx = modalStack.findIndex(entry => entry.id === id);
+  if (existingIdx !== -1) {
+    modalStack.splice(existingIdx, 1);
+  }
+  modalStack.push({ id, close });
+}
+
+/**
+ * Removes a modal from the active LIFO stack
+ */
+export function popCloseModal(id: string): void {
+  const existingIdx = modalStack.findIndex(entry => entry.id === id);
+  if (existingIdx !== -1) {
+    modalStack.splice(existingIdx, 1);
+  }
+}
+
 /**
  * Sets up backdrop click and Escape key listeners for all modals
  */
@@ -116,6 +146,33 @@ export function initModalListeners(): void {
         closeTierInfo();
         return;
       }
+
+      // 1. Strict LIFO stack dismissal if modals registered
+      if (modalStack.length > 0) {
+        const top = modalStack.pop();
+        if (top) {
+          top.close();
+          return;
+        }
+      }
+
+      // 2. Fallback DOM-based LIFO order (highest z-index / overlay first)
+      const teamMatchesModal = document.getElementById('team-matches-modal');
+      if (teamMatchesModal && !teamMatchesModal.classList.contains('hidden')) {
+        if (typeof window !== 'undefined' && window.closeTeamMatchesModal) {
+          window.closeTeamMatchesModal();
+          return;
+        }
+      }
+
+      const trophyModal = document.getElementById('trophy-history-modal');
+      if (trophyModal && !trophyModal.classList.contains('hidden')) {
+        if (typeof window !== 'undefined' && window.closeTrophyModal) {
+          window.closeTrophyModal();
+          return;
+        }
+      }
+
       if (h2hModal && !h2hModal.classList.contains('hidden')) {
         closeHeadToHeadModal();
       } else if (seasonModal && !seasonModal.classList.contains('hidden')) {

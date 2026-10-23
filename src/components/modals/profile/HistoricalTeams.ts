@@ -6,6 +6,7 @@
 import type { Manager } from '@/types';
 import { state } from '@/state';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
+import { escapeHtml } from '@/utils/dom';
 
 export interface HistoricalTeamRecord {
   name: string;
@@ -187,13 +188,13 @@ export function populateHistoricalTeams(m: Manager): void {
 
     const resolvedLogo = resolveTeamLogo(team.name, team.logo);
     const fallbackCrest = getTeamFallbackCrest(team.name);
-    const logoHtml = `<img src="${resolvedLogo}" alt="${team.name}" class="w-4 h-4 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-600 shadow-sm" onerror="this.onerror=null; this.src='${fallbackCrest}'">`;
+    const logoHtml = `<img src="${resolvedLogo}" alt="${escapeHtml(team.name)}" class="w-4 h-4 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-600 shadow-sm" onerror="this.onerror=null; this.src='${fallbackCrest}'">`;
 
     const seasonsHtml = team.formattedSeasons
-      ? `<span class="opacity-60 text-[10px] font-normal tracking-tight">• ${team.formattedSeasons}</span>`
+      ? `<span class="opacity-60 text-[10px] font-normal tracking-tight">• ${escapeHtml(team.formattedSeasons)}</span>`
       : '';
 
-    chip.innerHTML = `${logoHtml} <span class="leading-tight">${team.name}</span> ${seasonsHtml}`;
+    chip.innerHTML = `${logoHtml} <span class="leading-tight">${escapeHtml(team.name)}</span> ${seasonsHtml}`;
     listEl.appendChild(chip);
   });
 }

@@ -75,8 +75,8 @@ export function refreshEloTab(): void {
     const scrollEl = document.querySelector('#concentration-modal-content .overflow-y-auto') as HTMLElement | null;
     const currentScrollTop = scrollEl ? scrollEl.scrollTop : 0;
     const container = document.getElementById('concentration-modal-content');
-    if (container && (window as unknown as { switchAnalyticsTab?: (t: string) => void }).switchAnalyticsTab) {
-      (window as unknown as { switchAnalyticsTab: (t: string) => void }).switchAnalyticsTab('elo');
+    if (container && window.switchAnalyticsTab) {
+      window.switchAnalyticsTab('elo');
       requestAnimationFrame(() => {
         const nextScrollEl = document.querySelector('#concentration-modal-content .overflow-y-auto') as HTMLElement | null;
         if (nextScrollEl) nextScrollEl.scrollTop = currentScrollTop;
@@ -436,15 +436,14 @@ export function renderEloTab(): string {
 
 // Global window registration
 if (typeof window !== 'undefined') {
-  const w = window as unknown as Record<string, unknown>;
-  w.switchEloMode = switchEloMode;
-  w.switchEloChartSeason = switchEloChartSeason;
-  w.toggleEloManagerVisibility = toggleEloManagerVisibility;
-  w.showAllEloManagers = showAllEloManagers;
-  w.hideAllEloManagers = hideAllEloManagers;
-  w.selectEloChartPoint = selectEloChartPoint;
-  w.showEloChartHover = showEloChartHover;
-  w.clearEloChartHover = clearEloChartHover;
-  w.sortEloLeaderboard = sortEloLeaderboard;
-  w.retryEloFetch = retryEloFetch;
+  window.switchEloMode = switchEloMode;
+  window.switchEloChartSeason = switchEloChartSeason;
+  window.toggleEloManagerVisibility = toggleEloManagerVisibility;
+  window.showAllEloManagers = showAllEloManagers;
+  window.hideAllEloManagers = hideAllEloManagers;
+  window.selectEloChartPoint = selectEloChartPoint;
+  window.showEloChartHover = showEloChartHover;
+  window.clearEloChartHover = clearEloChartHover;
+  window.sortEloLeaderboard = sortEloLeaderboard;
+  window.retryEloFetch = retryEloFetch;
 }

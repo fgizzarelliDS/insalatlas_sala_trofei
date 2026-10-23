@@ -351,7 +351,6 @@ export function toggleRealEloMode(event?: Event): void {
 
 // Global window registration
 if (typeof window !== 'undefined') {
-  const w = window as unknown as Record<string, unknown>;
-  w.switchRealSort = switchRealSort;
-  w.toggleRealEloMode = toggleRealEloMode;
+  window.switchRealSort = switchRealSort;
+  window.toggleRealEloMode = toggleRealEloMode;
 }

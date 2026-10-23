@@ -11,18 +11,15 @@ from typing import Dict, Any, List, Optional, Tuple
 try:
     from core.luck_simulator import compute_schedule_luck_analytics
     from core.elo_engine import run_dual_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
-    from core.convert_2025_matches import convert_2025_matches
     from core.config import LEAGUE_RULES
 except ImportError:
     try:
         from luck_simulator import compute_schedule_luck_analytics
         from elo_engine import run_dual_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
-        from convert_2025_matches import convert_2025_matches
         from config import LEAGUE_RULES
     except ImportError:
         from scripts.core.luck_simulator import compute_schedule_luck_analytics
         from scripts.core.elo_engine import run_dual_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
-        from scripts.core.convert_2025_matches import convert_2025_matches
         from scripts.core.config import LEAGUE_RULES
 
 def compute_momentum(recent_form: List[str]) -> float:
@@ -481,14 +478,9 @@ def compile_live_season_details(
     ]
     last_completed = max(completed_rounds, default=0)
 
-    # Load 2025/26 season rounds for Elo historical trajectory
+    # Load 2025/26 season rounds for Elo historical trajectory if available locally,
+    # otherwise recover directly from public/analytics_data.json or public/live_season_details.json
     rounds_2025_path = os.path.join(root_dir, 'data', 'seasons', '2025-26_rounds.json')
-    if not os.path.exists(rounds_2025_path):
-        try:
-            convert_2025_matches()
-        except Exception:
-            pass
-
     season_2025_rounds = []
     if os.path.exists(rounds_2025_path):
         try:

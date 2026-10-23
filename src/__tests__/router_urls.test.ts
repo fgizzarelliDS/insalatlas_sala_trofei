@@ -37,6 +37,14 @@ describe('Exhaustive URL & Deep-Linking Test Matrix', () => {
       expect(getSeasonParamFromURL(url)).toBeNull();
       expect(getRecordParamFromURL(url)).toBeNull();
     });
+
+    it('handles malformed percent escape sequences without crashing (safeDecodeURI resilience)', () => {
+      const url = 'https://fgizzarelliids.github.io/insalatlas_sala_trofei/?manager=%99&h2h=%E0%A4%A:m_champ&team=%zz';
+      expect(() => getManagerParamFromURL(url)).not.toThrow();
+      expect(() => getH2HParamFromURL(url)).not.toThrow();
+      expect(() => getTeamParamFromURL(url)).not.toThrow();
+      expect(findManagerByParam('%99')).toBeUndefined();
+    });
   });
 
   describe('2. Seasons Archive URLs', () => {

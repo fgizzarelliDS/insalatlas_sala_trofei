@@ -1,6 +1,6 @@
 import type { SortMode, CompetitionDefinition, Manager } from '@/types';
 import { state } from '@/state';
-import { showToast } from '@/ui';
+import { showToast } from '@/utils/toast';
 import { renderTrophySVG, renderCoachBanner } from '@/trophies';
 import {
   calculateManagerScore,
@@ -9,7 +9,6 @@ import {
   getManagerTrophyCount,
   getManagerTotalTrophies
 } from '@/score';
-import { openManagerModal, openProfileModal } from '@/components/modals';
 import { LEAGUE, ALBO_COLUMNS, getActiveCompetitions, getCompetitionDef } from '@/config';
 import { renderTopStatsCards } from '@/components/board/statsCounter';
 import { escapeHtml } from '@/utils/dom';
@@ -49,11 +48,9 @@ export function initResponsiveDisplayMode(): void {
 
     const mql = window.matchMedia('(max-width: 767px)');
     mql.addEventListener('change', (e) => {
-      if (e.matches) {
-        state.displayMode = 'compact';
-        syncDisplayModeButton();
-        renderBoard();
-      }
+      state.displayMode = e.matches ? 'compact' : 'multiple';
+      syncDisplayModeButton();
+      renderBoard();
     });
   }
 }
@@ -352,15 +349,17 @@ export function renderBoard(): void {
   container.innerHTML = '';
 
   const managers = getSortedManagers();
+  const useFragment = typeof document.createDocumentFragment === 'function' && typeof (container as unknown as Node).nodeType === 'number';
+  const target = useFragment ? document.createDocumentFragment() : container;
 
   managers.forEach((m, index) => {
     const row = document.createElement('div');
     row.className = 'table-shelf-row albo-grid-row pt-2.5 pb-0 items-end cursor-pointer select-none overflow-visible';
     row.onclick = () => {
       if (state.isEditMode) {
-        openManagerModal(m.id);
+        window.openManagerModal?.(m.id);
       } else {
-        openProfileModal(m.id);
+        window.openProfileModal?.(m.id);
       }
     };
 
@@ -378,7 +377,7 @@ export function renderBoard(): void {
       return '';
     }).join('');
 
-    container.appendChild(row);
+    target.appendChild(row);
   });
 
   // In edit mode, append a prominent dashed row at the bottom of the table to add a new manager
@@ -387,8 +386,14 @@ export function renderBoard(): void {
     addRow.id = 'albo-add-manager-row';
     addRow.className = 'w-full my-3 p-3.5 rounded-2xl border-2 border-dashed border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/25 text-amber-300 hover:text-amber-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer transition select-none shadow-sm';
     addRow.innerHTML = '<i class="fa-solid fa-user-plus text-amber-400 text-sm"></i> <span>+ Aggiungi Nuovo Allenatore alla Lega</span>';
-    addRow.onclick = () => openManagerModal(null);
-    container.appendChild(addRow);
+    addRow.onclick = () => {
+      window.openManagerModal?.(null);
+    };
+    target.appendChild(addRow);
+  }
+
+  if (useFragment) {
+    container.appendChild(target);
   }
 }
 

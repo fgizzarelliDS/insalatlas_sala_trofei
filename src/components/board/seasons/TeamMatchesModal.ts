@@ -6,6 +6,7 @@ import {
 } from './liveAnalytics';
 import { state } from '@/state';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
+import { escapeHtml } from '@/utils/dom';
 import {
   getEloMode,
   getManagerEloTrack,
@@ -13,6 +14,7 @@ import {
   formatElo,
   formatEloDelta
 } from '@/analytics/analyticsCore';
+import { pushOpenModal, popCloseModal } from '@/components/modals/baseModal';
 
 /**
  * Return context preserved when navigating from Team Matches breakdown to a manager profile
@@ -36,16 +38,7 @@ export function clearTeamMatchesReturnContext(): void {
   teamMatchesReturnContext = null;
 }
 
-let isEscBound = false;
-
-function handleEscKey(e: KeyboardEvent): void {
-  if (e.key === 'Escape') {
-    const modal = document.getElementById('team-matches-modal');
-    if (modal && !modal.classList.contains('hidden')) {
-      closeTeamMatchesModal();
-    }
-  }
-}
+let isShareDismissBound = false;
 
 /**
  * Injects modal container into DOM if not already present
@@ -76,17 +69,14 @@ function ensureTeamMatchesModalMounted(): void {
     }
   });
 
-  if (!isEscBound && typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
-    window.addEventListener('keydown', handleEscKey);
-    if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
-      document.addEventListener('click', (e) => {
-        const target = e.target as HTMLElement | null;
-        if (target && !target.closest?.('#btn-team-matches-share') && !target.closest?.('#team-matches-share-dropdown')) {
-          closeTeamMatchesShareDropdown();
-        }
-      });
-    }
-    isEscBound = true;
+  if (!isShareDismissBound && typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement | null;
+      if (target && !target.closest?.('#btn-team-matches-share') && !target.closest?.('#team-matches-share-dropdown')) {
+        closeTeamMatchesShareDropdown();
+      }
+    });
+    isShareDismissBound = true;
   }
 }
 
@@ -123,6 +113,7 @@ export function closeTeamMatchesShareDropdown(): void {
  * Closes the team matches modal
  */
 export function closeTeamMatchesModal(updateUrl = true): void {
+  popCloseModal('team-matches-modal');
   if (typeof document === 'undefined') return;
   const modal = document.getElementById('team-matches-modal');
   if (modal) {
@@ -391,12 +382,12 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
             <i class="fa-solid fa-arrow-left text-xs"></i>
           </button>
         ` : ''}
-        <img src="${teamLogo}" alt="${resolvedTeamName}"
+        <img src="${teamLogo}" alt="${escapeHtml(resolvedTeamName)}"
              class="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-700 shadow-md"
              onerror="this.onerror=null; this.src='${getTeamFallbackCrest(resolvedTeamName)}'">
         <div class="min-w-0">
           <div class="flex items-center gap-2 flex-wrap">
-            <h3 class="font-sport font-black text-base sm:text-xl truncate" style="color: var(--text-main);">${resolvedTeamName}</h3>
+            <h3 class="font-sport font-black text-base sm:text-xl truncate" style="color: var(--text-main);">${escapeHtml(resolvedTeamName)}</h3>
             <span class="px-2 py-0.5 rounded-full text-xs font-bold border flex items-center gap-1 shadow-xs bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/30">
               <span>${statusBadge}</span>
               <span class="text-[10px] uppercase font-bold">${statusLabel}</span>
@@ -410,7 +401,7 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
           </div>
           <div class="text-xs font-semibold flex items-center gap-1.5 mt-0.5 flex-wrap" style="color: var(--text-muted);">
             <i class="fa-solid fa-user-tie text-[10px] opacity-70 shrink-0" style="color: var(--accent-color);"></i>
-            <span class="font-bold" style="color: var(--accent-color);">${managerDisplayName}</span>
+            <span class="font-bold" style="color: var(--accent-color);">${escapeHtml(managerDisplayName)}</span>
             ${teamMetric ? `<span class="opacity-60 text-[11px] whitespace-nowrap">• #${teamMetric.rank} in classifica (${teamMetric.points !== undefined && teamMetric.points !== null ? `${teamMetric.points} pt` : '- pt'})</span>` : ''}
           </div>
         </div>
@@ -517,16 +508,16 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
   if (modal) {
     modal.classList.remove('hidden');
     modal.classList.add('flex');
+    pushOpenModal('team-matches-modal', () => closeTeamMatchesModal(true));
   }
 }
 
 // Global window augmentation for inline HTML event handlers
 if (typeof window !== 'undefined') {
-  const win = window as unknown as Record<string, unknown>;
-  win.openTeamMatchesModal = openTeamMatchesModal;
-  win.closeTeamMatchesModal = closeTeamMatchesModal;
-  win.openManagerProfileFromMatches = openManagerProfileFromMatches;
-  win.navigateBackTeamMatchesModal = navigateBackTeamMatchesModal;
-  win.toggleTeamMatchesShareDropdown = toggleTeamMatchesShareDropdown;
-  win.closeTeamMatchesShareDropdown = closeTeamMatchesShareDropdown;
+  window.openTeamMatchesModal = openTeamMatchesModal;
+  window.closeTeamMatchesModal = closeTeamMatchesModal;
+  window.openManagerProfileFromMatches = openManagerProfileFromMatches;
+  window.navigateBackTeamMatchesModal = navigateBackTeamMatchesModal;
+  window.toggleTeamMatchesShareDropdown = toggleTeamMatchesShareDropdown;
+  window.closeTeamMatchesShareDropdown = closeTeamMatchesShareDropdown;
 }

@@ -52,7 +52,7 @@ export function toggleProfileEloMode(): void {
 }
 
 if (typeof window !== 'undefined') {
-  (window as unknown as { toggleProfileEloMode?: () => void }).toggleProfileEloMode = toggleProfileEloMode;
+  window.toggleProfileEloMode = toggleProfileEloMode;
 }
 
 /**

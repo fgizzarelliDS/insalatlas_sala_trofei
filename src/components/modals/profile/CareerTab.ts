@@ -176,10 +176,9 @@ export function populateCareerTimeline(m: Manager): void {
 
 // Global window registration
 if (typeof window !== 'undefined') {
-  const w = window as unknown as Record<string, unknown>;
-  w.switchProfileEloSeason = switchProfileEloSeason;
-  w.setProfileEloRange = setProfileEloRange;
-  w.selectProfileEloPoint = selectProfileEloPoint;
-  w.showProfileEloHover = showProfileEloHover;
-  w.clearProfileEloHover = clearProfileEloHover;
+  window.switchProfileEloSeason = switchProfileEloSeason;
+  window.setProfileEloRange = setProfileEloRange;
+  window.selectProfileEloPoint = selectProfileEloPoint;
+  window.showProfileEloHover = showProfileEloHover;
+  window.clearProfileEloHover = clearProfileEloHover;
 }

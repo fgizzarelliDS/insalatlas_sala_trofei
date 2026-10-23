@@ -1,4 +1,4 @@
-import { showToast } from '@/ui';
+import { showToast } from '@/utils/toast';
 import { LEAGUE } from '@/config';
 
 /**
@@ -12,7 +12,8 @@ export function downloadBlob(blob: Blob, filename: string): void {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  // Delay revoke to prevent iOS Safari cancelling the pending download task
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
   showToast('Scheda scaricata in HD!', 'success');
 }
 

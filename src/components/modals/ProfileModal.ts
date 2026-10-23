@@ -114,8 +114,8 @@ export function closeProfileModal(clearContext = true): void {
   const teamMatchesCtx = getTeamMatchesReturnContext();
   if (teamMatchesCtx) {
     clearTeamMatchesReturnContext();
-    if (typeof window !== 'undefined' && (window as unknown as { openTeamMatchesModal?: (id?: string, name?: string) => void }).openTeamMatchesModal) {
-      (window as unknown as { openTeamMatchesModal: (id?: string, name?: string) => void }).openTeamMatchesModal(
+    if (typeof window !== 'undefined' && window.openTeamMatchesModal) {
+      window.openTeamMatchesModal(
         teamMatchesCtx.managerId,
         teamMatchesCtx.teamName
       );
@@ -331,7 +331,7 @@ export async function exportCurrentProfileStoryHD(): Promise<void> {
 
 // Bind to window for inline HTML onclick handlers
 if (typeof window !== 'undefined') {
-  (window as unknown as { toggleCompetitionDrawer?: typeof toggleCompetitionDrawer }).toggleCompetitionDrawer = toggleCompetitionDrawer;
-  (window as unknown as { switchProfileModalTab?: typeof switchProfileModalTab }).switchProfileModalTab = switchProfileModalTab;
-  (window as unknown as { exportCurrentProfileStoryHD?: typeof exportCurrentProfileStoryHD }).exportCurrentProfileStoryHD = exportCurrentProfileStoryHD;
+  window.toggleCompetitionDrawer = toggleCompetitionDrawer;
+  window.switchProfileModalTab = switchProfileModalTab;
+  window.exportCurrentProfileStoryHD = exportCurrentProfileStoryHD;
 }

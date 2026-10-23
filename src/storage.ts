@@ -1,7 +1,8 @@
 import { Manager, LeagueData, TitlesConfig, CompetitionRecord } from '@/types';
 import { DEFAULT_TITLES, LEAGUE } from '@/config';
 import { state } from '@/state';
-import { showToast, applyTitlesToDOM } from '@/ui';
+import { showToast } from '@/utils/toast';
+import { applyTitlesToDOM } from '@/utils/domTitles';
 import { renderBoard } from '@/components/board/tableBoard';
 import { updateStatistics } from '@/components/board/statsCounter';
 

@@ -14,7 +14,7 @@ const listeners = new Set<(mode: EloTrackMode) => void>();
 let currentEloMode: EloTrackMode = (() => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === 'flat' || saved === 'historical') {
+    if (saved === 'flat' || saved === 'historical' || saved === 'atlas') {
       return saved;
     }
   } catch {
@@ -22,6 +22,27 @@ let currentEloMode: EloTrackMode = (() => {
   }
   return 'flat';
 })();
+
+/**
+ * Cycle to the next Elo mode: flat -> historical -> atlas -> flat
+ */
+export function getNextEloMode(mode: EloTrackMode = getEloMode()): EloTrackMode {
+  if (mode === 'flat') return 'historical';
+  if (mode === 'historical') return 'atlas';
+  return 'flat';
+}
+
+export function getEloModeLabel(mode: EloTrackMode): string {
+  if (mode === 'historical') return '🏛️ Storico';
+  if (mode === 'atlas') return '🔮 Atlas Power';
+  return '⚡ Puro';
+}
+
+export function getEloModeDescription(mode: EloTrackMode): string {
+  if (mode === 'historical') return 'H2H dinastico con seed basato sui trofei';
+  if (mode === 'atlas') return 'Dual-Kernel All-Play con Fermi-Dirac (s=8.5)';
+  return 'H2H calibrato da 1500 (Hybrid-Capped)';
+}
 
 /**
  * Get active Elo tracking mode ('flat' | 'historical')
@@ -83,7 +104,14 @@ export function getManagerEloTrack(
   mode: EloTrackMode = getEloMode()
 ): EloTrackData | undefined {
   if (!profile) return undefined;
-  const track = mode === 'historical' ? profile.historical : profile.flat;
+  let track: EloTrackData | undefined;
+  if (mode === 'historical') {
+    track = profile.historical;
+  } else if (mode === 'atlas') {
+    track = profile.atlas || profile.flat;
+  } else {
+    track = profile.flat;
+  }
   if (track && !track.seasons && track.trajectory) {
     track.seasons = {};
     for (const pt of track.trajectory) {

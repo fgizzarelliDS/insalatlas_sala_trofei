@@ -22,7 +22,15 @@ export { renderClutchTab } from './ClutchTab';
 export { renderRiskTab } from './RiskTab';
 export { renderChronologyTab } from './ChronologyTab';
 export {
+  openEloModal,
+  closeEloModal,
+  switchEloModalTab,
+  switchEloScatterSeason,
+  switchEloLuckSubMode,
+  switchEloMode,
+  refreshEloModal,
   renderEloTab,
+  renderEloModalDOM,
   selectEloChartPoint,
   showEloChartHover,
   clearEloChartHover,
@@ -124,12 +132,11 @@ export function renderAnalyticsModalDOM(
     </div>
 
     <!-- Navigation Tabs Bar -->
-    <div class="px-2 sm:px-4 py-2 border-b grid grid-cols-5 sm:flex items-center gap-1 sm:gap-1.5 shrink-0 overflow-x-auto sm:overflow-x-visible" style="border-color: var(--table-border); background: rgba(0,0,0,0.08); scrollbar-width: none;">
+    <div class="px-2 sm:px-4 py-2 border-b grid grid-cols-4 sm:flex items-center gap-1 sm:gap-1.5 shrink-0 overflow-x-auto sm:overflow-x-visible" style="border-color: var(--table-border); background: rgba(0,0,0,0.08); scrollbar-width: none;">
       ${tabButton('macro', 'Equilibrio & Macro', 'Equilibrio', 'fa-solid fa-scale-balanced')}
       ${tabButton('clutch', 'Cinismo & Podi', 'Cinismo', 'fa-solid fa-bullseye')}
       ${tabButton('risk', 'Archetipi', 'Archetipi', 'fa-solid fa-dice')}
       ${tabButton('chronology', 'Dinamica Storica', 'Storico', 'fa-solid fa-timeline')}
-      ${tabButton('elo', 'Elo & Forma', 'Elo', 'fa-solid fa-bolt')}
     </div>
 
     <!-- Modal Scrollable Body -->

@@ -10,6 +10,7 @@ import {
 import {
   getEloMode,
   setEloMode,
+  getNextEloMode,
   getManagerEloTrack,
   getEloBadgeClasses,
   getEloTierTitle,
@@ -393,17 +394,18 @@ export function toggleMeritEloMode(event?: Event): void {
     event.stopPropagation();
     event.preventDefault();
   }
-  const nextMode: EloTrackMode = getEloMode() === 'flat' ? 'historical' : 'flat';
+  const nextMode: EloTrackMode = getNextEloMode(getEloMode());
   setEloMode(nextMode);
 
   // Update labels across views
+  const modeLabel = nextMode === 'flat' ? '⚡ Elo Puro (1500)' : nextMode === 'historical' ? '🏛️ Elo Storico' : '🔮 Atlas Power';
   const label = document.getElementById('label-merit-elo-track');
   if (label) {
-    label.textContent = nextMode === 'flat' ? '⚡ Elo Puro (1500)' : '🏛️ Elo Storico';
+    label.textContent = modeLabel;
   }
   const realLabel = document.getElementById('label-real-elo-track');
   if (realLabel) {
-    realLabel.textContent = nextMode === 'flat' ? '⚡ Elo Puro (1500)' : '🏛️ Elo Storico';
+    realLabel.textContent = modeLabel;
   }
 
   // Re-render bodies with new mode

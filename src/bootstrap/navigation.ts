@@ -5,7 +5,9 @@ import {
   closeHeadToHeadModal,
   openMultiManagerModal,
   openTrophyModal,
-  closeTrophyModal
+  closeTrophyModal,
+  openEloModal,
+  closeEloModal
 } from '@/components/modals';
 import {
   switchMainViewTab,
@@ -30,7 +32,8 @@ import {
   getRecordCategoryParamFromURL,
   getTrophyParamFromURL,
   getTeamParamFromURL,
-  getViewParamFromURL
+  getViewParamFromURL,
+  getURLParam
 } from '@/router';
 
 /**
@@ -38,6 +41,15 @@ import {
  * modal, deep-linked tab, or filtered view.
  */
 export async function handleInitialDeepLinking(): Promise<void> {
+  // Deep-linking: auto-open Elo Modal if ?modal=elo in URL
+  const modalParam = getURLParam('modal');
+  if (modalParam === 'elo' || getURLParam('elo') !== null) {
+    const eloTab = (getURLParam('tab') || 'trajectories') as any;
+    const eloMode = getURLParam('elo_mode') as any;
+    const season = getURLParam('season') || undefined;
+    openEloModal(eloTab, eloMode, season);
+  }
+
   // Deep-linking: auto-open manager profile if ?manager=... in URL
   const managerParam = getManagerParamFromURL();
   if (managerParam) {
@@ -139,6 +151,16 @@ export function initPopstateNavigation(): void {
   if (typeof window === 'undefined') return;
 
   window.addEventListener('popstate', () => {
+    const modalParam = getURLParam('modal');
+    if (modalParam === 'elo' || getURLParam('elo') !== null) {
+      const eloTab = (getURLParam('tab') || 'trajectories') as any;
+      const eloMode = getURLParam('elo_mode') as any;
+      const season = getURLParam('season') || undefined;
+      openEloModal(eloTab, eloMode, season);
+      return;
+    }
+    closeEloModal(false);
+
     const h2h = getH2HParamFromURL();
     if (h2h) {
       const foundA = findManagerByParam(h2h.managerA);

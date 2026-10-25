@@ -137,6 +137,14 @@
           <span class="inline">H2H</span>
         </button>
 
+        <!-- Elo Rating & Power Studio Button -->
+        <button type="button" onclick="openEloModal()"
+          class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold border border-violet-500/40 bg-violet-500/10 text-violet-300 hover:bg-violet-500/20 transition flex items-center gap-1.5 shadow-sm"
+          title="Rating Elo, Power Rankings e Studio Golo/Sfiga">
+          <i class="fa-solid fa-bolt"></i>
+          <span class="inline">Elo</span>
+        </button>
+
         <!-- PWA Native Install Button (hidden until prompt available) -->
         <button id="btn-pwa-install" onclick="promptPWAInstall()"
           class="hidden px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 transition items-center gap-1.5 shadow-sm"
@@ -525,6 +533,7 @@
   <div id="manager-modal-root"></div>
   <div id="concentration-modal-root"></div>
   <div id="head-to-head-modal-root"></div>
+  <div id="elo-modal-root"></div>
   <div id="season-modal-root"></div>
 
 

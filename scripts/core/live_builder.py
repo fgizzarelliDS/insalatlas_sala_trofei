@@ -10,16 +10,16 @@ from typing import Dict, Any, List, Optional, Tuple
 
 try:
     from core.luck_simulator import compute_schedule_luck_analytics
-    from core.elo_engine import run_dual_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
+    from core.elo_engine import run_multi_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
     from core.config import LEAGUE_RULES
 except ImportError:
     try:
         from luck_simulator import compute_schedule_luck_analytics
-        from elo_engine import run_dual_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
+        from elo_engine import run_multi_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
         from config import LEAGUE_RULES
     except ImportError:
         from scripts.core.luck_simulator import compute_schedule_luck_analytics
-        from scripts.core.elo_engine import run_dual_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
+        from scripts.core.elo_engine import run_multi_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
         from scripts.core.config import LEAGUE_RULES
 
 def compute_momentum(recent_form: List[str]) -> float:
@@ -509,6 +509,7 @@ def compile_live_season_details(
 
             fb_flat = {}
             fb_hist = {}
+            fb_atlas = {}
             for m_id, prof in prev_profiles.items():
                 t_flat = prof.get('flat', {}).get('seasons', {}).get('2025/26') or [
                     p for p in prof.get('flat', {}).get('trajectory', []) if p.get('season') == '2025/26'
@@ -532,8 +533,19 @@ def compile_live_season_details(
                         'lastDelta': t_hist[-1].get('delta', 0.0),
                         'trajectory': t_hist
                     }
+                t_atlas = prof.get('atlas', {}).get('seasons', {}).get('2025/26') or [
+                    p for p in prof.get('atlas', {}).get('trajectory', []) if p.get('season') == '2025/26'
+                ]
+                if t_atlas:
+                    fb_atlas[m_id] = {
+                        'current': t_atlas[-1]['elo'],
+                        'peak': prof['atlas'].get('peak', {}),
+                        'floor': prof['atlas'].get('floor', {}),
+                        'lastDelta': t_atlas[-1].get('delta', 0.0),
+                        'trajectory': t_atlas
+                    }
             if fb_flat and fb_hist:
-                existing_2025_trackers = (fb_flat, fb_hist)
+                existing_2025_trackers = (fb_flat, fb_hist, fb_atlas)
         except Exception as e:
             print(f"[WARN] Failed to recover 2025 Elo trackers from existing files: {e}")
 
@@ -548,11 +560,11 @@ def compile_live_season_details(
         except Exception:
             managers_list = []
 
-    # Run Dual-Track Elo Pipeline
+    # Run Multi-Track Elo Pipeline
     elo_config = LEAGUE_RULES.get('elo')
     elo_profiles = {}
     try:
-        elo_profiles = run_dual_track_elo_pipeline(
+        elo_profiles = run_multi_track_elo_pipeline(
             season_2025_rounds=season_2025_rounds,
             season_2026_rounds=all_rounds,
             managers_list=managers_list,
@@ -597,8 +609,10 @@ def compile_live_season_details(
             a_id = m.get('awayManagerId')
             win_prob_flat = None
             win_prob_hist = None
+            win_prob_atlas = None
             delta_flat = None
             delta_hist = None
+            delta_atlas = None
 
             if h_id and a_id and elo_profiles:
                 prof_h = elo_profiles.get(h_id)
@@ -606,6 +620,7 @@ def compile_live_season_details(
                 if prof_h and prof_a:
                     traj_h_flat = {pt['round']: pt for pt in prof_h.get('flat', {}).get('trajectory', []) if pt.get('season') == season_name}
                     traj_h_hist = {pt['round']: pt for pt in prof_h.get('historical', {}).get('trajectory', []) if pt.get('season') == season_name}
+                    traj_h_atlas = {pt['round']: pt for pt in prof_h.get('atlas', {}).get('trajectory', []) if pt.get('season') == season_name}
 
                     if is_played and r_num in traj_h_flat:
                         win_prob_flat = traj_h_flat[r_num].get('winProbPreMatch')
@@ -623,6 +638,14 @@ def compile_live_season_details(
                         r_a_hist = prof_a.get('historical', {}).get('current', 1500.0)
                         win_prob_hist = round(expected_score(r_h_hist, r_a_hist) * 100.0, 1)
 
+                    if is_played and r_num in traj_h_atlas:
+                        win_prob_atlas = traj_h_atlas[r_num].get('winProbPreMatch')
+                        delta_atlas = traj_h_atlas[r_num].get('delta')
+                    else:
+                        r_h_atlas = prof_h.get('atlas', {}).get('current', 1500.0)
+                        r_a_atlas = prof_a.get('atlas', {}).get('current', 1500.0)
+                        win_prob_atlas = round(expected_score(r_h_atlas, r_a_atlas) * 100.0, 1)
+
             match_entry = {
                 'homeTeam': m.get('homeTeam'),
                 'awayTeam': m.get('awayTeam'),
@@ -638,10 +661,14 @@ def compile_live_season_details(
                 match_entry['winProbHomeFlat'] = win_prob_flat
             if win_prob_hist is not None:
                 match_entry['winProbHomeHistorical'] = win_prob_hist
+            if win_prob_atlas is not None:
+                match_entry['winProbHomeAtlas'] = win_prob_atlas
             if delta_flat is not None:
                 match_entry['eloDeltaHomeFlat'] = delta_flat
             if delta_hist is not None:
                 match_entry['eloDeltaHomeHistorical'] = delta_hist
+            if delta_atlas is not None:
+                match_entry['eloDeltaHomeAtlas'] = delta_atlas
 
             masked_matches.append(match_entry)
 
@@ -673,7 +700,7 @@ def compile_live_season_details(
                 'teamName': elo_full.get('teamName', t_name),
                 'coach': elo_full.get('coach', ''),
             }
-            for track in ['flat', 'historical']:
+            for track in ['flat', 'historical', 'atlas']:
                 if track in elo_full:
                     src_track = elo_full[track]
                     curr_traj = [
@@ -687,6 +714,8 @@ def compile_live_season_details(
                         'lastDelta': src_track.get('lastDelta', 0.0),
                         'trajectory': curr_traj
                     }
+            if 'seasonStats' in elo_full:
+                elo_entry['seasonStats'] = elo_full['seasonStats']
         final_standings.append({
             'rank': t['rank'],
             'managerId': m_id,
@@ -726,7 +755,7 @@ def compile_live_season_details(
             'teamName': prof.get('teamName', ''),
             'coach': prof.get('coach', '')
         }
-        for track in ['flat', 'historical']:
+        for track in ['flat', 'historical', 'atlas']:
             if track in prof:
                 src_track = prof[track]
                 clean_prof[track] = {
@@ -736,6 +765,8 @@ def compile_live_season_details(
                     'lastDelta': src_track.get('lastDelta', 0.0),
                     'trajectory': src_track.get('trajectory', [])
                 }
+        if 'seasonStats' in prof:
+            clean_prof['seasonStats'] = prof['seasonStats']
         serialized_managers[m_id] = clean_prof
 
     analytics_payload = {

@@ -35,6 +35,10 @@ export interface LockedProfileEloMatch {
   delta: number;
   winProb: number;
   idx?: number;
+  gf?: number;
+  ga?: number;
+  fpFor?: number;
+  fpAgainst?: number;
 }
 let lockedProfileEloMatch: LockedProfileEloMatch | null = null;
 
@@ -106,11 +110,15 @@ export function selectProfileEloPoint(
   result: string,
   elo: number,
   delta: number,
-  winProb: number
+  winProb: number,
+  gf?: number,
+  ga?: number,
+  fpFor?: number,
+  fpAgainst?: number
 ): void {
   selectedProfileEloIndex = idx;
-  lockedProfileEloMatch = { season, round, team, opponent, result, elo, delta, winProb, idx };
-  showProfileEloHover(season, round, team, opponent, result, elo, delta, winProb);
+  lockedProfileEloMatch = { season, round, team, opponent, result, elo, delta, winProb, idx, gf, ga, fpFor, fpAgainst };
+  showProfileEloHover(season, round, team, opponent, result, elo, delta, winProb, gf, ga, fpFor, fpAgainst);
 
   // Active ring on sparkline
   const svg = document.querySelector('#profile-elo-trajectory-sparkline svg');
@@ -149,7 +157,11 @@ export function showProfileEloHover(
   result: string,
   elo: number,
   delta: number,
-  winProb: number
+  winProb: number,
+  _gf?: number,
+  _ga?: number,
+  _fpFor?: number,
+  _fpAgainst?: number
 ): void {
   const hoverBox = document.getElementById('profile-elo-hover-box');
   if (!hoverBox) return;
@@ -198,7 +210,11 @@ export function clearProfileEloHover(): void {
       lockedProfileEloMatch.result,
       lockedProfileEloMatch.elo,
       lockedProfileEloMatch.delta,
-      lockedProfileEloMatch.winProb
+      lockedProfileEloMatch.winProb,
+      lockedProfileEloMatch.gf,
+      lockedProfileEloMatch.ga,
+      lockedProfileEloMatch.fpFor,
+      lockedProfileEloMatch.fpAgainst
     );
     return;
   }
@@ -435,7 +451,7 @@ export function updateProfileEloSparklineUI(m: Manager): void {
     if (eloSvg) {
       eloTrajSparkline.innerHTML = eloSvg;
       if (eloBadgeEl) {
-        eloBadgeEl.textContent = activeMode === 'flat' ? '⚡ Puro' : '🏛️ Storico';
+        eloBadgeEl.textContent = activeMode === 'historical' ? '🏛️ Storico' : activeMode === 'atlas' ? '🔮 Atlas' : '⚡ Puro';
       }
       const seasonSelect = document.getElementById('profile-elo-season-select') as HTMLSelectElement | null;
       if (seasonSelect) {

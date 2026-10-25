@@ -53,4 +53,19 @@ export function initModalMounts(): void {
       </div>
     `;
   }
+
+  // 6. Dynamic Elo & Power Studio Modal
+  const eloRoot = document.getElementById('elo-modal-root');
+  if (eloRoot && !document.getElementById('elo-modal')) {
+    eloRoot.innerHTML = `
+      <!-- Modal: Dynamic Elo & Power Studio -->
+      <div id="elo-modal"
+        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-2 sm:p-4">
+        <div class="w-full max-w-4xl rounded-3xl border shadow-2xl flex flex-col max-h-[92vh] overflow-hidden relative"
+          style="background-color: var(--modal-bg); border-color: var(--modal-border); color: var(--modal-text);">
+          <div id="elo-modal-content" class="flex flex-col h-full overflow-hidden"></div>
+        </div>
+      </div>
+    `;
+  }
 }

@@ -16,6 +16,11 @@ import {
   closeManagerModal,
   openConcentrationModal,
   closeConcentrationModal,
+  openEloModal,
+  closeEloModal,
+  switchEloModalTab,
+  switchEloScatterSeason,
+  switchEloLuckSubMode,
   switchAnalyticsTab,
   switchEloMode,
   switchChronologyView,
@@ -173,6 +178,11 @@ declare global {
     closeProfileModal: typeof closeProfileModal;
     openConcentrationModal: typeof openConcentrationModal;
     closeConcentrationModal: typeof closeConcentrationModal;
+    openEloModal: typeof openEloModal;
+    closeEloModal: typeof closeEloModal;
+    switchEloModalTab: typeof switchEloModalTab;
+    switchEloScatterSeason: typeof switchEloScatterSeason;
+    switchEloLuckSubMode: typeof switchEloLuckSubMode;
     openSeasonModal: typeof openSeasonModal;
     closeSeasonModal: typeof closeSeasonModal;
     saveSeason: typeof saveSeason;
@@ -349,6 +359,11 @@ export function registerGlobalWindowHandlers(): void {
     closeProfileModal,
     openConcentrationModal,
     closeConcentrationModal,
+    openEloModal,
+    closeEloModal,
+    switchEloModalTab,
+    switchEloScatterSeason,
+    switchEloLuckSubMode,
     openSeasonModal,
     closeSeasonModal,
     saveSeason,

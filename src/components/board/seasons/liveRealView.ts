@@ -5,6 +5,7 @@ import { renderFormDotsHTML, renderStatusBadgeHTML } from './liveAnalytics';
 import {
   getEloMode,
   setEloMode,
+  getNextEloMode,
   getManagerEloTrack,
   getEloBadgeClasses,
   getEloTierTitle,
@@ -323,15 +324,16 @@ export function toggleRealEloMode(event?: Event): void {
     event.stopPropagation();
     event.preventDefault();
   }
-  const nextMode: EloTrackMode = getEloMode() === 'flat' ? 'historical' : 'flat';
+  const nextMode: EloTrackMode = getNextEloMode(getEloMode());
   setEloMode(nextMode);
 
   // Update button labels across all views
+  const modeLabel = nextMode === 'flat' ? '⚡ Elo Puro (1500)' : nextMode === 'historical' ? '🏛️ Elo Storico' : '🔮 Atlas Power';
   const realLabel = document.getElementById('label-real-elo-track');
-  if (realLabel) realLabel.textContent = nextMode === 'flat' ? '⚡ Elo Puro (1500)' : '🏛️ Elo Storico';
+  if (realLabel) realLabel.textContent = modeLabel;
 
   const meritLabel = document.getElementById('label-merit-elo-track');
-  if (meritLabel) meritLabel.textContent = nextMode === 'flat' ? '⚡ Elo Puro (1500)' : '🏛️ Elo Storico';
+  if (meritLabel) meritLabel.textContent = modeLabel;
 
   if (cachedRealStandings.length > 0) {
     const sortedRank = [...cachedRealStandings].sort((a, b) => a.rank - b.rank);

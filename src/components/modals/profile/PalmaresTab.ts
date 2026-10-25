@@ -7,6 +7,7 @@ import { state } from '@/state';
 import {
   getEloMode,
   setEloMode,
+  getNextEloMode,
   getManagerEloTrack,
   formatElo
 } from '@/analytics/analyticsCore';
@@ -41,11 +42,11 @@ export function updateProfileEloDisplay(managerId?: string): void {
   if (curEl && track) curEl.textContent = formatElo(track.current);
   if (peakEl && track) peakEl.textContent = `${formatElo(track.peak.value)}`;
   if (floorEl && track) floorEl.textContent = `${formatElo(track.floor.value)}`;
-  if (modeLabelEl) modeLabelEl.textContent = activeMode === 'flat' ? '⚡ ELO Puro' : '🏛️ Elo Storico';
+  if (modeLabelEl) modeLabelEl.textContent = activeMode === 'historical' ? '🏛️ Elo Storico' : activeMode === 'atlas' ? '🔮 Atlas Power' : '⚡ ELO Puro';
 }
 
 export function toggleProfileEloMode(): void {
-  const nextMode: EloTrackMode = getEloMode() === 'flat' ? 'historical' : 'flat';
+  const nextMode: EloTrackMode = getNextEloMode(getEloMode());
   setEloMode(nextMode);
   updateProfileEloDisplay();
   refreshCareerEloSparkline();

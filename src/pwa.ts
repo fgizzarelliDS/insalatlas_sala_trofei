@@ -99,7 +99,7 @@ export function initPWA(): void {
   });
 
   // 4. iOS Safari Detection: Reveal button with iOS guidance if running in mobile Safari (non-standalone)
-  const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream?: unknown }).MSStream;
+  const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as unknown as { standalone?: boolean }).standalone;
 
   if (isIos && !isStandalone) {
@@ -115,7 +115,7 @@ export function initPWA(): void {
  * Triggered when clicking the discrete install button
  */
 export async function promptPWAInstall(): Promise<void> {
-  const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream?: unknown }).MSStream;
+  const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as unknown as { standalone?: boolean }).standalone;
 
   if (isStandalone) {

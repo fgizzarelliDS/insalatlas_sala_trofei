@@ -15,11 +15,24 @@ import { renderMacroTab } from './MacroTab';
 import { renderClutchTab } from './ClutchTab';
 import { renderRiskTab } from './RiskTab';
 import { renderChronologyTab } from './ChronologyTab';
+import { renderEloTab } from './EloTab';
 
 export { renderMacroTab } from './MacroTab';
 export { renderClutchTab } from './ClutchTab';
 export { renderRiskTab } from './RiskTab';
 export { renderChronologyTab } from './ChronologyTab';
+export {
+  renderEloTab,
+  selectEloChartPoint,
+  showEloChartHover,
+  clearEloChartHover,
+  switchEloChartSeason,
+  toggleEloManagerVisibility,
+  showAllEloManagers,
+  hideAllEloManagers,
+  sortEloLeaderboard,
+  setCachedAnalyticsManagers
+} from './EloTab';
 
 /**
  * Builds and renders the multi-tab HTML inside #concentration-modal-content
@@ -53,7 +66,7 @@ export function renderAnalyticsModalDOM(
       <button 
         type="button" 
         onclick="switchAnalyticsTab('${id}')" 
-        class="flex-1 flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-3 py-1.5 rounded-xl text-[10px] sm:text-xs font-bold transition shadow-sm whitespace-nowrap ${isActive ? '' : 'hover:bg-white/5'}"
+        class="flex-1 flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2.5 py-1.5 rounded-xl text-[10px] sm:text-xs font-bold transition shadow-sm whitespace-nowrap ${isActive ? '' : 'hover:bg-white/5'}"
         style="${isActive
         ? 'background-color: var(--btn-bg); color: var(--btn-text); border: 1px solid var(--btn-border);'
         : 'color: var(--text-muted); background: transparent; border: 1px solid transparent;'
@@ -85,6 +98,8 @@ export function renderAnalyticsModalDOM(
       seasonSortDirection,
       managerFilterMode
     );
+  } else if (currentTab === 'elo') {
+    tabContentHTML = renderEloTab();
   }
 
   container.innerHTML = `
@@ -109,11 +124,12 @@ export function renderAnalyticsModalDOM(
     </div>
 
     <!-- Navigation Tabs Bar -->
-    <div class="px-2 sm:px-6 py-2 border-b grid grid-cols-4 sm:flex items-center gap-1 sm:gap-2 shrink-0 overflow-x-auto" style="border-color: var(--table-border); background: rgba(0,0,0,0.08); scrollbar-width: thin;">
+    <div class="px-2 sm:px-4 py-2 border-b grid grid-cols-5 sm:flex items-center gap-1 sm:gap-1.5 shrink-0 overflow-x-auto sm:overflow-x-visible" style="border-color: var(--table-border); background: rgba(0,0,0,0.08); scrollbar-width: none;">
       ${tabButton('macro', 'Equilibrio & Macro', 'Equilibrio', 'fa-solid fa-scale-balanced')}
       ${tabButton('clutch', 'Cinismo & Podi', 'Cinismo', 'fa-solid fa-bullseye')}
       ${tabButton('risk', 'Archetipi', 'Archetipi', 'fa-solid fa-dice')}
       ${tabButton('chronology', 'Dinamica Storica', 'Storico', 'fa-solid fa-timeline')}
+      ${tabButton('elo', 'Elo & Forma', 'Elo', 'fa-solid fa-bolt')}
     </div>
 
     <!-- Modal Scrollable Body -->

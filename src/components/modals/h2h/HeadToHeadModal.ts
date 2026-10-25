@@ -3,7 +3,7 @@ import { state } from '@/state';
 import { computeHeadToHead } from '@/analytics';
 import { renderHeadToHeadModalHTML, type H2HTabMode } from './HeadToHeadTemplate';
 import { closeProfileModal } from '@/components/modals/ProfileModal';
-import { buildH2HWhatsAppShareText, buildMultiManagerWhatsAppShareText } from '@/export/share';
+import { buildH2HWhatsAppShareText, buildMultiManagerWhatsAppShareText } from '@/export/share/h2hText';
 
 let selectedManagerIdA: string | null = null;
 let selectedManagerIdB: string | null = null;
@@ -182,8 +182,8 @@ export function openProfileFromH2H(targetManagerId: string): void {
     });
   }
   closeHeadToHeadModal(false);
-  if (typeof window !== 'undefined' && (window as any).openProfileModal) {
-    (window as any).openProfileModal(targetManagerId, true);
+  if (typeof window !== 'undefined' && window.openProfileModal) {
+    window.openProfileModal(targetManagerId, true);
   }
 }
 
@@ -193,8 +193,8 @@ export function openProfileFromH2H(targetManagerId: string): void {
 export function returnToPreviousH2HDuel(): void {
   const context = getH2HReturnContext();
   clearH2HReturnContext();
-  if (typeof window !== 'undefined' && (window as any).closeProfileModal) {
-    (window as any).closeProfileModal(false);
+  if (typeof window !== 'undefined' && window.closeProfileModal) {
+    window.closeProfileModal(false);
   }
   if (context) {
     openHeadToHeadModal(context.managerIdA, context.managerIdB, 'duel', true);
@@ -208,8 +208,8 @@ export function returnToPreviousProfile(): void {
   const context = getProfileReturnContext();
   clearProfileReturnContext();
   closeHeadToHeadModal(false);
-  if (context && typeof window !== 'undefined' && (window as any).openProfileModal) {
-    (window as any).openProfileModal(context.managerId, true);
+  if (context && typeof window !== 'undefined' && window.openProfileModal) {
+    window.openProfileModal(context.managerId, true);
   }
 }
 
@@ -637,18 +637,17 @@ export function shareMultiManagerWhatsApp(): void {
 
 // Window bindings for inline HTML onclick handlers
 if (typeof window !== 'undefined') {
-  const w = window as any;
-  w.setH2HTab = setH2HTab;
-  w.changeMultiManager = changeMultiManager;
-  w.addNextMultiManager = addNextMultiManager;
-  w.removeMultiManager = removeMultiManager;
-  w.toggleMultiManagerVisibility = toggleMultiManagerVisibility;
-  w.openMultiManagerModal = openMultiManagerModal;
-  w.setMultiTournamentMode = setMultiTournamentMode;
-  w.exportCurrentH2HDuelStoryHD = exportCurrentH2HDuelStoryHD;
-  w.exportMultiManagerStoryHD = exportMultiManagerStoryHD;
-  w.exportCurrentMultiManagerHD = exportCurrentMultiManagerHD;
-  w.copyCurrentMultiManagerToClipboard = copyCurrentMultiManagerToClipboard;
-  w.shareMultiManagerWhatsApp = shareMultiManagerWhatsApp;
+  window.setH2HTab = setH2HTab;
+  window.changeMultiManager = changeMultiManager;
+  window.addNextMultiManager = addNextMultiManager;
+  window.removeMultiManager = removeMultiManager;
+  window.toggleMultiManagerVisibility = toggleMultiManagerVisibility;
+  window.openMultiManagerModal = openMultiManagerModal;
+  window.setMultiTournamentMode = setMultiTournamentMode;
+  window.exportCurrentH2HDuelStoryHD = exportCurrentH2HDuelStoryHD;
+  window.exportMultiManagerStoryHD = exportMultiManagerStoryHD;
+  window.exportCurrentMultiManagerHD = exportCurrentMultiManagerHD;
+  window.copyCurrentMultiManagerToClipboard = copyCurrentMultiManagerToClipboard;
+  window.shareMultiManagerWhatsApp = shareMultiManagerWhatsApp;
 }
 

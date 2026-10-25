@@ -2,7 +2,8 @@ import type {
   CompetitionRecord,
   CompetitionRankingItem,
   SeasonRecord,
-  Achievement
+  Achievement,
+  Manager
 } from '@/types';
 import { state } from '@/state';
 import { verifyAdminPassword, LEAGUE } from '@/config';
@@ -22,6 +23,7 @@ import {
   renderSeasonModalContent,
   renderChampionshipRowsHTML
 } from './SeasonModalTemplate';
+import { escapeHtml } from '@/utils/dom';
 
 /**
  * Opens the Season Creation modal, prompting for admin password if not yet in edit mode
@@ -74,7 +76,7 @@ function populateAllDatalists(teamCount: number): void {
     const datalistEl = document.getElementById(`season-team-list-${i}`);
     if (selectEl && selectEl.value && datalistEl) {
       const defaults = getManagerHistoricalDefaults(selectEl.value, state.managers, state.competitions);
-      datalistEl.innerHTML = defaults.allTeams.map(t => `<option value="${t.replace(/"/g, '&quot;')}"></option>`).join('');
+      datalistEl.innerHTML = defaults.allTeams.map(t => `<option value="${escapeHtml(t)}"></option>`).join('');
     }
   }
 }
@@ -111,7 +113,7 @@ export function handleManagerSelectChange(rowIdx: number, managerId: string): vo
 
   // Populate datalist with all historical teams
   if (datalistEl) {
-    datalistEl.innerHTML = defaults.allTeams.map(t => `<option value="${t.replace(/"/g, '&quot;')}"></option>`).join('');
+    datalistEl.innerHTML = defaults.allTeams.map(t => `<option value="${escapeHtml(t)}"></option>`).join('');
   }
 }
 
@@ -285,6 +287,19 @@ export function toggleSeasonSection(sectionId: string): void {
   }
 }
 
+function awardManagerTrophy(mgr: Manager, compKey: string, legacyKey: keyof Manager): void {
+  (mgr as any)[legacyKey] = ((mgr as any)[legacyKey] || 0) + 1;
+  if (!mgr.trophies) mgr.trophies = {};
+  mgr.trophies[compKey] = (mgr.trophies[compKey] || 0) + 1;
+}
+
+function revertManagerTrophy(mgr: Manager, compKey: string, legacyKey: keyof Manager): void {
+  (mgr as any)[legacyKey] = Math.max(0, ((mgr as any)[legacyKey] || 0) - 1);
+  if (mgr.trophies && typeof mgr.trophies[compKey] === 'number') {
+    mgr.trophies[compKey] = Math.max(0, mgr.trophies[compKey] - 1);
+  }
+}
+
 /**
  * Removes previous season achievements, history, and competition records for clean overwrite
  */
@@ -302,20 +317,20 @@ function removeExistingSeasonData(season: string): void {
 
       // Revert trophies awarded in this season (only if season was completed)
       if (!existingEntry.in_progress) {
-        if (existingEntry.rank === 1) mgr.gold = Math.max(0, (mgr.gold || 0) - 1);
-        if (existingEntry.rank === 2) mgr.silver = Math.max(0, (mgr.silver || 0) - 1);
-        if (existingEntry.rank === 3) mgr.bronze = Math.max(0, (mgr.bronze || 0) - 1);
+        if (existingEntry.rank === 1) revertManagerTrophy(mgr, 'championship', 'gold');
+        if (existingEntry.rank === 2) revertManagerTrophy(mgr, 'championship_silver', 'silver');
+        if (existingEntry.rank === 3) revertManagerTrophy(mgr, 'championship_bronze', 'bronze');
       }
 
       existingEntry.achievements?.forEach(a => {
-        if (a.badge === 'spoon') mgr.spoon = Math.max(0, (mgr.spoon || 0) - 1);
-        if (a.badge === 'cup_gold') mgr.cup_gold = Math.max(0, (mgr.cup_gold || 0) - 1);
-        if (a.badge === 'cup_silver') mgr.cup_silver = Math.max(0, (mgr.cup_silver || 0) - 1);
-        if (a.badge === 'supercup') mgr.supercup = Math.max(0, (mgr.supercup || 0) - 1);
-        if (a.badge === 'supercup_silver') mgr.supercup_silver = Math.max(0, (mgr.supercup_silver || 0) - 1);
-        if (a.badge === 'mundialito') mgr.mundialito = Math.max(0, (mgr.mundialito || 0) - 1);
-        if (a.badge === 'mundialito_silver') mgr.mundialito_silver = Math.max(0, (mgr.mundialito_silver || 0) - 1);
-        if (a.badge === 'cartonato') mgr.cartonato = Math.max(0, (mgr.cartonato || 0) - 1);
+        if (a.badge === 'spoon') revertManagerTrophy(mgr, 'spoon', 'spoon');
+        if (a.badge === 'cup_gold') revertManagerTrophy(mgr, 'cup', 'cup_gold');
+        if (a.badge === 'cup_silver') revertManagerTrophy(mgr, 'cup_silver', 'cup_silver');
+        if (a.badge === 'supercup') revertManagerTrophy(mgr, 'supercup', 'supercup');
+        if (a.badge === 'supercup_silver') revertManagerTrophy(mgr, 'supercup_silver', 'supercup_silver');
+        if (a.badge === 'mundialito') revertManagerTrophy(mgr, 'mundialito', 'mundialito');
+        if (a.badge === 'mundialito_silver') revertManagerTrophy(mgr, 'mundialito_silver', 'mundialito_silver');
+        if (a.badge === 'cartonato') revertManagerTrophy(mgr, 'cartonato', 'cartonato');
       });
 
       // Remove the history record
@@ -515,7 +530,7 @@ export function saveSeason(e: Event): void {
 
     if (!inProgress) {
       if (r.rank === 1) {
-        mgr.gold = (mgr.gold || 0) + 1;
+        awardManagerTrophy(mgr, 'championship', 'gold');
         achievements.push({
           title: `Campione ${LEAGUE.brand.name}`,
           category: 'Campionato',
@@ -524,7 +539,7 @@ export function saveSeason(e: Event): void {
           competitionId: baseCompId
         });
       } else if (r.rank === 2) {
-        mgr.silver = (mgr.silver || 0) + 1;
+        awardManagerTrophy(mgr, 'championship_silver', 'silver');
         achievements.push({
           title: 'Vice-Campione',
           category: 'Campionato',
@@ -533,7 +548,7 @@ export function saveSeason(e: Event): void {
           competitionId: baseCompId
         });
       } else if (r.rank === 3) {
-        mgr.bronze = (mgr.bronze || 0) + 1;
+        awardManagerTrophy(mgr, 'championship_bronze', 'bronze');
         achievements.push({
           title: '3° Classificato',
           category: 'Campionato',
@@ -542,7 +557,7 @@ export function saveSeason(e: Event): void {
           competitionId: baseCompId
         });
       } else if (r.rank === teamCount && teamCount >= 8) {
-        mgr.spoon = (mgr.spoon || 0) + 1;
+        awardManagerTrophy(mgr, 'spoon', 'spoon');
         achievements.push({
           title: 'Cucchiaio di Legno',
           category: 'Campionato',
@@ -581,7 +596,7 @@ export function saveSeason(e: Event): void {
     if (cupGoldMgr) {
       const m = state.managers.find(mgr => mgr.id === cupGoldMgr);
       if (m) {
-        m.cup_gold = (m.cup_gold || 0) + 1;
+        awardManagerTrophy(m, 'cup', 'cup_gold');
         m.history?.[0]?.achievements?.push({
           title: 'Vincitore Coppa di Lega',
           category: 'Coppa',
@@ -594,7 +609,7 @@ export function saveSeason(e: Event): void {
     if (cupSilverMgr) {
       const m = state.managers.find(mgr => mgr.id === cupSilverMgr);
       if (m) {
-        m.cup_silver = (m.cup_silver || 0) + 1;
+        awardManagerTrophy(m, 'cup_silver', 'cup_silver');
         m.history?.[0]?.achievements?.push({
           title: 'Finalista Coppa di Lega',
           category: 'Coppa',
@@ -608,7 +623,7 @@ export function saveSeason(e: Event): void {
     if (supercupGoldMgr) {
       const m = state.managers.find(mgr => mgr.id === supercupGoldMgr);
       if (m) {
-        m.supercup = (m.supercup || 0) + 1;
+        awardManagerTrophy(m, 'supercup', 'supercup');
         m.history?.[0]?.achievements?.push({
           title: 'Vincitore Supercoppa',
           category: 'Supercoppa',
@@ -621,7 +636,7 @@ export function saveSeason(e: Event): void {
     if (supercupSilverMgr) {
       const m = state.managers.find(mgr => mgr.id === supercupSilverMgr);
       if (m) {
-        m.supercup_silver = (m.supercup_silver || 0) + 1;
+        awardManagerTrophy(m, 'supercup_silver', 'supercup_silver');
         m.history?.[0]?.achievements?.push({
           title: 'Finalista Supercoppa',
           category: 'Supercoppa',
@@ -635,7 +650,7 @@ export function saveSeason(e: Event): void {
     if (mundialitoGoldMgr) {
       const m = state.managers.find(mgr => mgr.id === mundialitoGoldMgr);
       if (m) {
-        m.mundialito = (m.mundialito || 0) + 1;
+        awardManagerTrophy(m, 'mundialito', 'mundialito');
         m.history?.[0]?.achievements?.push({
           title: 'Vincitore Mundialito',
           category: 'Mundialito',
@@ -648,7 +663,7 @@ export function saveSeason(e: Event): void {
     if (mundialitoSilverMgr) {
       const m = state.managers.find(mgr => mgr.id === mundialitoSilverMgr);
       if (m) {
-        m.mundialito_silver = (m.mundialito_silver || 0) + 1;
+        awardManagerTrophy(m, 'mundialito_silver', 'mundialito_silver');
         m.history?.[0]?.achievements?.push({
           title: 'Finalista Mundialito',
           category: 'Mundialito',
@@ -662,7 +677,7 @@ export function saveSeason(e: Event): void {
     if (cartonatoWinnerMgr) {
       const m = state.managers.find(mgr => mgr.id === cartonatoWinnerMgr);
       if (m) {
-        m.cartonato = (m.cartonato || 0) + 1;
+        awardManagerTrophy(m, 'cartonato', 'cartonato');
         if (!m.cartonato_coaches) m.cartonato_coaches = [];
         m.cartonato_coaches.push(cartonatoCoachName);
         if (!m.coach_banners) m.coach_banners = [];

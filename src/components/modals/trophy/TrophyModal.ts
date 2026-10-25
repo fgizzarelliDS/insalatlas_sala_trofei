@@ -12,28 +12,10 @@ import {
   renderSeasonsOverviewRollHTML,
   renderGenericCompetitionRollHTML
 } from './TrophyModalContent';
+import { pushOpenModal, popCloseModal } from '@/components/modals/baseModal';
 
 let currentTrophyKey: TrophyModalKey | null = null;
 let currentCupSubTab: CupSubTab = 'coppa';
-let escKeyBound = false;
-
-function handleEscKey(e: KeyboardEvent): void {
-  if (e.key === 'Escape' && currentTrophyKey) {
-    const profileModal = document.getElementById('manager-profile-modal');
-    if (profileModal && !profileModal.classList.contains('hidden')) {
-      return;
-    }
-    const mgrModal = document.getElementById('manager-modal');
-    if (mgrModal && !mgrModal.classList.contains('hidden')) {
-      return;
-    }
-    const h2hModal = document.getElementById('head-to-head-modal');
-    if (h2hModal && !h2hModal.classList.contains('hidden')) {
-      return;
-    }
-    closeTrophyModal();
-  }
-}
 
 /**
  * Returns rendered body HTML depending on the active trophy key
@@ -91,11 +73,8 @@ export function openTrophyModal(
     document.body.style.overflow = 'hidden';
   }
 
-  // Bind ESC key listener
-  if (!escKeyBound && typeof window !== 'undefined') {
-    window.addEventListener('keydown', handleEscKey);
-    escKeyBound = true;
-  }
+  // Register with modal stack
+  pushOpenModal('trophy-history-modal', () => closeTrophyModal(true));
 
   // URL deep-linking sync
   if (updateHistory && typeof window !== 'undefined' && window.location) {
@@ -118,6 +97,7 @@ export function openTrophyModal(
  * Closes the active Trophy History Modal
  */
 export function closeTrophyModal(updateHistory = true): void {
+  popCloseModal('trophy-history-modal');
   if (!currentTrophyKey) return;
   currentTrophyKey = null;
 
@@ -134,11 +114,6 @@ export function closeTrophyModal(updateHistory = true): void {
     document.body.style.overflow = '';
   }
 
-  // Remove ESC listener
-  if (escKeyBound && typeof window !== 'undefined') {
-    window.removeEventListener('keydown', handleEscKey);
-    escKeyBound = false;
-  }
 
   // Clean URL query param
   if (updateHistory && typeof window !== 'undefined' && window.location) {

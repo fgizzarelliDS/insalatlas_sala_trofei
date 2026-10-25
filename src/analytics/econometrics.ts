@@ -100,6 +100,48 @@ export function getClutchTier(gci: number, completedYears: number): ClutchTierIn
   };
 }
 
+export interface ManagerClutchMetrics {
+  completedYears: number;
+  podiums: number;
+  finalsWon: number;
+  finalsPlayed: number;
+  gci: number;
+  clutch: ClutchTierInfo;
+  kiPct: number;
+  crPct: number;
+}
+
+/**
+ * Computes unified clutch metrics (GCI, tier, podiums, finals, and rates) for a manager.
+ */
+export function computeManagerClutchMetrics(manager: Manager): ManagerClutchMetrics {
+  const history = manager?.history || [];
+  const completedYears = history.length > 0
+    ? history.filter(h => !h.in_progress && h.status !== 'in_progress').length
+    : (manager?.years || 0);
+
+  const podiums = (manager?.gold || 0) + (manager?.silver || 0) + (manager?.bronze || 0);
+  const finalsWon = (manager?.cup_gold || 0) + (manager?.supercup || 0);
+  const finalsPlayed = finalsWon + (manager?.cup_silver || 0) + (manager?.supercup_silver || 0);
+
+  const gci = computeGlobalClutchIndex(manager?.gold || 0, podiums, finalsWon, finalsPlayed, completedYears);
+  const clutch = getClutchTier(gci, completedYears);
+
+  const kiPct = podiums > 0 ? parseFloat((((manager?.gold || 0) / podiums) * 100).toFixed(1)) : 0;
+  const crPct = finalsPlayed > 0 ? parseFloat(((finalsWon / finalsPlayed) * 100).toFixed(1)) : 0;
+
+  return {
+    completedYears,
+    podiums,
+    finalsWon,
+    finalsPlayed,
+    gci,
+    clutch,
+    kiPct,
+    crPct
+  };
+}
+
 /**
  * Computes multi-dimensional league concentration, clutch indices, and risk profiles.
  */
@@ -163,20 +205,15 @@ export function computeLeagueConcentration(managers: Manager[]): LeagueConcentra
     const efficiency = completedYears > 0 ? parseFloat((trophies / completedYears).toFixed(2)) : 0;
     const prestigeEfficiency = completedYears > 0 ? parseFloat((prestigeScore / completedYears).toFixed(2)) : 0;
 
-    const podiums = (m.gold || 0) + (m.silver || 0) + (m.bronze || 0);
+    const clutchMetrics = computeManagerClutchMetrics(m);
+    const podiums = clutchMetrics.podiums;
     const podiumRatePct = completedYears > 0 ? parseFloat(((podiums / completedYears) * 100).toFixed(1)) : 0;
-    const killerInstinctPct = podiums > 0 ? parseFloat((((m.gold || 0) / podiums) * 100).toFixed(1)) : 0;
-    const finalsWon = (m.cup_gold || 0) + (m.supercup || 0);
-    const finalsPlayed = finalsWon + (m.cup_silver || 0) + (m.supercup_silver || 0);
-    const conversionRatePct = finalsPlayed > 0 ? parseFloat(((finalsWon / finalsPlayed) * 100).toFixed(1)) : 0;
-    const globalClutchIndex = computeGlobalClutchIndex(
-      m.gold || 0,
-      podiums,
-      finalsWon,
-      finalsPlayed,
-      completedYears
-    );
-    const clutchTierInfo = getClutchTier(globalClutchIndex, completedYears);
+    const killerInstinctPct = clutchMetrics.kiPct;
+    const finalsWon = clutchMetrics.finalsWon;
+    const finalsPlayed = clutchMetrics.finalsPlayed;
+    const conversionRatePct = clutchMetrics.crPct;
+    const globalClutchIndex = clutchMetrics.gci;
+    const clutchTierInfo = clutchMetrics.clutch;
     const dishonors = (m.spoon || 0) + (m.cartonato || 0); // Spoon (Last Place) + Cartonato (Playout)
     const feastMass = computeFeastMass(m.gold || 0, m.cup_gold || 0);
     const disasterMass = computeDisasterMass(m.spoon || 0, m.cartonato || 0);

@@ -85,12 +85,37 @@ export function saveManager(e: Event): void {
     const idx = state.managers.findIndex(item => item.id === id);
     if (idx !== -1) {
       const existing = state.managers[idx];
-      state.managers[idx] = { id, ...payload, history: existing.history };
+      const updatedTrophies: Record<string, number> = {
+        ...(existing.trophies || {}),
+        championship: payload.gold,
+        championship_silver: payload.silver,
+        championship_bronze: payload.bronze,
+        cup: payload.cup_gold,
+        cup_silver: payload.cup_silver,
+        supercup: payload.supercup,
+        supercup_silver: payload.supercup_silver || 0,
+        mundialito: payload.mundialito,
+        spoon: payload.spoon,
+        cartonato: payload.cartonato
+      };
+      state.managers[idx] = { id, ...payload, trophies: updatedTrophies, history: existing.history };
       showToast(`Dati di ${name} salvati!`, 'success');
     }
   } else {
     const newId = 'm_' + Date.now();
-    state.managers.push({ id: newId, ...payload });
+    const initialTrophies: Record<string, number> = {
+      championship: payload.gold,
+      championship_silver: payload.silver,
+      championship_bronze: payload.bronze,
+      cup: payload.cup_gold,
+      cup_silver: payload.cup_silver,
+      supercup: payload.supercup,
+      supercup_silver: payload.supercup_silver || 0,
+      mundialito: payload.mundialito,
+      spoon: payload.spoon,
+      cartonato: payload.cartonato
+    };
+    state.managers.push({ id: newId, ...payload, trophies: initialTrophies, history: [] });
     showToast(`${name} aggiunto all'Albo d'Oro!`, 'success');
   }
 

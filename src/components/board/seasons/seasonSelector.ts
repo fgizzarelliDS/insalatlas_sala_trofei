@@ -276,6 +276,6 @@ export function renderSeasonHeaderSummary(
 
 // Global window assignments for stepper dropdown
 if (typeof window !== 'undefined') {
-  (window as unknown as { toggleSeasonStepperDropdown?: typeof toggleSeasonStepperDropdown }).toggleSeasonStepperDropdown = toggleSeasonStepperDropdown;
-  (window as unknown as { closeSeasonStepperDropdown?: typeof closeSeasonStepperDropdown }).closeSeasonStepperDropdown = closeSeasonStepperDropdown;
+  window.toggleSeasonStepperDropdown = toggleSeasonStepperDropdown;
+  window.closeSeasonStepperDropdown = closeSeasonStepperDropdown;
 }

@@ -1,6 +1,6 @@
 import type { Manager, HeadToHeadStats, SharedSeasonDuel } from '@/types';
 import { calculateManagerScore } from '@/score';
-import { computeGlobalClutchIndex, getClutchTier } from './econometrics';
+import { computeManagerClutchMetrics } from './econometrics';
 import { computeTailRiskProfile } from './tailRisk';
 import { computeStabilityProfile } from './badges';
 import { getManagerArchetype } from './archetypes';
@@ -69,19 +69,7 @@ export function computeHeadToHead(managerA: Manager, managerB: Manager): HeadToH
   const scoreB = calculateManagerScore(managerB);
 
   const getMetrics = (m: Manager, totalTitles: number, score: number) => {
-    const completedYears = m.history && m.history.length > 0
-      ? m.history.filter(h => !h.in_progress && h.status !== 'in_progress').length
-      : (m.years || 0);
-    const podiums = (m.gold || 0) + (m.silver || 0) + (m.bronze || 0);
-    const finalsWon = (m.cup_gold || 0) + (m.supercup || 0);
-    const finalsPlayed = finalsWon + (m.cup_silver || 0) + (m.supercup_silver || 0);
-
-    const gci = computeGlobalClutchIndex(m.gold || 0, podiums, finalsWon, finalsPlayed, completedYears);
-    const clutch = getClutchTier(gci, completedYears);
-
-    const kiPct = podiums > 0 ? parseFloat((((m.gold || 0) / podiums) * 100).toFixed(1)) : 0;
-    const crPct = finalsPlayed > 0 ? parseFloat(((finalsWon / finalsPlayed) * 100).toFixed(1)) : 0;
-
+    const clutchMetrics = computeManagerClutchMetrics(m);
     const risk = computeTailRiskProfile(m);
     const stability = computeStabilityProfile(m);
     const efficiency = m.years > 0 ? parseFloat((totalTitles / m.years).toFixed(2)) : 0;
@@ -89,12 +77,12 @@ export function computeHeadToHead(managerA: Manager, managerB: Manager): HeadToH
 
     return {
       score,
-      gci,
-      clutchLabel: clutch.label,
-      clutchIcon: clutch.icon,
-      clutchColor: clutch.color,
-      kiPct,
-      crPct,
+      gci: clutchMetrics.gci,
+      clutchLabel: clutchMetrics.clutch.label,
+      clutchIcon: clutchMetrics.clutch.icon,
+      clutchColor: clutchMetrics.clutch.color,
+      kiPct: clutchMetrics.kiPct,
+      crPct: clutchMetrics.crPct,
       nti: risk.nti,
       polarityLabel: risk.label,
       polarityIcon: risk.icon,

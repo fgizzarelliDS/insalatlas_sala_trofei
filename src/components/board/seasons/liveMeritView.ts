@@ -7,11 +7,21 @@ import {
   renderDeltaPointsPillHTML,
   renderPodiumSVG
 } from './liveAnalytics';
+import {
+  getEloMode,
+  setEloMode,
+  getManagerEloTrack,
+  getEloBadgeClasses,
+  getEloTierTitle,
+  formatElo,
+  formatEloDelta
+} from '@/analytics/analyticsCore';
+import type { EloTrackMode } from '@/types/analytics';
 
 /**
  * Renders desktop table rows for the Merit & Schedule Luck Standings
  */
-export function renderMeritDesktopRows(standings: LiveTeamMetrics[]): string {
+export function renderMeritDesktopRows(standings: LiveTeamMetrics[], mode: EloTrackMode = getEloMode()): string {
   return standings.map(team => {
     const mgr = state.managers?.find(m => m.id === team.managerId);
     const managerName = mgr ? mgr.name : (team.coach || 'Allenatore');
@@ -27,6 +37,14 @@ export function renderMeritDesktopRows(standings: LiveTeamMetrics[]): string {
     const luckBadge = luck?.luckBadge ?? '⚖️';
     const luckLabel = luck?.luckLabel ?? 'Neutro';
     const luckZ = luck?.luckZScore ?? 0;
+
+    // Dynamic Elo Metrics
+    const eloTrack = getManagerEloTrack(team.elo, mode);
+    const eloCurrent = eloTrack?.current ?? 1500.0;
+    const eloDelta = eloTrack?.lastDelta ?? 0.0;
+    const eloBadge = getEloBadgeClasses(eloCurrent);
+    const eloTier = getEloTierTitle(eloCurrent);
+    const eloDeltaColor = eloDelta > 0 ? 'text-emerald-400' : eloDelta < 0 ? 'text-rose-400' : 'text-slate-400';
 
     let rankBadgeClass = 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 font-bold';
     if (xRank === 1) {
@@ -109,6 +127,18 @@ export function renderMeritDesktopRows(standings: LiveTeamMetrics[]): string {
         <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-36">
           ${renderLuckBadgeHTML(luckBadge, luckLabel, luckZ)}
         </td>
+        <!-- Elo Rating & Delta -->
+        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-32">
+          <div class="flex flex-col items-center">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-mono font-bold border shadow-xs ${eloBadge.bg} ${eloBadge.text} ${eloBadge.border}">
+              ${formatElo(eloCurrent)}
+            </span>
+            <div class="mt-0.5 flex items-center gap-1 text-[10px]">
+              <span class="font-mono font-bold ${eloDeltaColor}">${formatEloDelta(eloDelta)}</span>
+              <span class="text-[9px] opacity-60 font-semibold" style="color: var(--text-muted);">${eloTier}</span>
+            </div>
+          </div>
+        </td>
         <!-- Scenari Monte Carlo -->
         <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-28">
           ${mcDisplayHTML}
@@ -121,7 +151,7 @@ export function renderMeritDesktopRows(standings: LiveTeamMetrics[]): string {
 /**
  * Renders mobile cards (< 768px) for the Merit & Schedule Luck Standings
  */
-export function renderMobileMeritCards(standings: LiveTeamMetrics[]): string {
+export function renderMobileMeritCards(standings: LiveTeamMetrics[], mode: EloTrackMode = getEloMode()): string {
   return standings.map(team => {
     const mgr = state.managers?.find(m => m.id === team.managerId);
     const managerName = mgr ? mgr.name : (team.coach || 'Allenatore');
@@ -137,6 +167,13 @@ export function renderMobileMeritCards(standings: LiveTeamMetrics[]): string {
     const luckBadge = luck?.luckBadge ?? '⚖️';
     const luckLabel = luck?.luckLabel ?? 'Neutro';
     const luckZ = luck?.luckZScore ?? 0;
+
+    // Dynamic Elo Metrics
+    const eloTrack = getManagerEloTrack(team.elo, mode);
+    const eloCurrent = eloTrack?.current ?? 1500.0;
+    const eloDelta = eloTrack?.lastDelta ?? 0.0;
+    const eloBadge = getEloBadgeClasses(eloCurrent);
+    const eloDeltaColor = eloDelta > 0 ? 'text-emerald-400' : eloDelta < 0 ? 'text-rose-400' : 'text-slate-400';
 
     let rankBadgeClass = 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-300 font-bold';
     if (xRank === 1) {
@@ -166,10 +203,10 @@ export function renderMobileMeritCards(standings: LiveTeamMetrics[]): string {
                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-700 shadow-xs"
                  onerror="this.onerror=null; this.src='${getTeamFallbackCrest(team.teamName)}'">
             <div class="min-w-0 flex-1">
-              <div class="font-bold text-xs sm:text-sm leading-tight truncate" style="color: var(--text-main);">
+              <div class="font-bold text-xs sm:text-sm leading-snug break-words" style="color: var(--text-main);">
                 ${team.teamName}
               </div>
-              <div class="text-[10px] sm:text-[11px] font-semibold opacity-80 truncate mt-0.5" style="color: var(--accent-color);">
+              <div class="text-[10px] sm:text-[11px] font-semibold opacity-80 break-words mt-0.5" style="color: var(--accent-color);">
                 ${managerName}
               </div>
               <div class="text-[10px] font-semibold opacity-60 truncate mt-0.5" style="color: var(--text-muted);">
@@ -177,8 +214,13 @@ export function renderMobileMeritCards(standings: LiveTeamMetrics[]): string {
               </div>
             </div>
           </div>
-          <div class="shrink-0">
+          <div class="shrink-0 flex flex-col items-end gap-1">
             ${renderLuckBadgeHTML(luckBadge, luckLabel, luckZ, true)}
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold font-mono border ${eloBadge.bg} ${eloBadge.text} ${eloBadge.border}">
+              <span>⚡</span>
+              <span>${formatElo(eloCurrent)}</span>
+              <span class="text-[9px] ${eloDeltaColor}">(${formatEloDelta(eloDelta)})</span>
+            </span>
           </div>
         </div>
 
@@ -210,10 +252,15 @@ export function renderMobileMeritCards(standings: LiveTeamMetrics[]): string {
   }).join('');
 }
 
+let cachedMeritStandings: LiveTeamMetrics[] = [];
+
 /**
  * Renders the complete View 2 container for Merit & Schedule Luck Standings
  */
 export function renderMeritViewContainer(standings: LiveTeamMetrics[]): string {
+  cachedMeritStandings = standings;
+  const activeMode = getEloMode();
+
   // Sort 1: by xRank ascending (default)
   const meritStandingsXPTS = [...standings].sort((a, b) => {
     const rA = a.scheduleLuck?.xRank ?? a.rank;
@@ -232,29 +279,23 @@ export function renderMeritViewContainer(standings: LiveTeamMetrics[]): string {
     return a.teamName.localeCompare(b.teamName);
   });
 
-  const desktopMeritRowsXPTS = renderMeritDesktopRows(meritStandingsXPTS);
-  const desktopMeritRowsLuck = renderMeritDesktopRows(meritStandingsLuck);
-  const mobileMeritCardsXPTS = renderMobileMeritCards(meritStandingsXPTS);
-  const mobileMeritCardsLuck = renderMobileMeritCards(meritStandingsLuck);
+  // Sort 3: by Elo rating descending
+  const meritStandingsElo = [...standings].sort((a, b) => {
+    const rA = getManagerEloTrack(a.elo, activeMode)?.current ?? 1500.0;
+    const rB = getManagerEloTrack(b.elo, activeMode)?.current ?? 1500.0;
+    return rB - rA;
+  });
+
+  const desktopMeritRowsXPTS = renderMeritDesktopRows(meritStandingsXPTS, activeMode);
+  const desktopMeritRowsLuck = renderMeritDesktopRows(meritStandingsLuck, activeMode);
+  const desktopMeritRowsElo = renderMeritDesktopRows(meritStandingsElo, activeMode);
+
+  const mobileMeritCardsXPTS = renderMobileMeritCards(meritStandingsXPTS, activeMode);
+  const mobileMeritCardsLuck = renderMobileMeritCards(meritStandingsLuck, activeMode);
+  const mobileMeritCardsElo = renderMobileMeritCards(meritStandingsElo, activeMode);
 
   return `
     <div id="live-view-merit-container" class="hidden animate-fadeIn">
-      <!-- Mobile Micro-Sorter (< md) -->
-      <div class="md:hidden px-3.5 py-1.5 border-b flex items-center justify-between text-xs"
-           style="border-color: var(--table-border); background-color: var(--table-surface);">
-        <span class="text-[11px] font-semibold opacity-70" style="color: var(--text-muted);">
-          Ordina per:
-        </span>
-        <button id="btn-merit-sort-mobile-toggle"
-                type="button"
-                onclick="window.toggleMobileMeritSort && window.toggleMobileMeritSort()"
-                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border transition shadow-xs cursor-pointer bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/25 active:scale-95"
-                title="Tocca per cambiare ordinamento">
-          <i class="fa-solid fa-arrow-down-wide-short text-[10px]"></i>
-          <span id="label-merit-sort-mobile">xPTS (Merito)</span>
-        </button>
-      </div>
-
       <!-- Desktop View (>= 768px) -->
       <div class="hidden md:block overflow-x-auto">
         <table class="w-full text-left border-collapse table-auto">
@@ -284,6 +325,26 @@ export function renderMeritViewContainer(standings: LiveTeamMetrics[]): string {
                   <i id="sort-icon-merit-luck" class="fa-solid fa-arrow-down text-[10px] ml-0.5 hidden"></i>
                 </button>
               </th>
+              <th class="py-2.5 px-3 text-center w-44">
+                <!-- ELO Toggle as Column Header itself + direction arrow -->
+                <div class="inline-flex items-center justify-center gap-1.5">
+                  <button id="th-merit-sort-elo"
+                          type="button"
+                          onclick="window.switchMeritSort && window.switchMeritSort('elo')"
+                          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold border transition shadow-xs cursor-pointer ${currentMeritSort === 'elo' ? 'bg-amber-500/15 text-amber-500 dark:text-amber-400 border-amber-500/30' : 'bg-slate-500/10 text-slate-300 border-slate-600/40 hover:border-amber-500/30'}"
+                          title="Ordina per Elo Rating (Clicca per invertire)">
+                    <span id="label-merit-elo-track">${activeMode === 'flat' ? '⚡ Elo Puro (1500)' : '🏛️ Elo Storico'}</span>
+                    <i id="sort-icon-merit-elo" class="fa-solid ${currentMeritEloDirection === 'desc' ? 'fa-arrow-down' : 'fa-arrow-up'} text-[10px] ${currentMeritSort === 'elo' ? 'text-amber-400' : 'opacity-40'}"></i>
+                  </button>
+                  <button id="btn-merit-elo-toggle"
+                          type="button"
+                          onclick="window.toggleMeritEloMode && window.toggleMeritEloMode(event)"
+                          class="w-7 h-7 rounded-xl text-xs flex items-center justify-center border transition shadow-xs cursor-pointer bg-slate-500/10 hover:bg-amber-500/20 text-slate-300 hover:text-amber-400 border-slate-600/40 hover:border-amber-500/30 active:scale-95 shrink-0"
+                          title="Commuta tra modalità Puro (1500) e Storico">
+                    <i class="fa-solid fa-rotate text-[10px]"></i>
+                  </button>
+                </div>
+              </th>
               <th class="py-2.5 px-3 text-center w-28">
                 <div class="flex items-center justify-center gap-1">
                   ${renderPodiumSVG(15)}
@@ -298,6 +359,9 @@ export function renderMeritViewContainer(standings: LiveTeamMetrics[]): string {
           <tbody id="merit-desktop-tbody-luck" class="hidden">
             ${desktopMeritRowsLuck}
           </tbody>
+          <tbody id="merit-desktop-tbody-elo" class="hidden">
+            ${desktopMeritRowsElo}
+          </tbody>
         </table>
       </div>
 
@@ -308,63 +372,158 @@ export function renderMeritViewContainer(standings: LiveTeamMetrics[]): string {
       <div id="merit-mobile-cards-luck" class="hidden md:hidden flex flex-col divide-y divide-[var(--table-border)]">
         ${mobileMeritCardsLuck}
       </div>
+      <div id="merit-mobile-cards-elo" class="hidden md:hidden flex flex-col divide-y divide-[var(--table-border)]">
+        ${mobileMeritCardsElo}
+      </div>
     </div>
   `;
 }
 
 // Interactive Merit Sorting State & Handlers
-let currentMeritSort: 'xpts' | 'luck' = 'xpts';
+let currentMeritSort: 'xpts' | 'luck' | 'elo' = 'xpts';
+let currentMeritEloDirection: 'desc' | 'asc' = 'desc';
 
 export function toggleMobileMeritSort(): void {
-  const nextOrder = currentMeritSort === 'xpts' ? 'luck' : 'xpts';
+  const nextOrder = currentMeritSort === 'xpts' ? 'elo' : currentMeritSort === 'elo' ? 'luck' : 'xpts';
   switchMeritSort(nextOrder);
 }
 
-export function switchMeritSort(order: 'xpts' | 'luck'): void {
+export function toggleMeritEloMode(event?: Event): void {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  const nextMode: EloTrackMode = getEloMode() === 'flat' ? 'historical' : 'flat';
+  setEloMode(nextMode);
+
+  // Update labels across views
+  const label = document.getElementById('label-merit-elo-track');
+  if (label) {
+    label.textContent = nextMode === 'flat' ? '⚡ Elo Puro (1500)' : '🏛️ Elo Storico';
+  }
+  const realLabel = document.getElementById('label-real-elo-track');
+  if (realLabel) {
+    realLabel.textContent = nextMode === 'flat' ? '⚡ Elo Puro (1500)' : '🏛️ Elo Storico';
+  }
+
+  // Re-render bodies with new mode
+  if (cachedMeritStandings.length > 0) {
+    const meritStandingsXPTS = [...cachedMeritStandings].sort((a, b) => {
+      const rA = a.scheduleLuck?.xRank ?? a.rank;
+      const rB = b.scheduleLuck?.xRank ?? b.rank;
+      return rA - rB;
+    });
+
+    const meritStandingsLuck = [...cachedMeritStandings].sort((a, b) => {
+      const zA = a.scheduleLuck?.luckZScore ?? 0;
+      const zB = b.scheduleLuck?.luckZScore ?? 0;
+      if (zB !== zA) return zB - zA;
+      return (b.scheduleLuck?.deltaPoints ?? 0) - (a.scheduleLuck?.deltaPoints ?? 0);
+    });
+
+    const dir = currentMeritEloDirection;
+    const meritStandingsElo = [...cachedMeritStandings].sort((a, b) => {
+      const rA = getManagerEloTrack(a.elo, nextMode)?.current ?? 1500.0;
+      const rB = getManagerEloTrack(b.elo, nextMode)?.current ?? 1500.0;
+      return dir === 'desc' ? rB - rA : rA - rB;
+    });
+
+    const desktopXPTS = document.getElementById('merit-desktop-tbody-xpts');
+    const desktopLuck = document.getElementById('merit-desktop-tbody-luck');
+    const desktopElo = document.getElementById('merit-desktop-tbody-elo');
+    const mobileXPTS = document.getElementById('merit-mobile-cards-xpts');
+    const mobileLuck = document.getElementById('merit-mobile-cards-luck');
+    const mobileElo = document.getElementById('merit-mobile-cards-elo');
+
+    if (desktopXPTS) desktopXPTS.innerHTML = renderMeritDesktopRows(meritStandingsXPTS, nextMode);
+    if (desktopLuck) desktopLuck.innerHTML = renderMeritDesktopRows(meritStandingsLuck, nextMode);
+    if (desktopElo) desktopElo.innerHTML = renderMeritDesktopRows(meritStandingsElo, nextMode);
+
+    if (mobileXPTS) mobileXPTS.innerHTML = renderMobileMeritCards(meritStandingsXPTS, nextMode);
+    if (mobileLuck) mobileLuck.innerHTML = renderMobileMeritCards(meritStandingsLuck, nextMode);
+    if (mobileElo) mobileElo.innerHTML = renderMobileMeritCards(meritStandingsElo, nextMode);
+  }
+}
+
+export function switchMeritSort(order: 'xpts' | 'luck' | 'elo'): void {
+  if (order === 'elo' && currentMeritSort === 'elo') {
+    currentMeritEloDirection = currentMeritEloDirection === 'desc' ? 'asc' : 'desc';
+  }
   currentMeritSort = order;
   if (typeof document === 'undefined') return;
 
   const thXPTS = document.getElementById('th-merit-sort-xpts');
   const thLuck = document.getElementById('th-merit-sort-luck');
+  const thElo = document.getElementById('th-merit-sort-elo');
   const iconXPTS = document.getElementById('sort-icon-merit-xpts');
   const iconLuck = document.getElementById('sort-icon-merit-luck');
+  const iconElo = document.getElementById('sort-icon-merit-elo');
 
   const labelMobile = document.getElementById('label-merit-sort-mobile');
 
   const desktopXPTS = document.getElementById('merit-desktop-tbody-xpts');
   const desktopLuck = document.getElementById('merit-desktop-tbody-luck');
+  const desktopElo = document.getElementById('merit-desktop-tbody-elo');
   const mobileXPTS = document.getElementById('merit-mobile-cards-xpts');
   const mobileLuck = document.getElementById('merit-mobile-cards-luck');
+  const mobileElo = document.getElementById('merit-mobile-cards-elo');
+
+  // Reset text-based headers
+  [thXPTS, thLuck].forEach(th => {
+    th?.classList.remove('text-amber-500', 'dark:text-amber-400', 'font-black');
+    th?.classList.add('opacity-70');
+  });
+  [iconXPTS, iconLuck].forEach(ic => ic?.classList.add('hidden'));
+
+  // Reset Elo button styles
+  thElo?.classList.remove('bg-amber-500/15', 'text-amber-500', 'dark:text-amber-400', 'border-amber-500/30');
+  thElo?.classList.add('bg-slate-500/10', 'text-slate-300', 'border-slate-600/40');
+  if (iconElo) {
+    iconElo.className = `fa-solid fa-arrow-down text-[10px] opacity-40`;
+  }
+
+  // Hide all tbodies and card containers
+  [desktopXPTS, desktopLuck, desktopElo, mobileXPTS, mobileLuck, mobileElo].forEach(el => el?.classList.add('hidden'));
 
   if (order === 'xpts') {
     thXPTS?.classList.remove('opacity-70');
     thXPTS?.classList.add('text-amber-500', 'dark:text-amber-400', 'font-black');
     iconXPTS?.classList.remove('hidden');
 
-    thLuck?.classList.remove('text-amber-500', 'dark:text-amber-400', 'font-black');
-    thLuck?.classList.add('opacity-70');
-    iconLuck?.classList.add('hidden');
-
     if (labelMobile) labelMobile.textContent = 'xPTS (Merito)';
-
     desktopXPTS?.classList.remove('hidden');
-    desktopLuck?.classList.add('hidden');
     mobileXPTS?.classList.remove('hidden');
-    mobileLuck?.classList.add('hidden');
-  } else {
+  } else if (order === 'luck') {
     thLuck?.classList.remove('opacity-70');
     thLuck?.classList.add('text-amber-500', 'dark:text-amber-400', 'font-black');
     iconLuck?.classList.remove('hidden');
 
-    thXPTS?.classList.remove('text-amber-500', 'dark:text-amber-400', 'font-black');
-    thXPTS?.classList.add('opacity-70');
-    iconXPTS?.classList.add('hidden');
-
     if (labelMobile) labelMobile.textContent = 'Fortuna (Z-Score)';
-
     desktopLuck?.classList.remove('hidden');
-    desktopXPTS?.classList.add('hidden');
     mobileLuck?.classList.remove('hidden');
-    mobileXPTS?.classList.add('hidden');
+  } else if (order === 'elo') {
+    thElo?.classList.add('bg-amber-500/15', 'text-amber-500', 'dark:text-amber-400', 'border-amber-500/30');
+    thElo?.classList.remove('bg-slate-500/10', 'text-slate-300', 'border-slate-600/40', 'opacity-70');
+
+    if (iconElo) {
+      iconElo.classList.remove('hidden', 'opacity-40');
+      iconElo.className = `fa-solid ${currentMeritEloDirection === 'desc' ? 'fa-arrow-down' : 'fa-arrow-up'} text-[10px] text-amber-400`;
+    }
+
+    if (cachedMeritStandings.length > 0) {
+      const nextMode = getEloMode();
+      const dir = currentMeritEloDirection;
+      const meritStandingsElo = [...cachedMeritStandings].sort((a, b) => {
+        const rA = getManagerEloTrack(a.elo, nextMode)?.current ?? 1500.0;
+        const rB = getManagerEloTrack(b.elo, nextMode)?.current ?? 1500.0;
+        return dir === 'desc' ? rB - rA : rA - rB;
+      });
+      if (desktopElo) desktopElo.innerHTML = renderMeritDesktopRows(meritStandingsElo, nextMode);
+      if (mobileElo) mobileElo.innerHTML = renderMobileMeritCards(meritStandingsElo, nextMode);
+    }
+
+    if (labelMobile) labelMobile.textContent = 'Elo Rating';
+    desktopElo?.classList.remove('hidden');
+    mobileElo?.classList.remove('hidden');
   }
 }

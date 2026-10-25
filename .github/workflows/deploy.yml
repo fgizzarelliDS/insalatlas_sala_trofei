@@ -41,6 +41,9 @@ jobs:
       - name: Validate League Data
         run: python scripts/validate.py
 
+      - name: Run Python Engine Tests
+        run: python -m unittest discover tests
+
       - name: Install Dependencies
         run: npm ci
 

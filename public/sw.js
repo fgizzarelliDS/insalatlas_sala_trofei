@@ -105,7 +105,7 @@ self.addEventListener('fetch', (event) => {
 
       const fetchPromise = fetch(event.request)
         .then((response) => {
-          if (response && response.status === 200 && response.type !== 'opaque') {
+          if (response && (response.status === 200 || response.type === 'opaque')) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, responseClone);

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { state } from '@/state';
 import type { Manager } from '@/types';
-import dataJson from '../../public/data.json';
+import { mockLeagueManagers } from './test-utils';
 import {
   getMainTabParamFromURL,
   getSeasonParamFromURL,
@@ -19,7 +19,7 @@ import { filterRecordsCategory, searchRecords, clearRecordsSearch } from '@/comp
 
 describe('Exhaustive URL & Deep-Linking Test Matrix', () => {
   beforeEach(() => {
-    state.managers = dataJson.leagueData as unknown as Manager[];
+    state.managers = JSON.parse(JSON.stringify(mockLeagueManagers)) as Manager[];
   });
   describe('1. Root and Default URLs', () => {
     it('handles root URL cleanly', () => {
@@ -36,6 +36,14 @@ describe('Exhaustive URL & Deep-Linking Test Matrix', () => {
       expect(getMainTabParamFromURL(url)).toBe('albo');
       expect(getSeasonParamFromURL(url)).toBeNull();
       expect(getRecordParamFromURL(url)).toBeNull();
+    });
+
+    it('handles malformed percent escape sequences without crashing (safeDecodeURI resilience)', () => {
+      const url = 'https://fgizzarelliids.github.io/insalatlas_sala_trofei/?manager=%99&h2h=%E0%A4%A:m_champ&team=%zz';
+      expect(() => getManagerParamFromURL(url)).not.toThrow();
+      expect(() => getH2HParamFromURL(url)).not.toThrow();
+      expect(() => getTeamParamFromURL(url)).not.toThrow();
+      expect(findManagerByParam('%99')).toBeUndefined();
     });
   });
 
@@ -160,9 +168,9 @@ describe('Exhaustive URL & Deep-Linking Test Matrix', () => {
     });
 
     it('finds manager correctly with findManagerByParam', () => {
-      expect(findManagerByParam('m_lucchetto')?.name).toBe('Lucchetto');
-      expect(findManagerByParam('Lucchetto')?.id).toBe('m_lucchetto');
-      expect(findManagerByParam('makako')?.id).toBe('m_makako');
+      expect(findManagerByParam('m_champ')?.name).toBe('Champion Manager');
+      expect(findManagerByParam('Champion Manager')?.id).toBe('m_champ');
+      expect(findManagerByParam('cup')?.id).toBe('m_cup');
       expect(findManagerByParam('inexistent_manager_xyz')).toBeUndefined();
     });
   });
@@ -319,22 +327,22 @@ describe('Exhaustive URL & Deep-Linking Test Matrix', () => {
       (window as any).openProfileModal = openProfileModal;
       (window as any).closeProfileModal = closeProfileModal;
 
-      // 1. Open H2H duel between alfo and vannico with pushState
-      openHeadToHeadModal('m_alfo', 'm_vannico', 'duel', true);
-      expect(window.location.search).toBe('?h2h=m_alfo%3Am_vannico');
-      expect(getH2HParamFromURL()).toEqual({ managerA: 'm_alfo', managerB: 'm_vannico' });
+      // 1. Open H2H duel between champ and cup with pushState
+      openHeadToHeadModal('m_champ', 'm_cup', 'duel', true);
+      expect(window.location.search).toBe('?h2h=m_champ%3Am_cup');
+      expect(getH2HParamFromURL()).toEqual({ managerA: 'm_champ', managerB: 'm_cup' });
       expect(getManagerParamFromURL()).toBeNull();
 
-      // 2. Click contender Alfo -> opens profile with pushState
-      openProfileFromH2H('m_alfo');
-      expect(window.location.search).toBe('?manager=m_alfo');
-      expect(getManagerParamFromURL()).toBe('m_alfo');
+      // 2. Click contender Champion Manager -> opens profile with pushState
+      openProfileFromH2H('m_champ');
+      expect(window.location.search).toBe('?manager=m_champ');
+      expect(getManagerParamFromURL()).toBe('m_champ');
       expect(getH2HParamFromURL()).toBeNull();
 
       // 3. Click return banner -> returns to H2H duel
       returnToPreviousH2HDuel();
-      expect(window.location.search).toBe('?h2h=m_alfo%3Am_vannico');
-      expect(getH2HParamFromURL()).toEqual({ managerA: 'm_alfo', managerB: 'm_vannico' });
+      expect(window.location.search).toBe('?h2h=m_champ%3Am_cup');
+      expect(getH2HParamFromURL()).toEqual({ managerA: 'm_champ', managerB: 'm_cup' });
       expect(getManagerParamFromURL()).toBeNull();
 
       // 4. Close H2H modal -> cleanly removes ?h2h from URL
@@ -355,22 +363,22 @@ describe('Exhaustive URL & Deep-Linking Test Matrix', () => {
       (window as any).openProfileModal = openProfileModal;
       (window as any).closeProfileModal = closeProfileModal;
 
-      // 1. Start in Alfo profile with pushState
-      openProfileModal('m_alfo', true);
-      expect(window.location.search).toBe('?manager=m_alfo');
-      expect(getManagerParamFromURL()).toBe('m_alfo');
+      // 1. Start in Champ profile with pushState
+      openProfileModal('m_champ', true);
+      expect(window.location.search).toBe('?manager=m_champ');
+      expect(getManagerParamFromURL()).toBe('m_champ');
       expect(getH2HParamFromURL()).toBeNull();
 
-      // 2. Open H2H from profile with opponent Vannico
-      openH2HWithOpponent('m_alfo', 'm_vannico');
-      expect(window.location.search).toBe('?h2h=m_alfo%3Am_vannico');
-      expect(getH2HParamFromURL()).toEqual({ managerA: 'm_alfo', managerB: 'm_vannico' });
+      // 2. Open H2H from profile with opponent Cup Specialist
+      openH2HWithOpponent('m_champ', 'm_cup');
+      expect(window.location.search).toBe('?h2h=m_champ%3Am_cup');
+      expect(getH2HParamFromURL()).toEqual({ managerA: 'm_champ', managerB: 'm_cup' });
       expect(getManagerParamFromURL()).toBeNull();
 
       // 3. Return to previous profile using returnToPreviousProfile()
       returnToPreviousProfile();
-      expect(window.location.search).toBe('?manager=m_alfo');
-      expect(getManagerParamFromURL()).toBe('m_alfo');
+      expect(window.location.search).toBe('?manager=m_champ');
+      expect(getManagerParamFromURL()).toBe('m_champ');
       expect(getH2HParamFromURL()).toBeNull();
 
       // 4. Close profile modal
@@ -389,8 +397,8 @@ describe('Exhaustive URL & Deep-Linking Test Matrix', () => {
 
       // Simulate being on records tab with URL parameters
       switchMainViewTab('records', true);
-      window.history.pushState({}, '', 'https://insalatlas.it/?tab=records&q=makako');
-      expect(window.location.search).toBe('?tab=records&q=makako');
+      window.history.pushState({}, '', 'https://insalatlas.it/?tab=records&q=champion');
+      expect(window.location.search).toBe('?tab=records&q=champion');
 
       let scrolledTo: any = null;
       window.scrollTo = (opts: any) => {

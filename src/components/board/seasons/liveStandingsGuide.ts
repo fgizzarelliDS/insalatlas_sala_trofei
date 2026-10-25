@@ -131,6 +131,7 @@ export function buildLiveStandingsGuideHTML(): string {
              style="border-color: var(--table-border); color: var(--text-muted);">
           <div><strong>Punti Attesi (xPTS):</strong> Media esatta dei punti meritati simulando ogni giornata contro tutti i 13 avversari.</div>
           <div><strong>ΔPunti:</strong> Punti Reali − xPTS (differenza dovuta unicamente alla casualità del calendario).</div>
+          <div><strong>Elo Rating:</strong> Modello dinamico di forza tattica ponderato per scarto gol e fantapunti. Supporta traccia <em>Pura (1500)</em> e <em>Storica (Albo d'Oro)</em>.</div>
         </div>
       </div>
 

@@ -138,8 +138,8 @@ export function navigateToSeasonStandings(season: string, highlightManagerId?: s
   }
 
   // Close trophy modal if open
-  if (typeof window !== 'undefined' && (window as unknown as { closeTrophyModal?: (updateHistory?: boolean) => void }).closeTrophyModal) {
-    (window as unknown as { closeTrophyModal: (updateHistory?: boolean) => void }).closeTrophyModal(false);
+  if (typeof window !== 'undefined' && window.closeTrophyModal) {
+    window.closeTrophyModal(false);
   }
 
   // 1. Switch to Seasons tab and select season
@@ -242,10 +242,10 @@ export function renderSeasonsArchive(): void {
 
 // Global window assignments for inline HTML handlers
 if (typeof window !== 'undefined') {
-  (window as unknown as { switchMainViewTab?: typeof switchMainViewTab }).switchMainViewTab = switchMainViewTab;
-  (window as unknown as { selectArchiveSeason?: typeof selectArchiveSeason }).selectArchiveSeason = selectArchiveSeason;
-  (window as unknown as { renderSeasonsArchive?: typeof renderSeasonsArchive }).renderSeasonsArchive = renderSeasonsArchive;
-  (window as unknown as { navigateToSeasonStandings?: typeof navigateToSeasonStandings }).navigateToSeasonStandings = navigateToSeasonStandings;
+  window.switchMainViewTab = switchMainViewTab;
+  window.selectArchiveSeason = selectArchiveSeason;
+  window.renderSeasonsArchive = renderSeasonsArchive;
+  window.navigateToSeasonStandings = navigateToSeasonStandings;
 
   if (typeof window.addEventListener === 'function') {
     window.addEventListener('keydown', (e: KeyboardEvent) => {

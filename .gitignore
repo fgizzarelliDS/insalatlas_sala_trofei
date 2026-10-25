@@ -16,11 +16,15 @@ scripts/*.html
 *.pyc
 scripts/extract_thropy.py
 scripts/download_*.py
+scripts/core/convert_2025_matches.py
 scripts/archive/teams/*
 scripts/archive/
 public/assets/trophies/*
 data/*.jpeg
 data/live/
+data/matches/
+data/seasons/*_rounds.json
+*.csv
 
 # Editor directories and files
 .vscode/

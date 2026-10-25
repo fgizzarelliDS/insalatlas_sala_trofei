@@ -1055,6 +1055,88 @@ describe('Live In-Progress Form & Analytics Engine', () => {
       if (origLocation) (globalThis as any).window.location = origLocation;
     });
 
+    it('asynchronously fetches live_season_details and opens modal when cache is initially null', async () => {
+      const origFetch = globalThis.fetch;
+      const elements: Record<string, any> = {
+        'team-matches-modal': {
+          classList: {
+            classes: new Set<string>(['hidden']),
+            add: (c: string) => elements['team-matches-modal'].classList.classes.add(c),
+            remove: (c: string) => elements['team-matches-modal'].classList.classes.delete(c),
+            contains: (c: string) => elements['team-matches-modal'].classList.classes.has(c)
+          },
+          innerHTML: ''
+        },
+        'team-matches-modal-content': { innerHTML: '' },
+        'team-matches-dialog': { innerHTML: '' }
+      };
+
+      const origDoc = (globalThis as any).document;
+      (globalThis as any).document = {
+        getElementById: (id: string) => elements[id] || null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        body: { insertAdjacentHTML: vi.fn() }
+      };
+
+      setLiveSeasonDetails(null);
+
+      const fakePayload = {
+        season: '2026/27',
+        competitionId: 863632,
+        lastCompletedRound: 1,
+        totalRounds: 26,
+        rounds: [
+          {
+            roundNumber: 1,
+            matches: [
+              {
+                homeTeam: 'Sarviette FC',
+                awayTeam: 'Arcore 1936',
+                isPlayed: true,
+                homeOutcome: 'W',
+                awayOutcome: 'L'
+              }
+            ]
+          }
+        ],
+        standings: [
+          {
+            rank: 1,
+            teamName: 'Sarviette FC',
+            coach: 'sarviette',
+            managerId: 'm_sarviette',
+            recentForm: ['W'],
+            statusBadge: '🔥',
+            statusLabel: 'In Fiamme',
+            scheduleLuck: {
+              xPoints: 3.0,
+              deltaPoints: 0.0,
+              allPlayRecord: { played: 13, wins: 13, draws: 0, losses: 0, winPct: 100 },
+              luckZScore: 0.5,
+              luckBadge: '🍀',
+              luckLabel: 'Fortunato'
+            }
+          }
+        ]
+      };
+
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => fakePayload
+      });
+
+      await openTeamMatchesModal(undefined, 'Sarviette FC', false, false);
+
+      expect(elements['team-matches-modal'].classList.contains('flex')).toBe(true);
+      expect(elements['team-matches-modal'].classList.contains('hidden')).toBe(false);
+      expect(elements['team-matches-modal-content'].innerHTML).toContain('Sarviette FC');
+
+      // Cleanup
+      globalThis.fetch = origFetch;
+      (globalThis as any).document = origDoc;
+    });
+
     it('formats real standings snapshot text for WhatsApp correctly', () => {
       const mockStandings = [
         { rank: 1, teamName: 'TorLupara FC', points: 18 },

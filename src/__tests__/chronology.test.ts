@@ -736,18 +736,20 @@ describe('Chronology Analytics Module', () => {
         'all'
       );
 
-      // 4-column responsive grid
-      expect(mockContainer.innerHTML).toContain('grid grid-cols-4 sm:flex');
+      // 5-column responsive grid
+      expect(mockContainer.innerHTML).toContain('grid grid-cols-5 sm:flex');
       // Mobile short labels
       expect(mockContainer.innerHTML).toContain('<span class="sm:hidden">Equilibrio</span>');
       expect(mockContainer.innerHTML).toContain('<span class="sm:hidden">Cinismo</span>');
       expect(mockContainer.innerHTML).toContain('<span class="sm:hidden">Archetipi</span>');
       expect(mockContainer.innerHTML).toContain('<span class="sm:hidden">Storico</span>');
+      expect(mockContainer.innerHTML).toContain('<span class="sm:hidden">Elo</span>');
       // Desktop full labels
       expect(mockContainer.innerHTML).toContain('<span class="hidden sm:inline">Equilibrio & Macro</span>');
       expect(mockContainer.innerHTML).toContain('<span class="hidden sm:inline">Cinismo & Podi</span>');
       expect(mockContainer.innerHTML).toContain('<span class="hidden sm:inline">Archetipi</span>');
       expect(mockContainer.innerHTML).toContain('<span class="hidden sm:inline">Dinamica Storica</span>');
+      expect(mockContainer.innerHTML).toContain('<span class="hidden sm:inline">Elo & Forma</span>');
     });
   });
 });

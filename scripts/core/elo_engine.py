@@ -348,6 +348,10 @@ def simulate_season_elo(
 
     for r in rounds_data:
         r_num = int(r.get("roundNumber", 0))
+        r_label = r.get("roundLabel") or f"G{r_num}"
+        r_match_idx = r.get("matchIndex") or r_num
+        r_cat = r.get("competitionCategory") or competition_category
+        r_ch_md = r.get("championshipMatchDay")
         matches = r.get("matches", [])
 
         for m in matches:
@@ -369,6 +373,9 @@ def simulate_season_elo(
             )
             if not is_played:
                 continue
+
+            match_cat = m.get("competitionCategory") or r_cat
+            match_k = get_k_factor(match_cat, cfg)
 
             h_goals = int(m.get("homeScore", 0) or 0)
             a_goals = int(m.get("awayScore", 0) or 0)
@@ -416,7 +423,7 @@ def simulate_season_elo(
                 goals_b=a_goals,
                 fp_a=h_fp,
                 fp_b=a_fp,
-                k_factor=k_factor,
+                k_factor=match_k,
                 scale_factor=scale_factor
             )
 
@@ -429,6 +436,11 @@ def simulate_season_elo(
                 tracker[home_mgr]["floor"] = {"value": round(new_h, 1), "season": season_label, "round": r_num}
             tracker[home_mgr]["trajectory"].append({
                 "round": r_num,
+                "roundLabel": r_label,
+                "matchIndex": r_match_idx,
+                "championshipMatchDay": m.get("championshipMatchDay") or r_ch_md,
+                "competitionCategory": match_cat,
+                "competition": m.get("competition") or match_cat,
                 "season": season_label,
                 "elo": round(new_h, 1),
                 "opponentId": away_mgr,
@@ -452,6 +464,11 @@ def simulate_season_elo(
                 tracker[away_mgr]["floor"] = {"value": round(new_a, 1), "season": season_label, "round": r_num}
             tracker[away_mgr]["trajectory"].append({
                 "round": r_num,
+                "roundLabel": r_label,
+                "matchIndex": r_match_idx,
+                "championshipMatchDay": m.get("championshipMatchDay") or r_ch_md,
+                "competitionCategory": match_cat,
+                "competition": m.get("competition") or match_cat,
                 "season": season_label,
                 "elo": round(new_a, 1),
                 "opponentId": home_mgr,
@@ -515,7 +532,16 @@ def simulate_season_atlas_elo(
 
     for r in rounds_data:
         r_num = int(r.get("roundNumber", 0))
+        r_label = r.get("roundLabel") or f"G{r_num}"
+        r_match_idx = r.get("matchIndex") or r_num
+        r_cat = r.get("competitionCategory") or "Campionato"
+        r_ch_md = r.get("championshipMatchDay")
         matches = r.get("matches", [])
+
+        # Competition scaling: scale base sensitivity by K_factor / 32.0
+        cat_scale = float(get_k_factor(r_cat, cfg)) / 32.0
+        k_h2h_base = 26.0 * cat_scale
+        k_field_base = 15.6 * cat_scale
 
         # Gather active match participants for this round
         round_matches = []
@@ -548,7 +574,8 @@ def simulate_season_atlas_elo(
                 "hGoals": h_goals,
                 "aGoals": a_goals,
                 "hFp": h_fp,
-                "aFp": a_fp
+                "aFp": a_fp,
+                "competition": m.get("competition") or r.get("competition") or r_cat
             })
 
         active_mgrs = list(round_fp.keys())
@@ -596,7 +623,7 @@ def simulate_season_atlas_elo(
             s_tilde_a = 0.65 * s_a + 0.35 * s_fp_a
             s_tilde_b = 1.0 - s_tilde_a
 
-            delta_h2h_a = pair_eta * 26.0 * (s_tilde_a - e_a)
+            delta_h2h_a = pair_eta * k_h2h_base * (s_tilde_a - e_a)
             delta_h2h_b = -delta_h2h_a
 
             h2h_deltas[id_a] = delta_h2h_a
@@ -614,7 +641,8 @@ def simulate_season_atlas_elo(
                 "gf": g_a,
                 "ga": g_b,
                 "fpFor": round(fp_a, 1),
-                "fpAgainst": round(fp_b, 1)
+                "fpAgainst": round(fp_b, 1),
+                "competition": rm.get("competition")
             }
             match_meta[id_b] = {
                 "opponentId": id_a,
@@ -625,7 +653,8 @@ def simulate_season_atlas_elo(
                 "gf": g_b,
                 "ga": g_a,
                 "fpFor": round(fp_b, 1),
-                "fpAgainst": round(fp_a, 1)
+                "fpAgainst": round(fp_a, 1),
+                "competition": rm.get("competition")
             }
 
         # 2. Field All-Play Component across active managers
@@ -643,7 +672,7 @@ def simulate_season_atlas_elo(
                     e_ik = expected_score(r_i, r_k, scale_factor)
                     field_sum += pair_eta * (s_ik - e_ik)
 
-            field_deltas[m_i] = (15.6 / float(N - 1)) * field_sum
+            field_deltas[m_i] = (k_field_base / float(N - 1)) * field_sum
 
         # 3. Apply Total Delta = H2H + Field
         for m_id in active_mgrs:
@@ -678,11 +707,17 @@ def simulate_season_atlas_elo(
                 "gf": 0,
                 "ga": 0,
                 "fpFor": round(round_fp[m_id], 1),
-                "fpAgainst": 0.0
+                "fpAgainst": 0.0,
+                "competition": r_cat
             })
 
             tracker[m_id]["trajectory"].append({
                 "round": r_num,
+                "roundLabel": r_label,
+                "matchIndex": r_match_idx,
+                "championshipMatchDay": r_ch_md,
+                "competitionCategory": r_cat,
+                "competition": meta.get("competition") or r_cat,
                 "season": season_label,
                 "elo": round(new_r, 1),
                 "opponentId": meta["opponentId"],

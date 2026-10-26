@@ -112,6 +112,11 @@ LEAGUE_ALIAS = os.getenv("LEAGUE_ALIAS", "")
 APP_KEY = os.getenv("APP_KEY", "")
 BEARER_TOKEN = os.getenv("BEARER_TOKEN", "")
 BASE_API = os.getenv("BASE_API", "")
+COMPETITION_ID = os.getenv("COMPETITION_ID", "")
+CUP_COMPETITION_ID = os.getenv("CUP_COMPETITION_ID", "")
+SUPERCUP_COMPETITION_ID = os.getenv("SUPERCUP_COMPETITION_ID", "")
+MUNDIALITO_COMPETITION_ID = os.getenv("MUNDIALITO_COMPETITION_ID", "")
+PERDENTI_COMPETITION_ID = os.getenv("PERDENTI_COMPETITION_ID", "")
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",

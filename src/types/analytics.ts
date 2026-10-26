@@ -21,6 +21,11 @@ export interface EloTrajectoryPoint {
   ga?: number;
   fpFor?: number;
   fpAgainst?: number;
+  roundLabel?: string;
+  matchIndex?: number;
+  championshipMatchDay?: number;
+  competitionCategory?: string;
+  competition?: string;
 }
 
 export interface EloTrackData {

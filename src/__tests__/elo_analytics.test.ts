@@ -30,6 +30,7 @@ import {
   renderEloScatterChart,
   buildScatterPoints
 } from '@/components/modals/analytics/EloScatterChart';
+import { renderEloTrajectoryChart } from '@/components/modals/analytics/EloTrajectoryChart';
 import type { EloProfileEntry } from '@/components/modals/analytics/EloKpis';
 import type { ManagerEloProfile, EloTrajectoryPoint } from '@/types/analytics';
 
@@ -1173,6 +1174,110 @@ describe('Dynamic Elo Engine Client Analytics', () => {
         const luckAtlas26 = buildScatterPoints(profiles, 'luck', 'flat', '2026/27', 'h2hVsAtlas');
         expect(luckAtlas26.points.length).toBe(2);
         expect(luckAtlas26.points.some(p => p.managerId === 'm_retired')).toBe(false);
+      });
+    });
+
+    describe('Simultaneous League and Cup Ingestion & Visualization', () => {
+      it('correctly sorts, keys, and formats simultaneous Campionato (G3) and Coppa (C1) matches', () => {
+        const trajectoryWithBoth: EloTrajectoryPoint[] = [
+          {
+            season: '2026/27',
+            round: 1,
+            roundLabel: 'G1',
+            matchIndex: 1,
+            competitionCategory: 'Campionato',
+            elo: 1515.0,
+            delta: 15.0,
+            opponentId: 'm2',
+            opponentTeamName: 'Team 2',
+            winProbPreMatch: 50.0,
+            isHome: true,
+            result: 'W'
+          },
+          {
+            season: '2026/27',
+            round: 2,
+            roundLabel: 'G2',
+            matchIndex: 2,
+            competitionCategory: 'Campionato',
+            elo: 1528.0,
+            delta: 13.0,
+            opponentId: 'm3',
+            opponentTeamName: 'Team 3',
+            winProbPreMatch: 52.0,
+            isHome: false,
+            result: 'W'
+          },
+          {
+            season: '2026/27',
+            round: 3,
+            roundLabel: 'G3',
+            matchIndex: 3,
+            championshipMatchDay: 8,
+            competitionCategory: 'Campionato',
+            elo: 1545.0,
+            delta: 17.0,
+            opponentId: 'm4',
+            opponentTeamName: 'Team 4',
+            winProbPreMatch: 55.0,
+            isHome: true,
+            result: 'W'
+          },
+          {
+            season: '2026/27',
+            round: 1,
+            roundLabel: 'C1',
+            matchIndex: 4,
+            championshipMatchDay: 8,
+            competitionCategory: 'Coppa',
+            elo: 1533.0,
+            delta: -12.0,
+            opponentId: 'm5',
+            opponentTeamName: 'Team 5',
+            winProbPreMatch: 60.0,
+            isHome: false,
+            result: 'L'
+          }
+        ];
+
+        // 1. Sparkline chart rendering
+        const sparklineHtml = renderEloTrajectorySparkline(trajectoryWithBoth, '2026/27', 'Team One');
+        expect(sparklineHtml).toContain('G3: Team One vs Team 4 (W)');
+        expect(sparklineHtml).toContain('C1 [Coppa]: Team One vs Team 5 (L)');
+        expect(sparklineHtml).toContain('G3');
+        expect(sparklineHtml).toContain('C1');
+
+        // 2. Multi-team Trajectory Chart rendering
+        const chartHtml = renderEloTrajectoryChart([
+          {
+            managerId: 'm1',
+            teamName: 'Team One',
+            coach: 'Coach 1',
+            profile: {
+              managerId: 'm1',
+              teamName: 'Team One',
+              flat: {
+                current: 1533.0,
+                peak: { value: 1545.0, season: '2026/27', round: 3 },
+                floor: { value: 1500.0, season: '2026/27', round: 0 },
+                lastDelta: -12.0,
+                trajectory: trajectoryWithBoth
+              },
+              historical: {
+                current: 1533.0,
+                peak: { value: 1545.0, season: '2026/27', round: 3 },
+                floor: { value: 1500.0, season: '2026/27', round: 0 },
+                lastDelta: -12.0,
+                trajectory: trajectoryWithBoth
+              }
+            }
+          }
+        ], 'flat');
+
+        expect(chartHtml).toContain('Team One (2026/27 G3): 1545.0 (+17.0)');
+        expect(chartHtml).toContain('Team One (2026/27 C1 [Coppa]): 1533.0 (-12.0)');
+        expect(chartHtml).toContain('G3');
+        expect(chartHtml).toContain('C1');
       });
     });
   });

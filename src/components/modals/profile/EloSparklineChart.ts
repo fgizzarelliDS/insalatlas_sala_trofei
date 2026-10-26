@@ -257,6 +257,9 @@ export function renderEloTrajectorySparkline(
   let displayPts: EloTrajectoryPoint[] = [];
   const sorted = [...(trajectory || [])].sort((a, b) => {
     if (a.season !== b.season) return a.season.localeCompare(b.season);
+    if (a.matchIndex !== undefined && b.matchIndex !== undefined) {
+      return a.matchIndex - b.matchIndex;
+    }
     return a.round - b.round;
   });
 
@@ -346,6 +349,9 @@ export function renderEloTrajectorySparkline(
       : '';
     const sliceX = Math.max(padding.left, x - sliceW / 2);
 
+    const rLabel = pt.roundLabel || `G${pt.round}`;
+    const compLabel = pt.competitionCategory && pt.competitionCategory !== 'Campionato' ? ` [${pt.competitionCategory}]` : '';
+
     dots += `
       ${ringHTML}
       <circle data-point-idx="${idx}" cx="${x}" cy="${y}" r="${dotR}" fill="${dotColor}" stroke="#0f172a" stroke-width="1.2" pointer-events="none"></circle>
@@ -353,7 +359,7 @@ export function renderEloTrajectorySparkline(
             onclick="window.selectProfileEloPoint && window.selectProfileEloPoint(${idx}, '${pt.season}', ${pt.round}, '${escapedTeam}', '${escapedOpp}', '${pt.result || ''}', ${pt.elo}, ${pt.delta}, ${pt.winProbPreMatch || 0})"
             onmouseenter="window.showProfileEloHover && window.showProfileEloHover('${pt.season}', ${pt.round}, '${escapedTeam}', '${escapedOpp}', '${pt.result || ''}', ${pt.elo}, ${pt.delta}, ${pt.winProbPreMatch || 0})"
             onmouseleave="window.clearProfileEloHover && window.clearProfileEloHover()">
-        <title>${pt.season} G${pt.round}: ${teamName} vs ${pt.opponentTeamName} (${pt.result}) ${pt.elo.toFixed(1)} (${pt.delta > 0 ? '+' : ''}${pt.delta.toFixed(1)})</title>
+        <title>${pt.season} ${rLabel}${compLabel}: ${teamName} vs ${pt.opponentTeamName} (${pt.result}) ${pt.elo.toFixed(1)} (${pt.delta > 0 ? '+' : ''}${pt.delta.toFixed(1)})</title>
       </rect>
     `;
 
@@ -374,7 +380,7 @@ export function renderEloTrajectorySparkline(
     if (isStep || (isLast && !wouldCollideWithStep)) {
       xLabels += `
         <line x1="${x}" y1="${padding.top}" x2="${x}" y2="${padding.top + innerH}" stroke="currentColor" stroke-opacity="0.06" />
-        <text x="${x}" y="${padding.top + innerH + 16}" text-anchor="middle" font-size="8.5" font-weight="bold" fill="currentColor" opacity="0.6">G${pt.round}</text>
+        <text x="${x}" y="${padding.top + innerH + 16}" text-anchor="middle" font-size="8.5" font-weight="bold" fill="currentColor" opacity="0.6">${rLabel}</text>
       `;
     }
   });

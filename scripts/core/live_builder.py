@@ -507,6 +507,9 @@ def compile_live_season_details(
                 (home, True, h_score, a_score, h_fp, away),
                 (away, False, a_score, h_score, a_fp, home)
             ]:
+                if teams_by_name and team_name not in teams_by_name:
+                    # Ignore unmapped phantom teams not part of official season configuration
+                    continue
                 if team_name not in teams_stats:
                     teams_stats[team_name] = {
                         'teamName': team_name,

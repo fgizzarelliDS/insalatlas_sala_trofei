@@ -16,7 +16,8 @@
           "coach": "valeriodam",
           "managerId": "m_valery",
           "points": 0.0,
-          "logo": "assets/teams/2543640_02914103.png"
+          "logo": "assets/teams/2543640_02914103.png",
+          "teamId": 2543640
         },
         {
           "rank": 2,
@@ -24,7 +25,8 @@
           "coach": "cursimone",
           "managerId": "m_scurcio",
           "points": 0.0,
-          "logo": "assets/teams/2544594_04501676.png"
+          "logo": "assets/teams/2544594_04501676.png",
+          "teamId": 2544594
         },
         {
           "rank": 3,
@@ -32,7 +34,8 @@
           "coach": "alfius91",
           "managerId": "m_alfo",
           "points": 0.0,
-          "logo": "assets/teams/2545500_09340839.png"
+          "logo": "assets/teams/2545500_09340839.png",
+          "teamId": 2545500
         },
         {
           "rank": 4,
@@ -40,7 +43,8 @@
           "coach": "sebbadavid",
           "managerId": "m_sebba",
           "points": 0.0,
-          "logo": "assets/teams/2545541_04342571.png"
+          "logo": "assets/teams/2545541_04342571.png",
+          "teamId": 2545541
         },
         {
           "rank": 5,
@@ -48,7 +52,8 @@
           "coach": "vannico",
           "managerId": "m_vannico",
           "points": 0.0,
-          "logo": "assets/teams/2546265_07646962.png"
+          "logo": "assets/teams/2546265_07646962.png",
+          "teamId": 2546265
         },
         {
           "rank": 6,
@@ -56,7 +61,8 @@
           "coach": "Lucchetto",
           "managerId": "m_lucchetto",
           "points": 0.0,
-          "logo": "assets/teams/2549374_08789113.png"
+          "logo": "assets/teams/2549374_08789113.png",
+          "teamId": 2549374
         },
         {
           "rank": 7,
@@ -64,7 +70,8 @@
           "coach": "Juliet-91",
           "managerId": "m_avvisatina",
           "points": 0.0,
-          "logo": "assets/crests/golden_griffin.svg"
+          "logo": "assets/crests/golden_griffin.svg",
+          "teamId": 2550954
         },
         {
           "rank": 8,
@@ -72,7 +79,8 @@
           "coach": "Paiden",
           "managerId": "m_pippo",
           "points": 0.0,
-          "logo": "assets/crests/anchor_bay.svg"
+          "logo": "assets/crests/anchor_bay.svg",
+          "teamId": 3674613
         },
         {
           "rank": 9,
@@ -80,7 +88,8 @@
           "coach": "petrubik88",
           "managerId": "m_peterdani",
           "points": 0.0,
-          "logo": "assets/teams/4862674_07729756.png"
+          "logo": "assets/teams/4862674_07729756.png",
+          "teamId": 4862674
         },
         {
           "rank": 10,
@@ -88,7 +97,8 @@
           "coach": "Dr cholo",
           "managerId": "m_gigicholo",
           "points": 0.0,
-          "logo": "assets/teams/6150431_02386417.png"
+          "logo": "assets/teams/6150431_02386417.png",
+          "teamId": 6150431
         },
         {
           "rank": 11,
@@ -96,7 +106,8 @@
           "coach": "tazio13",
           "managerId": "m_tazio",
           "points": 0.0,
-          "logo": "assets/teams/7823986_09569971.png"
+          "logo": "assets/teams/7823986_09569971.png",
+          "teamId": 7823986
         },
         {
           "rank": 12,
@@ -104,7 +115,8 @@
           "coach": "Gizza",
           "managerId": "m_gizzagustacito",
           "points": 0.0,
-          "logo": "assets/teams/16496754_03423498.png"
+          "logo": "assets/teams/16496754_03423498.png",
+          "teamId": 16496754
         },
         {
           "rank": 13,
@@ -112,7 +124,8 @@
           "coach": "Zatte",
           "managerId": "m_zatte",
           "points": 0.0,
-          "logo": "assets/teams/20613187_04209253.png"
+          "logo": "assets/teams/20613187_04209253.png",
+          "teamId": 20613187
         },
         {
           "rank": 14,
@@ -120,7 +133,8 @@
           "coach": "Leone",
           "managerId": "m_makakoleone",
           "points": 0.0,
-          "logo": "assets/teams/20614631_002972323.png"
+          "logo": "assets/teams/20614631_002972323.png",
+          "teamId": 20614631
         }
       ]
     },

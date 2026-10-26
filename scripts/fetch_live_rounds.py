@@ -12,6 +12,8 @@ then compiles live season details and multi-track Elo trajectories.
 import os
 import sys
 import json
+import shutil
+import subprocess
 import urllib.request
 import urllib.error
 from typing import Optional, Dict, Any, List
@@ -33,6 +35,22 @@ from core.config import (
 from core.logger import ok, info, warn, error, banner
 from core.live_builder import compile_live_season_details, find_in_progress_season_info
 from core.builder import build_data
+
+
+import base64
+
+def decode_jwt_payload(token: str) -> Dict[str, Any]:
+    """Decodes JWT payload without signature verification for debugging info."""
+    try:
+        raw = token.replace("Bearer ", "").strip()
+        parts = raw.split(".")
+        if len(parts) >= 2:
+            payload_b64 = parts[1]
+            payload_b64 += "=" * ((4 - len(payload_b64) % 4) % 4)
+            return json.loads(base64.b64decode(payload_b64))
+    except Exception:
+        pass
+    return {}
 
 
 def get_active_season_competitions(base_dir: str) -> Dict[str, Dict[str, Any]]:
@@ -76,7 +94,6 @@ def get_active_season_competitions(base_dir: str) -> Dict[str, Dict[str, Any]]:
                     }
         except Exception as e:
             warn(f"Impossibile leggere file stagione: {e}")
-
     # Environment variables override or provide defaults for all 5 competitions
     env_mappings = [
         ("campionato", "COMPETITION_ID", COMPETITION_ID, "Campionato", "2026-27_rounds.json"),
@@ -154,30 +171,51 @@ def fetch_single_competition(competition_id: int, base_dir: str, headers: Dict[s
     info(f"Connecting to: {url} ...")
 
     api_data = None
-    try:
-        req = urllib.request.Request(url, headers=headers)
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            raw_body = resp.read().decode("utf-8")
-            api_data = json.loads(raw_body)
-    except urllib.error.HTTPError as e:
-        error(f"HTTP Error {e.code}: {e.reason}")
-        if e.code == 401:
-            error("Token scaduto o non autorizzato. Ricarica la pagina su Leghe Fantacalcio e copia il Bearer token aggiornato.")
-        return False
-    except Exception as e:
-        error(f"Errore di connessione API: {e}")
-        # Try local fallback if available
-        raw_debug_path = os.path.join(base_dir, "data", "live", f"raw_api_comp_{competition_id}.json")
-        if os.path.exists(raw_debug_path):
-            warn(f"Uso payload locale esistente in: {raw_debug_path}")
-            try:
-                with open(raw_debug_path, "r", encoding="utf-8") as f:
-                    api_data = json.load(f)
-            except Exception:
-                return False
-        else:
-            return False
+    # 1. Try fetching via curl (uses HTTP/2 + modern TLS handshake, bypassing CloudFront WAF blocks)
+    if shutil.which("curl"):
+        try:
+            cmd = ["curl", "-s", "--max-time", "15"]
+            for hk, hv in headers.items():
+                cmd.extend(["-H", f"{hk}: {hv}"])
+            cmd.append(url)
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
+            if res.returncode == 0 and res.stdout.strip().startswith(("{", "[")):
+                parsed = json.loads(res.stdout)
+                if isinstance(parsed, dict) and parsed.get("code") == "FAIL":
+                    jwt_info = decode_jwt_payload(headers.get("Authorization", ""))
+                    l_id = jwt_info.get("l_id")
+                    t_id = jwt_info.get("t_id")
+                    error(f"API Fantacalcio ha risposto con Errore 403 Forbidden ({parsed.get('message', 'FAIL')}).")
+                    if l_id:
+                        error(f"MOTIVO: Il Bearer token attualmente in uso appartiene alla lega ID '{l_id}' (squadra ID '{t_id}'), non alla competizione {competition_id}!")
+                        info("-> Vai su https://leghe.fantacalcio.it/insalatlas, assicurati di aver selezionato la lega InsalAtlas in alto, e copia il Bearer token dalla scheda Network dei DevTools (F12).")
+                    return False
+                else:
+                    api_data = parsed
+        except Exception as e:
+            warn(f"Tentativo curl non riuscito, fallback su urllib: {e}")
 
+    # 2. Fallback to urllib.request if curl is unavailable or failed
+    if api_data is None:
+        try:
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                raw_body = resp.read().decode("utf-8")
+                api_data = json.loads(raw_body)
+        except urllib.error.HTTPError as e:
+            error(f"HTTP Error {e.code}: {e.reason}")
+            if e.code in (401, 403):
+                jwt_info = decode_jwt_payload(headers.get("Authorization", ""))
+                l_id = jwt_info.get("l_id")
+                t_id = jwt_info.get("t_id")
+                error("Token scaduto, non autorizzato o app_key non valida.")
+                if l_id:
+                    error(f"MOTIVO: Il Bearer token attualmente in uso appartiene alla lega ID '{l_id}' (squadra ID '{t_id}'), non alla competizione {competition_id}!")
+                    info("-> Vai su https://leghe.fantacalcio.it/insalatlas, assicurati di aver selezionato la lega InsalAtlas in alto, e copia il Bearer token dalla scheda Network dei DevTools (F12).")
+            return False
+        except Exception as e:
+            error(f"Errore di connessione API: {e}")
+            return False
     # Save raw debug payload
     raw_debug_path = os.path.join(base_dir, "data", "live", f"raw_api_comp_{competition_id}.json")
     os.makedirs(os.path.dirname(raw_debug_path), exist_ok=True)
@@ -203,13 +241,23 @@ def fetch_single_competition(competition_id: int, base_dir: str, headers: Dict[s
     info(f"Ricevute {len(raw_rounds)} giornate di calendario dall'API per {comp_name}.")
 
     if not raw_rounds:
-        error(f"Nessun turno trovato nella risposta API per la competizione {competition_id}!")
-        return False
+        info(f"Nessun turno programmato al momento per {comp_name} ({competition_id}). In attesa di generazione calendario.")
+        return True
 
-    # Team ID mapping
+    # Dynamic Team ID mapping with fallback dictionary (mirroring child repo) for generic SVG crests
     team_id_map: Dict[int, Dict[str, Any]] = {
-        2550954: {"teamName": "LoTUS FC", "managerId": "m_avvisatina"},
-        3674613: {"teamName": "Partizan Peroni", "managerId": "m_pippo"}
+        2550954: {
+            "teamName": "LoTUS FC",
+            "managerId": "m_avvisatina",
+            "coach": "Juliet-91",
+            "logo": "assets/crests/golden_griffin.svg"
+        },
+        3674613: {
+            "teamName": "Partizan Peroni",
+            "managerId": "m_pippo",
+            "coach": "Paiden",
+            "logo": "assets/crests/anchor_bay.svg"
+        }
     }
 
     active_info = find_in_progress_season_info(base_dir)
@@ -222,17 +270,19 @@ def fetch_single_competition(competition_id: int, base_dir: str, headers: Dict[s
                         mgr_id = t.get("managerId")
                         t_name = t.get("teamName")
                         logo = t.get("logo", "")
-                        if "assets/teams/" in logo:
+                        tid = t.get("teamId") or t.get("id")
+                        if not tid and "assets/teams/" in logo:
                             base_logo = os.path.basename(logo)
                             prefix = base_logo.split("_")[0]
                             if prefix.isdigit():
                                 tid = int(prefix)
-                                team_id_map[tid] = {
-                                    "teamName": t_name,
-                                    "managerId": mgr_id,
-                                    "coach": t.get("coach"),
-                                    "logo": logo
-                                }
+                        if tid is not None:
+                            team_id_map[int(tid)] = {
+                                "teamName": t_name,
+                                "managerId": mgr_id,
+                                "coach": t.get("coach"),
+                                "logo": logo
+                            }
         except Exception as e:
             warn(f"Impossibile estrarre mapping squadre da file stagione: {e}")
 
@@ -252,8 +302,8 @@ def fetch_single_competition(competition_id: int, base_dir: str, headers: Dict[s
             h_id = m.get("tIdH") or m.get("homeTeamId") or m.get("home_team_id")
             a_id = m.get("tIdA") or m.get("awayTeamId") or m.get("away_team_id")
 
-            h_info = team_id_map.get(int(h_id)) if h_id is not None and str(h_id).isdigit() else {}
-            a_info = team_id_map.get(int(a_id)) if a_id is not None and str(a_id).isdigit() else {}
+            h_info = (team_id_map.get(int(h_id)) or {}) if h_id is not None and str(h_id).isdigit() else {}
+            a_info = (team_id_map.get(int(a_id)) or {}) if a_id is not None and str(a_id).isdigit() else {}
 
             h_team = h_info.get("teamName") or m.get("homeTeam") or f"Team {h_id}"
             a_team = a_info.get("teamName") or m.get("awayTeam") or f"Team {a_id}"
@@ -280,12 +330,16 @@ def fetch_single_competition(competition_id: int, base_dir: str, headers: Dict[s
             is_match_played = bool(is_calculated or h_fp > 0 or a_fp > 0 or (result_str and result_str != "-"))
             if is_match_played:
                 round_has_played_match = True
+            h_logo = h_info.get("logo") or m.get("homeLogo")
+            a_logo = a_info.get("logo") or m.get("awayLogo")
 
             match_entry = {
                 "homeTeam": h_team,
                 "awayTeam": a_team,
                 "homeManagerId": h_mgr,
                 "awayManagerId": a_mgr,
+                "homeLogo": h_logo,
+                "awayLogo": a_logo,
                 "homeScore": h_score,
                 "awayScore": a_score,
                 "homeFantaPoints": round(h_fp, 1),
@@ -406,12 +460,19 @@ def fetch_live_rounds(target_arg: Optional[str] = None) -> int:
         return 1
 
     headers = {
-        "Authorization": token if token.startswith("Bearer ") else f"Bearer {token}",
+        "authorization": token if token.startswith("Bearer ") else f"Bearer {token}",
         "app_key": app_key,
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Referer": f"https://leghe.fantacalcio.it/{LEAGUE_ALIAS}/" if LEAGUE_ALIAS else "https://leghe.fantacalcio.it",
-        "Origin": "https://leghe.fantacalcio.it",
-        "Accept": "application/json, text/plain, */*"
+        "accept": "application/json, text/plain, */*",
+        "accept-language": "it-IT,it;q=0.9,fr-FR;q=0.8,fr;q=0.7,en;q=0.6",
+        "origin": "https://leghe.fantacalcio.it",
+        "referer": "https://leghe.fantacalcio.it/",
+        "sec-ch-ua": '"Google Chrome";v="155", "Chromium";v="155", "Not(A:Brand";v="24"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"macOS"',
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-site",
+        "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
     }
 
     success_count = 0

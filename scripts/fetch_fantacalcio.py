@@ -39,9 +39,14 @@ class SimpleTableParser(HTMLParser):
             self.current_cell = {
                 'text': '',
                 'img': '',
+                'href': '',
                 'class': attrs_dict.get('class', ''),
                 'data-coach': attrs_dict.get('data-coach', '')
             }
+        elif tag == 'a' and self.in_cell and self.current_cell is not None:
+            href = attrs_dict.get('href', '')
+            if href and not self.current_cell.get('href'):
+                self.current_cell['href'] = href
         elif tag == 'img' and self.in_cell and self.current_cell is not None:
             src = attrs_dict.get('src') or attrs_dict.get('data-src') or ''
             if src and not self.current_cell['img']:
@@ -194,12 +199,23 @@ def parse_html_table(html_content: str) -> Tuple[Optional[str], Optional[str], L
                 pts = float(txt)
                 break
 
+        team_id = None
+        href = team_cell.get('href', '')
+        m_id = re.search(r'/squadra/.*?(\d+)', href) or re.search(r'(\d{5,})', href)
+        if m_id:
+            team_id = int(m_id.group(1))
+        elif logo_url:
+            m_logo_id = re.search(r'/(\d{5,})_', logo_url)
+            if m_logo_id:
+                team_id = int(m_logo_id.group(1))
+
         rows.append({
             'rank': rank,
             'teamName': team_name,
             'coach': coach,
             'points': pts,
-            'logo': logo_url
+            'logo': logo_url,
+            'teamId': team_id
         })
 
     return season, comp_name, rows
@@ -266,27 +282,48 @@ def ingest_fantacalcio(target: Optional[str] = None,
     ranking: List[Dict[str, Any]] = []
     unmapped_count = 0
 
+    # Map of known team IDs and fallback from active season configuration
+    known_team_ids: Dict[str, int] = {
+        "LoTUS FC": 2550954,
+        "Partizan Peroni": 3674613
+    }
+    for comp in existing_data.get("competitions", []):
+        for t in comp.get("ranking", []):
+            tid = t.get("teamId") or t.get("id")
+            if tid:
+                if t.get("teamName"):
+                    known_team_ids[t["teamName"]] = int(tid)
+                if t.get("managerId"):
+                    known_team_ids[t["managerId"]] = int(tid)
+
     for r in parsed_rows:
         rank = r['rank']
         team_name = r['teamName']
         coach_name = r['coach']
         points = r['points']
         raw_logo = r['logo']
+        team_id = r.get('teamId') or known_team_ids.get(team_name)
 
         manager_id = resolve_manager_id(coach_name if coach_name else team_name)
         if manager_id == 'm_unknown':
             unmapped_count += 1
+        elif not team_id:
+            team_id = known_team_ids.get(manager_id)
 
         crest = resolve_team_crest(team_name, raw_logo)
 
-        ranking.append({
+        team_entry = {
             "rank": rank,
             "teamName": team_name,
             "coach": coach_name or manager_id.replace('m_', ''),
             "managerId": manager_id,
             "points": points,
             "logo": crest
-        })
+        }
+        if team_id is not None:
+            team_entry["teamId"] = int(team_id)
+
+        ranking.append(team_entry)
 
     # Sort ranking by rank ascending
     ranking.sort(key=lambda x: x["rank"])

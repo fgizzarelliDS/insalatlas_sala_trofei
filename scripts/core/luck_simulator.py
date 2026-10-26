@@ -108,35 +108,37 @@ def compute_all_play_standings(
                 round_team_fp[home] = h_fp
                 round_team_fp[away] = a_fp
 
-        if len(round_team_fp) < n_teams:
-            # Round not fully completed or unplayed
-            continue
-
-        # Convert to goals
+        # Convert to goals for valid competing teams
         round_team_goals = {
             t: fanta_points_to_goals(fp)
             for t, fp in round_team_fp.items()
+            if t in all_play_stats
         }
 
+        active_teams_in_round = list(round_team_goals.keys())
+        # A valid completed round must have at least 2 active teams
+        if len(active_teams_in_round) < 2:
+            continue
+
         r_num = r.get('roundNumber', 0)
-        for t, fp in round_team_fp.items():
-            if t in all_play_stats:
-                all_play_stats[t]['weeklyScores'].append((r_num, fp, round_team_goals[t]))
+        for t in active_teams_in_round:
+            fp = round_team_fp[t]
+            all_play_stats[t]['weeklyScores'].append((r_num, fp, round_team_goals[t]))
+
+        round_divisor = float(len(active_teams_in_round) - 1)
 
         # Run 1 vs All duels for this round
-        for t_a in team_names:
-            if t_a not in round_team_goals:
-                continue
+        for t_a in active_teams_in_round:
             goals_a = round_team_goals[t_a]
 
             r_wins = 0
             r_draws = 0
             r_losses = 0
 
-            for t_b in team_names:
+            for t_b in active_teams_in_round:
                 if t_a == t_b:
                     continue
-                goals_b = round_team_goals.get(t_b, 0)
+                goals_b = round_team_goals[t_b]
 
                 if goals_a > goals_b:
                     r_wins += 1
@@ -146,16 +148,16 @@ def compute_all_play_standings(
                     r_losses += 1
 
             st = all_play_stats[t_a]
-            st['totalDuels'] += (n_teams - 1)
+            st['totalDuels'] += (len(active_teams_in_round) - 1)
             st['duelWins'] += r_wins
             st['duelDraws'] += r_draws
             st['duelLosses'] += r_losses
 
             # Normalized to standard 3-point single match scale
-            st['xPoints'] += (3 * r_wins + 1 * r_draws) / divisor
-            st['expectedWins'] += r_wins / divisor
-            st['expectedDraws'] += r_draws / divisor
-            st['expectedLosses'] += r_losses / divisor
+            st['xPoints'] += (3 * r_wins + 1 * r_draws) / round_divisor
+            st['expectedWins'] += r_wins / round_divisor
+            st['expectedDraws'] += r_draws / round_divisor
+            st['expectedLosses'] += r_losses / round_divisor
 
     # Format final metrics
     result: Dict[str, Dict[str, Any]] = {}
@@ -208,8 +210,7 @@ def run_monte_carlo_schedule_simulation(
 
     # Extract completed weekly goals matrix: List of rounds, where each round has [goals_0, ..., goals_{N-1}]
     # Determine completed rounds from weeklyScores
-    sample_scores = all_play_standings.get(team_names[0], {}).get('weeklyScores', [])
-    r_completed = len(sample_scores)
+    r_completed = max((len(ap.get('weeklyScores', [])) for ap in all_play_standings.values()), default=0)
 
     if r_completed == 0:
         # No completed rounds

@@ -261,6 +261,15 @@ def compile_live_season_details(
     ]
     effective_files = non_mock_files if non_mock_files else round_files
 
+    # Only load league round files for championship standings (ignore raw API dumps and cup/tournament files)
+    league_files = [
+        f for f in effective_files
+        if not any(k in os.path.basename(f).lower() for k in ('cup', 'coppa', 'supercoppa', 'supercup', 'mundialito', 'perdenti'))
+        and not os.path.basename(f).startswith('raw_api_')
+    ]
+    if not league_files:
+        league_files = effective_files
+
     # Dynamically find the active in-progress season configuration
     active_info = find_in_progress_season_info(root_dir)
     season_name = active_info['season'] if active_info else ''
@@ -270,7 +279,7 @@ def compile_live_season_details(
     # Deduplicate rounds across files by roundNumber
     rounds_by_number: Dict[int, Dict[str, Any]] = {}
 
-    for rf in sorted(effective_files):
+    for rf in sorted(league_files):
         with open(rf, 'r', encoding='utf-8') as f:
             try:
                 data = json.load(f)
@@ -391,6 +400,9 @@ def compile_live_season_details(
                 (home, True, h_score, a_score, h_fp, away),
                 (away, False, a_score, h_score, a_fp, home)
             ]:
+                if teams_by_name and team_name not in teams_by_name:
+                    # Ignore unmapped phantom teams not part of official season configuration
+                    continue
                 if team_name not in teams_stats:
                     teams_stats[team_name] = {
                         'teamName': team_name,

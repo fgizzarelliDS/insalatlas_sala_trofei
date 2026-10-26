@@ -31,7 +31,7 @@ def hash_team_name(name: str) -> int:
     return abs(h)
 
 def download_asset_locally(url: str, subfolder: str, root_dir: Optional[str] = None) -> str:
-    """Downloads an image asset locally if it starts with http."""
+    """Downloads an image asset locally to public/assets and archive if it starts with http."""
     if not root_dir:
         root_dir = get_base_dir()
     if not url or not url.startswith("http"):
@@ -45,21 +45,31 @@ def download_asset_locally(url: str, subfolder: str, root_dir: Optional[str] = N
     if not filename or "." not in filename:
         return url
 
-    target_dir = os.path.join(root_dir, "scripts", "archive", subfolder)
-    os.makedirs(target_dir, exist_ok=True)
-    target_path = os.path.join(target_dir, filename)
+    # Ensure saved to public/assets/{subfolder}/ so frontend and compilers can serve it
+    public_dir = os.path.join(root_dir, "public", "assets", subfolder)
+    os.makedirs(public_dir, exist_ok=True)
+    public_path = os.path.join(public_dir, filename)
 
-    if not os.path.exists(target_path) or os.path.getsize(target_path) == 0:
+    # Also keep copy in scripts/archive/{subfolder}/
+    archive_dir = os.path.join(root_dir, "scripts", "archive", subfolder)
+    os.makedirs(archive_dir, exist_ok=True)
+    archive_path = os.path.join(archive_dir, filename)
+
+    if not os.path.exists(public_path) or os.path.getsize(public_path) == 0:
         try:
             import urllib.request
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=10) as response, open(target_path, "wb") as out_file:
-                out_file.write(response.read())
+            with urllib.request.urlopen(req, timeout=10) as response:
+                data = response.read()
+                with open(public_path, "wb") as out_f1:
+                    out_f1.write(data)
+                with open(archive_path, "wb") as out_f2:
+                    out_f2.write(data)
         except Exception as e:
             warn(f"Failed to download asset {url}: {e}")
             return url
 
-    return f"scripts/archive/{subfolder}/{filename}"
+    return f"assets/{subfolder}/{filename}"
 
 def resolve_team_crest(team_name: str, raw_logo: Optional[str] = None, root_dir: Optional[str] = None) -> str:
     """Resolves local team crest path or deterministic SVG fallback."""

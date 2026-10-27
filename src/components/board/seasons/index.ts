@@ -9,6 +9,8 @@ export * from './standingsTable';
 export * from './tournamentCards';
 export * from './liveAnalytics';
 export * from './TeamMatchesModal';
+export * from './nextRoundMetrics';
+export * from './liveNextRoundGuide';
 export * from './NextRoundStrip';
 
 import { getLiveSeasonDetails, loadLiveSeasonDetails } from './liveAnalytics';

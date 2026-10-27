@@ -1310,7 +1310,7 @@ describe('Live In-Progress Form & Analytics Engine', () => {
       setEloMode('flat');
     });
 
-    it('renders Next Round strip (Option C) with educational guide, Bradley-Terry formula and 7 clima categories', () => {
+    it('renders Next Round strip (Option C) with educational guide, Bradley-Terry formula and 7 clima categories', async () => {
       const guideHtml = buildNextRoundGuideHTML();
       expect(guideHtml).toContain('Previsioni probabilistiche calcolate dal modello Elo Bradley-Terry prima del calcio d\'inizio.');
       expect(guideHtml).toContain('Formula Curva Logistica di Bradley-Terry');
@@ -1368,6 +1368,28 @@ describe('Live In-Progress Form & Analytics Engine', () => {
       expect(stripHtml).toContain('46%');
       expect(stripHtml).toContain('Probabilità Vittoria');
       expect(stripHtml).toContain('btn-next-round-guide-toggle');
+      expect(stripHtml).toContain('btn-next-round-share');
+      expect(stripHtml).toContain('next-round-share-dropdown');
+      expect(stripHtml).toContain('Scarica Duelli PNG (HD)');
+      expect(stripHtml).toContain('Copia per WhatsApp / Telegram');
+
+      // WhatsApp text formatting check
+      const { buildNextRoundShareText } = await import('@/export/share/nextRound');
+      const shareText = buildNextRoundShareText(mockLiveData, 'https://example.com/live');
+      expect(shareText).toContain('PROSSIMO TURNO — GIORNATA 2');
+      expect(shareText).toContain('Team Alpha');
+      expect(shareText).toContain('Team Beta');
+      expect(shareText).toContain('54%');
+      expect(shareText).toContain('46%');
+      expect(shareText).toContain('https://example.com/live');
+      // Verify resolveMatchupMetrics extracts real Elo values from standings
+      const { resolveMatchupMetrics } = await import('@/components/board/seasons/NextRoundStrip');
+      const matchupMeta = resolveMatchupMetrics(mockLiveData.rounds[0].matches[0], 0, mockLiveData, 'flat');
+      expect(matchupMeta.homeEloInt).toBe(1530);
+      expect(matchupMeta.awayEloInt).toBe(1500);
+      expect(matchupMeta.homeRank).toBe(1);
+      expect(matchupMeta.awayRank).toBe(2);
+
       // Zero clutter: no Casa/Trasferta noise
       expect(stripHtml).not.toContain('(C)');
       expect(stripHtml).not.toContain('(T)');

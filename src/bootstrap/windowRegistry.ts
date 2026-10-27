@@ -126,6 +126,9 @@ const copyStandingsToClipboard = lazyExport('copyStandingsToClipboard');
 const shareStandingsWhatsApp = lazyExport('shareStandingsWhatsApp');
 const exportTeamMatchesPNG = lazyExport('exportTeamMatchesPNG');
 const copyTeamMatchesToClipboard = lazyExport('copyTeamMatchesToClipboard');
+const exportNextRoundPNG = lazyExport('exportNextRoundPNG');
+const copyNextRoundToClipboard = lazyExport('copyNextRoundToClipboard');
+const shareNextRoundWhatsApp = lazyExport('shareNextRoundWhatsApp');
 import {
   changeSort,
   toggleDisplayMode,
@@ -305,6 +308,9 @@ declare global {
     shareStandingsWhatsApp: typeof shareStandingsWhatsApp;
     exportTeamMatchesPNG: typeof exportTeamMatchesPNG;
     copyTeamMatchesToClipboard: typeof copyTeamMatchesToClipboard;
+    exportNextRoundPNG: typeof exportNextRoundPNG;
+    copyNextRoundToClipboard: typeof copyNextRoundToClipboard;
+    shareNextRoundWhatsApp: typeof shareNextRoundWhatsApp;
     closePosterShareDropdown: typeof closePosterShareDropdown;
     exportRecordStory?: (recordId: string, event?: Event) => Promise<void>;
     exportRecordStoryHD?: typeof exportRecordStoryHD;
@@ -489,6 +495,9 @@ export function registerGlobalWindowHandlers(): void {
     shareStandingsWhatsApp,
     exportTeamMatchesPNG,
     copyTeamMatchesToClipboard,
+    exportNextRoundPNG,
+    copyNextRoundToClipboard,
+    shareNextRoundWhatsApp,
     switchProfileEloSeason,
     showProfileEloHover,
     clearProfileEloHover,

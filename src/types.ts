@@ -619,8 +619,10 @@ export interface MatchdayMatch {
   awayLogo?: string;
   winProbHomeFlat?: number;
   winProbHomeHistorical?: number;
+  winProbHomeAtlas?: number;
   eloDeltaHomeFlat?: number;
   eloDeltaHomeHistorical?: number;
+  eloDeltaHomeAtlas?: number;
 }
 
 export interface MatchdayRound {

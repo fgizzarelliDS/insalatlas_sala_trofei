@@ -160,20 +160,21 @@ export function getEloTierTitle(elo: number): string {
 }
 
 /**
- * Format Elo score to 1 decimal place
+ * Format Elo score to integer
  */
 export function formatElo(val?: number): string {
-  if (val === undefined || isNaN(val)) return '1500.0';
-  return val.toFixed(1);
+  if (val === undefined || isNaN(val)) return '1500';
+  return Math.round(val).toString();
 }
 
 /**
- * Format Elo delta with sign
+ * Format Elo delta to signed integer
  */
 export function formatEloDelta(delta?: number): string {
-  if (delta === undefined || isNaN(delta)) return '0.0';
-  const sign = delta > 0 ? '+' : '';
-  return `${sign}${delta.toFixed(1)}`;
+  if (delta === undefined || isNaN(delta)) return '0';
+  const rounded = Math.round(delta);
+  const sign = rounded > 0 ? '+' : '';
+  return `${sign}${rounded}`;
 }
 
 let cachedAnalyticsManagers: Record<string, ManagerEloProfile> | null = null;

@@ -92,13 +92,13 @@ describe('Dynamic Elo Engine Client Analytics', () => {
   });
 
   describe('Elo Formatting & Badges', () => {
-    it('formats ratings and deltas with proper signs', () => {
-      expect(formatElo(1532.44)).toBe('1532.4');
-      expect(formatElo(undefined)).toBe('1500.0');
+    it('formats ratings and deltas as integers with proper signs', () => {
+      expect(formatElo(1532.44)).toBe('1532');
+      expect(formatElo(undefined)).toBe('1500');
 
-      expect(formatEloDelta(12.3)).toBe('+12.3');
-      expect(formatEloDelta(-8.4)).toBe('-8.4');
-      expect(formatEloDelta(0.0)).toBe('0.0');
+      expect(formatEloDelta(12.3)).toBe('+12');
+      expect(formatEloDelta(-8.4)).toBe('-8');
+      expect(formatEloDelta(0.0)).toBe('0');
     });
 
     it('returns proper colors and tier titles across rating bands', () => {
@@ -772,8 +772,8 @@ describe('Dynamic Elo Engine Client Analytics', () => {
         expect(mockHoverBox.innerHTML).toContain('Team Alpha');
         expect(mockHoverBox.innerHTML).toContain('Team Beta');
         expect(mockHoverBox.innerHTML).toContain('(W)');
-        expect(mockHoverBox.innerHTML).toContain('1580.0 pt');
-        expect(mockHoverBox.innerHTML).toContain('(+15.0)');
+        expect(mockHoverBox.innerHTML).toContain('1580 pt');
+        expect(mockHoverBox.innerHTML).toContain('(+15)');
         expect(mockHoverBox.innerHTML).toContain('Prob. 55%');
 
         // Analytics chart hover: verify clean output
@@ -785,8 +785,8 @@ describe('Dynamic Elo Engine Client Analytics', () => {
         expect(mockHoverBox.innerHTML).toContain('Team Alpha');
         expect(mockHoverBox.innerHTML).toContain('Team Beta');
         expect(mockHoverBox.innerHTML).toContain('(W)');
-        expect(mockHoverBox.innerHTML).toContain('1580.0 pt');
-        expect(mockHoverBox.innerHTML).toContain('(+15.0)');
+        expect(mockHoverBox.innerHTML).toContain('1580 pt');
+        expect(mockHoverBox.innerHTML).toContain('(+15)');
         expect(mockHoverBox.innerHTML).toContain('Prob. 55%');
       } finally {
         document.getElementById = originalGetElementById;
@@ -1274,8 +1274,8 @@ describe('Dynamic Elo Engine Client Analytics', () => {
           }
         ], 'flat');
 
-        expect(chartHtml).toContain('Team One (2026/27 G3): 1545.0 (+17.0)');
-        expect(chartHtml).toContain('Team One (2026/27 C1 [Coppa]): 1533.0 (-12.0)');
+        expect(chartHtml).toContain('Team One (2026/27 G3): 1545 (+17)');
+        expect(chartHtml).toContain('Team One (2026/27 C1 [Coppa]): 1533 (-12)');
         expect(chartHtml).toContain('G3');
         expect(chartHtml).toContain('C1');
       });

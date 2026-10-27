@@ -5,7 +5,7 @@
  */
 
 import type { EloTrackMode } from '@/types/analytics';
-import { getManagerEloTrack, formatElo } from '@/analytics/analyticsCore';
+import { getManagerEloTrack, formatElo, formatEloDelta } from '@/analytics/analyticsCore';
 import type { EloProfileEntry } from './EloKpis';
 
 export interface LockedEloChartMatch {
@@ -265,7 +265,7 @@ export function renderEloTrajectoryChart(
                   onclick="window.selectEloChartPoint && window.selectEloChartPoint('${pt.season}', ${pt.round}, '${escapedTeam}', '${escapedOpp}', '${pt.result || '-'}', ${pt.elo}, ${pt.delta}, ${pt.winProbPreMatch ?? 0})"
                   onmouseenter="window.showEloChartHover && window.showEloChartHover('${pt.season}', ${pt.round}, '${escapedTeam}', '${escapedOpp}', '${pt.result || '-'}', ${pt.elo}, ${pt.delta}, ${pt.winProbPreMatch ?? 0})"
                   onmouseleave="window.clearEloChartHover && window.clearEloChartHover()">
-            <title>${p.teamName} (${pt.season} ${rLabel}${compLabel}): ${pt.elo.toFixed(1)} (${pt.delta > 0 ? '+' : ''}${pt.delta.toFixed(1)})</title>
+            <title>${p.teamName} (${pt.season} ${rLabel}${compLabel}): ${formatElo(pt.elo)} (${formatEloDelta(pt.delta)})</title>
           </circle>
         `;
       });
@@ -305,7 +305,6 @@ export function renderEloTrajectoryChart(
       }
     }
     if (matchPt) {
-      const deltaSign = matchPt.delta > 0 ? '+' : '';
       const deltaColor = matchPt.delta > 0 ? 'text-emerald-400' : matchPt.delta < 0 ? 'text-rose-400' : 'text-slate-400';
       const resBadge = matchPt.result === 'W' ? 'text-emerald-400 font-bold' : matchPt.result === 'L' ? 'text-rose-400 font-bold' : 'text-amber-400 font-bold';
       const winProb = matchPt.winProbPreMatch ?? 0;
@@ -319,8 +318,8 @@ export function renderEloTrajectoryChart(
             <span class="${resBadge} shrink-0">(${matchPt.result || '-'})</span>
           </div>
           <div class="flex items-center gap-2 font-mono shrink-0">
-            <span class="font-black text-amber-400 text-xs sm:text-sm">${matchPt.elo.toFixed(1)} pt</span>
-            <span class="${deltaColor} font-bold text-[11px]">(${deltaSign}${matchPt.delta.toFixed(1)})</span>
+            <span class="font-black text-amber-400 text-xs sm:text-sm">${formatElo(matchPt.elo)} pt</span>
+            <span class="${deltaColor} font-bold text-[11px]">(${formatEloDelta(matchPt.delta)})</span>
             ${winProb > 0 ? `<span class="opacity-75 text-[10px] font-sans" style="color: var(--text-muted);">(Prob. ${winProb.toFixed(0)}%)</span>` : ''}
           </div>
         </div>

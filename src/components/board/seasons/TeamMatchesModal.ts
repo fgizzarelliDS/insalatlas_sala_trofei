@@ -270,8 +270,16 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
         }
       }
 
-      const rawWinProb = activeMode === 'historical' ? m.winProbHomeHistorical : m.winProbHomeFlat;
-      const rawDelta = activeMode === 'historical' ? m.eloDeltaHomeHistorical : m.eloDeltaHomeFlat;
+      const rawWinProb = activeMode === 'historical'
+        ? m.winProbHomeHistorical
+        : activeMode === 'atlas'
+        ? m.winProbHomeAtlas
+        : m.winProbHomeFlat;
+      const rawDelta = activeMode === 'historical'
+        ? m.eloDeltaHomeHistorical
+        : activeMode === 'atlas'
+        ? m.eloDeltaHomeAtlas
+        : m.eloDeltaHomeFlat;
 
       let winProb: number | null = null;
       let eloDelta: number | null = null;
@@ -319,45 +327,58 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
 
     return `
       <div onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${match.oppManagerId || ''}', '${escapedOppTeamName}');"
-           class="p-2.5 sm:p-3 rounded-2xl border flex items-center justify-between gap-2.5 sm:gap-3 transition-colors hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer select-none"
+           class="p-2.5 sm:p-3 rounded-2xl border flex flex-col gap-2 transition-colors hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer select-none"
            style="border-color: var(--table-border); background-color: var(--table-surface);"
            title="Vedi calendario di ${match.oppTeamName}">
-        <!-- Round number & Opponent (Logo + Name side by side) -->
-        <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-          <div class="w-8 sm:w-10 h-7 sm:h-8 rounded-xl flex items-center justify-center shrink-0 border shadow-xs bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/30">
-            <span class="font-sport font-black text-xs sm:text-sm tracking-tight">G${match.roundNumber}</span>
+        <div class="flex items-center justify-between gap-2.5 sm:gap-3">
+          <!-- Round number & Opponent (Logo + Name side by side) -->
+          <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <div class="w-8 sm:w-10 h-7 sm:h-8 rounded-xl flex items-center justify-center shrink-0 border shadow-xs bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/30">
+              <span class="font-sport font-black text-xs sm:text-sm tracking-tight">G${match.roundNumber}</span>
+            </div>
+
+            <div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0 flex-1">
+              <img src="${oppLogo}" alt="${match.oppTeamName}"
+                   class="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-contain shrink-0 bg-white/10 border border-slate-300 dark:border-slate-700 shadow-xs"
+                   onerror="this.onerror=null; this.src='${getTeamFallbackCrest(match.oppTeamName)}'">
+              <span class="font-bold text-xs sm:text-sm leading-snug break-words" style="color: var(--text-main);">${match.oppTeamName}</span>
+            </div>
           </div>
 
-          <div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0 flex-1">
-            <img src="${oppLogo}" alt="${match.oppTeamName}"
-                 class="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-contain shrink-0 bg-white/10 border border-slate-300 dark:border-slate-700 shadow-xs"
-                 onerror="this.onerror=null; this.src='${getTeamFallbackCrest(match.oppTeamName)}'">
-            <span class="font-bold text-xs sm:text-sm leading-snug break-words" style="color: var(--text-main);">${match.oppTeamName}</span>
-          </div>
-        </div>
-
-        <!-- Outcome Badge & Elo Rating Impact -->
-        <div class="shrink-0 flex items-center justify-end gap-1.5 sm:gap-2">
-          ${match.isPlayed ? `
-            ${match.eloDelta !== null && match.eloDelta !== undefined ? `
-              <div class="flex flex-col items-end text-right shrink-0">
-                <span class="text-[10px] sm:text-[11px] font-mono font-bold ${eloDeltaColor}">${formatEloDelta(match.eloDelta)} pt</span>
-                ${match.winProb !== null ? `<span class="text-[9px] opacity-75 font-semibold cursor-help whitespace-nowrap" style="color: var(--text-muted);" title="Probabilità stimata dal modello Elo prima del fischio d'inizio">${match.winProb.toFixed(0)}% prob.</span>` : ''}
-              </div>
-            ` : ''}
-            <span class="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-xl text-[10px] sm:text-xs font-black tracking-wider uppercase border flex items-center gap-1 shadow-xs shrink-0 ${outcomeBadgeClass}">
-              <i class="fa-solid ${outcomeIcon} text-[9px] sm:text-[10px]"></i>
-              <span>${outcomeText}</span>
-            </span>
-          ` : `
-            ${match.winProb !== null && match.winProb !== undefined ? `
-              <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold border bg-blue-500/10 text-blue-400 border-blue-500/30 shrink-0" title="Probabilità di vittoria stimata dal modello Elo prima del match">
-                ${match.winProb.toFixed(0)}% prob.
+          <!-- Outcome Badge & Elo Rating Impact -->
+          <div class="shrink-0 flex items-center justify-end gap-1.5 sm:gap-2">
+            ${match.isPlayed ? `
+              ${match.eloDelta !== null && match.eloDelta !== undefined ? `
+                <div class="flex flex-col items-end text-right shrink-0">
+                  <span class="text-[10px] sm:text-[11px] font-mono font-bold ${eloDeltaColor}">${formatEloDelta(match.eloDelta)} pt</span>
+                </div>
+              ` : ''}
+              <span class="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-xl text-[10px] sm:text-xs font-black tracking-wider uppercase border flex items-center gap-1 shadow-xs shrink-0 ${outcomeBadgeClass}">
+                <i class="fa-solid ${outcomeIcon} text-[9px] sm:text-[10px]"></i>
+                <span>${outcomeText}</span>
               </span>
-            ` : ''}
-            <span class="text-xs font-bold text-slate-400 dark:text-slate-500 px-2 py-1 shrink-0 select-none">-</span>
-          `}
+            ` : `
+              <span class="text-xs font-bold text-slate-400 dark:text-slate-500 px-2 py-1 shrink-0 select-none">-</span>
+            `}
+          </div>
         </div>
+
+        ${match.winProb !== null && match.winProb !== undefined ? `
+          <!-- Win Probability Duel Gauge -->
+          <div class="pt-1.5 border-t border-[var(--table-border)]/50 flex flex-col gap-1">
+            <div class="flex items-center justify-between text-[10px] font-mono font-bold">
+              <span class="text-emerald-500 dark:text-emerald-400 font-black">${match.winProb.toFixed(0)}%</span>
+              <span class="text-[9px] uppercase tracking-wider opacity-60 font-sans font-semibold" style="color: var(--text-muted);">
+                Probabilità Vittoria
+              </span>
+              <span class="text-rose-500 dark:text-rose-400 font-black">${(100.0 - match.winProb).toFixed(0)}%</span>
+            </div>
+            <div class="w-full h-1.5 rounded-full overflow-hidden flex bg-slate-700/40">
+              <div style="width: ${match.winProb}%;" class="h-full bg-emerald-500 transition-all duration-300"></div>
+              <div style="width: ${100.0 - match.winProb}%;" class="h-full bg-rose-500 transition-all duration-300"></div>
+            </div>
+          </div>
+        ` : ''}
       </div>
     `;
   }).join('');

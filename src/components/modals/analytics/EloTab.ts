@@ -15,7 +15,9 @@ import {
   loadAnalyticsEloData,
   getCachedAnalyticsManagers,
   setCachedAnalyticsManagers,
-  getActiveEloConfig
+  getActiveEloConfig,
+  formatElo,
+  formatEloDelta
 } from '@/analytics/analyticsCore';
 import { getLiveSeasonDetails, loadLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 
@@ -319,7 +321,6 @@ export function showEloChartHover(
 ): void {
   const banner = document.getElementById('elo-chart-hover-box');
   if (!banner) return;
-  const deltaSign = delta > 0 ? '+' : '';
   const deltaColor = delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-rose-400' : 'text-slate-400';
   const resBadge = result === 'W' ? 'text-emerald-400 font-bold' : result === 'L' ? 'text-rose-400 font-bold' : 'text-amber-400 font-bold';
 
@@ -333,8 +334,8 @@ export function showEloChartHover(
         <span class="${resBadge} shrink-0">(${result})</span>
       </div>
       <div class="flex items-center gap-2 font-mono shrink-0">
-        <span class="font-black text-amber-400 text-xs sm:text-sm">${elo.toFixed(1)} pt</span>
-        <span class="${deltaColor} font-bold text-[11px]">(${deltaSign}${delta.toFixed(1)})</span>
+        <span class="font-black text-amber-400 text-xs sm:text-sm">${formatElo(elo)} pt</span>
+        <span class="${deltaColor} font-bold text-[11px]">(${formatEloDelta(delta)})</span>
         ${winProb > 0 ? `<span class="opacity-75 text-[10px] font-sans" style="color: var(--text-muted);">(Prob. ${winProb.toFixed(0)}%)</span>` : ''}
       </div>
     </div>

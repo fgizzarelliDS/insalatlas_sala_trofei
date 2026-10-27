@@ -10,6 +10,7 @@ import {
   getEloMode,
   getManagerEloTrack,
   formatElo,
+  formatEloDelta,
   getCachedEloProfile,
   loadAnalyticsEloData
 } from '@/analytics/analyticsCore';
@@ -166,7 +167,6 @@ export function showProfileEloHover(
   const hoverBox = document.getElementById('profile-elo-hover-box');
   if (!hoverBox) return;
 
-  const deltaSign = delta > 0 ? '+' : '';
   const deltaColor = delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-rose-400' : 'text-slate-400';
   const resBadge = result === 'W'
     ? '<span class="text-emerald-400 font-bold">(W)</span>'
@@ -186,8 +186,8 @@ export function showProfileEloHover(
         ${resBadge}
       </div>
       <div class="flex items-center gap-2 font-mono shrink-0">
-        <span class="font-bold text-amber-400 text-xs sm:text-sm">${elo.toFixed(1)} pt</span>
-        <span class="${deltaColor} font-bold text-[11px]">(${deltaSign}${delta.toFixed(1)})</span>
+        <span class="font-bold text-amber-400 text-xs sm:text-sm">${formatElo(elo)} pt</span>
+        <span class="${deltaColor} font-bold text-[11px]">(${formatEloDelta(delta)})</span>
         ${winProb > 0 ? `<span class="opacity-70 text-[10px] font-sans" style="color: var(--text-muted);">(Prob. ${winProb.toFixed(0)}%)</span>` : ''}
       </div>
     </div>
@@ -229,11 +229,10 @@ export function clearProfileEloHover(): void {
 
   let currentBadge = '';
   if (currentElo !== undefined) {
-    const sign = (lastDelta || 0) > 0 ? '+' : '';
     const dColor = (lastDelta || 0) > 0 ? 'text-emerald-400' : (lastDelta || 0) < 0 ? 'text-rose-400' : 'text-slate-400';
     currentBadge = `
       <span class="font-mono font-bold text-amber-400">${formatElo(currentElo)} pt</span>
-      ${lastDelta !== undefined ? `<span class="${dColor} font-mono text-[11px] ml-1">(${sign}${lastDelta.toFixed(1)})</span>` : ''}
+      ${lastDelta !== undefined ? `<span class="${dColor} font-mono text-[11px] ml-1">(${formatEloDelta(lastDelta)})</span>` : ''}
     `;
   }
 
@@ -359,7 +358,7 @@ export function renderEloTrajectorySparkline(
             onclick="window.selectProfileEloPoint && window.selectProfileEloPoint(${idx}, '${pt.season}', ${pt.round}, '${escapedTeam}', '${escapedOpp}', '${pt.result || ''}', ${pt.elo}, ${pt.delta}, ${pt.winProbPreMatch || 0})"
             onmouseenter="window.showProfileEloHover && window.showProfileEloHover('${pt.season}', ${pt.round}, '${escapedTeam}', '${escapedOpp}', '${pt.result || ''}', ${pt.elo}, ${pt.delta}, ${pt.winProbPreMatch || 0})"
             onmouseleave="window.clearProfileEloHover && window.clearProfileEloHover()">
-        <title>${pt.season} ${rLabel}${compLabel}: ${teamName} vs ${pt.opponentTeamName} (${pt.result}) ${pt.elo.toFixed(1)} (${pt.delta > 0 ? '+' : ''}${pt.delta.toFixed(1)})</title>
+        <title>${pt.season} ${rLabel}${compLabel}: ${teamName} vs ${pt.opponentTeamName} (${pt.result}) ${formatElo(pt.elo)} (${formatEloDelta(pt.delta)})</title>
       </rect>
     `;
 

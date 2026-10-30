@@ -469,7 +469,7 @@ export async function exportCurrentH2HDuelHD(): Promise<void> {
   const managerA = state.managers.find(m => m.id === selectedManagerIdA);
   const managerB = state.managers.find(m => m.id === selectedManagerIdB);
   if (managerA && managerB) {
-    const { exportH2HDuelHD } = await import('@/export/share');
+    const { exportH2HDuelHD } = await import('@/export');
     await exportH2HDuelHD(managerA, managerB);
   }
 }
@@ -482,7 +482,7 @@ export async function copyCurrentH2HDuelToClipboard(): Promise<void> {
   const managerA = state.managers.find(m => m.id === selectedManagerIdA);
   const managerB = state.managers.find(m => m.id === selectedManagerIdB);
   if (managerA && managerB) {
-    const { copyH2HDuelToClipboard } = await import('@/export/share');
+    const { copyH2HDuelToClipboard } = await import('@/export');
     await copyH2HDuelToClipboard(managerA, managerB);
   }
 }
@@ -495,7 +495,7 @@ export async function exportCurrentH2HDuelStoryHD(): Promise<void> {
   const managerA = state.managers.find(m => m.id === selectedManagerIdA);
   const managerB = state.managers.find(m => m.id === selectedManagerIdB);
   if (managerA && managerB) {
-    const { exportH2HDuelStoryHD } = await import('@/export/share');
+    const { exportH2HDuelStoryHD } = await import('@/export');
     await exportH2HDuelStoryHD(managerA, managerB);
   }
 }
@@ -597,7 +597,7 @@ export async function exportMultiManagerStoryHD(): Promise<void> {
     .map(id => state.managers.find(m => m.id === id))
     .filter((m): m is Manager => Boolean(m));
   if (managers.length >= 2) {
-    const { exportMultiManagerStoryHD: exportStory } = await import('@/export/share');
+    const { exportMultiManagerStoryHD: exportStory } = await import('@/export');
     await exportStory(managers, multiTournamentMode);
   }
 }
@@ -606,7 +606,7 @@ export async function exportMultiManagerStoryHD(): Promise<void> {
  * Triggers HD snapshot export for the current Tavolo dei Rivali view
  */
 export async function exportCurrentMultiManagerHD(): Promise<void> {
-  const { exportMultiManagerHD } = await import('@/export/share');
+  const { exportMultiManagerHD } = await import('@/export');
   await exportMultiManagerHD();
 }
 
@@ -614,7 +614,7 @@ export async function exportCurrentMultiManagerHD(): Promise<void> {
  * Copies HD snapshot of current Tavolo dei Rivali directly to clipboard
  */
 export async function copyCurrentMultiManagerToClipboard(): Promise<void> {
-  const { copyMultiManagerToClipboard } = await import('@/export/share');
+  const { copyMultiManagerToClipboard } = await import('@/export');
   await copyMultiManagerToClipboard();
 }
 

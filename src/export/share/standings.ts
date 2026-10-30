@@ -1,6 +1,12 @@
 import { showToast } from '@/ui';
 import { getLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 import { LEAGUE } from '@/config';
+import {
+  renderStandingsCanvas,
+  renderTeamMatchesModalCanvas,
+  downloadBlob,
+  copyBlobToClipboard
+} from '@/export/canvas';
 
 /**
  * Builds rich text for sharing a team's live matches & season analytics
@@ -215,7 +221,6 @@ export async function exportStandingsPNG(mode?: 'real' | 'merit'): Promise<void>
   showToast('Generazione Classifica HD in corso...', 'info');
 
   try {
-    const { renderStandingsCanvas, downloadBlob } = await import('@/export/canvas');
     const canvas = await renderStandingsCanvas(resolvedMode || 'real');
     canvas.toBlob((blob) => {
       if (!blob) {
@@ -250,7 +255,6 @@ export async function copyStandingsToClipboard(mode?: 'real' | 'merit'): Promise
   showToast('Generazione Classifica HD per WhatsApp...', 'info');
 
   try {
-    const { renderStandingsCanvas, copyBlobToClipboard } = await import('@/export/canvas');
     const canvas = await renderStandingsCanvas(resolvedMode || 'real');
     return new Promise<boolean>((resolve) => {
       canvas.toBlob(async (blob) => {
@@ -292,7 +296,6 @@ export async function exportTeamMatchesPNG(teamName?: string): Promise<void> {
   showToast('Generazione Scheda Squadra HD in corso...', 'info');
 
   try {
-    const { renderTeamMatchesModalCanvas, downloadBlob } = await import('@/export/canvas');
     const canvas = await renderTeamMatchesModalCanvas(dialog);
     canvas.toBlob((blob) => {
       if (!blob) {
@@ -328,7 +331,6 @@ export async function copyTeamMatchesToClipboard(teamName?: string): Promise<boo
   showToast('Generazione Scheda Squadra per WhatsApp...', 'info');
 
   try {
-    const { renderTeamMatchesModalCanvas, copyBlobToClipboard } = await import('@/export/canvas');
     const canvas = await renderTeamMatchesModalCanvas(dialog);
     return new Promise<boolean>((resolve) => {
       canvas.toBlob(async (blob) => {

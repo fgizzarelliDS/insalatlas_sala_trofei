@@ -516,6 +516,11 @@ Il coefficiente di volatilità $K$ riflette il peso strutturale e la posta in pa
 
 Una vittoria contro una squadra di pari livello ($\Delta R = 0 \implies E = 0.5$) in campionato assegna $\Delta = 32 \cdot (1.0 - 0.5) = +16.0$ punti Elo; battere una netta favorita con $E = 0.25$ frutta $\Delta = 32 \cdot (1.0 - 0.25) = +24.0$ punti.
 
+#### 10.3.1 Isolamento Competizione per il Delta in Classifica Live (Allineamento Forma)
+Sebbene il rating Elo cumulativo ($R_t$) e l'intera serie storica match-by-match (`trajectory`) integrino tutte le competizioni ufficiali (Campionato, Coppa, Supercoppa), il valore `lastDelta` esposto nella classifica generale di campionato (`live_season_details.json`) isola specificamente l'ultima gara di **Campionato**:
+$$\text{lastDelta}_{\text{standings}} = \Delta_{\text{Campionato, last}}$$
+* **Ratio Analitica & Narrativa:** Previene che partite di coppa disputate in contemporanea (es. pareggi a delta minimo $\approx \pm 0.3$) sovrascrivano visivamente il verdetto della giornata di campionato, garantendo perfetta coerenza tra il delta mostrato, i pallini di forma (`recentForm`) e il badge di stato dinamico (🔥 *In Fiamme*, 📈 *In Ascesa*, ⚖️ *Stabile*, etc.), entrambi calcolati sulla sola competizione a girone unico.
+
 ---
 
 ### 10.4 Architettura a Doppia Traccia (Dual-Track System)

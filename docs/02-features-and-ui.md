@@ -42,6 +42,8 @@ Il componente `src/components/board/seasonsArchive.ts` gestisce la consultazione
 - **Integrazione Dinamica Elo nelle Classifiche Live (Reale & Merito)**:
   - Nelle viste della stagione in corso (*Classifica Reale* e *Classifica Merito*), il rating dinamico è integrato direttamente tramite un **pulsante toggle nell'intestazione di colonna** (`[⚡ Elo]`).
   - L'attivazione/disattivazione della colonna Elo preserva la compattezza visiva senza richiedere righe secondarie di controllo ridondanti e si adatta automaticamente ai layout mobile e desktop.
+  - **Allineamento Delta-Forma nella Tabella Live:** Il delta Elo mostrato accanto al rating nella classifica generale riflette l'ultima giornata disputata di **Campionato** (`lastDelta` isolato per torneo), rimanendo fedelmente sincronizzato con i 5 indicatori di forma (`recentForm`) e con lo status badge del club (🔥, 📈, ⚖️, 📉, 🧊).
+  - **Integrità Traiettoria Multi-Torneo:** Nei modali di approfondimento (`TeamMatchesModal` e `ProfileModal`), ogni singola partita di qualsiasi competizione continua a mostrare il proprio delta specifico e l'Elo cumulativo totale riflette tutte le partite ufficiali giocate.
 
 ---
 

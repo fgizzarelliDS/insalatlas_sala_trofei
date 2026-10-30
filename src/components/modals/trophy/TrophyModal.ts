@@ -171,7 +171,7 @@ export async function exportTrophyModalHD(): Promise<void> {
   showToast("Generazione Albo d'Oro HD in corso...", 'info');
 
   try {
-    const { renderTrophyModalCanvas, downloadBlob } = await import('@/export/canvas');
+    const { renderTrophyModalCanvas, downloadBlob } = await import('@/export');
     const canvas = await renderTrophyModalCanvas(dialog);
     canvas.toBlob((blob) => {
       if (!blob) {
@@ -207,7 +207,7 @@ export async function copyTrophyModalToClipboard(): Promise<boolean> {
   showToast("Copia immagine Albo d'Oro in corso...", 'info');
 
   try {
-    const { renderTrophyModalCanvas, copyBlobToClipboard } = await import('@/export/canvas');
+    const { renderTrophyModalCanvas, copyBlobToClipboard } = await import('@/export');
     const canvas = await renderTrophyModalCanvas(dialog);
     return new Promise((resolve) => {
       canvas.toBlob(async (blob) => {

@@ -59,6 +59,9 @@ export function shareNextRoundWhatsApp(): void {
   showToast('Apertura WhatsApp in corso...', 'info');
 }
 
+import { renderNextRoundCanvas } from '@/export/renderers/nextRound';
+import { downloadBlob, copyBlobToClipboard } from '@/export/renderers/core';
+
 let isExportingNextRound = false;
 
 /**
@@ -73,8 +76,6 @@ export async function exportNextRoundPNG(): Promise<void> {
   showToast('Generazione Scheda Duelli HD in corso...', 'info');
 
   try {
-    const { renderNextRoundCanvas } = await import('@/export/renderers/nextRound');
-    const { downloadBlob } = await import('@/export/renderers/core');
     const canvas = await renderNextRoundCanvas();
     canvas.toBlob((blob) => {
       if (!blob) {
@@ -104,8 +105,6 @@ export async function copyNextRoundToClipboard(): Promise<boolean> {
   showToast('Generazione Duelli HD per WhatsApp / Telegram...', 'info');
 
   try {
-    const { renderNextRoundCanvas } = await import('@/export/renderers/nextRound');
-    const { copyBlobToClipboard } = await import('@/export/renderers/core');
     const canvas = await renderNextRoundCanvas();
     return new Promise<boolean>((resolve) => {
       canvas.toBlob(async (blob) => {

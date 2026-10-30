@@ -681,7 +681,7 @@ export async function exportHallOfFamePoster(event?: Event): Promise<void> {
     event.preventDefault();
   }
   closePosterShareDropdown();
-  const { exportHallOfFamePosterHD } = await import('@/export/share');
+  const { exportHallOfFamePosterHD } = await import('@/export');
   await exportHallOfFamePosterHD();
 }
 
@@ -694,7 +694,7 @@ export async function copyHallOfFamePoster(event?: Event): Promise<void> {
     event.preventDefault();
   }
   closePosterShareDropdown();
-  const { copyHallOfFamePosterToClipboard } = await import('@/export/share');
+  const { copyHallOfFamePosterToClipboard } = await import('@/export');
   await copyHallOfFamePosterToClipboard();
 }
 
@@ -707,7 +707,7 @@ export async function shareHallOfFamePosterWhatsApp(event?: Event): Promise<void
     event.preventDefault();
   }
   closePosterShareDropdown();
-  const { sharePosterWhatsApp } = await import('@/export/share');
+  const { sharePosterWhatsApp } = await import('@/export');
   sharePosterWhatsApp();
 }
 
@@ -720,7 +720,7 @@ export async function exportRecordCard(recordId: string, event?: Event): Promise
     event.preventDefault();
   }
   closeAllRecordShareDropdowns();
-  const { exportRecordCardHD } = await import('@/export/share');
+  const { exportRecordCardHD } = await import('@/export');
   await exportRecordCardHD(recordId);
 }
 
@@ -733,7 +733,7 @@ export async function copyRecordCard(recordId: string, event?: Event): Promise<v
     event.preventDefault();
   }
   closeAllRecordShareDropdowns();
-  const { copyRecordCardToClipboard } = await import('@/export/share');
+  const { copyRecordCardToClipboard } = await import('@/export');
   await copyRecordCardToClipboard(recordId);
 }
 
@@ -746,7 +746,7 @@ export async function exportRecordStory(recordId: string, event?: Event): Promis
     event.preventDefault();
   }
   closeAllRecordShareDropdowns();
-  const { exportRecordStoryHD } = await import('@/export/share');
+  const { exportRecordStoryHD } = await import('@/export');
   await exportRecordStoryHD(recordId);
 }
 
@@ -759,7 +759,7 @@ export async function exportRecordsSummaryStory(event?: Event): Promise<void> {
     event.preventDefault();
   }
   closePosterShareDropdown();
-  const { exportRecordsSummaryStoryHD } = await import('@/export/share');
+  const { exportRecordsSummaryStoryHD } = await import('@/export');
   await exportRecordsSummaryStoryHD();
 }
 

@@ -429,7 +429,7 @@ export async function exportAlboGraphicHD(event?: Event): Promise<void> {
     event.preventDefault();
   }
   closeAlboShareDropdown();
-  const { exportGraphicHD } = await import('@/export/canvas');
+  const { exportGraphicHD } = await import('@/export');
   await exportGraphicHD();
 }
 
@@ -442,7 +442,7 @@ export async function copyAlboGraphicToClipboard(event?: Event): Promise<void> {
     event.preventDefault();
   }
   closeAlboShareDropdown();
-  const { copyAlboToClipboard } = await import('@/export/canvas');
+  const { copyAlboToClipboard } = await import('@/export');
   await copyAlboToClipboard();
 }
 
@@ -455,7 +455,7 @@ export async function shareAlboGraphicWhatsApp(event?: Event): Promise<void> {
     event.preventDefault();
   }
   closeAlboShareDropdown();
-  const { shareAlboWhatsApp } = await import('@/export/share');
+  const { shareAlboWhatsApp } = await import('@/export');
   shareAlboWhatsApp();
 }
 

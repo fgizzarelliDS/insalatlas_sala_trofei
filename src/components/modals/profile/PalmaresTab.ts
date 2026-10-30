@@ -122,7 +122,7 @@ export function populatePalmaresDOM(m: Manager, score: number, totalMajor: numbe
           <div class="flex items-start justify-between gap-2 min-w-0 w-full">
             <div class="flex items-center gap-2.5 min-w-0 flex-1">
               <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-black/5 dark:bg-white/5 border border-rose-500/30 flex items-center justify-center p-1 shrink-0 overflow-hidden">
-                <img src="${logoUrl}" alt="${nem.opponent.name}" class="w-full h-full object-contain" />
+                <img src="${logoUrl}" alt="${nem.opponent.name}" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='${crest.fallbackCrest}'" />
               </div>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-1.5 flex-wrap">
@@ -177,7 +177,7 @@ export function populatePalmaresDOM(m: Manager, score: number, totalMajor: numbe
           <div class="flex items-start justify-between gap-2 min-w-0 w-full">
             <div class="flex items-center gap-2.5 min-w-0 flex-1">
               <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-black/5 dark:bg-white/5 border border-emerald-500/30 flex items-center justify-center p-1 shrink-0 overflow-hidden">
-                <img src="${logoUrl}" alt="${vic.opponent.name}" class="w-full h-full object-contain" />
+                <img src="${logoUrl}" alt="${vic.opponent.name}" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='${crest.fallbackCrest}'" />
               </div>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-1.5 flex-wrap">

@@ -2,7 +2,7 @@
 
 [![Deploy to GitHub Pages](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/deploy.yml/badge.svg)](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/deploy.yml)
 [![Continuous Integration](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/ci.yml/badge.svg)](https://github.com/fgizzarelliDS/insalatlas_sala_trofei/actions/workflows/ci.yml)
-[![Version: 1.7.0](https://img.shields.io/badge/version-1.7.0-emerald.svg)](package.json)
+[![Version](https://img.shields.io/github/package-json/v/fgizzarelliDS/insalatlas_sala_trofei?color=emerald&label=version)](package.json)
 [![TypeScript Strict](https://img.shields.io/badge/TypeScript-5.x_Strict-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -21,7 +21,9 @@ L'applicazione offre un'interfaccia interattiva per desktop e mobile:
 
 - **Dynamic N-Competitions Engine**: Architettura data-driven unificata (`src/config.ts`) con supporto per $N$ tornei e disonori arbitrari basati su 5 archetipi (`tier3`, `tier2`, `single`, `dishonor`, `banners`), pesi di punteggio personalizzabili, griglia CSS reattiva auto-sincronizzante, ordinamenti dinamici e modali albo d'oro con zero duplicazione di codice.
 - **Dynamic Elo Rating Engine & Previsioni Partita**: Sistema di rating dinamico a doppia traccia (*⚡ Elo Puro* da baseline 1500 vs *🏛️ Elo Storico* calibrato sul Silverware Prestige Index SPI), aggiornato match-by-match con logistica standard a fattore $K \in \{24, 32\}$, transizione inter-stagionale con mean reversion (75/25), previsioni di probabilità pre-partita $P(\text{Win})$, traiettorie multi-squadra SVG interattive, ordinamento dinamico completo e toggle integrato nelle classifiche reale e merito.
-- **In-Progress Form Index, Schedule Luck & Live Analytics**: Motore di analisi in tempo reale per la stagione in corso con calcolo deterministico giornata per giornata di forma recente (L5), Indice di Momentum pesato $\in [0, 1]$, Fortuna di Calendario ($\Delta\text{Luck}$), badge di stato compositi (🔥/📈/⚖️/📉/🧊), tabella responsive a 11 colonne con fallback aggraziato e modale per visualizzare il tabellino partita per partita di ciascuna squadra.
+- **In-Progress Form Index, Schedule Luck & Live Analytics**: Motore di analisi in tempo reale per la stagione in corso con calcolo deterministico giornata per giornata di forma recente (L5), Indice di Momentum pesato $\in [0, 1]$, Fortuna di Calendario ($\Delta\text{Luck}$), badge di stato compositi (🔥/📈/⚖️/📉/🧊), tabella responsive a 11 colonne con fallback aggraziato e modale per visualizzare il tabellino partita per partita di ciascuna squadra (con probabilità H2H e quote 1X2 per tutte le 26 giornate).
+- **Striscia Prossimo Turno & Quote Pre-Match 1X2 (Modello Davidson Ibrido)**: Banner a fisarmonica integrato sopra la classifica live con schede interattive per ciascun match del turno in arrivo, stemmi ufficiali, rating Elo pre-gara, classificazione a 7 climi (`↕️ TESTACODA`, `🔥 AL VERTICE`, `🪓 SALVEZZA`, `⚠️ TRAPPOLA`, `⚖️ SUL FILO`, `🎯 CORSA PLAYOFF`, `🥊 DUELLO`), indicatore di probabilità H2H Bradley-Terry e lavagna quote decimali 1X2 basata su modello di Davidson regolarizzato (shrinkage bayesiano a 5 turni, ancoraggio varianza efficace e overround al 104.5%).
+- **Export HD & Condivisione Social 1:1**: Generazione e condivisione istantanea in alta risoluzione (download PNG e copia nativa negli appunti) per il tabellone quote del Prossimo Turno, schede Profilo Manager, Duello H2H, Tavolo dei Rivali, singolo Record Storico e Top Primati Marquee Poster.
 - **Architettura League-Agnostic**: Configurazione centralizzata (`src/config.ts`), colonne del tabellone dinamiche con griglia CSS reattiva, isolamento multi-tenant in local storage e supporto chiavi in mano per leghe arbitrarie.
 - **Albo d'Oro Storico Decennale**: Bacheca trofei consolidata, rating storico e schede manager ad alta risoluzione (HD) condivisibili.
 - **Bacheca Record Storici (Hall of Fame & Primati)**: **28 record certificati** su 5 categorie storiche (Punti & Podi, Dominio & Coppe, Rivalità H2H, Strisce & Fedeltà, Disonori & Curiosità) con navigazione contestuale duale (scheda manager e archivio classifica di stagione), inclusi i 3 record per debuttanti e matricole, gestione ex-aequo ed export Poster Panoramico HD + Story 9:16.
@@ -63,6 +65,7 @@ Approfondimento matematico del modulo analitico:
 - **Tassonomia degli Archetipi**: Waterfall deterministico per la classificazione comportamentale dei manager.
 - **Dinamica Storica, Stagioni In Corso & Debuttanti**: Metriche di baricentro, oscillazione posizioni ($\sigma_{\text{rank}}$), parità stagionale e neutralizzazione delle annate non concluse.
 - **Motore Dinamico Elo Rating**: Curva logistica di vittoria attesa ($E_A$), K-factors ponderati per torneo, architettura Dual-Track (*Puro* vs *Storico* calibrato su SPI) e carryover inter-stagionale con mean reversion al 25%.
+- **Modello Quote Pre-Match 1X2 & Davidson Standardizzato**: Sistema previsionale ibrido agnostico che combina rating Elo e potenza offensiva standardizzata (fanta-media con regolarizzazione bayesiana a 5 turni), estensione di Davidson per la probabilità di pareggio $\nu$, overround bookmaker al 104.5% e classificazione deterministica del Clima Partita.
 
 ### 4. [Data Schema & Validazione CI/CD](docs/04-data-schema-and-ci.md)
 

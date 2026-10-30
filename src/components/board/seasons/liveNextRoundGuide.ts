@@ -50,10 +50,10 @@ export function buildNextRoundGuideHTML(isExpanded: boolean = false): string {
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-2.5 border-b border-[var(--table-border)]/60">
         <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400">
           <i class="fa-solid fa-circle-info text-sm"></i>
-          <span>Guida Duelli &amp; Previsioni Bradley-Terry</span>
+          <span>Guida Duelli &amp; Previsioni H2H (Modello Ibrido Z-Score)</span>
         </div>
         <span class="text-[11px] font-medium leading-snug" style="color: var(--text-main); opacity: 0.85;">
-          Previsioni probabilistiche calcolate dal modello Elo Bradley-Terry prima del calcio d'inizio.
+          Previsioni probabilistiche calcolate dall'Indice Z-Score composito (Elo + Media FantaPunti regolarizzata).
         </span>
       </div>
 
@@ -91,10 +91,10 @@ export function buildNextRoundGuideHTML(isExpanded: boolean = false): string {
             <span class="w-5 h-5 rounded-md flex items-center justify-center bg-amber-500/20 text-amber-800 dark:text-amber-300 text-[10px] shrink-0 border border-amber-500/30">
               <i class="fa-solid fa-scale-balanced"></i>
             </span>
-            <span>Fattore di Scala (400)</span>
+            <span>Fattore di Scala &amp; Quote 1X2</span>
           </div>
           <p class="text-[10px] sm:text-[10.5px] opacity-90 leading-snug" style="color: var(--text-main);">
-            Costante classica Elo: a <strong class="text-amber-800 dark:text-amber-300 font-bold">+400 pt</strong> il rapporto di forza è <strong>10 a 1</strong> (~91% vs 9%). Con <strong class="text-amber-800 dark:text-amber-300 font-bold">+200 pt</strong> sale a <strong>~76%</strong>, con <strong class="text-amber-800 dark:text-amber-300 font-bold">+100 pt</strong> a <strong>~64%</strong>.
+            La barra bicolore mostra la <strong>Probabilità H2H</strong> (testa-a-testa senza pareggio). Le quote <strong>1X2</strong> derivano dal modello di Davidson con pareggio dinamico (<strong class="font-mono">&nu;<sub>0</sub> = 0.72</strong>) ed aggio realistico da bookmaker (<strong class="font-mono">4.5%</strong>).
           </p>
         </div>
       </div>

@@ -1002,7 +1002,8 @@ def compile_live_season_details(
             'scaleFactor': float(active_elo_config.get('scale_factor', 400.0)),
             'carryoverAlpha': float(active_elo_config.get('carryover_alpha', 0.75)),
             'historicalSeeding': active_elo_config.get('historical_seeding', {}),
-            'kFactors': active_elo_config.get('k_factors', {})
+            'kFactors': active_elo_config.get('k_factors', {}),
+            'odds': active_elo_config.get('odds', {})
         },
         'managers': serialized_managers
     }

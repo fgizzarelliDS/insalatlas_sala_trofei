@@ -1216,14 +1216,14 @@ describe('Live In-Progress Form & Analytics Engine', () => {
       expect(htmlFlat).toContain('Prossimo Turno • Giornata 2');
       expect(htmlFlat).toContain('Team Alpha');
       expect(htmlFlat).toContain('Team Beta');
-      expect(htmlFlat).toContain('62%');
-      expect(htmlFlat).toContain('38%');
+      expect(htmlFlat).toContain('65%');
+      expect(htmlFlat).toContain('35%');
       expect(htmlFlat).toContain('⚡ Elo Puro (1500)');
 
       // Render with atlas mode
       const htmlAtlas = renderNextRoundStrip(fakeLiveSeason, 'atlas');
-      expect(htmlAtlas).toContain('66%'); // 65.5 rounded
-      expect(htmlAtlas).toContain('35%'); // 100 - 65.5 = 34.5 rounded to 35%
+      expect(htmlAtlas).toContain('75%');
+      expect(htmlAtlas).toContain('25%');
       expect(htmlAtlas).toContain('🔮 Atlas Power');
       expect(htmlAtlas).toContain('openHeadToHeadModal');
     });
@@ -1301,8 +1301,8 @@ describe('Live In-Progress Form & Analytics Engine', () => {
       const content = elements['team-matches-modal-content'];
       expect(content?.innerHTML).toContain('Team Atlas Away');
       expect(content?.innerHTML).toContain('+15 pt');
-      expect(content?.innerHTML).toContain('Probabilità Vittoria');
-      expect(content?.innerHTML).toContain('75%');
+      expect(content?.innerHTML).toContain('Probabilità H2H');
+      expect(content?.innerHTML).toContain('57%');
 
       // Cleanup
       globalThis.fetch = origFetch;
@@ -1312,7 +1312,7 @@ describe('Live In-Progress Form & Analytics Engine', () => {
 
     it('renders Next Round strip (Option C) with educational guide, Bradley-Terry formula and 7 clima categories', async () => {
       const guideHtml = buildNextRoundGuideHTML();
-      expect(guideHtml).toContain('Previsioni probabilistiche calcolate dal modello Elo Bradley-Terry prima del calcio d\'inizio.');
+      expect(guideHtml).toContain('Previsioni probabilistiche calcolate');
       expect(guideHtml).toContain('Formula Curva Logistica di Bradley-Terry');
       expect(guideHtml).toContain('Fattore di Scala');
       expect(guideHtml).toContain('AL VERTICE');
@@ -1364,9 +1364,9 @@ describe('Live In-Progress Form & Analytics Engine', () => {
       expect(stripHtml).toContain('#2');
       expect(stripHtml).toContain('1530');
       expect(stripHtml).toContain('1500');
-      expect(stripHtml).toContain('54%');
-      expect(stripHtml).toContain('46%');
-      expect(stripHtml).toContain('Probabilità Vittoria');
+      expect(stripHtml).toContain('57%');
+      expect(stripHtml).toContain('43%');
+      expect(stripHtml).toContain('Probabilità H2H');
       expect(stripHtml).toContain('btn-next-round-guide-toggle');
       expect(stripHtml).toContain('btn-next-round-share');
       expect(stripHtml).toContain('next-round-share-dropdown');
@@ -1379,8 +1379,8 @@ describe('Live In-Progress Form & Analytics Engine', () => {
       expect(shareText).toContain('PROSSIMO TURNO — GIORNATA 2');
       expect(shareText).toContain('Team Alpha');
       expect(shareText).toContain('Team Beta');
-      expect(shareText).toContain('54%');
-      expect(shareText).toContain('46%');
+      expect(shareText).toContain('57%');
+      expect(shareText).toContain('43%');
       expect(shareText).toContain('https://example.com/live');
       // Verify resolveMatchupMetrics extracts real Elo values from standings
       const { resolveMatchupMetrics } = await import('@/components/board/seasons/NextRoundStrip');
@@ -1439,6 +1439,131 @@ describe('Live In-Progress Form & Analytics Engine', () => {
         expect(elements['next-round-guide-box'].classList.has('hidden')).toBe(false);
       } finally {
         (globalThis as any).document = origDoc;
+      }
+    });
+
+    it('renders unified Probabilità H2H and 1X2 odds pills in TeamMatchesModal across played and unplayed rounds', async () => {
+      const { openTeamMatchesModal, closeTeamMatchesModal } = await import('@/components/board/seasons/TeamMatchesModal');
+      const { setLiveSeasonDetails } = await import('@/components/board/seasons/liveAnalytics');
+
+      const elements: Record<string, any> = {
+        'team-matches-modal': {
+          classList: {
+            classes: new Set<string>(['hidden']),
+            add: (c: string) => elements['team-matches-modal'].classList.classes.add(c),
+            remove: (c: string) => elements['team-matches-modal'].classList.classes.delete(c),
+            contains: (c: string) => elements['team-matches-modal'].classList.classes.has(c)
+          },
+          innerHTML: ''
+        },
+        'team-matches-modal-content': { innerHTML: '' },
+        'team-matches-dialog': { innerHTML: '' }
+      };
+
+      const origDoc = (globalThis as any).document;
+      (globalThis as any).document = {
+        getElementById: (id: string) => elements[id] || null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        body: { insertAdjacentHTML: vi.fn() }
+      };
+
+      const mockData: any = {
+        season: '2026/27',
+        lastCompletedRound: 1,
+        totalRounds: 2,
+        rounds: [
+          {
+            roundNumber: 1,
+            matches: [
+              {
+                homeTeam: 'Team Alpha',
+                awayTeam: 'Team Beta',
+                homeManagerId: 'm1',
+                awayManagerId: 'm2',
+                homeScore: 2,
+                awayScore: 1,
+                homeFantaPoints: 74.0,
+                awayFantaPoints: 68.0,
+                isPlayed: true
+              }
+            ]
+          },
+          {
+            roundNumber: 2,
+            matches: [
+              {
+                homeTeam: 'Team Alpha',
+                awayTeam: 'Team Gamma',
+                homeManagerId: 'm1',
+                awayManagerId: 'm3',
+                isPlayed: false
+              }
+            ]
+          }
+        ],
+        standings: [
+          {
+            rank: 1,
+            managerId: 'm1',
+            teamName: 'Team Alpha',
+            avgFantaPoints: 74.0,
+            elo: {
+              atlas: {
+                current: 1530.0,
+                trajectory: [
+                  { round: 1, elo: 1530.0, delta: 15.0, fpFor: 74.0, fpAgainst: 68.0, result: 'W' }
+                ]
+              }
+            }
+          },
+          {
+            rank: 2,
+            managerId: 'm2',
+            teamName: 'Team Beta',
+            avgFantaPoints: 68.0,
+            elo: {
+              atlas: {
+                current: 1485.0,
+                trajectory: [
+                  { round: 1, elo: 1485.0, delta: -15.0, fpFor: 68.0, fpAgainst: 74.0, result: 'L' }
+                ]
+              }
+            }
+          },
+          {
+            rank: 3,
+            managerId: 'm3',
+            teamName: 'Team Gamma',
+            avgFantaPoints: 70.0,
+            elo: {
+              atlas: {
+                current: 1500.0,
+                trajectory: []
+              }
+            }
+          }
+        ]
+      };
+
+      setLiveSeasonDetails(mockData);
+
+      try {
+        await openTeamMatchesModal('m1', 'Team Alpha', false, false);
+        const html = elements['team-matches-modal-content'].innerHTML;
+
+        // Asserts both G1 (historical played) and G2 (future unplayed) render Probabilità H2H
+        expect(html).toContain('G1');
+        expect(html).toContain('G2');
+        expect(html).toContain('Probabilità H2H');
+        // Asserts 1X2 decimal quote pills are rendered in the card
+        expect(html).toContain('>1</span>');
+        expect(html).toContain('>X</span>');
+        expect(html).toContain('>2</span>');
+      } finally {
+        closeTeamMatchesModal(false);
+        (globalThis as any).document = origDoc;
+        setLiveSeasonDetails(null);
       }
     });
   });

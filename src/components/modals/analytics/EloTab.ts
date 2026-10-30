@@ -213,8 +213,8 @@ export function refreshEloTab(): void {
   // Also refresh legacy concentration container if present
   if (typeof window !== 'undefined') {
     const container = document.getElementById('concentration-modal-content');
-    if (container && (window as any).switchAnalyticsTab) {
-      (window as any).switchAnalyticsTab('elo');
+    if (container && window.switchAnalyticsTab) {
+      window.switchAnalyticsTab('elo');
     }
   }
 }
@@ -766,19 +766,19 @@ export function renderEloTab(): string {
 
 // Global window registration
 if (typeof window !== 'undefined') {
-  (window as any).openEloModal = openEloModal;
-  (window as any).closeEloModal = closeEloModal;
-  (window as any).switchEloModalTab = switchEloModalTab;
-  (window as any).switchEloScatterSeason = switchEloScatterSeason;
-  (window as any).switchEloLuckSubMode = switchEloLuckSubMode;
-  (window as any).switchEloMode = switchEloMode;
-  (window as any).switchEloChartSeason = switchEloChartSeason;
-  (window as any).toggleEloManagerVisibility = toggleEloManagerVisibility;
-  (window as any).showAllEloManagers = showAllEloManagers;
-  (window as any).hideAllEloManagers = hideAllEloManagers;
-  (window as any).selectEloChartPoint = selectEloChartPoint;
-  (window as any).showEloChartHover = showEloChartHover;
-  (window as any).clearEloChartHover = clearEloChartHover;
-  (window as any).sortEloLeaderboard = sortEloLeaderboard;
-  (window as any).retryEloFetch = retryEloFetch;
+  window.openEloModal = openEloModal;
+  window.closeEloModal = closeEloModal;
+  window.switchEloModalTab = switchEloModalTab;
+  window.switchEloScatterSeason = switchEloScatterSeason;
+  window.switchEloLuckSubMode = switchEloLuckSubMode;
+  window.switchEloMode = switchEloMode;
+  window.switchEloChartSeason = switchEloChartSeason;
+  window.toggleEloManagerVisibility = toggleEloManagerVisibility;
+  window.showAllEloManagers = showAllEloManagers;
+  window.hideAllEloManagers = hideAllEloManagers;
+  window.selectEloChartPoint = selectEloChartPoint;
+  window.showEloChartHover = showEloChartHover;
+  window.clearEloChartHover = clearEloChartHover;
+  window.sortEloLeaderboard = sortEloLeaderboard;
+  window.retryEloFetch = retryEloFetch;
 }

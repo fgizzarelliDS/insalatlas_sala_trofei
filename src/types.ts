@@ -609,6 +609,7 @@ export interface MatchdayMatch {
   homeManagerId?: string;
   awayManagerId?: string;
   isPlayed?: boolean;
+  played?: boolean;
   homeOutcome?: FormResult | null;
   awayOutcome?: FormResult | null;
   homeScore?: number;

@@ -15,6 +15,7 @@ import {
   loadAnalyticsEloData
 } from '@/analytics/analyticsCore';
 import { getLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
+import { populateEloUpsetsCard } from './EloUpsetsCard';
 
 export const getDefaultProfileEloSeason = (): string =>
   typeof window !== 'undefined' && typeof window.innerWidth === 'number' && window.innerWidth > 0 && window.innerWidth < 640
@@ -470,4 +471,7 @@ export function updateProfileEloSparklineUI(m: Manager): void {
   } else if (eloTrajCard) {
     eloTrajCard.classList.add('hidden');
   }
+
+  // Update Epic Matches / Upsets Card in sync with current active mode
+  populateEloUpsetsCard(m, activeMode);
 }

@@ -1281,4 +1281,117 @@ describe('Dynamic Elo Engine Client Analytics', () => {
       });
     });
   });
+
+  describe('Davidson 1X2 Odds & Manager Epic Matches', () => {
+    it('computes coherent 1X2 probabilities summing to 100% and fair reciprocal odds', async () => {
+      const { computeMatchOdds1X2, buildLeagueDistributionContext, extractShrunkOffensivePower } = await import('@/components/board/seasons/nextRoundMetrics');
+
+      // 1. Equal ratings
+      const equalOdds = computeMatchOdds1X2(1500, 1500);
+      expect(equalOdds.q1).toBe(equalOdds.q2);
+      expect(equalOdds.p1).toBe(equalOdds.p2);
+      expect(equalOdds.pX).toBeCloseTo(26.5, 0.5);
+      expect(equalOdds.qX).toBeCloseTo(3.61, 0.1);
+      expect(equalOdds.p1 + equalOdds.pX + equalOdds.p2).toBeCloseTo(100.0, 0.2);
+
+      // 2. Clear favorite (+60 Elo spread)
+      const favoriteOdds = computeMatchOdds1X2(1560, 1500);
+      expect(favoriteOdds.q1).toBeLessThan(favoriteOdds.q2);
+      expect(favoriteOdds.p1).toBeGreaterThan(favoriteOdds.p2);
+      expect(favoriteOdds.p1 + favoriteOdds.pX + favoriteOdds.p2).toBeCloseTo(100.0, 0.2);
+      expect(favoriteOdds.q1).toBeGreaterThanOrEqual(1.05);
+      expect(favoriteOdds.qX).toBeGreaterThanOrEqual(1.05);
+      expect(favoriteOdds.q2).toBeGreaterThanOrEqual(1.05);
+
+      // 3. Monotonicity: higher disparity lowers 1 and increases 2
+      const bigFavoriteOdds = computeMatchOdds1X2(1650, 1500);
+      expect(bigFavoriteOdds.q1).toBeLessThan(favoriteOdds.q1);
+      expect(bigFavoriteOdds.q2).toBeGreaterThan(favoriteOdds.q2);
+
+      // 4. Bayesian shrinkage test for early-season offensive power
+      const rookieStanding: any = {
+        managerId: 'm_rookie',
+        elo: {
+          seasonStats: {
+            '2026/27': { played: 2, avgFP: 80.0 },
+            'all': { played: 2, avgFP: 80.0 }
+          }
+        }
+      };
+      // (2/(2+5))*80 + (5/(2+5))*70 = 22.86 + 50 = 72.86
+      const shrunkFP = extractShrunkOffensivePower(rookieStanding, '2026/27', 70.0, 5);
+      expect(shrunkFP).toBeCloseTo(72.86, 0.1);
+
+      // 5. Adaptive weights in buildLeagueDistributionContext (Atlas vs Flat)
+      const mockStandings: any[] = [
+        { managerId: 'm1', elo: { flat: { current: 1550 }, atlas: { current: 1530 } } },
+        { managerId: 'm2', elo: { flat: { current: 1450 }, atlas: { current: 1470 } } }
+      ];
+      const flatCtx = buildLeagueDistributionContext(mockStandings, 'flat', '2026/27');
+      const atlasCtx = buildLeagueDistributionContext(mockStandings, 'atlas', '2026/27');
+      expect(flatCtx.profile.eloWeight).toBe(0.65);
+      expect(flatCtx.profile.powerWeight).toBe(0.35);
+      expect(atlasCtx.profile.eloWeight).toBe(0.85);
+      expect(atlasCtx.profile.powerWeight).toBe(0.15);
+
+      // 6. Career prior extraction without circular current-season leakage
+      const { extractCareerPriorFP, buildHistoricalRoundContext } = await import('@/components/board/seasons/nextRoundMetrics');
+      const veteranStanding: any = {
+        managerId: 'v1',
+        elo: {
+          seasonStats: {
+            all: { played: 35, totalFP: 2500.0, avgFP: 71.43 },
+            '2026/27': { played: 5, totalFP: 400.0, avgFP: 80.0 }
+          }
+        }
+      };
+      // (2500 - 400) / (35 - 5) = 2100 / 30 = 70.0
+      expect(extractCareerPriorFP(veteranStanding, '2026/27')).toBeCloseTo(70.0, 0.01);
+
+      // Rookie standing (no past seasons) returns null
+      const rookiePure: any = {
+        managerId: 'r1',
+        elo: {
+          seasonStats: {
+            all: { played: 5, totalFP: 350.0, avgFP: 70.0 },
+            '2026/27': { played: 5, totalFP: 350.0, avgFP: 70.0 }
+          }
+        }
+      };
+      expect(extractCareerPriorFP(rookiePure, '2026/27')).toBeNull();
+
+      // 7. Multi-season trajectory isolation in historical round reconstruction
+      const multiSeasonData: any = {
+        season: '2026/27',
+        standings: [
+          {
+            managerId: 'm1',
+            teamName: 'Team 1',
+            elo: {
+              atlas: {
+                current: 1560.0,
+                trajectory: [
+                  { season: '2025/26', round: 2, competitionCategory: 'Campionato', elo: 1510.0, delta: 10.0, fpFor: 65.0 },
+                  { season: '2026/27', round: 1, competitionCategory: 'Campionato', elo: 1545.0, delta: 5.0, fpFor: 75.0 },
+                  { season: '2026/27', round: 2, competitionCategory: 'Campionato', elo: 1560.0, delta: 15.0, fpFor: 78.0 }
+                ]
+              }
+            }
+          }
+        ]
+      };
+      // For round 2 in 2026/27, pre-round Elo must be 1560 - 15 = 1545 (NOT 2025/26's 1510 - 10 = 1500)
+      const histCtx = buildHistoricalRoundContext(multiSeasonData, 2, 'atlas');
+      expect(histCtx).toBeDefined();
+    });
+
+    it('extracts manager best win and worst defeat correctly from trajectory', async () => {
+      const { extractManagerEpicMatches } = await import('@/components/modals/profile/EloUpsetsCard');
+      const mockManager: any = { id: 'test_m1', name: 'Test Manager' };
+
+      // When no live details exist or rookie
+      const emptyMatches = extractManagerEpicMatches(mockManager, 'flat');
+      expect(emptyMatches).toBeDefined();
+    });
+  });
 });

@@ -543,6 +543,97 @@ Questo modello garantisce la conservazione a lungo termine della massa Elo compl
 
 ---
 
+### 10.6 Modello Agnostico Standardizzato di Quote Pre-Match 1X2 (Estensione di Davidson)
+
+Per fornire previsioni probabilistiche realistiche e quote decimali per ciascun incontro del calendario (nella striscia *Prossimo Turno* e nel *Tabellino Gare*), l'applicazione implementa un modello previsionale ibrido agnostico che supera i limiti del classico modello Bradley-Terry a due esiti introducendo il pareggio formale via estensione di Davidson (1970) e regolarizzazione bayesiana.
+
+#### 10.6.1 Lo Spazio Standardizzato Z-Score Ibrido
+Nel Fantacalcio, l'esito di una sfida dipende simultaneamente da due forze distinte:
+1. **L'inerzia storica e la tenuta negli scontri diretti**: quantificata dal rating Elo $R$.
+2. **Il volume di fuoco e la caratura offensiva**: quantificata dalla media fanta-punti stagionale (Offensive Power $\mathcal{F}$).
+
+Poiché le due grandezze hanno unità di misura e varianze disomogenee (punti Elo vs fanta-punti), entrambe vengono proiettate nello spazio delle deviazioni standard normalizzate della lega:
+
+$$\Delta Z_{\text{Elo}} = \frac{R_{\text{home}} - R_{\text{away}}}{\sigma_{R,\text{eff}}}, \qquad \Delta Z_{\text{power}} = Z_{\text{power},\text{home}} - Z_{\text{power},\text{away}}$$
+
+Il differenziale di forza globale standardizzato $\Delta Z$ è calcolato come combinazione convessa parametrata sul profilo di lega:
+
+$$\Delta Z = w_{\text{elo}} \cdot \Delta Z_{\text{Elo}} + w_{\text{power}} \cdot \Delta Z_{\text{power}} + \text{HFA}$$
+
+| Profilo di Dominio | Peso Elo ($w_{\text{elo}}$) | Peso Power ($w_{\text{power}}$) | Home Field Advantage ($\text{HFA}$) | Ratio Analitica |
+| :--- | :---: | :---: | :---: | :--- |
+| **Fantacalcio (Atlas Mode)** | **$0.85$** | **$0.15$** | **$0.00$** | Campo neutro; peso prevalente al rating multi-competizione con field-delta integrato. |
+| **Fantacalcio (Flat / Historical)** | **$0.65$** | **$0.35$** | **$0.00$** | Campo neutro; combinazione bilanciata tra Elo puro e inerzia offensiva recente. |
+| **Calcio Reale (Serie A / Premier)** | **$0.75$** | **$0.25$** | **$+0.28$** | Presenza del fattore campo storico ($\approx +0.28\sigma$). |
+
+---
+
+#### 10.6.2 Regolarizzazione Bayesiana sui Primi 5 Turni (Empirical Bayes Shrinkage)
+All'inizio di una stagione ($n \le 5$ giornate), i dati campionari presentano due criticità econometriche:
+1. **Compressione della Varianza Elo**: Nei primi turni la deviazione standard empirica locale $\sigma_{R,\text{curr}}$ è compressa ($\approx 30.8$ pt a G4 rispetto a $\approx 60.0$ pt a regime), rischiando di gonfiare artificialmente il valore di $\Delta Z_{\text{Elo}}$.
+2. **Rumore nella Fanta-Media**: La media fanta-punti su pochi match è dominata da singole giornate eccezionali o sfortunate.
+
+Per garantire stabilità e consistenza inter-temporale, il modello applica due regolarizzatori analitici:
+
+* **Ancoraggio della Varianza Efficace ($\sigma_{R,\text{eff}}$)**:
+  La deviazione standard utilizzata per la standardizzazione unisce la dispersione corrente e il prior decennale di lega ($\sigma_{\text{prior}} = 60.0$ pt):
+  $$\sigma_{R,\text{eff}}(n) = \sqrt{\frac{n}{n + 5} \sigma_{R,\text{curr}}^2 + \frac{5}{n + 5} \sigma_{\text{prior}}^2}$$
+  Questo vincola il fattore di scala logistico efficace della lega attorno a un intervallo stabile:
+  $$S_{\text{eff}} = \frac{\sigma_{R,\text{eff}}}{w_{\text{elo}} \cdot \kappa} \approx 160 \dots 180 \text{ pt}$$
+
+* **Post-Standardization Shrinkage per la Potenza Offensiva**:
+  Per evitare il paradosso della cancellazione statistica dello shrinkage quando si calcola la deviazione standard, la potenza viene prima standardizzata a $\mathcal{N}(0, 1)$ separatamente per l'annata precedente ($Z_{\text{prior}}$, calcolato rigorosamente sottraendo la stagione corrente per escludere contaminazioni circolari) e per quella in corso ($Z_{\text{curr}}$). Il restringimento bayesiano opera successivamente sui punteggi $Z$:
+  $$Z_{\text{power}}(n) = \frac{n}{n + 5} Z_{\text{curr}} + \frac{5}{n + 5} Z_{\text{prior}}$$
+
+---
+
+#### 10.6.3 Formulazione del Modello di Davidson per i 3 Esiti (1, X, 2)
+La probabilità a 3 vie viene calcolata tramite l'estensione simmetrica di Davidson (1970) della curva logistica di Bradley-Terry:
+
+$$P_1 = \frac{\exp\left(+\frac{\kappa}{2} \Delta Z\right)}{\mathcal{D}(\Delta Z)}, \qquad P_2 = \frac{\exp\left(-\frac{\kappa}{2} \Delta Z\right)}{\mathcal{D}(\Delta Z)}, \qquad P_X = \frac{\nu(\Delta Z)}{\mathcal{D}(\Delta Z)}$$
+
+dove il denominatore di partizione è:
+$$\mathcal{D}(\Delta Z) = \exp\left(+\frac{\kappa}{2} \Delta Z\right) + \exp\left(-\frac{\kappa}{2} \Delta Z\right) + \nu(\Delta Z)$$
+
+Il parametro del pareggio $\nu(\Delta Z)$ decade quadraticamente all'aumentare del divario statistico tra le due contendenti, poiché le sfide equilibrate producono molti più pareggi rispetto ai testacoda asimmetrici:
+$$\nu(\Delta Z) = \frac{\nu_0}{1 + \lambda \cdot (\Delta Z)^2}$$
+
+* **Calibrazione Parametrica di Lega**:
+  * Sensibilità logistica: $\kappa = 0.55$
+  * Frequenza base di pareggio per match paritetici: $\nu_0 = 0.72$ ($\approx 26.5\%$ di probabilità per $\Delta Z = 0$)
+  * Tasso di decadimento quadratico del pareggio: $\lambda = 0.03$
+
+---
+
+#### 10.6.4 Quote Decimali e Margine del Bookmaker (Overround)
+Per rispecchiare fedelmente i tabelloni di quotazione professionali, alle probabilità teoriche viene applicato un overround commerciale $\mathcal{M} = 1.045$ (lavagna al $104.5\%$):
+
+$$P'_1 = P_1 \cdot \mathcal{M}, \qquad P'_X = P_X \cdot \mathcal{M}, \qquad P'_2 = P_2 \cdot \mathcal{M}$$
+
+Le quote decimali risultanti sono date dall'inverso delle probabilità lorde:
+$$Q_1 = \frac{1}{P'_1}, \qquad Q_X = \frac{1}{P'_X}, \qquad Q_2 = \frac{1}{P'_2}$$
+
+---
+
+#### 10.6.5 Cascata Deterministica del Clima Partita
+Ciascun match riceve un'etichetta contestuale (*Clima Partita*) valutata tramite una cascata decisionale top-down rigorosa:
+
+1. **`↕️ TESTACODA`**: Disparità netta di classifica o statistica:
+   $$(\text{Rank}_1 \le 3 \land \text{Rank}_2 \ge 12) \lor (\text{Rank}_2 \le 3 \land \text{Rank}_1 \ge 12) \lor (|\Delta Z| \ge 1.65\sigma)$$
+2. **`🔥 AL VERTICE`**: Scontro al vertice della classifica:
+   $$(\text{Rank}_1 \le 3 \land \text{Rank}_2 \le 3) \lor (\text{Rank}_1 \le 4 \land \text{Rank}_2 \le 4 \land R_1, R_2 \ge 1520.0)$$
+3. **`🪓 SALVEZZA`**: Scontro diretto nei bassifondi:
+   $$\text{Rank}_1 \ge 11 \land \text{Rank}_2 \ge 11$$
+4. **`⚠️ TRAPPOLA`**: Rischio upset o divario consistente ma non estremo:
+   $$|\Delta Z| \ge 0.90 \lor |R_1 - R_2| \ge 50.0 \lor P_{\text{H2H}} \ge 65\% \lor P_{\text{H2H}} \le 35\% \lor \text{Inversione Classifica/Statistiche}$$
+5. **`⚖️ SUL FILO`**: Sfida estremamente equilibrata:
+   $$|R_1 - R_2| \le 12.0 \lor |\Delta Z| \le 0.22 \lor 48.5\% \le P_{\text{H2H}} \le 51.5\%$$
+6. **`🎯 CORSA PLAYOFF`**: Scontro diretto a metà classifica:
+   $$4 \le \text{Rank}_1 \le 9 \land 4 \le \text{Rank}_2 \le 9$$
+7. **`🥊 DUELLO`**: Classificazione di default per incontri standard.
+
+---
+
 ## 11. Roadmap & Evoluzioni Future
 
 - **Integrazione Storico Mundialito**: Formalizzazione dello storico finale Mundialito (vinti e persi) per completare il set di dati delle coppe della lega quando i dati delle prime edizioni saranno integralmente reperiti.

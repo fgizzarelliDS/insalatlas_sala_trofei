@@ -338,6 +338,32 @@ declare global {
     clearEloChartHover?: () => void;
     sortEloLeaderboard?: (field: any) => void;
     retryEloFetch?: () => void;
+    focusEloScatterManager?: (mId: string) => void;
+    unfocusEloScatterManager?: (forceReset?: boolean) => void;
+    showEloScatterHover?: (
+      mId: string,
+      team: string,
+      coach: string,
+      valX: string,
+      valY: string,
+      meta: string,
+      quad: string,
+      color: string,
+      logo: string
+    ) => void;
+    clearEloScatterHover?: () => void;
+    selectEloScatterBubble?: (
+      mId: string,
+      team: string,
+      coach: string,
+      valX: string,
+      valY: string,
+      meta: string,
+      quad: string,
+      color: string,
+      logo: string
+    ) => void;
+    fantasyData?: any;
     MSStream?: unknown;
     switchProfileEloSeason: typeof switchProfileEloSeason;
     showProfileEloHover: typeof showProfileEloHover;

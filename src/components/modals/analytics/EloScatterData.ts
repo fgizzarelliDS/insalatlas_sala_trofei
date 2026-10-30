@@ -132,8 +132,8 @@ export function applyClusterRepulsion(
  */
 export function isSeasonInProgress(season: string): boolean {
   if (!season || season === 'all') return false;
-  if (typeof (window as any) !== 'undefined' && (window as any).fantasyData?.competitions) {
-    const comps = (window as any).fantasyData.competitions;
+  if (typeof window !== 'undefined' && window.fantasyData?.competitions) {
+    const comps = window.fantasyData.competitions;
     if (Array.isArray(comps)) {
       const found = comps.some((c: any) => c.season === season && (c.in_progress || c.status === 'in_progress'));
       if (found) return true;

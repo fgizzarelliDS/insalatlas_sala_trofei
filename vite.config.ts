@@ -93,8 +93,14 @@ export default defineConfig({
           if (id.includes('node_modules')) {
             return 'vendor';
           }
+          if (id.includes('src/components/modals/analytics/')) {
+            return 'analytics-modals';
+          }
           if (id.includes('src/analytics/')) {
             return 'analytics-core';
+          }
+          if (id.includes('src/export/')) {
+            return 'export-suite';
           }
         }
       }

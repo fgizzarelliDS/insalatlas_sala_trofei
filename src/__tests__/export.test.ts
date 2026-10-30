@@ -593,10 +593,11 @@ describe('export.ts - Trading Card Logic and Formatting', () => {
       expect(text).toContain('PROSSIMO TURNO — GIORNATA 27');
       expect(text).toContain('Team Alpha');
       expect(text).toContain('1540');
-      expect(text).toContain('58%');
+      expect(text).toContain('62%');
       expect(text).toContain('Team Beta');
       expect(text).toContain('1486');
-      expect(text).toContain('42%');
+      expect(text).toContain('38%');
+      expect(text).toContain('Quote 1X2:');
     });
 
     it('verifies registerGlobalWindowHandlers binds next round export handlers to window', async () => {

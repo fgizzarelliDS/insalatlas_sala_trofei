@@ -385,7 +385,7 @@ export function renderEloScatterChart(
               onmouseenter="window.focusEloScatterManager && window.focusEloScatterManager('${pt.managerId}')"
               onmouseleave="window.unfocusEloScatterManager && window.unfocusEloScatterManager()"
               onclick="window.selectEloScatterBubble && window.selectEloScatterBubble('${pt.managerId}', '${escTeam}', '${escCoach}', '${pt.metricLabelX}', '${pt.metricLabelY}', '${escMeta}', '${escQuad}', '${pt.color}', '${escLogo}')">
-        <img src="${pt.logo}" alt="${pt.teamName}" class="w-4 h-4 rounded-full object-cover shrink-0" />
+        <img src="${pt.logo}" alt="${pt.teamName}" class="w-4 h-4 rounded-full object-cover shrink-0" onerror="this.onerror=null; this.src='favicon-64x64.png'" />
         <span class="truncate max-w-[85px] sm:max-w-[110px]" style="color: var(--text-main);">${pt.teamName}</span>
         <span class="font-mono text-[10px] font-bold" style="color: ${pt.color};">${metricSummary}</span>
       </button>
@@ -605,7 +605,7 @@ export function renderEloScatterChart(
 if (typeof window !== 'undefined') {
   let lockedScatterManagerId: string | null = null;
 
-  (window as any).focusEloScatterManager = (mId: string) => {
+  window.focusEloScatterManager = (mId: string) => {
     const container = document.getElementById('elo-scatter-chart-wrapper');
     if (!container) return;
     const bubbles = container.querySelectorAll('.scatter-bubble');
@@ -632,12 +632,12 @@ if (typeof window !== 'undefined') {
     });
   };
 
-  (window as any).unfocusEloScatterManager = (forceReset: boolean = false) => {
+  window.unfocusEloScatterManager = (forceReset: boolean = false) => {
     if (forceReset) {
       lockedScatterManagerId = null;
     }
     if (lockedScatterManagerId && !forceReset) {
-      (window as any).focusEloScatterManager(lockedScatterManagerId);
+      window.focusEloScatterManager?.(lockedScatterManagerId);
       return;
     }
     const container = document.getElementById('elo-scatter-chart-wrapper');
@@ -650,7 +650,7 @@ if (typeof window !== 'undefined') {
     });
   };
 
-  (window as any).showEloScatterHover = (
+  window.showEloScatterHover = (
     mId: string,
     team: string,
     coach: string,
@@ -661,7 +661,7 @@ if (typeof window !== 'undefined') {
     color: string,
     logo: string
   ) => {
-    (window as any).focusEloScatterManager(mId);
+    window.focusEloScatterManager?.(mId);
 
     const box = document.getElementById('elo-scatter-hover-box');
     if (!box) return;
@@ -669,7 +669,7 @@ if (typeof window !== 'undefined') {
     box.innerHTML = `
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 w-full text-xs">
         <div class="flex items-center gap-2.5 min-w-0">
-          <img src="${logo}" alt="${team}" class="w-8 h-8 rounded-full border-2 object-cover shrink-0 shadow-xs" style="border-color: ${color};" />
+          <img src="${logo}" alt="${team}" class="w-8 h-8 rounded-full border-2 object-cover shrink-0 shadow-xs" style="border-color: ${color};" onerror="this.onerror=null; this.src='favicon-64x64.png'" />
           <div class="min-w-0">
             <div class="flex items-center gap-2">
               <span class="font-black text-sm truncate" style="color: var(--text-main);">${team}</span>
@@ -691,9 +691,9 @@ if (typeof window !== 'undefined') {
     `;
   };
 
-  (window as any).clearEloScatterHover = () => {
+  window.clearEloScatterHover = () => {
     if (lockedScatterManagerId) return;
-    (window as any).unfocusEloScatterManager();
+    window.unfocusEloScatterManager?.();
 
     const box = document.getElementById('elo-scatter-hover-box');
     if (!box) return;
@@ -715,7 +715,7 @@ if (typeof window !== 'undefined') {
     `;
   };
 
-  (window as any).selectEloScatterBubble = (
+  window.selectEloScatterBubble = (
     mId: string,
     team: string,
     coach: string,
@@ -728,9 +728,9 @@ if (typeof window !== 'undefined') {
   ) => {
     lockedScatterManagerId = (lockedScatterManagerId === mId) ? null : mId;
     if (lockedScatterManagerId) {
-      (window as any).showEloScatterHover(mId, team, coach, valX, valY, extra, quadrant, color, logo);
+      window.showEloScatterHover?.(mId, team, coach, valX, valY, extra, quadrant, color, logo);
     } else {
-      (window as any).clearEloScatterHover();
+      window.clearEloScatterHover?.();
     }
   };
 }

@@ -16,8 +16,12 @@ import {
   computeMatchClima,
   findUpcomingRound,
   resolveMatchupMetrics,
+  computeMatchOdds1X2,
+  buildLeagueDistributionContext,
   type MatchClima,
-  type ResolvedMatchupMetrics
+  type MatchOdds1X2,
+  type ResolvedMatchupMetrics,
+  type LeagueDistributionContext
 } from './nextRoundMetrics';
 import {
   renderBradleyTerryFormulaHTML,
@@ -29,7 +33,9 @@ export {
   computeMatchClima,
   findUpcomingRound,
   resolveMatchupMetrics,
+  computeMatchOdds1X2,
   type MatchClima,
+  type MatchOdds1X2,
   type ResolvedMatchupMetrics,
   renderBradleyTerryFormulaHTML,
   buildNextRoundGuideHTML
@@ -166,9 +172,10 @@ function renderMatchCard(
   idx: number,
   liveData: LiveSeasonDetails,
   mode: EloTrackMode,
-  totalTeams: number
+  totalTeams: number,
+  leagueCtx?: LeagueDistributionContext
 ): string {
-  const meta = resolveMatchupMetrics(m, idx, liveData, mode, totalTeams);
+  const meta = resolveMatchupMetrics(m, idx, liveData, mode, totalTeams, leagueCtx);
 
   return `
     <div onclick="window.openHeadToHeadModal && window.openHeadToHeadModal('${meta.homeMgrId}', '${meta.awayMgrId}');"
@@ -190,14 +197,14 @@ function renderMatchCard(
       <div class="flex flex-col gap-2 py-0.5">
         <!-- Team 1 -->
         <div class="flex items-center justify-between gap-2 min-w-0">
-          <div class="flex items-center gap-2 min-w-0 truncate">
+          <div class="flex items-center gap-2 min-w-0">
             <span class="w-6 shrink-0 font-mono text-[10px] font-bold opacity-45 text-left inline-block" style="color: var(--text-muted);" title="Posizione attuale in classifica: #${meta.homeRank}">
               #${meta.homeRank}
             </span>
             <img src="${meta.homeLogo}" alt="${meta.homeTeam}"
                  class="w-6 h-6 rounded-full object-contain shrink-0 bg-white/10 border border-slate-300 dark:border-slate-700 shadow-xs"
                  onerror="this.onerror=null; this.src='${getTeamFallbackCrest(meta.homeTeam)}'">
-            <span class="font-bold text-xs sm:text-sm leading-snug truncate" style="color: var(--text-main);">${escapeHtml(meta.homeTeam)}</span>
+            <span class="font-bold text-xs sm:text-sm leading-snug break-words min-w-0" style="color: var(--text-main);">${escapeHtml(meta.homeTeam)}</span>
           </div>
           <span class="font-mono text-[11px] font-bold px-1.5 py-0.5 rounded border shrink-0 bg-black/5 dark:bg-white/5 border-slate-200 dark:border-slate-800"
                 style="color: var(--text-muted);"
@@ -208,14 +215,14 @@ function renderMatchCard(
 
         <!-- Team 2 -->
         <div class="flex items-center justify-between gap-2 min-w-0">
-          <div class="flex items-center gap-2 min-w-0 truncate">
+          <div class="flex items-center gap-2 min-w-0">
             <span class="w-6 shrink-0 font-mono text-[10px] font-bold opacity-45 text-left inline-block" style="color: var(--text-muted);" title="Posizione attuale in classifica: #${meta.awayRank}">
               #${meta.awayRank}
             </span>
             <img src="${meta.awayLogo}" alt="${meta.awayTeam}"
                  class="w-6 h-6 rounded-full object-contain shrink-0 bg-white/10 border border-slate-300 dark:border-slate-700 shadow-xs"
                  onerror="this.onerror=null; this.src='${getTeamFallbackCrest(meta.awayTeam)}'">
-            <span class="font-bold text-xs sm:text-sm leading-snug truncate" style="color: var(--text-main);">${escapeHtml(meta.awayTeam)}</span>
+            <span class="font-bold text-xs sm:text-sm leading-snug break-words min-w-0" style="color: var(--text-main);">${escapeHtml(meta.awayTeam)}</span>
           </div>
           <span class="font-mono text-[11px] font-bold px-1.5 py-0.5 rounded border shrink-0 bg-black/5 dark:bg-white/5 border-slate-200 dark:border-slate-800"
                 style="color: var(--text-muted);"
@@ -228,15 +235,37 @@ function renderMatchCard(
       <!-- Duel Probability Bar with Integrated Percentages -->
       <div class="pt-2 border-t border-[var(--table-border)]/50 flex flex-col gap-1">
         <div class="flex items-center justify-between text-[11px] font-mono font-black">
-          <span class="text-emerald-500 dark:text-emerald-400">${meta.winProbHome.toFixed(0)}%</span>
+          <span class="text-emerald-500 dark:text-emerald-400">${Math.round(meta.winProbHome)}%</span>
           <span class="text-[8px] uppercase tracking-wider opacity-60 font-sans font-semibold" style="color: var(--text-muted);">
-            Probabilità Vittoria
+            Probabilità H2H
           </span>
-          <span class="text-rose-500 dark:text-rose-400">${meta.winProbAway.toFixed(0)}%</span>
+          <span class="text-rose-500 dark:text-rose-400">${100 - Math.round(meta.winProbHome)}%</span>
         </div>
-        <div class="w-full h-2 rounded-full overflow-hidden flex bg-slate-700/40">
+        <div class="w-full h-1.5 rounded-full overflow-hidden flex bg-slate-700/40">
           <div style="width: ${meta.winProbHome}%;" class="h-full bg-emerald-500 transition-all duration-300"></div>
           <div style="width: ${meta.winProbAway}%;" class="h-full bg-rose-500 transition-all duration-300"></div>
+        </div>
+
+        <!-- 1X2 Match Odds Board (Agnostic Standardized Davidson Model) -->
+        <div class="grid grid-cols-3 gap-1 pt-1 text-center select-none font-mono">
+          <div class="py-0.5 px-1 rounded-lg border flex items-center justify-center gap-1.5 bg-black/5 dark:bg-white/5 shadow-2xs"
+               style="border-color: var(--input-border);"
+               title="Quota 1 (Vittoria ${escapeHtml(meta.homeTeam)}): ${meta.odds.p1}% su 3 esiti • ${meta.winProbHome.toFixed(0)}% H2H">
+            <span class="text-[8px] font-bold opacity-50" style="color: var(--text-muted);">1</span>
+            <span class="text-[11px] font-black text-emerald-600 dark:text-emerald-400">${meta.odds.q1.toFixed(2)}</span>
+          </div>
+          <div class="py-0.5 px-1 rounded-lg border flex items-center justify-center gap-1.5 bg-black/5 dark:bg-white/5 shadow-2xs"
+               style="border-color: var(--input-border);"
+               title="Quota X (Pareggio): ${meta.odds.pX}% su 3 esiti">
+            <span class="text-[8px] font-bold opacity-50" style="color: var(--text-muted);">X</span>
+            <span class="text-[11px] font-black text-amber-600 dark:text-amber-400">${meta.odds.qX.toFixed(2)}</span>
+          </div>
+          <div class="py-0.5 px-1 rounded-lg border flex items-center justify-center gap-1.5 bg-black/5 dark:bg-white/5 shadow-2xs"
+               style="border-color: var(--input-border);"
+               title="Quota 2 (Vittoria ${escapeHtml(meta.awayTeam)}): ${meta.odds.p2}% su 3 esiti • ${meta.winProbAway.toFixed(0)}% H2H">
+            <span class="text-[8px] font-bold opacity-50" style="color: var(--text-muted);">2</span>
+            <span class="text-[11px] font-black text-rose-600 dark:text-rose-400">${meta.odds.q2.toFixed(2)}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -264,7 +293,8 @@ export function renderNextRoundStrip(liveData: LiveSeasonDetails, mode: EloTrack
   const totalTeams = liveData.standings?.length || 14;
 
   const guideBoxHtml = buildNextRoundGuideHTML(isNextRoundGuideExpanded);
-  const cardsHtml = matches.map((m, idx) => renderMatchCard(m, idx, liveData, mode, totalTeams)).join('');
+  const leagueCtx = buildLeagueDistributionContext(liveData.standings || [], mode, liveData.season);
+  const cardsHtml = matches.map((m, idx) => renderMatchCard(m, idx, liveData, mode, totalTeams, leagueCtx)).join('');
 
   return `
     <div id="next-round-strip-container" class="mb-4 rounded-2xl border overflow-hidden shadow-2xs transition-all duration-300"

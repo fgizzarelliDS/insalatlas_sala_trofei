@@ -2,7 +2,7 @@ import { renderNodeToCanvas } from './core';
 import { LEAGUE, LEAGUE_SITE_HOST } from '@/config';
 import { state } from '@/state';
 import { getLiveSeasonDetails, loadLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
-import { findUpcomingRound, resolveMatchupMetrics } from '@/components/board/seasons/nextRoundMetrics';
+import { findUpcomingRound, resolveMatchupMetrics, buildLeagueDistributionContext } from '@/components/board/seasons/nextRoundMetrics';
 import { getCachedNextRoundLiveData } from '@/components/board/seasons/NextRoundStrip';
 import { getEloMode } from '@/analytics/analyticsCore';
 import { getTeamFallbackCrest } from '@/crests';
@@ -45,9 +45,11 @@ export async function renderNextRoundCanvas(): Promise<HTMLCanvasElement> {
   exportCard.style.color = 'var(--text-main)';
   exportCard.style.width = '960px';
 
+  const leagueCtx = buildLeagueDistributionContext(liveData.standings || [], mode, liveData.season);
+
   // Build match cards HTML
   const cardsHtml = matches.map((m: any, idx: number) => {
-    const meta = resolveMatchupMetrics(m, idx, liveData, mode, totalTeams);
+    const meta = resolveMatchupMetrics(m, idx, liveData, mode, totalTeams, leagueCtx);
 
     return `
       <div class="rounded-2xl border p-3.5 flex flex-col justify-between gap-3 shadow-2xs"
@@ -66,14 +68,14 @@ export async function renderNextRoundCanvas(): Promise<HTMLCanvasElement> {
         <div class="space-y-2.5">
           <!-- Team 1 -->
           <div class="flex items-center justify-between gap-2 min-w-0">
-            <div class="flex items-center gap-2 min-w-0 truncate">
+            <div class="flex items-center gap-2 min-w-0">
               <span class="w-6 shrink-0 font-mono text-[10.5px] font-bold opacity-50 text-left inline-block" style="color: var(--text-muted);">
                 #${meta.homeRank}
               </span>
               <img src="${meta.homeLogo}" alt="${meta.homeTeam}"
                    class="w-7 h-7 rounded-full object-contain shrink-0 bg-white/10 border border-slate-300 dark:border-slate-700 shadow-2xs"
                    onerror="this.onerror=null; this.src='${getTeamFallbackCrest(meta.homeTeam)}'">
-              <span class="font-bold text-sm leading-snug truncate" style="color: var(--text-main);">${escapeHtml(meta.homeTeam)}</span>
+              <span class="font-bold text-sm leading-snug break-words min-w-0" style="color: var(--text-main);">${escapeHtml(meta.homeTeam)}</span>
             </div>
             <span class="font-mono text-xs font-bold px-2 py-0.5 rounded border shrink-0 bg-black/5 dark:bg-white/5 border-slate-200 dark:border-slate-800"
                   style="color: var(--text-muted);">
@@ -83,14 +85,14 @@ export async function renderNextRoundCanvas(): Promise<HTMLCanvasElement> {
 
           <!-- Team 2 -->
           <div class="flex items-center justify-between gap-2 min-w-0">
-            <div class="flex items-center gap-2 min-w-0 truncate">
+            <div class="flex items-center gap-2 min-w-0">
               <span class="w-6 shrink-0 font-mono text-[10.5px] font-bold opacity-50 text-left inline-block" style="color: var(--text-muted);">
                 #${meta.awayRank}
               </span>
               <img src="${meta.awayLogo}" alt="${meta.awayTeam}"
                    class="w-7 h-7 rounded-full object-contain shrink-0 bg-white/10 border border-slate-300 dark:border-slate-700 shadow-2xs"
                    onerror="this.onerror=null; this.src='${getTeamFallbackCrest(meta.awayTeam)}'">
-              <span class="font-bold text-sm leading-snug truncate" style="color: var(--text-main);">${escapeHtml(meta.awayTeam)}</span>
+              <span class="font-bold text-sm leading-snug break-words min-w-0" style="color: var(--text-main);">${escapeHtml(meta.awayTeam)}</span>
             </div>
             <span class="font-mono text-xs font-bold px-2 py-0.5 rounded border shrink-0 bg-black/5 dark:bg-white/5 border-slate-200 dark:border-slate-800"
                   style="color: var(--text-muted);">
@@ -102,15 +104,34 @@ export async function renderNextRoundCanvas(): Promise<HTMLCanvasElement> {
         <!-- Duel Probability Bar with Integrated Percentages -->
         <div class="pt-2 border-t border-[var(--table-border)]/50 flex flex-col gap-1.5">
           <div class="flex items-center justify-between text-xs font-mono font-black">
-            <span class="text-emerald-700 dark:text-emerald-400 font-extrabold">${meta.winProbHome.toFixed(0)}%</span>
+            <span class="text-emerald-700 dark:text-emerald-400 font-extrabold">${Math.round(meta.winProbHome)}%</span>
             <span class="text-[9px] uppercase tracking-wider opacity-70 font-sans font-semibold" style="color: var(--text-muted);">
-              Probabilità Vittoria
+              Probabilità H2H
             </span>
-            <span class="text-rose-700 dark:text-rose-400 font-extrabold">${meta.winProbAway.toFixed(0)}%</span>
+            <span class="text-rose-700 dark:text-rose-400 font-extrabold">${100 - Math.round(meta.winProbHome)}%</span>
           </div>
           <div class="w-full h-2.5 rounded-full overflow-hidden flex bg-slate-700/40">
             <div style="width: ${meta.winProbHome}%;" class="h-full bg-emerald-500"></div>
             <div style="width: ${meta.winProbAway}%;" class="h-full bg-rose-500"></div>
+          </div>
+
+          <!-- 1X2 Match Odds Board (Davidson Model) -->
+          <div class="grid grid-cols-3 gap-1.5 pt-1 text-center select-none font-mono">
+            <div class="py-1 px-1 rounded-xl border flex items-center justify-center gap-1.5 bg-black/5 dark:bg-white/5 shadow-2xs"
+                 style="border-color: var(--input-border);">
+              <span class="text-[9px] font-bold opacity-60" style="color: var(--text-muted);">1</span>
+              <span class="text-xs font-black text-emerald-600 dark:text-emerald-400">${meta.odds.q1.toFixed(2)}</span>
+            </div>
+            <div class="py-1 px-1 rounded-xl border flex items-center justify-center gap-1.5 bg-black/5 dark:bg-white/5 shadow-2xs"
+                 style="border-color: var(--input-border);">
+              <span class="text-[9px] font-bold opacity-60" style="color: var(--text-muted);">X</span>
+              <span class="text-xs font-black text-amber-600 dark:text-amber-400">${meta.odds.qX.toFixed(2)}</span>
+            </div>
+            <div class="py-1 px-1 rounded-xl border flex items-center justify-center gap-1.5 bg-black/5 dark:bg-white/5 shadow-2xs"
+                 style="border-color: var(--input-border);">
+              <span class="text-[9px] font-bold opacity-60" style="color: var(--text-muted);">2</span>
+              <span class="text-xs font-black text-rose-600 dark:text-rose-400">${meta.odds.q2.toFixed(2)}</span>
+            </div>
           </div>
         </div>
       </div>

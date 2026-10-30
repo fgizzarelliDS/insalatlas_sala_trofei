@@ -60,6 +60,20 @@ export interface ManagerEloProfile {
   seasonStats?: Record<string, EloSeasonDiagnosticStats>;
 }
 
+export interface EloOddsConfig {
+  base_draw_nu?: number;
+  draw_decay_lambda?: number;
+  sensitivity_kappa?: number;
+  overround?: number;
+  prior_sigma_elo?: number;
+  min_sigma_elo?: number;
+  min_sigma_power?: number;
+  k_shrinkage?: number;
+  hfa_z_shift?: number;
+  atlas_weights?: { elo: number; power: number };
+  flat_weights?: { elo: number; power: number };
+}
+
 export interface EloConfig {
   baseRating: number;
   scaleFactor: number;
@@ -70,6 +84,7 @@ export interface EloConfig {
     maxRating: number;
   };
   kFactors: Record<string, number>;
+  odds?: EloOddsConfig;
 }
 
 export interface LeagueEloDatabase {

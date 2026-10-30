@@ -1,6 +1,6 @@
 import { showToast } from '@/ui';
 import { getLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
-import { findUpcomingRound, resolveMatchupMetrics } from '@/components/board/seasons/nextRoundMetrics';
+import { findUpcomingRound, resolveMatchupMetrics, buildLeagueDistributionContext } from '@/components/board/seasons/nextRoundMetrics';
 import { getCachedNextRoundLiveData } from '@/components/board/seasons/NextRoundStrip';
 import { getEloMode } from '@/analytics/analyticsCore';
 import { LEAGUE } from '@/config';
@@ -18,19 +18,21 @@ export function buildNextRoundShareText(liveData: any, shareUrl: string): string
   const modeLabel = mode === 'flat' ? '⚡ Elo Puro (1500)' : mode === 'historical' ? '🏛️ Elo Storico' : '🔮 Atlas Power';
   const matches = nextRound.matches.filter((m: any) => !m.isPlayed);
   const totalTeams = liveData.standings?.length || 14;
+  const leagueCtx = buildLeagueDistributionContext(liveData.standings || [], mode, liveData.season);
 
   const matchLines = matches.map((m: any, idx: number) => {
-    const meta = resolveMatchupMetrics(m, idx, liveData, mode, totalTeams);
+    const meta = resolveMatchupMetrics(m, idx, liveData, mode, totalTeams, leagueCtx);
 
     return [
       `*${meta.clima.label}*`,
-      `#${meta.homeRank} *${meta.homeTeam}* (${meta.homeEloInt}) *${meta.winProbHome.toFixed(0)}%*  ⚔️  *${meta.winProbAway.toFixed(0)}%* (${meta.awayEloInt}) *${meta.awayTeam}* #${meta.awayRank}`
+      `#${meta.homeRank} *${meta.homeTeam}* (${meta.homeEloInt}) *${meta.winProbHome.toFixed(0)}%*  ⚔️  *${meta.winProbAway.toFixed(0)}%* (${meta.awayEloInt}) *${meta.awayTeam}* #${meta.awayRank}`,
+      `🎲 *Quote 1X2:* 1 *${meta.odds.q1.toFixed(2)}* • X *${meta.odds.qX.toFixed(2)}* • 2 *${meta.odds.q2.toFixed(2)}*`
     ].join('\n');
   });
 
   const lines = [
     `⚽ *PROSSIMO TURNO — GIORNATA ${nextRound.roundNumber}*`,
-    `🏆 *${LEAGUE.brand.name}* • Previsioni Pre-Match Bradley-Terry (${modeLabel}):\n`,
+    `🏆 *${LEAGUE.brand.name}* • Previsioni Pre-Match H2H (${modeLabel}):\n`,
     matchLines.join('\n\n'),
     `\n👉 Consulta tutti i duelli, quote interattive e confronti H2H:\n${shareUrl}`
   ];

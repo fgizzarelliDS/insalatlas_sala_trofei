@@ -15,6 +15,15 @@ import {
   formatEloDelta
 } from '@/analytics/analyticsCore';
 import { pushOpenModal, popCloseModal } from '@/components/modals/baseModal';
+import {
+  buildLeagueDistributionContext,
+  buildHistoricalRoundContext,
+  computeMatchOdds1X2,
+  extractFallbackElo,
+  type MatchOdds1X2,
+  type LeagueDistributionContext
+} from './nextRoundMetrics';
+import type { LiveTeamMetrics } from '@/types';
 
 /**
  * Return context preserved when navigating from Team Matches breakdown to a manager profile
@@ -139,8 +148,8 @@ export function closeTeamMatchesModal(updateUrl = true): void {
 export function openManagerProfileFromMatches(managerId: string, teamName: string): void {
   setTeamMatchesReturnContext({ managerId, teamName });
   closeTeamMatchesModal(false);
-  if (typeof window !== 'undefined' && (window as unknown as { openProfileModal?: (id: string) => void }).openProfileModal) {
-    (window as unknown as { openProfileModal: (id: string) => void }).openProfileModal(managerId);
+  if (typeof window !== 'undefined' && window.openProfileModal) {
+    window.openProfileModal(managerId);
   }
 }
 
@@ -221,6 +230,9 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
   const eloTrack = getManagerEloTrack(teamMetric?.elo, activeMode);
   const eloBadge = eloTrack ? getEloBadgeClasses(eloTrack.current) : { bg: '', text: '', border: '' };
 
+  const liveCtx = buildLeagueDistributionContext(liveData.standings || [], activeMode, liveData.season);
+  const historicalCtxCache = new Map<number, LeagueDistributionContext>();
+
   const matchesPlayed: Array<{
     roundNumber: number;
     isHome: boolean;
@@ -230,8 +242,9 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
     oppLogo?: string;
     outcome: 'W' | 'D' | 'L' | null;
     isPlayed: boolean;
-    winProb: number | null;
+    winProb: number;
     eloDelta: number | null;
+    odds: MatchOdds1X2;
   }> = [];
 
   for (const r of liveData.rounds) {
@@ -260,8 +273,8 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
           (m.homeFantaPoints !== undefined && m.homeFantaPoints > 0) ||
           (m.awayFantaPoints !== undefined && m.awayFantaPoints > 0) ||
           (liveData.lastCompletedRound && r.roundNumber <= liveData.lastCompletedRound) ||
-          (m as any).isPlayed ||
-          (m as any).played
+          m.isPlayed ||
+          m.played
         );
         if (isPlayed) {
           if (teamScore > oppScore) outcome = 'W';
@@ -270,26 +283,60 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
         }
       }
 
-      const rawWinProb = activeMode === 'historical'
-        ? m.winProbHomeHistorical
-        : activeMode === 'atlas'
-        ? m.winProbHomeAtlas
-        : m.winProbHomeFlat;
       const rawDelta = activeMode === 'historical'
         ? m.eloDeltaHomeHistorical
         : activeMode === 'atlas'
         ? m.eloDeltaHomeAtlas
         : m.eloDeltaHomeFlat;
 
-      let winProb: number | null = null;
       let eloDelta: number | null = null;
-
-      if (rawWinProb !== undefined && rawWinProb !== null) {
-        winProb = isHome ? rawWinProb : Math.round((100.0 - rawWinProb) * 10) / 10;
-      }
       if (rawDelta !== undefined && rawDelta !== null) {
         eloDelta = isHome ? rawDelta : -rawDelta;
       }
+
+      // Context resolution: pre-match historical context for completed rounds, live forecast for upcoming rounds
+      const isHistorical = isPlayed && r.roundNumber <= (liveData.lastCompletedRound || 0);
+      let matchCtx = liveCtx;
+      if (isHistorical) {
+        if (!historicalCtxCache.has(r.roundNumber)) {
+          historicalCtxCache.set(r.roundNumber, buildHistoricalRoundContext(liveData, r.roundNumber, activeMode));
+        }
+        matchCtx = historicalCtxCache.get(r.roundNumber)!;
+      }
+
+      const oppStanding = liveData.standings.find(
+        s => (oppMgrId && s.managerId === oppMgrId) ||
+             (s.teamName.trim().toLowerCase() === oppTeam.trim().toLowerCase())
+      );
+
+      // Pre-match Elo ratings
+      const getPreMatchElo = (st?: LiveTeamMetrics) => {
+        if (!st) return 1500.0;
+        const tr = getManagerEloTrack(st.elo, activeMode);
+        if (!isHistorical) {
+          return extractFallbackElo(st.elo, tr);
+        }
+        const targetSeason = liveData.season || '2026/27';
+        const pt = tr?.trajectory?.find(p =>
+          p.round === r.roundNumber &&
+          (p.season === targetSeason || (!p.season && targetSeason === '2026/27')) &&
+          (p.competitionCategory === 'Campionato' || !p.competitionCategory)
+        );
+        if (pt) {
+          return pt.elo - (pt.delta ?? 0);
+        }
+        return extractFallbackElo(st.elo, tr);
+      };
+
+      const selectedElo = getPreMatchElo(teamMetric);
+      const oppElo = getPreMatchElo(oppStanding);
+
+      const powerTeam = (resolvedManagerId ? matchCtx.managerPowers.get(resolvedManagerId) : undefined)
+        ?? matchCtx.managerPowers.get(resolvedTeamName.toLowerCase());
+      const powerOpp = (oppMgrId ? matchCtx.managerPowers.get(oppMgrId) : undefined)
+        ?? matchCtx.managerPowers.get(oppTeam.toLowerCase());
+
+      const odds = computeMatchOdds1X2(selectedElo, oppElo, matchCtx, powerTeam, powerOpp);
 
       matchesPlayed.push({
         roundNumber: r.roundNumber,
@@ -299,8 +346,9 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
         oppLogo,
         outcome,
         isPlayed,
-        winProb,
-        eloDelta
+        winProb: odds.h2hHome,
+        eloDelta,
+        odds
       });
     }
   }
@@ -363,22 +411,42 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
           </div>
         </div>
 
-        ${match.winProb !== null && match.winProb !== undefined ? `
-          <!-- Win Probability Duel Gauge -->
-          <div class="pt-1.5 border-t border-[var(--table-border)]/50 flex flex-col gap-1">
-            <div class="flex items-center justify-between text-[10px] font-mono font-bold">
-              <span class="text-emerald-500 dark:text-emerald-400 font-black">${match.winProb.toFixed(0)}%</span>
-              <span class="text-[9px] uppercase tracking-wider opacity-60 font-sans font-semibold" style="color: var(--text-muted);">
-                Probabilità Vittoria
-              </span>
-              <span class="text-rose-500 dark:text-rose-400 font-black">${(100.0 - match.winProb).toFixed(0)}%</span>
+        <!-- H2H Duel Probability Gauge & 1X2 Odds Pills -->
+        <div class="pt-1.5 border-t border-[var(--table-border)]/50 flex flex-col gap-1.5">
+          <div class="flex items-center justify-between text-[10px] font-mono font-bold">
+            <span class="text-emerald-500 dark:text-emerald-400 font-black">${Math.round(match.odds.h2hHome)}%</span>
+            <span class="text-[9px] uppercase tracking-wider opacity-60 font-sans font-semibold" style="color: var(--text-muted);">
+              Probabilità H2H
+            </span>
+            <span class="text-rose-500 dark:text-rose-400 font-black">${100 - Math.round(match.odds.h2hHome)}%</span>
+          </div>
+          <div class="w-full h-1.5 rounded-full overflow-hidden flex bg-slate-700/40">
+            <div style="width: ${match.odds.h2hHome}%;" class="h-full bg-emerald-500 transition-all duration-300"></div>
+            <div style="width: ${match.odds.h2hAway}%;" class="h-full bg-rose-500 transition-all duration-300"></div>
+          </div>
+
+          <!-- 1X2 Match Odds Board (Agnostic Standardized Davidson Model) -->
+          <div class="grid grid-cols-3 gap-1 pt-1 text-center select-none font-mono">
+            <div class="py-0.5 px-1 rounded-lg border flex items-center justify-center gap-1.5 bg-black/5 dark:bg-white/5 shadow-2xs"
+                 style="border-color: var(--input-border);"
+                 title="Quota 1 (Vittoria ${escapeHtml(teamName)}): ${match.odds.p1}% su 3 esiti • ${match.odds.h2hHome.toFixed(0)}% H2H">
+              <span class="text-[8px] font-bold opacity-50" style="color: var(--text-muted);">1</span>
+              <span class="text-[11px] font-black text-emerald-600 dark:text-emerald-400">${match.odds.q1.toFixed(2)}</span>
             </div>
-            <div class="w-full h-1.5 rounded-full overflow-hidden flex bg-slate-700/40">
-              <div style="width: ${match.winProb}%;" class="h-full bg-emerald-500 transition-all duration-300"></div>
-              <div style="width: ${100.0 - match.winProb}%;" class="h-full bg-rose-500 transition-all duration-300"></div>
+            <div class="py-0.5 px-1 rounded-lg border flex items-center justify-center gap-1.5 bg-black/5 dark:bg-white/5 shadow-2xs"
+                 style="border-color: var(--input-border);"
+                 title="Quota X (Pareggio): ${match.odds.pX}% su 3 esiti">
+              <span class="text-[8px] font-bold opacity-50" style="color: var(--text-muted);">X</span>
+              <span class="text-[11px] font-black text-amber-600 dark:text-amber-400">${match.odds.qX.toFixed(2)}</span>
+            </div>
+            <div class="py-0.5 px-1 rounded-lg border flex items-center justify-center gap-1.5 bg-black/5 dark:bg-white/5 shadow-2xs"
+                 style="border-color: var(--input-border);"
+                 title="Quota 2 (Vittoria ${escapeHtml(match.oppTeamName)}): ${match.odds.p2}% su 3 esiti • ${match.odds.h2hAway.toFixed(0)}% H2H">
+              <span class="text-[8px] font-bold opacity-50" style="color: var(--text-muted);">2</span>
+              <span class="text-[11px] font-black text-rose-600 dark:text-rose-400">${match.odds.q2.toFixed(2)}</span>
             </div>
           </div>
-        ` : ''}
+        </div>
       </div>
     `;
   }).join('');

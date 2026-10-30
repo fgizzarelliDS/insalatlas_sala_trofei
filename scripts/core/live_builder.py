@@ -873,11 +873,20 @@ def compile_live_season_details(
                         p for p in src_track.get('trajectory', [])
                         if p.get('season') == season_name
                     ]
+                    camp_traj = [
+                        p for p in curr_traj
+                        if p.get('competitionCategory') == 'Campionato'
+                    ]
+                    last_delta = (
+                        camp_traj[-1].get('delta', 0.0)
+                        if camp_traj
+                        else src_track.get('lastDelta', 0.0)
+                    )
                     elo_entry[track] = {
                         'current': src_track.get('current', 1500.0),
                         'peak': src_track.get('peak', {}),
                         'floor': src_track.get('floor', {}),
-                        'lastDelta': src_track.get('lastDelta', 0.0),
+                        'lastDelta': last_delta,
                         'trajectory': curr_traj
                     }
             if 'seasonStats' in elo_full:

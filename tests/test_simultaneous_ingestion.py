@@ -501,6 +501,10 @@ class TestSimultaneousIngestion(unittest.TestCase):
             self.assertEqual(traj_a[2]["competitionCategory"], "Coppa")
             self.assertEqual(traj_a[2]["result"], "W")
 
+            # lastDelta in championship standings must reflect the last Campionato match (G1), aligning with form
+            self.assertEqual(standings[0]["elo"]["flat"]["lastDelta"], traj_a[0]["delta"])
+            self.assertEqual(standings[1]["elo"]["flat"]["lastDelta"], standings[1]["elo"]["flat"]["trajectory"][0]["delta"])
+
         finally:
             shutil.rmtree(temp_dir, ignore_errors=True)
 

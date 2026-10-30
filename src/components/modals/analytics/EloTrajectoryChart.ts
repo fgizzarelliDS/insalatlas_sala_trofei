@@ -5,7 +5,7 @@
  */
 
 import type { EloTrackMode } from '@/types/analytics';
-import { getManagerEloTrack, formatElo } from '@/analytics/analyticsCore';
+import { getManagerEloTrack, formatElo, formatEloDelta } from '@/analytics/analyticsCore';
 import type { EloProfileEntry } from './EloKpis';
 
 export interface LockedEloChartMatch {
@@ -42,10 +42,10 @@ export const MANAGER_COLORS = [
  */
 export function renderEloTrajectoryChart(
   kpiProfiles: EloProfileEntry[],
-  activeMode: EloTrackMode,
-  selectedEloSeason: string,
-  hiddenManagerIds: Set<string>,
-  lockedEloChartMatch: LockedEloChartMatch | null
+  activeMode: EloTrackMode = 'flat',
+  selectedEloSeason: string = 'all',
+  hiddenManagerIds: Set<string> = new Set(),
+  lockedEloChartMatch: LockedEloChartMatch | null = null
 ): string {
   // Adaptive mobile viewport detection (1:1 SVG coordinate space on mobile to avoid 50% downscaling)
   const isMobile = typeof window !== 'undefined' && typeof window.innerWidth === 'number' && window.innerWidth > 0 && window.innerWidth < 640;
@@ -60,20 +60,30 @@ export function renderEloTrajectoryChart(
   const innerH = svgHeight - pad.top - pad.bottom;
 
   // Collect all distinct global (season, round) pairs present across managers
-  const allGlobalRoundsMap = new Map<string, { season: string; round: number }>();
+  const allGlobalRoundsMap = new Map<string, { season: string; round: number; label?: string; matchIndex?: number; competitionCategory?: string }>();
   kpiProfiles.forEach(p => {
     const tr = getManagerEloTrack(p.profile, activeMode);
     if (!tr) return;
     tr.trajectory.forEach(pt => {
-      const key = `${pt.season}-G${pt.round}`;
+      const label = pt.roundLabel || `G${pt.round}`;
+      const key = `${pt.season}-${label}`;
       if (!allGlobalRoundsMap.has(key)) {
-        allGlobalRoundsMap.set(key, { season: pt.season, round: pt.round });
+        allGlobalRoundsMap.set(key, {
+          season: pt.season,
+          round: pt.round,
+          label,
+          matchIndex: pt.matchIndex,
+          competitionCategory: pt.competitionCategory
+        });
       }
     });
   });
 
   const allOrderedGlobalRounds = Array.from(allGlobalRoundsMap.values()).sort((a, b) => {
     if (a.season !== b.season) return a.season.localeCompare(b.season);
+    if (a.matchIndex !== undefined && b.matchIndex !== undefined) {
+      return a.matchIndex - b.matchIndex;
+    }
     return a.round - b.round;
   });
 
@@ -82,14 +92,14 @@ export function renderEloTrajectoryChart(
     ? (selectedEloSeason === 'last10' ? 10 : selectedEloSeason === 'last20' ? 20 : 30)
     : null;
 
-  let orderedRounds: Array<{ season: string; round: number }> = [];
+  let orderedRounds: Array<{ season: string; round: number; label?: string; matchIndex?: number; competitionCategory?: string }> = [];
   let allowedRoundKeys: Set<string> | null = null;
 
   if (lastNCount !== null) {
     orderedRounds = allOrderedGlobalRounds.slice(-lastNCount);
-    allowedRoundKeys = new Set(orderedRounds.map(r => `${r.season}-G${r.round}`));
+    allowedRoundKeys = new Set(orderedRounds.map(r => `${r.season}-${r.label || `G${r.round}`}`));
   } else {
-    const roundsSet = new Map<string, { season: string; round: number }>();
+    const roundsSet = new Map<string, { season: string; round: number; label?: string; matchIndex?: number; competitionCategory?: string }>();
     kpiProfiles.forEach(p => {
       const tr = getManagerEloTrack(p.profile, activeMode);
       if (!tr) return;
@@ -97,14 +107,24 @@ export function renderEloTrajectoryChart(
         ? tr.seasons[selectedEloSeason]
         : tr.trajectory.filter(pt => selectedEloSeason === 'all' || pt.season === selectedEloSeason);
       pts.forEach(pt => {
-        const key = `${pt.season}-G${pt.round}`;
+        const label = pt.roundLabel || `G${pt.round}`;
+        const key = `${pt.season}-${label}`;
         if (!roundsSet.has(key)) {
-          roundsSet.set(key, { season: pt.season, round: pt.round });
+          roundsSet.set(key, {
+            season: pt.season,
+            round: pt.round,
+            label,
+            matchIndex: pt.matchIndex,
+            competitionCategory: pt.competitionCategory
+          });
         }
       });
     });
     orderedRounds = Array.from(roundsSet.values()).sort((a, b) => {
       if (a.season !== b.season) return a.season.localeCompare(b.season);
+      if (a.matchIndex !== undefined && b.matchIndex !== undefined) {
+        return a.matchIndex - b.matchIndex;
+      }
       return a.round - b.round;
     });
   }
@@ -117,7 +137,7 @@ export function renderEloTrajectoryChart(
     const tr = getManagerEloTrack(p.profile, activeMode);
     if (!tr) return;
     const pts = allowedRoundKeys !== null
-      ? tr.trajectory.filter(pt => allowedRoundKeys!.has(`${pt.season}-G${pt.round}`))
+      ? tr.trajectory.filter(pt => allowedRoundKeys!.has(`${pt.season}-${pt.roundLabel || `G${pt.round}`}`))
       : (selectedEloSeason !== 'all' && tr.seasons?.[selectedEloSeason])
         ? tr.seasons[selectedEloSeason]
         : tr.trajectory.filter(pt => selectedEloSeason === 'all' || pt.season === selectedEloSeason);
@@ -135,7 +155,7 @@ export function renderEloTrajectoryChart(
   const totalPointsCount = orderedRounds.length;
   const roundIndexMap = new Map<string, number>();
   orderedRounds.forEach((r, idx) => {
-    roundIndexMap.set(`${r.season}-G${r.round}`, idx);
+    roundIndexMap.set(`${r.season}-${r.label || `G${r.round}`}`, idx);
   });
 
   const getX = (idx: number) => {
@@ -176,7 +196,7 @@ export function renderEloTrajectoryChart(
       }
       xLabels += `
         <line x1="${x}" y1="${pad.top}" x2="${x}" y2="${pad.top + innerH}" stroke="currentColor" stroke-opacity="0.05" />
-        <text x="${x}" y="${pad.top + innerH + 16}" text-anchor="middle" font-size="9" font-weight="bold" fill="currentColor" opacity="0.6">G${r.round}</text>
+        <text x="${x}" y="${pad.top + innerH + 16}" text-anchor="middle" font-size="9" font-weight="bold" fill="currentColor" opacity="0.6">${r.label || `G${r.round}`}</text>
       `;
     }
   });
@@ -194,13 +214,16 @@ export function renderEloTrajectoryChart(
     const isHidden = hiddenManagerIds.has(p.managerId);
 
     const ptsSource = allowedRoundKeys !== null
-      ? tr.trajectory.filter(pt => allowedRoundKeys!.has(`${pt.season}-G${pt.round}`))
+      ? tr.trajectory.filter(pt => allowedRoundKeys!.has(`${pt.season}-${pt.roundLabel || `G${pt.round}`}`))
       : (selectedEloSeason !== 'all' && tr.seasons?.[selectedEloSeason])
         ? tr.seasons[selectedEloSeason]
         : tr.trajectory.filter(pt => selectedEloSeason === 'all' || pt.season === selectedEloSeason);
 
     const trajectoryPts = [...ptsSource].sort((a, b) => {
       if (a.season !== b.season) return a.season.localeCompare(b.season);
+      if (a.matchIndex !== undefined && b.matchIndex !== undefined) {
+        return a.matchIndex - b.matchIndex;
+      }
       return a.round - b.round;
     });
 
@@ -209,7 +232,8 @@ export function renderEloTrajectoryChart(
       const hitRadius = isMobile ? 15 : 12;
 
       trajectoryPts.forEach((pt, pIdx) => {
-        const ptIdx = roundIndexMap.get(`${pt.season}-G${pt.round}`) ?? pIdx;
+        const key = `${pt.season}-${pt.roundLabel || `G${pt.round}`}`;
+        const ptIdx = roundIndexMap.get(key) ?? pIdx;
         const x = getX(ptIdx);
         const y = getY(pt.elo);
         if (pIdx === 0) {
@@ -230,6 +254,8 @@ export function renderEloTrajectoryChart(
           : '';
 
         const dotR = totalPointsCount > 20 ? 2.5 : 3.2;
+        const rLabel = pt.roundLabel || `G${pt.round}`;
+        const compLabel = pt.competitionCategory && pt.competitionCategory !== 'Campionato' ? ` [${pt.competitionCategory}]` : '';
 
         // Visible node dot + transparent hit target circle
         dotsHTML += `
@@ -239,7 +265,7 @@ export function renderEloTrajectoryChart(
                   onclick="window.selectEloChartPoint && window.selectEloChartPoint('${pt.season}', ${pt.round}, '${escapedTeam}', '${escapedOpp}', '${pt.result || '-'}', ${pt.elo}, ${pt.delta}, ${pt.winProbPreMatch ?? 0})"
                   onmouseenter="window.showEloChartHover && window.showEloChartHover('${pt.season}', ${pt.round}, '${escapedTeam}', '${escapedOpp}', '${pt.result || '-'}', ${pt.elo}, ${pt.delta}, ${pt.winProbPreMatch ?? 0})"
                   onmouseleave="window.clearEloChartHover && window.clearEloChartHover()">
-            <title>${p.teamName} (${pt.season} G${pt.round}): ${pt.elo.toFixed(1)} (${pt.delta > 0 ? '+' : ''}${pt.delta.toFixed(1)})</title>
+            <title>${p.teamName} (${pt.season} ${rLabel}${compLabel}): ${formatElo(pt.elo)} (${formatEloDelta(pt.delta)})</title>
           </circle>
         `;
       });
@@ -279,7 +305,6 @@ export function renderEloTrajectoryChart(
       }
     }
     if (matchPt) {
-      const deltaSign = matchPt.delta > 0 ? '+' : '';
       const deltaColor = matchPt.delta > 0 ? 'text-emerald-400' : matchPt.delta < 0 ? 'text-rose-400' : 'text-slate-400';
       const resBadge = matchPt.result === 'W' ? 'text-emerald-400 font-bold' : matchPt.result === 'L' ? 'text-rose-400 font-bold' : 'text-amber-400 font-bold';
       const winProb = matchPt.winProbPreMatch ?? 0;
@@ -293,8 +318,8 @@ export function renderEloTrajectoryChart(
             <span class="${resBadge} shrink-0">(${matchPt.result || '-'})</span>
           </div>
           <div class="flex items-center gap-2 font-mono shrink-0">
-            <span class="font-black text-amber-400 text-xs sm:text-sm">${matchPt.elo.toFixed(1)} pt</span>
-            <span class="${deltaColor} font-bold text-[11px]">(${deltaSign}${matchPt.delta.toFixed(1)})</span>
+            <span class="font-black text-amber-400 text-xs sm:text-sm">${formatElo(matchPt.elo)} pt</span>
+            <span class="${deltaColor} font-bold text-[11px]">(${formatEloDelta(matchPt.delta)})</span>
             ${winProb > 0 ? `<span class="opacity-75 text-[10px] font-sans" style="color: var(--text-muted);">(Prob. ${winProb.toFixed(0)}%)</span>` : ''}
           </div>
         </div>

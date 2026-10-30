@@ -10,7 +10,7 @@ import type {
 } from '@/types';
 import { renderAnalyticsModalDOM } from './analytics';
 
-import { setEloMode, getCachedAnalyticsManagers, loadAnalyticsEloData } from '@/analytics/analyticsCore';
+import { getCachedAnalyticsManagers, loadAnalyticsEloData } from '@/analytics/analyticsCore';
 import { getLiveSeasonDetails, loadLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 
 let currentTab: AnalyticsTab = 'macro';
@@ -87,14 +87,6 @@ export function switchAnalyticsTab(tab: AnalyticsTab): void {
       });
     }
   }
-  renderAnalyticsModalBody();
-}
-
-/**
- * Switches Elo tracking mode in Analytics Modal ('flat' | 'historical')
- */
-export function switchEloMode(mode: 'flat' | 'historical'): void {
-  setEloMode(mode);
   renderAnalyticsModalBody();
 }
 

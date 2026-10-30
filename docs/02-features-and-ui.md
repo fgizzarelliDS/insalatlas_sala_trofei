@@ -268,5 +268,20 @@ Per le stagioni contrassegnate come `in_progress: true`, il sistema attiva un mo
 5. **Tabellino Partite Minimalista (`TeamMatchesModal.ts`)**:
    - **Layout Essenziale**: Badge giornata in grassetto su singola riga (`G1`, `G2`...), stemma squadra e denominazione avversario affiancati orizzontalmente. Rimossi data, nome mister e pill CASA/TRASFERTA per massima pulizia visiva.
    - **Mascheramento Punteggi & Esiti**: Mostra unicamente badge qualitativi (`VITTORIA` 🟢, `PAREGGIO` 🟡, `SCONFITTA` 🔴). Gli incontri non ancora disputati (in programma) riportano un pulito indicatore **`-`** privo di esito forzato.
+   - **Probabilità H2H & Quote Decimali 1X2**: Ciascun incontro visualizza una barra bicromatica a due vie (`Probabilità H2H`, verde vs rosso) e il tris di card quote 1X2 con layout identico a quello del Prossimo Turno (sfondo neutro sottile, etichette `1`, `X`, `2` attenuate e quote smeraldo/ambra/rosa). Per le gare già disputate, il contesto della lega e i rating Elo vengono storicamente ricostruiti a monte del calcio d'inizio (`buildHistoricalRoundContext`), offrendo un archivio quote retrospettivo coerente per tutte le 26 giornate.
    - **Navigazione Contestuale tra Avversari**: Cliccando su qualsiasi squadra avversaria, il modale carica istantaneamente il calendario del club cliccato, esponendo un pulsante circolare `[←]` nell'header per ripercorrere a ritroso la cronologia di navigazione.
+
+6. **Striscia Prossimo Turno, Quote Pre-Match 1X2 & Export Condivisione HD (`NextRoundStrip.ts` & `nextRound.ts`)**:
+   - **Posizionamento & Accordion UI**: Banner compatto posizionato strategicamente sopra la classifica della stagione live. Rileva in automatico la prima giornata con gare non disputate ed è collassabile con stato persistito in sessione.
+   - **Card Duello Interattive**:
+     - *Header Incontro*: Numero duello, stemmi ad alta risoluzione, denominazioni club senza troncamenti (`break-words`), posizione attuale in classifica e badge punteggio Elo pre-partita.
+     - *Clima Partita*: Badge qualitativo assegnato deterministicamente in base a classifica e disparità statistica (`↕️ TESTACODA`, `🔥 AL VERTICE`, `🪓 SALVEZZA`, `⚠️ TRAPPOLA`, `⚖️ SUL FILO`, `🎯 CORSA PLAYOFF`, `🥊 DUELLO`).
+     - *Gauge Probabilità H2H*: Barra di probabilità a 2 esiti calibrata tramite curva logistica Bradley-Terry (con arrotondamento complementare a somma rigorosa 100%).
+     - *Tabellone Quote 1X2*: Tris di card ad altezza compatta con superficie trasparente neutra (`bg-black/5 dark:bg-white/5`), bordo di sistema `var(--input-border)`, etichetta attenuata e valore decimale cromatico (`1` Smeraldo, `X` Ambra, `2` Rosa).
+   - **Modale Guida Educativa (`[ℹ️ Guida & Modello Previsionale]`)**:
+     - Accessibile dall'header della striscia, illustra la logica analitica (metodologia agnostica Davidson, shrinkage bayesiano sui primi 5 turni, ancoraggio della varianza Elo, overround 104.5% e legenda dei climi).
+   - **Export HD & Condivisione Social 1:1 (`src/export/share/nextRound.ts`)**:
+     - Modale con anteprima 1:1 del poster quote completo.
+     - Download diretto del file PNG ad alta definizione e copia nativa negli appunti (Blob PNG tramite `navigator.clipboard.write`).
+     - Supporto per sfondo trasparente o scuro premium da pubblicare istantaneamente su WhatsApp, Telegram o Instagram.
 

@@ -94,7 +94,6 @@ def get_active_season_competitions(base_dir: str) -> Dict[str, Dict[str, Any]]:
                     }
         except Exception as e:
             warn(f"Impossibile leggere file stagione: {e}")
-
     # Environment variables override or provide defaults for all 5 competitions
     env_mappings = [
         ("campionato", "COMPETITION_ID", COMPETITION_ID, "Campionato", "2026-27_rounds.json"),
@@ -217,7 +216,6 @@ def fetch_single_competition(competition_id: int, base_dir: str, headers: Dict[s
         except Exception as e:
             error(f"Errore di connessione API: {e}")
             return False
-
     # Save raw debug payload
     raw_debug_path = os.path.join(base_dir, "data", "live", f"raw_api_comp_{competition_id}.json")
     os.makedirs(os.path.dirname(raw_debug_path), exist_ok=True)
@@ -332,7 +330,6 @@ def fetch_single_competition(competition_id: int, base_dir: str, headers: Dict[s
             is_match_played = bool(is_calculated or h_fp > 0 or a_fp > 0 or (result_str and result_str != "-"))
             if is_match_played:
                 round_has_played_match = True
-
             h_logo = h_info.get("logo") or m.get("homeLogo")
             a_logo = a_info.get("logo") or m.get("awayLogo")
 

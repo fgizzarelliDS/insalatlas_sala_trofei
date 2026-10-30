@@ -12,6 +12,7 @@ import {
   toggleMobileMeritSort,
   toggleMeritEloMode
 } from './liveMeritView';
+import { renderNextRoundStrip } from './NextRoundStrip';
 
 // Re-export submodules for 100% backward compatibility
 export { toggleLiveStandingsGuide } from './liveStandingsGuide';
@@ -36,8 +37,12 @@ function renderLiveChampionshipTable(
   const realViewContainerHTML = renderRealViewContainer(standings);
   const meritViewContainerHTML = renderMeritViewContainer(standings);
   const guideBoxHTML = buildLiveStandingsGuideHTML();
+  const nextRoundStripHTML = renderNextRoundStrip(liveData);
 
   return `
+    <!-- Upcoming Round Fixtures & Duel Odds Strip -->
+    ${nextRoundStripHTML}
+
     <div class="albo-table-wrap rounded-2xl overflow-hidden border mb-6 shadow-sm" style="border-color: var(--table-border); background-color: var(--table-surface);">
       <!-- Table Header Banner (Integrated with Switcher & Compact Guide Toggle) -->
       <div class="px-3 sm:px-4 py-2 sm:py-2.5 border-b"
@@ -55,19 +60,19 @@ function renderLiveChampionshipTable(
             </span>
           </div>
 
-          <!-- Center: 2-Way View Switcher -->
+          <!-- Center: 2-Way View Switcher (Desktop) -->
           <div class="inline-flex items-center p-0.5 rounded-xl bg-black/25 backdrop-blur-xs border border-white/15 shadow-inner">
             <button id="btn-live-view-real"
                     type="button"
                     onclick="window.switchLiveStandingsView && window.switchLiveStandingsView('real')"
-                    class="px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-amber-500 text-slate-950 shadow-xs">
+                    class="px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-amber-500 text-slate-950 shadow-xs">
               <i class="fa-solid fa-list-ol text-[11px]"></i>
               <span>Classifica Reale</span>
             </button>
             <button id="btn-live-view-merit"
                     type="button"
                     onclick="window.switchLiveStandingsView && window.switchLiveStandingsView('merit')"
-                    class="px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer text-white/75 hover:text-white hover:bg-white/10">
+                    class="px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer text-white/75 hover:text-white hover:bg-white/10">
               <i class="fa-solid fa-scale-balanced text-[11px]"></i>
               <span>Merito & Fortuna</span>
             </button>
@@ -184,21 +189,21 @@ function renderLiveChampionshipTable(
             </div>
           </div>
 
-          <!-- Row 2: Full-Width 50/50 Glass Switcher -->
+          <!-- Row 2: Full-Width 2-Column Glass Switcher (Mobile) -->
           <div class="grid grid-cols-2 p-0.5 rounded-xl bg-black/25 backdrop-blur-xs border border-white/15 shadow-inner w-full">
             <button id="btn-live-view-real-mobile"
                     type="button"
                     onclick="window.switchLiveStandingsView && window.switchLiveStandingsView('real')"
                     class="px-2 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer bg-amber-500 text-slate-950 shadow-xs">
               <i class="fa-solid fa-list-ol text-[11px]"></i>
-              <span>Classifica Reale</span>
+              <span>Reale</span>
             </button>
             <button id="btn-live-view-merit-mobile"
                     type="button"
                     onclick="window.switchLiveStandingsView && window.switchLiveStandingsView('merit')"
                     class="px-2 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-white/75 hover:text-white hover:bg-white/10">
               <i class="fa-solid fa-scale-balanced text-[11px]"></i>
-              <span>Merito & Fortuna</span>
+              <span>Merito</span>
             </button>
           </div>
         </div>

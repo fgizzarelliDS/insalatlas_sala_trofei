@@ -609,6 +609,7 @@ export interface MatchdayMatch {
   homeManagerId?: string;
   awayManagerId?: string;
   isPlayed?: boolean;
+  played?: boolean;
   homeOutcome?: FormResult | null;
   awayOutcome?: FormResult | null;
   homeScore?: number;
@@ -619,8 +620,10 @@ export interface MatchdayMatch {
   awayLogo?: string;
   winProbHomeFlat?: number;
   winProbHomeHistorical?: number;
+  winProbHomeAtlas?: number;
   eloDeltaHomeFlat?: number;
   eloDeltaHomeHistorical?: number;
+  eloDeltaHomeAtlas?: number;
 }
 
 export interface MatchdayRound {

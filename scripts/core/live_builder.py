@@ -10,16 +10,16 @@ from typing import Dict, Any, List, Optional, Tuple
 
 try:
     from core.luck_simulator import compute_schedule_luck_analytics
-    from core.elo_engine import run_dual_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
+    from core.elo_engine import run_multi_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
     from core.config import LEAGUE_RULES
 except ImportError:
     try:
         from luck_simulator import compute_schedule_luck_analytics
-        from elo_engine import run_dual_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
+        from elo_engine import run_multi_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
         from config import LEAGUE_RULES
     except ImportError:
         from scripts.core.luck_simulator import compute_schedule_luck_analytics
-        from scripts.core.elo_engine import run_dual_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
+        from scripts.core.elo_engine import run_multi_track_elo_pipeline, expected_score, DEFAULT_ELO_CONFIG
         from scripts.core.config import LEAGUE_RULES
 
 def compute_momentum(recent_form: List[str]) -> float:
@@ -261,11 +261,25 @@ def compile_live_season_details(
     ]
     effective_files = non_mock_files if non_mock_files else round_files
 
-    # Only load league round files for championship standings (ignore raw API dumps and cup/tournament files)
+    # Separate league files and tournament files
+    tournament_keywords = ('cup', 'coppa', 'supercoppa', 'supercup', 'mundialito', 'perdenti', 'playout', 'cartonato')
+
+    def is_tournament_file(fpath: str) -> bool:
+        bn = os.path.basename(fpath).lower()
+        return any(k in bn for k in tournament_keywords)
+
     league_files = [
         f for f in effective_files
-        if not any(k in os.path.basename(f).lower() for k in ('cup', 'coppa', 'supercoppa', 'supercup', 'mundialito', 'perdenti'))
-        and not os.path.basename(f).startswith('raw_api_')
+        if not is_tournament_file(f) and not os.path.basename(f).startswith('raw_api_')
+    ]
+    tournament_files = [
+        f for f in effective_files
+        if is_tournament_file(f) and not os.path.basename(f).startswith('raw_api_')
+    ]
+    cup_files = [
+        f for f in tournament_files
+        if ('cup' in os.path.basename(f).lower() or 'coppa' in os.path.basename(f).lower())
+        and not any(k in os.path.basename(f).lower() for k in ('supercoppa', 'supercup', 'perdenti'))
     ]
     if not league_files:
         league_files = effective_files
@@ -276,7 +290,7 @@ def compile_live_season_details(
     competition_id = active_info['competitionId'] if active_info else 0
     total_rounds = active_info['totalRounds'] if active_info else 26
 
-    # Deduplicate rounds across files by roundNumber
+    # Deduplicate league rounds across files by roundNumber
     rounds_by_number: Dict[int, Dict[str, Any]] = {}
 
     for rf in sorted(league_files):
@@ -316,11 +330,104 @@ def compile_live_season_details(
     for r in all_rounds:
         r.pop('date', None)
 
+    # Also parse cup rounds if available
+    cup_rounds_by_number: Dict[int, Dict[str, Any]] = {}
+    for cf in sorted(cup_files):
+        with open(cf, 'r', encoding='utf-8') as f:
+            try:
+                c_data = json.load(f)
+            except Exception:
+                continue
+            raw_c_rounds = c_data.get('rounds', []) if isinstance(c_data, dict) else (c_data if isinstance(c_data, list) else [])
+            for cr in raw_c_rounds:
+                cr_num = cr.get('roundNumber')
+                if cr_num is not None and cr_num not in cup_rounds_by_number:
+                    cup_rounds_by_number[cr_num] = cr
+
+    cup_rounds = [cup_rounds_by_number[k] for k in sorted(cup_rounds_by_number.keys())]
+    for cr in cup_rounds:
+        cr.pop('date', None)
+
+    def detect_tournament_meta(filename: str, file_data: Dict[str, Any]) -> Tuple[str, str, str]:
+        fn = os.path.basename(filename).lower()
+        cat = file_data.get('competitionCategory')
+        comp_name = file_data.get('competition')
+        if not cat:
+            if 'supercoppa' in fn or 'supercup' in fn:
+                cat = 'Supercoppa'
+            elif 'mundialito' in fn:
+                cat = 'Mundialito'
+            elif 'perdenti' in fn or 'playout' in fn:
+                cat = 'Perdenti'
+            else:
+                cat = 'Coppa'
+
+        prefix_map = {
+            'Campionato': 'G',
+            'Coppa': 'C',
+            'Supercoppa': 'SC',
+            'Mundialito': 'M',
+            'Perdenti': 'P'
+        }
+        name_map = {
+            'Campionato': 'Serie Atlas',
+            'Coppa': 'Coppa InsalAtlas',
+            'Supercoppa': 'Supercoppa InsalAtlas',
+            'Mundialito': 'Mundialito',
+            'Perdenti': 'Coppa dei Perdenti'
+        }
+        prefix = prefix_map.get(cat, 'T')
+        if not comp_name:
+            comp_name = name_map.get(cat, cat)
+        return cat, comp_name, prefix
+
+    # Parse all tournament rounds (Coppa, Supercoppa, Mundialito, Perdenti)
+    all_tournament_rounds: List[Dict[str, Any]] = []
+    seen_tournament_rounds = set()
+    for tf in sorted(tournament_files):
+        with open(tf, 'r', encoding='utf-8') as f:
+            try:
+                t_data = json.load(f)
+            except Exception:
+                continue
+            cat, comp_name, prefix = detect_tournament_meta(tf, t_data if isinstance(t_data, dict) else {})
+            raw_t_rounds = t_data.get('rounds', []) if isinstance(t_data, dict) else (t_data if isinstance(t_data, list) else [])
+            for tr in raw_t_rounds:
+                tr_copy = dict(tr)
+                tr_copy.pop('date', None)
+                tr_num = tr_copy.get('roundNumber', 1)
+                t_key = (cat, tr_num)
+                if t_key in seen_tournament_rounds:
+                    continue
+                seen_tournament_rounds.add(t_key)
+                tr_copy['competitionCategory'] = tr_copy.get('competitionCategory') or cat
+                tr_copy['competition'] = tr_copy.get('competition') or comp_name
+                tr_copy['roundLabel'] = f"{prefix}{tr_num}"
+                if not tr_copy.get('championshipMatchDay'):
+                    if cat == 'Coppa':
+                        cup_md_map = {1: 8, 2: 9, 3: 11, 4: 12, 5: 14, 6: 15}
+                        tr_copy['championshipMatchDay'] = cup_md_map.get(tr_num, tr_num + 7)
+                    else:
+                        tr_copy['championshipMatchDay'] = tr_num + 5
+                all_tournament_rounds.append(tr_copy)
+
+    # Fallback to cup_rounds if tournament_files was somehow empty
+    if not all_tournament_rounds and cup_rounds:
+        for cr in cup_rounds:
+            cr_copy = dict(cr)
+            c_num = cr_copy.get('roundNumber', 1)
+            cr_copy['competitionCategory'] = 'Coppa'
+            cr_copy['competition'] = 'Coppa InsalAtlas'
+            cr_copy['roundLabel'] = f"C{c_num}"
+            cup_md_map = {1: 8, 2: 9, 3: 11, 4: 12, 5: 14, 6: 15}
+            cr_copy['championshipMatchDay'] = cr_copy.get('championshipMatchDay') or cup_md_map.get(c_num, c_num + 7)
+            all_tournament_rounds.append(cr_copy)
+
     # Load canonical team definitions from the season data (Single Source of Truth)
     teams_by_mgr, teams_by_name = load_season_teams_lookup(root_dir, season_name, competition_id)
 
-    # Enrich and inherit teamName, coach, logo, managerId
-    for r in all_rounds:
+    # Enrich and inherit teamName, coach, logo, managerId for all rounds across all competitions
+    for r in all_rounds + all_tournament_rounds:
         for m in r.get('matches', []):
             h_mgr_id = m.get('homeManagerId')
             h_team = m.get('homeTeam')
@@ -521,6 +628,7 @@ def compile_live_season_details(
 
             fb_flat = {}
             fb_hist = {}
+            fb_atlas = {}
             for m_id, prof in prev_profiles.items():
                 t_flat = prof.get('flat', {}).get('seasons', {}).get('2025/26') or [
                     p for p in prof.get('flat', {}).get('trajectory', []) if p.get('season') == '2025/26'
@@ -544,8 +652,19 @@ def compile_live_season_details(
                         'lastDelta': t_hist[-1].get('delta', 0.0),
                         'trajectory': t_hist
                     }
+                t_atlas = prof.get('atlas', {}).get('seasons', {}).get('2025/26') or [
+                    p for p in prof.get('atlas', {}).get('trajectory', []) if p.get('season') == '2025/26'
+                ]
+                if t_atlas:
+                    fb_atlas[m_id] = {
+                        'current': t_atlas[-1]['elo'],
+                        'peak': prof['atlas'].get('peak', {}),
+                        'floor': prof['atlas'].get('floor', {}),
+                        'lastDelta': t_atlas[-1].get('delta', 0.0),
+                        'trajectory': t_atlas
+                    }
             if fb_flat and fb_hist:
-                existing_2025_trackers = (fb_flat, fb_hist)
+                existing_2025_trackers = (fb_flat, fb_hist, fb_atlas)
         except Exception as e:
             print(f"[WARN] Failed to recover 2025 Elo trackers from existing files: {e}")
 
@@ -560,13 +679,43 @@ def compile_live_season_details(
         except Exception:
             managers_list = []
 
-    # Run Dual-Track Elo Pipeline
+    # Build unified chronological sequence of rounds for Elo multi-track engine
+    elo_season_rounds = []
+    for r in all_rounds:
+        r_copy = dict(r)
+        r_num = r_copy.get('roundNumber', 1)
+        r_copy['competitionCategory'] = 'Campionato'
+        r_copy['competition'] = 'Serie Atlas'
+        r_copy['roundLabel'] = f"G{r_num}"
+        ch_md = r_copy.get('championshipMatchDay') or (r_num + 5)
+        r_copy['championshipMatchDay'] = ch_md
+        elo_season_rounds.append(r_copy)
+
+    for tr in all_tournament_rounds:
+        elo_season_rounds.append(dict(tr))
+
+    elo_season_rounds.sort(key=lambda r: (
+        int(r.get('championshipMatchDay', 0)),
+        0 if r.get('competitionCategory') == 'Campionato' else 1,
+        int(r.get('roundNumber', 0))
+    ))
+
+    for idx, r in enumerate(elo_season_rounds, start=1):
+        r['matchIndex'] = idx
+        for m in r.get('matches', []):
+            m['competitionCategory'] = r.get('competitionCategory')
+            m['competition'] = r.get('competition')
+            m['roundLabel'] = r.get('roundLabel')
+            m['matchIndex'] = idx
+            m['championshipMatchDay'] = r.get('championshipMatchDay')
+
+    # Run Multi-Track Elo Pipeline with unified chronological rounds
     elo_config = LEAGUE_RULES.get('elo')
     elo_profiles = {}
     try:
-        elo_profiles = run_dual_track_elo_pipeline(
+        elo_profiles = run_multi_track_elo_pipeline(
             season_2025_rounds=season_2025_rounds,
-            season_2026_rounds=all_rounds,
+            season_2026_rounds=elo_season_rounds,
             managers_list=managers_list,
             elo_config=elo_config,
             existing_2025_trackers=existing_2025_trackers
@@ -609,15 +758,18 @@ def compile_live_season_details(
             a_id = m.get('awayManagerId')
             win_prob_flat = None
             win_prob_hist = None
+            win_prob_atlas = None
             delta_flat = None
             delta_hist = None
+            delta_atlas = None
 
             if h_id and a_id and elo_profiles:
                 prof_h = elo_profiles.get(h_id)
                 prof_a = elo_profiles.get(a_id)
                 if prof_h and prof_a:
-                    traj_h_flat = {pt['round']: pt for pt in prof_h.get('flat', {}).get('trajectory', []) if pt.get('season') == season_name}
-                    traj_h_hist = {pt['round']: pt for pt in prof_h.get('historical', {}).get('trajectory', []) if pt.get('season') == season_name}
+                    traj_h_flat = {pt['round']: pt for pt in prof_h.get('flat', {}).get('trajectory', []) if pt.get('season') == season_name and pt.get('competitionCategory', 'Campionato') == 'Campionato'}
+                    traj_h_hist = {pt['round']: pt for pt in prof_h.get('historical', {}).get('trajectory', []) if pt.get('season') == season_name and pt.get('competitionCategory', 'Campionato') == 'Campionato'}
+                    traj_h_atlas = {pt['round']: pt for pt in prof_h.get('atlas', {}).get('trajectory', []) if pt.get('season') == season_name and pt.get('competitionCategory', 'Campionato') == 'Campionato'}
 
                     if is_played and r_num in traj_h_flat:
                         win_prob_flat = traj_h_flat[r_num].get('winProbPreMatch')
@@ -635,6 +787,31 @@ def compile_live_season_details(
                         r_a_hist = prof_a.get('historical', {}).get('current', 1500.0)
                         win_prob_hist = round(expected_score(r_h_hist, r_a_hist) * 100.0, 1)
 
+                    if is_played and r_num in traj_h_atlas:
+                        win_prob_atlas = traj_h_atlas[r_num].get('winProbPreMatch')
+                        delta_atlas = traj_h_atlas[r_num].get('delta')
+                    else:
+                        r_h_atlas = prof_h.get('atlas', {}).get('current', 1500.0)
+                        r_a_atlas = prof_a.get('atlas', {}).get('current', 1500.0)
+                        win_prob_atlas = round(expected_score(r_h_atlas, r_a_atlas) * 100.0, 1)
+                        win_prob_flat = round(expected_score(r_h_flat, r_a_flat) * 100.0, 1)
+
+                    if is_played and r_num in traj_h_hist:
+                        win_prob_hist = traj_h_hist[r_num].get('winProbPreMatch')
+                        delta_hist = traj_h_hist[r_num].get('delta')
+                    else:
+                        r_h_hist = prof_h.get('historical', {}).get('current', 1500.0)
+                        r_a_hist = prof_a.get('historical', {}).get('current', 1500.0)
+                        win_prob_hist = round(expected_score(r_h_hist, r_a_hist) * 100.0, 1)
+
+                    if is_played and r_num in traj_h_atlas:
+                        win_prob_atlas = traj_h_atlas[r_num].get('winProbPreMatch')
+                        delta_atlas = traj_h_atlas[r_num].get('delta')
+                    else:
+                        r_h_atlas = prof_h.get('atlas', {}).get('current', 1500.0)
+                        r_a_atlas = prof_a.get('atlas', {}).get('current', 1500.0)
+                        win_prob_atlas = round(expected_score(r_h_atlas, r_a_atlas) * 100.0, 1)
+
             match_entry = {
                 'homeTeam': m.get('homeTeam'),
                 'awayTeam': m.get('awayTeam'),
@@ -650,10 +827,14 @@ def compile_live_season_details(
                 match_entry['winProbHomeFlat'] = win_prob_flat
             if win_prob_hist is not None:
                 match_entry['winProbHomeHistorical'] = win_prob_hist
+            if win_prob_atlas is not None:
+                match_entry['winProbHomeAtlas'] = win_prob_atlas
             if delta_flat is not None:
                 match_entry['eloDeltaHomeFlat'] = delta_flat
             if delta_hist is not None:
                 match_entry['eloDeltaHomeHistorical'] = delta_hist
+            if delta_atlas is not None:
+                match_entry['eloDeltaHomeAtlas'] = delta_atlas
 
             masked_matches.append(match_entry)
 
@@ -685,7 +866,7 @@ def compile_live_season_details(
                 'teamName': elo_full.get('teamName', t_name),
                 'coach': elo_full.get('coach', ''),
             }
-            for track in ['flat', 'historical']:
+            for track in ['flat', 'historical', 'atlas']:
                 if track in elo_full:
                     src_track = elo_full[track]
                     curr_traj = [
@@ -699,6 +880,8 @@ def compile_live_season_details(
                         'lastDelta': src_track.get('lastDelta', 0.0),
                         'trajectory': curr_traj
                     }
+            if 'seasonStats' in elo_full:
+                elo_entry['seasonStats'] = elo_full['seasonStats']
         final_standings.append({
             'rank': t['rank'],
             'managerId': m_id,
@@ -712,6 +895,58 @@ def compile_live_season_details(
             'elo': elo_entry
         })
 
+    # Mask cup rounds if available
+    masked_cup_rounds = []
+    cup_completed_rounds = [
+        r.get('roundNumber', 0)
+        for r in cup_rounds
+        if any(
+            bool(m.get('isPlayed') or m.get('played') or float(m.get('homeFantaPoints', 0) or 0) > 0 or float(m.get('awayFantaPoints', 0) or 0) > 0)
+            for m in r.get('matches', [])
+        )
+    ]
+    cup_last_completed = max(cup_completed_rounds, default=0)
+
+    for r in cup_rounds:
+        r_num = r.get('roundNumber')
+        masked_cup_matches = []
+        for m in r.get('matches', []):
+            h_score = int(m.get('homeScore', 0) or 0)
+            a_score = int(m.get('awayScore', 0) or 0)
+            h_fp = float(m.get('homeFantaPoints', 0.0) or 0.0)
+            a_fp = float(m.get('awayFantaPoints', 0.0) or 0.0)
+            is_played = bool(
+                m.get('isPlayed')
+                or m.get('played')
+                or h_fp > 0
+                or a_fp > 0
+            )
+            home_outcome = ('W' if h_score > a_score else ('L' if h_score < a_score else 'D')) if is_played else None
+            away_outcome = ('L' if h_score > a_score else ('W' if h_score < a_score else 'D')) if is_played else None
+            h_id = m.get('homeManagerId')
+            a_id = m.get('awayManagerId')
+            masked_cup_matches.append({
+                'homeTeam': m.get('homeTeam'),
+                'awayTeam': m.get('awayTeam'),
+                'homeManagerId': h_id,
+                'awayManagerId': a_id,
+                'homeLogo': m.get('homeLogo'),
+                'awayLogo': m.get('awayLogo'),
+                'isPlayed': is_played,
+                'homeOutcome': home_outcome,
+                'awayOutcome': away_outcome,
+                'competition': 'Coppa InsalAtlas',
+                'competitionCategory': 'Coppa',
+                'championshipMatchDay': m.get('championshipMatchDay')
+            })
+        masked_cup_rounds.append({
+            'roundNumber': r_num,
+            'championshipMatchDay': r.get('championshipMatchDay'),
+            'competition': 'Coppa InsalAtlas',
+            'competitionCategory': 'Coppa',
+            'matches': masked_cup_matches
+        })
+
     compiled_details = {
         'season': season_name,
         'competitionId': competition_id,
@@ -720,6 +955,10 @@ def compile_live_season_details(
         'rounds': masked_rounds,
         'standings': final_standings
     }
+    if cup_rounds:
+        compiled_details['cupTotalRounds'] = len(cup_rounds)
+        compiled_details['cupLastCompletedRound'] = cup_last_completed
+        compiled_details['cupRounds'] = masked_cup_rounds
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w', encoding='utf-8') as f:
@@ -738,7 +977,7 @@ def compile_live_season_details(
             'teamName': prof.get('teamName', ''),
             'coach': prof.get('coach', '')
         }
-        for track in ['flat', 'historical']:
+        for track in ['flat', 'historical', 'atlas']:
             if track in prof:
                 src_track = prof[track]
                 clean_prof[track] = {
@@ -748,6 +987,8 @@ def compile_live_season_details(
                     'lastDelta': src_track.get('lastDelta', 0.0),
                     'trajectory': src_track.get('trajectory', [])
                 }
+        if 'seasonStats' in prof:
+            clean_prof['seasonStats'] = prof['seasonStats']
         serialized_managers[m_id] = clean_prof
 
     analytics_payload = {
@@ -761,7 +1002,8 @@ def compile_live_season_details(
             'scaleFactor': float(active_elo_config.get('scale_factor', 400.0)),
             'carryoverAlpha': float(active_elo_config.get('carryover_alpha', 0.75)),
             'historicalSeeding': active_elo_config.get('historical_seeding', {}),
-            'kFactors': active_elo_config.get('k_factors', {})
+            'kFactors': active_elo_config.get('k_factors', {}),
+            'odds': active_elo_config.get('odds', {})
         },
         'managers': serialized_managers
     }

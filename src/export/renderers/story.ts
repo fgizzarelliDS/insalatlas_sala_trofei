@@ -138,7 +138,7 @@ export async function renderManagerStoryCanvas(manager: Manager): Promise<HTMLCa
     <div class="flex flex-col items-center text-center">
       <div class="relative mb-3">
         <div class="w-32 h-32 rounded-3xl border-2 border-amber-400/50 p-2 bg-slate-900/80 shadow-2xl flex items-center justify-center">
-          <img src="${logoUrl}" alt="${manager.name}" class="w-full h-full object-contain drop-shadow-xl" onerror="this.src='favicon-64x64.png'">
+          <img src="${logoUrl}" alt="${manager.name}" class="w-full h-full object-contain drop-shadow-xl" onerror="this.onerror=null; this.src='favicon-64x64.png'">
         </div>
         <span class="absolute -bottom-2 -right-2 px-3 py-1 rounded-full text-xs font-black bg-amber-500 text-slate-950 shadow-lg">
           ${manager.years} ${manager.years === 1 ? 'Anno' : 'Anni'}
@@ -234,7 +234,7 @@ export async function renderH2HDuelStoryCanvas(
       <!-- Contender A -->
       <div class="flex-1 flex flex-col items-center text-center">
         <div class="w-24 h-24 rounded-2xl border-2 border-rose-500/60 p-2 bg-slate-900/90 shadow-xl flex items-center justify-center mb-2">
-          <img src="${logoA}" alt="${managerA.name}" class="w-full h-full object-contain drop-shadow" onerror="this.src='favicon-64x64.png'">
+          <img src="${logoA}" alt="${managerA.name}" class="w-full h-full object-contain drop-shadow" onerror="this.onerror=null; this.src='favicon-64x64.png'">
         </div>
         <h3 class="font-sport font-black text-xl uppercase tracking-wider text-rose-400">
           ${managerA.name}
@@ -257,7 +257,7 @@ export async function renderH2HDuelStoryCanvas(
       <!-- Contender B -->
       <div class="flex-1 flex flex-col items-center text-center">
         <div class="w-24 h-24 rounded-2xl border-2 border-cyan-500/60 p-2 bg-slate-900/90 shadow-xl flex items-center justify-center mb-2">
-          <img src="${logoB}" alt="${managerB.name}" class="w-full h-full object-contain drop-shadow" onerror="this.src='favicon-64x64.png'">
+          <img src="${logoB}" alt="${managerB.name}" class="w-full h-full object-contain drop-shadow" onerror="this.onerror=null; this.src='favicon-64x64.png'">
         </div>
         <h3 class="font-sport font-black text-xl uppercase tracking-wider text-cyan-400">
           ${managerB.name}
@@ -441,7 +441,7 @@ export async function renderRecordStoryCanvas(record: LeagueRecord): Promise<HTM
       <div class="grid grid-cols-${Math.min(record.primaryHolders.length, 3)} gap-3">
         ${record.primaryHolders.map(h => `
           <div class="flex flex-col items-center p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 text-center">
-            ${h.logo ? `<img src="${h.logo}" class="w-16 h-16 object-contain drop-shadow-md mb-2">` : `<div class="w-16 h-16 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center font-black text-xl mb-2">${h.fallbackCrest || h.managerName.charAt(0)}</div>`}
+            ${h.logo ? `<img src="${h.logo}" class="w-16 h-16 object-contain drop-shadow-md mb-2" onerror="this.onerror=null; this.src='${h.fallbackCrest || 'favicon-64x64.png'}'">` : `<div class="w-16 h-16 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center font-black text-xl mb-2">${h.fallbackCrest || h.managerName.charAt(0)}</div>`}
             <span class="font-sport font-black text-lg uppercase text-white truncate max-w-full">${h.managerName}</span>
             ${h.season ? `<span class="text-xs text-amber-400 font-bold mt-0.5">${h.season}</span>` : ''}
             ${h.teamName ? `<span class="text-[11px] text-slate-400 truncate max-w-full italic mt-0.5">${h.teamName}</span>` : ''}
@@ -452,7 +452,7 @@ export async function renderRecordStoryCanvas(record: LeagueRecord): Promise<HTM
   ` : `
     <div class="w-full flex flex-col items-center text-center p-6 rounded-3xl border border-slate-800 bg-slate-900/85 shadow-2xl">
       <div class="relative mb-3">
-        ${primary.logo ? `<img src="${primary.logo}" class="w-28 h-28 object-contain drop-shadow-xl">` : `<div class="w-28 h-28 rounded-full bg-amber-500/20 border-2 border-amber-500/40 text-amber-400 flex items-center justify-center font-sport font-black text-4xl shadow-xl">${primary.fallbackCrest || primary.managerName.charAt(0)}</div>`}
+        ${primary.logo ? `<img src="${primary.logo}" class="w-28 h-28 object-contain drop-shadow-xl" onerror="this.onerror=null; this.src='${primary.fallbackCrest || 'favicon-64x64.png'}'">` : `<div class="w-28 h-28 rounded-full bg-amber-500/20 border-2 border-amber-500/40 text-amber-400 flex items-center justify-center font-sport font-black text-4xl shadow-xl">${primary.fallbackCrest || primary.managerName.charAt(0)}</div>`}
         <span class="absolute -bottom-2 -right-2 w-9 h-9 rounded-full bg-amber-500 text-slate-950 font-black flex items-center justify-center text-lg shadow-lg border-2 border-slate-900">👑</span>
       </div>
       <h2 class="font-sport font-black text-4xl uppercase tracking-wider text-white">
@@ -476,9 +476,9 @@ export async function renderRecordStoryCanvas(record: LeagueRecord): Promise<HTM
           const logo = r.logo || (r.teamName ? resolveTeamLogo(r.teamName) : null);
           const fallback = r.fallbackCrest || (r.teamName ? getTeamFallbackCrest(r.teamName) : null);
           const crestImg = logo
-            ? `<img src="${logo}" class="w-10 h-10 object-contain drop-shadow-md rounded-full bg-slate-800/50 p-0.5">`
+            ? `<img src="${logo}" class="w-10 h-10 object-contain drop-shadow-md rounded-full bg-slate-800/50 p-0.5" onerror="this.onerror=null; this.src='${fallback || 'favicon-64x64.png'}'">`
             : fallback
-              ? `<img src="${fallback}" class="w-10 h-10 object-contain drop-shadow-md rounded-full bg-slate-800/50 p-0.5">`
+              ? `<img src="${fallback}" class="w-10 h-10 object-contain drop-shadow-md rounded-full bg-slate-800/50 p-0.5" onerror="this.onerror=null; this.src='favicon-64x64.png'">`
               : `<div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 text-slate-300 flex items-center justify-center font-bold text-sm shadow">${r.managerName.charAt(0)}</div>`;
 
           return `

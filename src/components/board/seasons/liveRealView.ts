@@ -5,6 +5,7 @@ import { renderFormDotsHTML, renderStatusBadgeHTML } from './liveAnalytics';
 import {
   getEloMode,
   setEloMode,
+  getNextEloMode,
   getManagerEloTrack,
   getEloBadgeClasses,
   getEloTierTitle,
@@ -12,6 +13,7 @@ import {
   formatEloDelta
 } from '@/analytics/analyticsCore';
 import type { EloTrackMode } from '@/types/analytics';
+import { updateNextRoundStripUI } from './NextRoundStrip';
 
 let cachedRealStandings: LiveTeamMetrics[] = [];
 let currentRealSort: 'rank' | 'elo' = 'rank';
@@ -226,14 +228,14 @@ export function renderRealViewContainer(standings: LiveTeamMetrics[]): string {
                           onclick="window.switchRealSort && window.switchRealSort('elo')"
                           class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold border transition shadow-xs cursor-pointer ${currentRealSort === 'elo' ? 'bg-amber-500/15 text-amber-500 dark:text-amber-400 border-amber-500/30' : 'bg-slate-500/10 text-slate-300 border-slate-600/40 hover:border-amber-500/30'}"
                           title="Ordina per Elo Rating (Clicca per invertire)">
-                    <span id="label-real-elo-track">${activeMode === 'flat' ? '⚡ Elo Puro (1500)' : '🏛️ Elo Storico'}</span>
+                    <span id="label-real-elo-track">${activeMode === 'flat' ? '⚡ Elo Puro (1500)' : activeMode === 'historical' ? '🏛️ Elo Storico' : '🔮 Atlas Power'}</span>
                     <i id="sort-icon-real-elo" class="fa-solid ${currentRealEloDirection === 'desc' ? 'fa-arrow-down' : 'fa-arrow-up'} text-[10px] ${currentRealSort === 'elo' ? 'text-amber-400' : 'opacity-40'}"></i>
                   </button>
                   <button id="btn-real-elo-toggle"
                           type="button"
                           onclick="window.toggleRealEloMode && window.toggleRealEloMode(event)"
                           class="w-7 h-7 rounded-xl text-xs flex items-center justify-center border transition shadow-xs cursor-pointer bg-slate-500/10 hover:bg-amber-500/20 text-slate-300 hover:text-amber-400 border-slate-600/40 hover:border-amber-500/30 active:scale-95 shrink-0"
-                          title="Commuta tra modalità Puro (1500) e Storico">
+                          title="Commuta tra modalità Puro (1500), Storico e Atlas Power">
                     <i class="fa-solid fa-rotate text-[10px]"></i>
                   </button>
                 </div>
@@ -323,15 +325,17 @@ export function toggleRealEloMode(event?: Event): void {
     event.stopPropagation();
     event.preventDefault();
   }
-  const nextMode: EloTrackMode = getEloMode() === 'flat' ? 'historical' : 'flat';
+  const nextMode: EloTrackMode = getNextEloMode(getEloMode());
   setEloMode(nextMode);
+  updateNextRoundStripUI();
 
   // Update button labels across all views
+  const modeLabel = nextMode === 'flat' ? '⚡ Elo Puro (1500)' : nextMode === 'historical' ? '🏛️ Elo Storico' : '🔮 Atlas Power';
   const realLabel = document.getElementById('label-real-elo-track');
-  if (realLabel) realLabel.textContent = nextMode === 'flat' ? '⚡ Elo Puro (1500)' : '🏛️ Elo Storico';
+  if (realLabel) realLabel.textContent = modeLabel;
 
   const meritLabel = document.getElementById('label-merit-elo-track');
-  if (meritLabel) meritLabel.textContent = nextMode === 'flat' ? '⚡ Elo Puro (1500)' : '🏛️ Elo Storico';
+  if (meritLabel) meritLabel.textContent = modeLabel;
 
   if (cachedRealStandings.length > 0) {
     const sortedRank = [...cachedRealStandings].sort((a, b) => a.rank - b.rank);

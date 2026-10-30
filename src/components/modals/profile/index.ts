@@ -5,6 +5,7 @@ import { populateCareerTimeline } from './CareerTab';
 export * from './SparklineChart';
 export * from './CareerTab';
 export * from './PalmaresTab';
+export * from './EloUpsetsCard';
 
 /**
  * Updates DOM elements for vital stats, badges, trophy shelf, and career timeline inside the profile modal

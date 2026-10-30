@@ -7,3 +7,4 @@ export * from './poster';
 export * from './trophy';
 export * from './story';
 export * from './standings';
+export * from './nextRound';

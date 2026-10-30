@@ -111,11 +111,11 @@ export function renderEloGuideModal(customConfig?: EloConfig): string {
 
         <div>
           <div class="flex items-center justify-between flex-wrap gap-1">
-            <strong class="font-semibold text-xs" style="color: var(--text-main);">2. Aggiornamento Dinamico Post-Match:</strong>
-            <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">Δ = K · (S - E) → R' = R + Δ</code>
+            <strong class="font-semibold text-xs" style="color: var(--text-main);">2. Calibrazione Hybrid-Capped &amp; Risoluzione Paradosso Pareggi:</strong>
+            <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">S^hyb = 0.5 + 0.15·tanh(ΔFP/6) • G_cap ∈ [1.0, 1.75]</code>
           </div>
           <p class="mt-1 text-[11px] leading-relaxed">
-            Il rating viene aggiornato dopo ogni singola sfida. Il risultato reale <em>S</em> vale <strong>1.0</strong> per la vittoria, <strong>0.5</strong> per il pareggio e <strong>0.0</strong> per la sconfitta. Battere una squadra con rating più alto frutta un balzo consistente; vincere una sfida già ampiamente prevista attribuisce invece pochi decimali.
+            Nelle sfide vinte, il moltiplicatore di margine scala con i gol e il gap FantaPunti (FP limitati all'intervallo [60, 90] contro gli outlier) fino a un tetto di 1.75. Nei pareggi, lo shift direzionale tanh premia la squadra che ha prodotto più punteggio senza mai penalizzare il favorito più dello sfavorito.
           </p>
         </div>
 
@@ -131,18 +131,30 @@ export function renderEloGuideModal(customConfig?: EloConfig): string {
 
         <div>
           <div class="flex items-center justify-between flex-wrap gap-1">
-            <strong class="font-semibold text-xs" style="color: var(--text-main);">4. Architettura Dual-Track (Puro vs Storico):</strong>
-            <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">⚡ Puro: ${baseRating} baseline • 🏛️ Storico: Seed Albo d'Oro</code>
+            <strong class="font-semibold text-xs" style="color: var(--text-main);">4. Architettura a 3 Tracce (Puro, Storico, Atlas Power):</strong>
+            <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">⚡ Puro: ${baseRating} baseline • 🏛️ Storico: Seed Albo d'Oro • 🔮 Atlas Power</code>
           </div>
           <p class="mt-1 text-[11px] leading-relaxed">
             <strong>⚡ Elo Puro:</strong> Reset a ${baseRating} per tutti a inizio 2025/26, misura unicamente la prestazione sportiva sul campo senza considerare il passato.<br/>
-            <strong>🏛️ Elo Storico:</strong> Inizializza i manager con un bonus/malus calcolato sull'Indice di Prestigio del Palmarès storico (Scudetti, Coppe e podi), ponderando la tradizione di lega.
+            <strong>🏛️ Elo Storico:</strong> Inizializza i manager con un bonus/malus calcolato sull'Indice di Prestigio del Palmarès storico (Scudetti, Coppe e podi), ponderando la tradizione di lega.<br/>
+            <strong>🔮 Atlas Power:</strong> Sistema continuo Dual-Kernel All-Play basato sulla funzione sigmoide di Fermi-Dirac (s = 8.5) e decay dell'incertezza post-asta, isolando la qualità assoluta del roster dal calendario.
           </p>
         </div>
 
         <div>
           <div class="flex items-center justify-between flex-wrap gap-1">
-            <strong class="font-semibold text-xs" style="color: var(--text-main);">5. Regressione alla Media Inter-Stagionale (Carryover):</strong>
+            <strong class="font-semibold text-xs" style="color: var(--text-main);">5. Metriche Studio: Golo Score &amp; Sfiga di Calendario:</strong>
+            <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">Golo = Gol Reali / xG • Sfiga Δ = Punti Reali - xPts All-Play</code>
+          </div>
+          <p class="mt-1 text-[11px] leading-relaxed">
+            <strong>Golo Score:</strong> Rapporto di efficacia realizzativa. Un valore > 1.00 indica cinismo e conversione letale dei fanta-punti in gol.<br/>
+            <strong>Sfiga Δ:</strong> Misura quanti punti di classifica sono stati guadagnati o persi per pura casualità dell'accoppiamento del calendario rispetto a una simulazione All-Play perfetta.
+          </p>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between flex-wrap gap-1">
+            <strong class="font-semibold text-xs" style="color: var(--text-main);">6. Regressione alla Media Inter-Stagionale (Carryover):</strong>
             <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">R_start = ${carryoverAlpha} · R_end + ${carryoverBetaStr} · ${baseRating}</code>
           </div>
           <p class="mt-1 text-[11px] leading-relaxed">

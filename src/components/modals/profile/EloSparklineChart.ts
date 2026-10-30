@@ -10,10 +10,12 @@ import {
   getEloMode,
   getManagerEloTrack,
   formatElo,
+  formatEloDelta,
   getCachedEloProfile,
   loadAnalyticsEloData
 } from '@/analytics/analyticsCore';
 import { getLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
+import { populateEloUpsetsCard } from './EloUpsetsCard';
 
 export const getDefaultProfileEloSeason = (): string =>
   typeof window !== 'undefined' && typeof window.innerWidth === 'number' && window.innerWidth > 0 && window.innerWidth < 640
@@ -35,6 +37,10 @@ export interface LockedProfileEloMatch {
   delta: number;
   winProb: number;
   idx?: number;
+  gf?: number;
+  ga?: number;
+  fpFor?: number;
+  fpAgainst?: number;
 }
 let lockedProfileEloMatch: LockedProfileEloMatch | null = null;
 
@@ -106,11 +112,15 @@ export function selectProfileEloPoint(
   result: string,
   elo: number,
   delta: number,
-  winProb: number
+  winProb: number,
+  gf?: number,
+  ga?: number,
+  fpFor?: number,
+  fpAgainst?: number
 ): void {
   selectedProfileEloIndex = idx;
-  lockedProfileEloMatch = { season, round, team, opponent, result, elo, delta, winProb, idx };
-  showProfileEloHover(season, round, team, opponent, result, elo, delta, winProb);
+  lockedProfileEloMatch = { season, round, team, opponent, result, elo, delta, winProb, idx, gf, ga, fpFor, fpAgainst };
+  showProfileEloHover(season, round, team, opponent, result, elo, delta, winProb, gf, ga, fpFor, fpAgainst);
 
   // Active ring on sparkline
   const svg = document.querySelector('#profile-elo-trajectory-sparkline svg');
@@ -149,12 +159,15 @@ export function showProfileEloHover(
   result: string,
   elo: number,
   delta: number,
-  winProb: number
+  winProb: number,
+  _gf?: number,
+  _ga?: number,
+  _fpFor?: number,
+  _fpAgainst?: number
 ): void {
   const hoverBox = document.getElementById('profile-elo-hover-box');
   if (!hoverBox) return;
 
-  const deltaSign = delta > 0 ? '+' : '';
   const deltaColor = delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-rose-400' : 'text-slate-400';
   const resBadge = result === 'W'
     ? '<span class="text-emerald-400 font-bold">(W)</span>'
@@ -174,8 +187,8 @@ export function showProfileEloHover(
         ${resBadge}
       </div>
       <div class="flex items-center gap-2 font-mono shrink-0">
-        <span class="font-bold text-amber-400 text-xs sm:text-sm">${elo.toFixed(1)} pt</span>
-        <span class="${deltaColor} font-bold text-[11px]">(${deltaSign}${delta.toFixed(1)})</span>
+        <span class="font-bold text-amber-400 text-xs sm:text-sm">${formatElo(elo)} pt</span>
+        <span class="${deltaColor} font-bold text-[11px]">(${formatEloDelta(delta)})</span>
         ${winProb > 0 ? `<span class="opacity-70 text-[10px] font-sans" style="color: var(--text-muted);">(Prob. ${winProb.toFixed(0)}%)</span>` : ''}
       </div>
     </div>
@@ -198,7 +211,11 @@ export function clearProfileEloHover(): void {
       lockedProfileEloMatch.result,
       lockedProfileEloMatch.elo,
       lockedProfileEloMatch.delta,
-      lockedProfileEloMatch.winProb
+      lockedProfileEloMatch.winProb,
+      lockedProfileEloMatch.gf,
+      lockedProfileEloMatch.ga,
+      lockedProfileEloMatch.fpFor,
+      lockedProfileEloMatch.fpAgainst
     );
     return;
   }
@@ -213,11 +230,10 @@ export function clearProfileEloHover(): void {
 
   let currentBadge = '';
   if (currentElo !== undefined) {
-    const sign = (lastDelta || 0) > 0 ? '+' : '';
     const dColor = (lastDelta || 0) > 0 ? 'text-emerald-400' : (lastDelta || 0) < 0 ? 'text-rose-400' : 'text-slate-400';
     currentBadge = `
       <span class="font-mono font-bold text-amber-400">${formatElo(currentElo)} pt</span>
-      ${lastDelta !== undefined ? `<span class="${dColor} font-mono text-[11px] ml-1">(${sign}${lastDelta.toFixed(1)})</span>` : ''}
+      ${lastDelta !== undefined ? `<span class="${dColor} font-mono text-[11px] ml-1">(${formatEloDelta(lastDelta)})</span>` : ''}
     `;
   }
 
@@ -241,6 +257,9 @@ export function renderEloTrajectorySparkline(
   let displayPts: EloTrajectoryPoint[] = [];
   const sorted = [...(trajectory || [])].sort((a, b) => {
     if (a.season !== b.season) return a.season.localeCompare(b.season);
+    if (a.matchIndex !== undefined && b.matchIndex !== undefined) {
+      return a.matchIndex - b.matchIndex;
+    }
     return a.round - b.round;
   });
 
@@ -330,6 +349,9 @@ export function renderEloTrajectorySparkline(
       : '';
     const sliceX = Math.max(padding.left, x - sliceW / 2);
 
+    const rLabel = pt.roundLabel || `G${pt.round}`;
+    const compLabel = pt.competitionCategory && pt.competitionCategory !== 'Campionato' ? ` [${pt.competitionCategory}]` : '';
+
     dots += `
       ${ringHTML}
       <circle data-point-idx="${idx}" cx="${x}" cy="${y}" r="${dotR}" fill="${dotColor}" stroke="#0f172a" stroke-width="1.2" pointer-events="none"></circle>
@@ -337,7 +359,7 @@ export function renderEloTrajectorySparkline(
             onclick="window.selectProfileEloPoint && window.selectProfileEloPoint(${idx}, '${pt.season}', ${pt.round}, '${escapedTeam}', '${escapedOpp}', '${pt.result || ''}', ${pt.elo}, ${pt.delta}, ${pt.winProbPreMatch || 0})"
             onmouseenter="window.showProfileEloHover && window.showProfileEloHover('${pt.season}', ${pt.round}, '${escapedTeam}', '${escapedOpp}', '${pt.result || ''}', ${pt.elo}, ${pt.delta}, ${pt.winProbPreMatch || 0})"
             onmouseleave="window.clearProfileEloHover && window.clearProfileEloHover()">
-        <title>${pt.season} G${pt.round}: ${teamName} vs ${pt.opponentTeamName} (${pt.result}) ${pt.elo.toFixed(1)} (${pt.delta > 0 ? '+' : ''}${pt.delta.toFixed(1)})</title>
+        <title>${pt.season} ${rLabel}${compLabel}: ${teamName} vs ${pt.opponentTeamName} (${pt.result}) ${formatElo(pt.elo)} (${formatEloDelta(pt.delta)})</title>
       </rect>
     `;
 
@@ -358,7 +380,7 @@ export function renderEloTrajectorySparkline(
     if (isStep || (isLast && !wouldCollideWithStep)) {
       xLabels += `
         <line x1="${x}" y1="${padding.top}" x2="${x}" y2="${padding.top + innerH}" stroke="currentColor" stroke-opacity="0.06" />
-        <text x="${x}" y="${padding.top + innerH + 16}" text-anchor="middle" font-size="8.5" font-weight="bold" fill="currentColor" opacity="0.6">G${pt.round}</text>
+        <text x="${x}" y="${padding.top + innerH + 16}" text-anchor="middle" font-size="8.5" font-weight="bold" fill="currentColor" opacity="0.6">${rLabel}</text>
       `;
     }
   });
@@ -435,7 +457,7 @@ export function updateProfileEloSparklineUI(m: Manager): void {
     if (eloSvg) {
       eloTrajSparkline.innerHTML = eloSvg;
       if (eloBadgeEl) {
-        eloBadgeEl.textContent = activeMode === 'flat' ? '⚡ Puro' : '🏛️ Storico';
+        eloBadgeEl.textContent = activeMode === 'historical' ? '🏛️ Storico' : activeMode === 'atlas' ? '🔮 Atlas' : '⚡ Puro';
       }
       const seasonSelect = document.getElementById('profile-elo-season-select') as HTMLSelectElement | null;
       if (seasonSelect) {
@@ -449,4 +471,7 @@ export function updateProfileEloSparklineUI(m: Manager): void {
   } else if (eloTrajCard) {
     eloTrajCard.classList.add('hidden');
   }
+
+  // Update Epic Matches / Upsets Card in sync with current active mode
+  populateEloUpsetsCard(m, activeMode);
 }

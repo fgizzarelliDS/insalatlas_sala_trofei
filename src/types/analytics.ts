@@ -3,7 +3,8 @@
  * Type definitions for the League-Agnostic Dynamic Elo Rating Engine
  */
 
-export type EloTrackMode = 'flat' | 'historical';
+export type EloTrackMode = 'flat' | 'historical' | 'atlas';
+export type EloModalTab = 'trajectories' | 'golo' | 'fp' | 'luck';
 
 export interface EloTrajectoryPoint {
   round: number;
@@ -16,6 +17,15 @@ export interface EloTrajectoryPoint {
   delta: number;
   winProbPreMatch: number;
   isHome: boolean;
+  gf?: number;
+  ga?: number;
+  fpFor?: number;
+  fpAgainst?: number;
+  roundLabel?: string;
+  matchIndex?: number;
+  championshipMatchDay?: number;
+  competitionCategory?: string;
+  competition?: string;
 }
 
 export interface EloTrackData {
@@ -27,12 +37,41 @@ export interface EloTrackData {
   seasons?: Record<string, EloTrajectoryPoint[]>;
 }
 
+export interface EloSeasonDiagnosticStats {
+  played: number;
+  gf: number;
+  ga: number;
+  gd: number;
+  avgFP: number;
+  totalFP: number;
+  golo: number;
+  actualPts: number;
+  xPts: number;
+  luckDelta: number;
+}
+
 export interface ManagerEloProfile {
   managerId: string;
   teamName: string;
   coach?: string;
   flat: EloTrackData;
   historical: EloTrackData;
+  atlas?: EloTrackData;
+  seasonStats?: Record<string, EloSeasonDiagnosticStats>;
+}
+
+export interface EloOddsConfig {
+  base_draw_nu?: number;
+  draw_decay_lambda?: number;
+  sensitivity_kappa?: number;
+  overround?: number;
+  prior_sigma_elo?: number;
+  min_sigma_elo?: number;
+  min_sigma_power?: number;
+  k_shrinkage?: number;
+  hfa_z_shift?: number;
+  atlas_weights?: { elo: number; power: number };
+  flat_weights?: { elo: number; power: number };
 }
 
 export interface EloConfig {
@@ -45,6 +84,7 @@ export interface EloConfig {
     maxRating: number;
   };
   kFactors: Record<string, number>;
+  odds?: EloOddsConfig;
 }
 
 export interface LeagueEloDatabase {

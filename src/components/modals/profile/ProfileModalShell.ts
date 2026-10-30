@@ -215,6 +215,20 @@ export function getProfileModalShellHTML(): string {
           <div id="profile-elo-trajectory-sparkline" class="w-full overflow-x-auto py-1"></div>
         </div>
 
+        <!-- Miglior Impresa & Peggior Beffa Elo Card -->
+        <div id="profile-elo-upsets-card" class="p-4 rounded-2xl border mb-5 hidden"
+          style="background-color: var(--table-surface); border-color: var(--table-border);">
+          <div class="text-xs font-bold uppercase tracking-wider mb-2.5 opacity-90 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <i class="fa-solid fa-bolt-lightning text-amber-400"></i> Partite Epiche &amp; Upset Elo
+            </span>
+            <span class="text-[10px] opacity-60 font-semibold">Traiettoria Storica</span>
+          </div>
+          <div id="profile-elo-upsets-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Populated dynamically by EloUpsetsCard -->
+          </div>
+        </div>
+
         <!-- Piazzamenti -->
         <div id="profile-trajectory-card" class="p-4 rounded-2xl border mb-5 hidden"
           style="background-color: var(--table-surface); border-color: var(--table-border);">

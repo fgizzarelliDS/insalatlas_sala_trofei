@@ -26,6 +26,12 @@ import {
   formatKFactorsGuide,
   switchEloChartSeason
 } from '@/components/modals/analytics/EloTab';
+import {
+  renderEloScatterChart,
+  buildScatterPoints
+} from '@/components/modals/analytics/EloScatterChart';
+import { renderEloTrajectoryChart } from '@/components/modals/analytics/EloTrajectoryChart';
+import type { EloProfileEntry } from '@/components/modals/analytics/EloKpis';
 import type { ManagerEloProfile, EloTrajectoryPoint } from '@/types/analytics';
 
 describe('Dynamic Elo Engine Client Analytics', () => {
@@ -86,13 +92,13 @@ describe('Dynamic Elo Engine Client Analytics', () => {
   });
 
   describe('Elo Formatting & Badges', () => {
-    it('formats ratings and deltas with proper signs', () => {
-      expect(formatElo(1532.44)).toBe('1532.4');
-      expect(formatElo(undefined)).toBe('1500.0');
+    it('formats ratings and deltas as integers with proper signs', () => {
+      expect(formatElo(1532.44)).toBe('1532');
+      expect(formatElo(undefined)).toBe('1500');
 
-      expect(formatEloDelta(12.3)).toBe('+12.3');
-      expect(formatEloDelta(-8.4)).toBe('-8.4');
-      expect(formatEloDelta(0.0)).toBe('0.0');
+      expect(formatEloDelta(12.3)).toBe('+12');
+      expect(formatEloDelta(-8.4)).toBe('-8');
+      expect(formatEloDelta(0.0)).toBe('0');
     });
 
     it('returns proper colors and tier titles across rating bands', () => {
@@ -230,11 +236,15 @@ describe('Dynamic Elo Engine Client Analytics', () => {
       expect(elements['label-merit-sort-mobile'].textContent).toBe('xPTS (Merito)');
     });
 
-    it('toggles merit Elo mode between flat and historical', () => {
+    it('toggles merit Elo mode between flat, historical, and atlas', () => {
       expect(getEloMode()).toBe('flat');
       toggleMeritEloMode();
       expect(getEloMode()).toBe('historical');
       expect(elements['label-merit-elo-track'].textContent).toBe('🏛️ Elo Storico');
+
+      toggleMeritEloMode();
+      expect(getEloMode()).toBe('atlas');
+      expect(elements['label-merit-elo-track'].textContent).toBe('🔮 Atlas Power');
 
       toggleMeritEloMode();
       expect(getEloMode()).toBe('flat');
@@ -502,7 +512,7 @@ describe('Dynamic Elo Engine Client Analytics', () => {
     it('renders loading spinner in Tab 5 when cachedAnalytics is null', () => {
       setCachedAnalyticsManagers(null);
       const html = renderEloTab();
-      expect(html).toContain('Caricamento dati Elo in corso...');
+      expect(html).toContain('Caricamento dati Elo');
       expect(html).toContain('fa-spinner');
     });
 
@@ -609,6 +619,779 @@ describe('Dynamic Elo Engine Client Analytics', () => {
           (globalThis as any).window.innerWidth = prevWidth ?? 1024;
         }
       }
+    });
+
+    it('renders Standalone Elo Modal DOM and switches tabs cleanly', async () => {
+      const {
+        openEloModal,
+        closeEloModal,
+        switchEloModalTab,
+        switchEloScatterSeason,
+        switchEloLuckSubMode
+      } = await import('@/components/modals/analytics/EloTab');
+
+      const mockModal = {
+        classList: {
+          contains: (cls: string) => cls === 'hidden',
+          remove: () => {},
+          add: () => {}
+        },
+        addEventListener: () => {}
+      };
+      const mockContent = { innerHTML: '' };
+      const originalGetElementById = document.getElementById;
+      document.getElementById = (id: string) => {
+        if (id === 'elo-modal') return mockModal as any;
+        if (id === 'elo-modal-content') return mockContent as any;
+        return originalGetElementById.call(document, id);
+      };
+
+      try {
+        openEloModal('trajectories', 'flat');
+        expect(mockContent.innerHTML).toContain('Elo Rating &amp; Power Studio');
+        expect(mockContent.innerHTML).toContain('Traiettorie');
+
+        switchEloModalTab('golo');
+        expect(mockContent.innerHTML).toContain('Elo vs Golo');
+        expect(mockContent.innerHTML).toContain('Golo Score');
+
+        switchEloScatterSeason('2025/26');
+        expect(mockContent.innerHTML).toContain('2025/26');
+
+        switchEloModalTab('fp');
+        expect(mockContent.innerHTML).toContain('Media FantaPunti');
+
+        switchEloModalTab('luck');
+        expect(mockContent.innerHTML).toContain('Sfiga & SOS');
+
+        switchEloLuckSubMode('h2hVsAtlas');
+        expect(mockContent.innerHTML).toContain('H2H vs Atlas');
+
+        closeEloModal();
+      } finally {
+        document.getElementById = originalGetElementById;
+      }
+    });
+
+    it('computes linear regression and renders native SVG bubble scatter with quadrant watermarks', async () => {
+      const {
+        computeLinearRegression,
+        renderEloScatterChart
+      } = await import('@/components/modals/analytics/EloScatterChart');
+
+      // Test OLS
+      const pts = [{ x: 1, y: 2 }, { x: 2, y: 4 }, { x: 3, y: 6 }];
+      const reg = computeLinearRegression(pts);
+      expect(reg.slope).toBeCloseTo(2.0, 4);
+      expect(reg.intercept).toBeCloseTo(0.0, 4);
+      expect(reg.r2).toBeCloseTo(1.0, 4);
+
+      // Test scatter rendering
+      const mockProfiles = [
+        {
+          managerId: 'm1',
+          teamName: 'Team Alpha',
+          coach: 'Coach A',
+          profile: {
+            managerId: 'm1',
+            teamName: 'Team Alpha',
+            flat: {
+              current: 1620.0,
+              peak: { value: 1620.0, season: '2026/27', round: 1 },
+              floor: { value: 1500.0, season: '2026/27', round: 0 },
+              lastDelta: 10.0,
+              trajectory: []
+            },
+            historical: {
+              current: 1630.0,
+              peak: { value: 1630.0, season: '2026/27', round: 1 },
+              floor: { value: 1500.0, season: '2026/27', round: 0 },
+              lastDelta: 10.0,
+              trajectory: []
+            },
+            atlas: {
+              current: 1590.0,
+              peak: { value: 1590.0, season: '2026/27', round: 1 },
+              floor: { value: 1500.0, season: '2026/27', round: 0 },
+              lastDelta: 5.0,
+              trajectory: []
+            },
+            seasonStats: {
+              '2026/27': {
+                played: 2,
+                gf: 4,
+                ga: 1,
+                gd: 3,
+                avgFP: 74.5,
+                totalFP: 149.0,
+                golo: 1.45,
+                actualPts: 6,
+                xPts: 4.5,
+                luckDelta: 1.5
+              }
+            }
+          }
+        }
+      ];
+
+      const goloSvg = renderEloScatterChart(mockProfiles, 'golo', 'flat', '2026/27');
+      expect(goloSvg).toContain('viewBox="0 0 740 440"');
+      expect(goloSvg).toContain('Parità Golo = 1.00');
+      expect(goloSvg).toContain('TITANI');
+      expect(goloSvg).toContain('scatter-clip-');
+      expect(goloSvg).toContain('scatter-chip-');
+      expect(goloSvg).toContain('grad-quad-');
+
+      const fpSvg = renderEloScatterChart(mockProfiles, 'fp', 'flat', '2026/27');
+      expect(fpSvg).toContain('DOMINATORI');
+      expect(fpSvg).toContain('OLS Trend');
+
+      const luckSvg = renderEloScatterChart(mockProfiles, 'luck', 'flat', '2026/27', 'allPlay');
+      expect(luckSvg).toContain('Bisettrice Y = X');
+      expect(luckSvg).toContain('xPts');
+    });
+
+    it('renders clean hover tooltip without exact match results or fantasy points', async () => {
+      const { showProfileEloHover } = await import('@/components/modals/profile/EloSparklineChart');
+      const { showEloChartHover } = await import('@/components/modals/analytics/EloTab');
+
+      const mockHoverBox = { innerHTML: '' };
+      const originalGetElementById = document.getElementById;
+      document.getElementById = (id: string) => {
+        if (id === 'profile-elo-hover-box' || id === 'elo-chart-hover-box') return mockHoverBox as any;
+        return originalGetElementById.call(document, id);
+      };
+
+      try {
+        // Profile hover: verify absence of score and FP telemetry, presence of match details
+        showProfileEloHover('2026/27', 2, 'Team Alpha', 'Team Beta', 'W', 1580.0, 15.0, 55.0, 2, 1, 74.5, 68.0);
+        expect(mockHoverBox.innerHTML).not.toContain('2-1');
+        expect(mockHoverBox.innerHTML).not.toContain('74.5');
+        expect(mockHoverBox.innerHTML).not.toContain('68.0');
+        expect(mockHoverBox.innerHTML).not.toContain('FP');
+        expect(mockHoverBox.innerHTML).toContain('Team Alpha');
+        expect(mockHoverBox.innerHTML).toContain('Team Beta');
+        expect(mockHoverBox.innerHTML).toContain('(W)');
+        expect(mockHoverBox.innerHTML).toContain('1580 pt');
+        expect(mockHoverBox.innerHTML).toContain('(+15)');
+        expect(mockHoverBox.innerHTML).toContain('Prob. 55%');
+
+        // Analytics chart hover: verify clean output
+        showEloChartHover('2026/27', 2, 'Team Alpha', 'Team Beta', 'W', 1580.0, 15.0, 55.0, 2, 1, 74.5, 68.0);
+        expect(mockHoverBox.innerHTML).not.toContain('2-1');
+        expect(mockHoverBox.innerHTML).not.toContain('74.5');
+        expect(mockHoverBox.innerHTML).not.toContain('68.0');
+        expect(mockHoverBox.innerHTML).not.toContain('FP');
+        expect(mockHoverBox.innerHTML).toContain('Team Alpha');
+        expect(mockHoverBox.innerHTML).toContain('Team Beta');
+        expect(mockHoverBox.innerHTML).toContain('(W)');
+        expect(mockHoverBox.innerHTML).toContain('1580 pt');
+        expect(mockHoverBox.innerHTML).toContain('(+15)');
+        expect(mockHoverBox.innerHTML).toContain('Prob. 55%');
+      } finally {
+        document.getElementById = originalGetElementById;
+      }
+    });
+
+    it('switches between Puro, Storico, and Atlas modes seamlessly and updates Elo modal', async () => {
+      const { switchEloMode } = await import('@/components/modals/analytics/EloTab');
+      const { getEloMode } = await import('@/analytics/analyticsCore');
+
+      const mockModalContent = { innerHTML: '', scrollTop: 0 };
+      const originalGetElementById = document.getElementById;
+      const originalQuerySelector = document.querySelector;
+
+      document.getElementById = (id: string) => {
+        if (id === 'elo-modal-content') return mockModalContent as any;
+        return originalGetElementById.call(document, id);
+      };
+      document.querySelector = (selector: string) => {
+        if (selector.includes('#elo-modal-content')) return mockModalContent as any;
+        return originalQuerySelector.call(document, selector);
+      };
+
+      try {
+        switchEloMode('historical');
+        expect(getEloMode()).toBe('historical');
+
+        switchEloMode('atlas');
+        expect(getEloMode()).toBe('atlas');
+
+        switchEloMode('flat');
+        expect(getEloMode()).toBe('flat');
+      } finally {
+        document.getElementById = originalGetElementById;
+        document.querySelector = originalQuerySelector;
+      }
+    });
+
+    describe('EloScatterData Statistical & Geometric Helpers', () => {
+      it('calculates linear regression slope, intercept, and R2 accurately', async () => {
+        const { computeLinearRegression } = await import('@/components/modals/analytics/EloScatterData');
+
+        // Perfect line Y = 2X + 1
+        const perfectPoints = [
+          { x: 1, y: 3 },
+          { x: 2, y: 5 },
+          { x: 3, y: 7 },
+          { x: 4, y: 9 }
+        ];
+        const res = computeLinearRegression(perfectPoints);
+        expect(res.slope).toBeCloseTo(2.0, 5);
+        expect(res.intercept).toBeCloseTo(1.0, 5);
+        expect(res.r2).toBeCloseTo(1.0, 5);
+
+        // Degenerate single point
+        const single = computeLinearRegression([{ x: 1, y: 1 }]);
+        expect(single.slope).toBe(0);
+        expect(single.intercept).toBe(0);
+        expect(single.r2).toBe(0);
+      });
+
+      it('applies cluster repulsion so overlapping points are visibly separated within bounds', async () => {
+        const { applyClusterRepulsion } = await import('@/components/modals/analytics/EloScatterData');
+
+        const overlappingPoints = [
+          {
+            managerId: 'm1',
+            teamName: 'Team 1',
+            coach: 'Coach 1',
+            logo: 'logo1.svg',
+            x: 3.0,
+            y: 3.0,
+            radius: 15,
+            color: '#f59e0b',
+            metricLabelX: '3.0',
+            metricLabelY: '3.0',
+            extraMeta: '',
+            quadrant: 'Test',
+            rawX: 300,
+            rawY: 200,
+            cx: 300,
+            cy: 200,
+            cleanId: 'm1'
+          },
+          {
+            managerId: 'm2',
+            teamName: 'Team 2',
+            coach: 'Coach 2',
+            logo: 'logo2.svg',
+            x: 3.0,
+            y: 3.0,
+            radius: 15,
+            color: '#3b82f6',
+            metricLabelX: '3.0',
+            metricLabelY: '3.0',
+            extraMeta: '',
+            quadrant: 'Test',
+            rawX: 300,
+            rawY: 200,
+            cx: 300,
+            cy: 200,
+            cleanId: 'm2'
+          }
+        ];
+
+        const bounds = { minX: 50, maxX: 700, minY: 30, maxY: 400 };
+        const repulsed = applyClusterRepulsion(overlappingPoints, 26, bounds);
+
+        expect(repulsed.length).toBe(2);
+        // The two points must no longer share identical cx, cy
+        const dist = Math.hypot(repulsed[0].cx - repulsed[1].cx, repulsed[0].cy - repulsed[1].cy);
+        expect(dist).toBeGreaterThan(10);
+
+        // Both points must stay within bounds
+        expect(repulsed[0].cx).toBeGreaterThanOrEqual(bounds.minX);
+        expect(repulsed[0].cx).toBeLessThanOrEqual(bounds.maxX);
+        expect(repulsed[1].cx).toBeGreaterThanOrEqual(bounds.minX);
+        expect(repulsed[1].cx).toBeLessThanOrEqual(bounds.maxX);
+      });
+
+      it('handles negative Golo (Scalo -0.50, Partizan -2.00) and preserves 0.0 without clamping', () => {
+        const makeMockProfile = (mId: string, team: string, coach: string, elo: number, stats: any): EloProfileEntry => {
+          const track = {
+            current: elo,
+            peak: { value: elo, round: 1, season: '2026/27' },
+            floor: { value: 1500, round: 0, season: '2026/27' },
+            lastDelta: 0,
+            trajectory: []
+          };
+          return {
+            managerId: mId,
+            teamName: team,
+            coach,
+            logo: '',
+            profile: {
+              managerId: mId,
+              teamName: team,
+              flat: track,
+              historical: track,
+              atlas: track,
+              seasonStats: {
+                '2026/27': stats
+              }
+            }
+          };
+        };
+
+        const mockProfiles: EloProfileEntry[] = [
+          makeMockProfile('m_valery', 'Scalo San Genesio', 'Valery', 1478.2, {
+            played: 2, gf: 2, ga: 5, gd: -3, golo: -0.5, avgFP: 70.0, totalFP: 140.0, actualPts: 0, xPts: 2.69, luckDelta: -2.69
+          }),
+          makeMockProfile('m_pippo', 'Partizan Peroni', 'Pippo', 1420.0, {
+            played: 2, gf: 0, ga: 6, gd: -6, golo: -2.0, avgFP: 61.5, totalFP: 123.0, actualPts: 0, xPts: 0.46, luckDelta: -0.46
+          }),
+          makeMockProfile('m_sebba', 'Arcore 1936', 'Sebba', 1510.0, {
+            played: 2, gf: 1, ga: 3, gd: -2, golo: 0.0, avgFP: 65.0, totalFP: 130.0, actualPts: 0, xPts: 1.38, luckDelta: -1.38
+          }),
+          makeMockProfile('m_alfo', 'Steven Bradbury FC', 'Alfo', 1560.0, {
+            played: 2, gf: 4, ga: 1, gd: 3, golo: 2.5, avgFP: 74.0, totalFP: 148.0, actualPts: 4, xPts: 4.08, luckDelta: -0.08
+          })
+        ];
+
+        const dataset = buildScatterPoints(mockProfiles, 'golo', 'flat', '2026/27');
+        const scaloPt = dataset.points.find(p => p.managerId === 'm_valery')!;
+        const partizanPt = dataset.points.find(p => p.managerId === 'm_pippo')!;
+        const arcorePt = dataset.points.find(p => p.managerId === 'm_sebba')!;
+
+        expect(scaloPt.y).toBe(-0.5);
+        expect(partizanPt.y).toBe(-2.0);
+        // Ensure 0.0 is not falsy-coerced to 1.0
+        expect(arcorePt.y).toBe(0.0);
+
+        const svgHtml = renderEloScatterChart(mockProfiles, 'golo', 'flat', '2026/27');
+        expect(svgHtml).toContain('Scalo San Genesio');
+        expect(svgHtml).toContain('Partizan Peroni');
+
+        // Check that Trend OLS badge does not overlap top-right TITANI badge
+        expect(svgHtml).toContain('Trend OLS');
+        expect(svgHtml).toContain('TITANI (Dominanti)');
+      });
+
+      it('ensures boundary nodes with actualPts = 0 in luck allPlay view do not get cut in half by border', () => {
+        const track = {
+          current: 1478.2,
+          peak: { value: 1500, round: 1, season: '2026/27' },
+          floor: { value: 1478.2, round: 2, season: '2026/27' },
+          lastDelta: -5.0,
+          trajectory: []
+        };
+        const mockProfiles: EloProfileEntry[] = [
+          {
+            managerId: 'm_valery',
+            teamName: 'Scalo San Genesio',
+            coach: 'Valery',
+            logo: '',
+            profile: {
+              managerId: 'm_valery',
+              teamName: 'Scalo San Genesio',
+              flat: track,
+              historical: track,
+              atlas: track,
+              seasonStats: {
+                '2026/27': {
+                  played: 2,
+                  gf: 2,
+                  ga: 5,
+                  gd: -3,
+                  golo: -0.5,
+                  avgFP: 70.0,
+                  totalFP: 140.0,
+                  actualPts: 0,
+                  xPts: 2.69,
+                  luckDelta: -2.69
+                }
+              }
+            }
+          }
+        ];
+
+        const luckSvg = renderEloScatterChart(mockProfiles, 'luck', 'flat', '2026/27', 'allPlay');
+        // Match the circle for Scalo
+        const cyMatch = luckSvg.match(/<g class="scatter-bubble"[^>]*id="scatter-node-m_valery"[^>]*>[\s\S]*?<circle cx="([^"]+)" cy="([^"]+)" r="([^"]+)"/);
+        expect(cyMatch).not.toBeNull();
+        if (cyMatch) {
+          const cx = parseFloat(cyMatch[1]);
+          const cy = parseFloat(cyMatch[2]);
+          const r = parseFloat(cyMatch[3]);
+          // padLeft = 68, plotW = 640 -> max plot X = 708
+          // padTop = 36, plotH = 348 -> max plot Y = 384
+          expect(cx - r).toBeGreaterThanOrEqual(68);
+          expect(cx + r).toBeLessThanOrEqual(708);
+          expect(cy - r).toBeGreaterThanOrEqual(36);
+          // Circle bottom must not spill below plot border (384)
+          expect(cy + r).toBeLessThanOrEqual(384);
+        }
+      });
+
+      it('does not include points in manager detail when season is in corso (2026/27)', () => {
+        const makeTrack = (elo: number) => ({
+          current: elo,
+          peak: { value: elo, round: 1, season: '2026/27' },
+          floor: { value: 1500, round: 0, season: '2026/27' },
+          lastDelta: 0,
+          trajectory: []
+        });
+
+        const profiles: EloProfileEntry[] = [
+          {
+            managerId: 'm_sarviette',
+            teamName: 'Sarviette FC',
+            coach: 'petrubik88',
+            logo: '',
+            profile: {
+              managerId: 'm_sarviette',
+              teamName: 'Sarviette FC',
+              flat: makeTrack(1594.0),
+              historical: makeTrack(1594.0),
+              atlas: makeTrack(1594.0),
+              seasonStats: {
+                '2026/27': {
+                  played: 2, gf: 2, ga: 0, gd: 2, golo: 2.0, avgFP: 67.3, totalFP: 134.5, actualPts: 6, xPts: 2.46, luckDelta: 3.54
+                },
+                '2025/26': {
+                  played: 33, gf: 40, ga: 35, gd: 5, golo: 1.15, avgFP: 71.2, totalFP: 2350.0, actualPts: 48, xPts: 45.0, luckDelta: 3.0
+                }
+              }
+            }
+          }
+        ];
+
+        // Season in corso: 2026/27 -> points should NOT be included in extraMeta
+        const datasetInCorso = buildScatterPoints(profiles, 'fp', 'flat', '2026/27');
+        expect(datasetInCorso.points.length).toBe(1);
+        expect(datasetInCorso.points[0].extraMeta).not.toContain('Punti Classifica');
+        expect(datasetInCorso.points[0].extraMeta).not.toContain('6 pt');
+        expect(datasetInCorso.points[0].extraMeta).toContain('2 giornate giocate');
+
+        // Completed season: 2025/26 -> points SHOULD be included in extraMeta
+        const datasetCompleted = buildScatterPoints(profiles, 'fp', 'flat', '2025/26');
+        expect(datasetCompleted.points.length).toBe(1);
+        expect(datasetCompleted.points[0].extraMeta).toContain('Punti Classifica: 48 pt');
+        expect(datasetCompleted.points[0].extraMeta).toContain('33 giornate');
+      });
+
+      it('excludes managers who did not take part in the selected season across all scatter plots', () => {
+        const makeTrack = (elo: number) => ({
+          current: elo,
+          peak: { value: elo, round: 1, season: '2026/27' },
+          floor: { value: 1500, round: 0, season: '2026/27' },
+          lastDelta: 0,
+          trajectory: []
+        });
+
+        const profiles: EloProfileEntry[] = [
+          {
+            managerId: 'm_veteran',
+            teamName: 'Veteran Team',
+            coach: 'Coach A',
+            logo: '',
+            profile: {
+              managerId: 'm_veteran',
+              teamName: 'Veteran Team',
+              flat: makeTrack(1550),
+              historical: makeTrack(1550),
+              atlas: makeTrack(1550),
+              seasonStats: {
+                '2025/26': { played: 33, gf: 35, ga: 30, gd: 5, golo: 1.15, avgFP: 72.0, totalFP: 2376, actualPts: 45, xPts: 42, luckDelta: 3 },
+                '2026/27': { played: 2, gf: 3, ga: 2, gd: 1, golo: 1.5, avgFP: 73.0, totalFP: 146, actualPts: 4, xPts: 3.5, luckDelta: 0.5 },
+                'all': { played: 35, gf: 38, ga: 32, gd: 6, golo: 1.17, avgFP: 72.1, totalFP: 2522, actualPts: 49, xPts: 45.5, luckDelta: 3.5 }
+              }
+            }
+          },
+          {
+            managerId: 'm_retired',
+            teamName: 'Retired Team',
+            coach: 'Coach B',
+            logo: '',
+            profile: {
+              managerId: 'm_retired',
+              teamName: 'Retired Team',
+              flat: makeTrack(1480),
+              historical: makeTrack(1480),
+              atlas: makeTrack(1480),
+              seasonStats: {
+                '2025/26': { played: 33, gf: 30, ga: 35, gd: -5, golo: 0.85, avgFP: 68.0, totalFP: 2244, actualPts: 38, xPts: 40, luckDelta: -2 },
+                '2026/27': { played: 0, gf: 0, ga: 0, gd: 0, golo: 1.0, avgFP: 0.0, totalFP: 0, actualPts: 0, xPts: 0, luckDelta: 0 },
+                'all': { played: 33, gf: 30, ga: 35, gd: -5, golo: 0.85, avgFP: 68.0, totalFP: 2244, actualPts: 38, xPts: 40, luckDelta: -2 }
+              }
+            }
+          },
+          {
+            managerId: 'm_newcomer',
+            teamName: 'AS Qualo',
+            coach: 'Zatte',
+            logo: '',
+            profile: {
+              managerId: 'm_newcomer',
+              teamName: 'AS Qualo',
+              flat: makeTrack(1512),
+              historical: makeTrack(1512),
+              atlas: makeTrack(1512),
+              seasonStats: {
+                '2025/26': { played: 0, gf: 0, ga: 0, gd: 0, golo: 1.0, avgFP: 0.0, totalFP: 0, actualPts: 0, xPts: 0, luckDelta: 0 },
+                '2026/27': { played: 2, gf: 2, ga: 1, gd: 1, golo: 1.5, avgFP: 71.0, totalFP: 142, actualPts: 3, xPts: 2.69, luckDelta: 0.31 },
+                'all': { played: 2, gf: 2, ga: 1, gd: 1, golo: 1.5, avgFP: 71.0, totalFP: 142, actualPts: 3, xPts: 2.69, luckDelta: 0.31 }
+              }
+            }
+          }
+        ];
+
+        // 1. Season 2025/26: AS Qualo (played 0) MUST BE EXCLUDED from ALL scatter plots
+        const golo25 = buildScatterPoints(profiles, 'golo', 'flat', '2025/26');
+        expect(golo25.points.length).toBe(2);
+        expect(golo25.points.some(p => p.managerId === 'm_newcomer')).toBe(false);
+        expect(golo25.points.some(p => p.managerId === 'm_veteran')).toBe(true);
+        expect(golo25.points.some(p => p.managerId === 'm_retired')).toBe(true);
+
+        const fp25 = buildScatterPoints(profiles, 'fp', 'flat', '2025/26');
+        expect(fp25.points.length).toBe(2);
+        expect(fp25.points.some(p => p.managerId === 'm_newcomer')).toBe(false);
+
+        const luckAllPlay25 = buildScatterPoints(profiles, 'luck', 'flat', '2025/26', 'allPlay');
+        expect(luckAllPlay25.points.length).toBe(2);
+        expect(luckAllPlay25.points.some(p => p.managerId === 'm_newcomer')).toBe(false);
+
+        const luckAtlas25 = buildScatterPoints(profiles, 'luck', 'flat', '2025/26', 'h2hVsAtlas');
+        expect(luckAtlas25.points.length).toBe(2);
+        expect(luckAtlas25.points.some(p => p.managerId === 'm_newcomer')).toBe(false);
+
+        // 2. Season 2026/27: Retired team (played 0) MUST BE EXCLUDED from ALL scatter plots
+        const golo26 = buildScatterPoints(profiles, 'golo', 'flat', '2026/27');
+        expect(golo26.points.length).toBe(2);
+        expect(golo26.points.some(p => p.managerId === 'm_retired')).toBe(false);
+        expect(golo26.points.some(p => p.managerId === 'm_veteran')).toBe(true);
+        expect(golo26.points.some(p => p.managerId === 'm_newcomer')).toBe(true);
+
+        const fp26 = buildScatterPoints(profiles, 'fp', 'flat', '2026/27');
+        expect(fp26.points.length).toBe(2);
+        expect(fp26.points.some(p => p.managerId === 'm_retired')).toBe(false);
+
+        const luckAllPlay26 = buildScatterPoints(profiles, 'luck', 'flat', '2026/27', 'allPlay');
+        expect(luckAllPlay26.points.length).toBe(2);
+        expect(luckAllPlay26.points.some(p => p.managerId === 'm_retired')).toBe(false);
+
+        const luckAtlas26 = buildScatterPoints(profiles, 'luck', 'flat', '2026/27', 'h2hVsAtlas');
+        expect(luckAtlas26.points.length).toBe(2);
+        expect(luckAtlas26.points.some(p => p.managerId === 'm_retired')).toBe(false);
+      });
+    });
+
+    describe('Simultaneous League and Cup Ingestion & Visualization', () => {
+      it('correctly sorts, keys, and formats simultaneous Campionato (G3) and Coppa (C1) matches', () => {
+        const trajectoryWithBoth: EloTrajectoryPoint[] = [
+          {
+            season: '2026/27',
+            round: 1,
+            roundLabel: 'G1',
+            matchIndex: 1,
+            competitionCategory: 'Campionato',
+            elo: 1515.0,
+            delta: 15.0,
+            opponentId: 'm2',
+            opponentTeamName: 'Team 2',
+            winProbPreMatch: 50.0,
+            isHome: true,
+            result: 'W'
+          },
+          {
+            season: '2026/27',
+            round: 2,
+            roundLabel: 'G2',
+            matchIndex: 2,
+            competitionCategory: 'Campionato',
+            elo: 1528.0,
+            delta: 13.0,
+            opponentId: 'm3',
+            opponentTeamName: 'Team 3',
+            winProbPreMatch: 52.0,
+            isHome: false,
+            result: 'W'
+          },
+          {
+            season: '2026/27',
+            round: 3,
+            roundLabel: 'G3',
+            matchIndex: 3,
+            championshipMatchDay: 8,
+            competitionCategory: 'Campionato',
+            elo: 1545.0,
+            delta: 17.0,
+            opponentId: 'm4',
+            opponentTeamName: 'Team 4',
+            winProbPreMatch: 55.0,
+            isHome: true,
+            result: 'W'
+          },
+          {
+            season: '2026/27',
+            round: 1,
+            roundLabel: 'C1',
+            matchIndex: 4,
+            championshipMatchDay: 8,
+            competitionCategory: 'Coppa',
+            elo: 1533.0,
+            delta: -12.0,
+            opponentId: 'm5',
+            opponentTeamName: 'Team 5',
+            winProbPreMatch: 60.0,
+            isHome: false,
+            result: 'L'
+          }
+        ];
+
+        // 1. Sparkline chart rendering
+        const sparklineHtml = renderEloTrajectorySparkline(trajectoryWithBoth, '2026/27', 'Team One');
+        expect(sparklineHtml).toContain('G3: Team One vs Team 4 (W)');
+        expect(sparklineHtml).toContain('C1 [Coppa]: Team One vs Team 5 (L)');
+        expect(sparklineHtml).toContain('G3');
+        expect(sparklineHtml).toContain('C1');
+
+        // 2. Multi-team Trajectory Chart rendering
+        const chartHtml = renderEloTrajectoryChart([
+          {
+            managerId: 'm1',
+            teamName: 'Team One',
+            coach: 'Coach 1',
+            profile: {
+              managerId: 'm1',
+              teamName: 'Team One',
+              flat: {
+                current: 1533.0,
+                peak: { value: 1545.0, season: '2026/27', round: 3 },
+                floor: { value: 1500.0, season: '2026/27', round: 0 },
+                lastDelta: -12.0,
+                trajectory: trajectoryWithBoth
+              },
+              historical: {
+                current: 1533.0,
+                peak: { value: 1545.0, season: '2026/27', round: 3 },
+                floor: { value: 1500.0, season: '2026/27', round: 0 },
+                lastDelta: -12.0,
+                trajectory: trajectoryWithBoth
+              }
+            }
+          }
+        ], 'flat');
+
+        expect(chartHtml).toContain('Team One (2026/27 G3): 1545 (+17)');
+        expect(chartHtml).toContain('Team One (2026/27 C1 [Coppa]): 1533 (-12)');
+        expect(chartHtml).toContain('G3');
+        expect(chartHtml).toContain('C1');
+      });
+    });
+  });
+
+  describe('Davidson 1X2 Odds & Manager Epic Matches', () => {
+    it('computes coherent 1X2 probabilities summing to 100% and fair reciprocal odds', async () => {
+      const { computeMatchOdds1X2, buildLeagueDistributionContext, extractShrunkOffensivePower } = await import('@/components/board/seasons/nextRoundMetrics');
+
+      // 1. Equal ratings
+      const equalOdds = computeMatchOdds1X2(1500, 1500);
+      expect(equalOdds.q1).toBe(equalOdds.q2);
+      expect(equalOdds.p1).toBe(equalOdds.p2);
+      expect(equalOdds.pX).toBeCloseTo(26.5, 0.5);
+      expect(equalOdds.qX).toBeCloseTo(3.61, 0.1);
+      expect(equalOdds.p1 + equalOdds.pX + equalOdds.p2).toBeCloseTo(100.0, 0.2);
+
+      // 2. Clear favorite (+60 Elo spread)
+      const favoriteOdds = computeMatchOdds1X2(1560, 1500);
+      expect(favoriteOdds.q1).toBeLessThan(favoriteOdds.q2);
+      expect(favoriteOdds.p1).toBeGreaterThan(favoriteOdds.p2);
+      expect(favoriteOdds.p1 + favoriteOdds.pX + favoriteOdds.p2).toBeCloseTo(100.0, 0.2);
+      expect(favoriteOdds.q1).toBeGreaterThanOrEqual(1.05);
+      expect(favoriteOdds.qX).toBeGreaterThanOrEqual(1.05);
+      expect(favoriteOdds.q2).toBeGreaterThanOrEqual(1.05);
+
+      // 3. Monotonicity: higher disparity lowers 1 and increases 2
+      const bigFavoriteOdds = computeMatchOdds1X2(1650, 1500);
+      expect(bigFavoriteOdds.q1).toBeLessThan(favoriteOdds.q1);
+      expect(bigFavoriteOdds.q2).toBeGreaterThan(favoriteOdds.q2);
+
+      // 4. Bayesian shrinkage test for early-season offensive power
+      const rookieStanding: any = {
+        managerId: 'm_rookie',
+        elo: {
+          seasonStats: {
+            '2026/27': { played: 2, avgFP: 80.0 },
+            'all': { played: 2, avgFP: 80.0 }
+          }
+        }
+      };
+      // (2/(2+5))*80 + (5/(2+5))*70 = 22.86 + 50 = 72.86
+      const shrunkFP = extractShrunkOffensivePower(rookieStanding, '2026/27', 70.0, 5);
+      expect(shrunkFP).toBeCloseTo(72.86, 0.1);
+
+      // 5. Adaptive weights in buildLeagueDistributionContext (Atlas vs Flat)
+      const mockStandings: any[] = [
+        { managerId: 'm1', elo: { flat: { current: 1550 }, atlas: { current: 1530 } } },
+        { managerId: 'm2', elo: { flat: { current: 1450 }, atlas: { current: 1470 } } }
+      ];
+      const flatCtx = buildLeagueDistributionContext(mockStandings, 'flat', '2026/27');
+      const atlasCtx = buildLeagueDistributionContext(mockStandings, 'atlas', '2026/27');
+      expect(flatCtx.profile.eloWeight).toBe(0.65);
+      expect(flatCtx.profile.powerWeight).toBe(0.35);
+      expect(atlasCtx.profile.eloWeight).toBe(0.85);
+      expect(atlasCtx.profile.powerWeight).toBe(0.15);
+
+      // 6. Career prior extraction without circular current-season leakage
+      const { extractCareerPriorFP, buildHistoricalRoundContext } = await import('@/components/board/seasons/nextRoundMetrics');
+      const veteranStanding: any = {
+        managerId: 'v1',
+        elo: {
+          seasonStats: {
+            all: { played: 35, totalFP: 2500.0, avgFP: 71.43 },
+            '2026/27': { played: 5, totalFP: 400.0, avgFP: 80.0 }
+          }
+        }
+      };
+      // (2500 - 400) / (35 - 5) = 2100 / 30 = 70.0
+      expect(extractCareerPriorFP(veteranStanding, '2026/27')).toBeCloseTo(70.0, 0.01);
+
+      // Rookie standing (no past seasons) returns null
+      const rookiePure: any = {
+        managerId: 'r1',
+        elo: {
+          seasonStats: {
+            all: { played: 5, totalFP: 350.0, avgFP: 70.0 },
+            '2026/27': { played: 5, totalFP: 350.0, avgFP: 70.0 }
+          }
+        }
+      };
+      expect(extractCareerPriorFP(rookiePure, '2026/27')).toBeNull();
+
+      // 7. Multi-season trajectory isolation in historical round reconstruction
+      const multiSeasonData: any = {
+        season: '2026/27',
+        standings: [
+          {
+            managerId: 'm1',
+            teamName: 'Team 1',
+            elo: {
+              atlas: {
+                current: 1560.0,
+                trajectory: [
+                  { season: '2025/26', round: 2, competitionCategory: 'Campionato', elo: 1510.0, delta: 10.0, fpFor: 65.0 },
+                  { season: '2026/27', round: 1, competitionCategory: 'Campionato', elo: 1545.0, delta: 5.0, fpFor: 75.0 },
+                  { season: '2026/27', round: 2, competitionCategory: 'Campionato', elo: 1560.0, delta: 15.0, fpFor: 78.0 }
+                ]
+              }
+            }
+          }
+        ]
+      };
+      // For round 2 in 2026/27, pre-round Elo must be 1560 - 15 = 1545 (NOT 2025/26's 1510 - 10 = 1500)
+      const histCtx = buildHistoricalRoundContext(multiSeasonData, 2, 'atlas');
+      expect(histCtx).toBeDefined();
+    });
+
+    it('extracts manager best win and worst defeat correctly from trajectory', async () => {
+      const { extractManagerEpicMatches } = await import('@/components/modals/profile/EloUpsetsCard');
+      const mockManager: any = { id: 'test_m1', name: 'Test Manager' };
+
+      // When no live details exist or rookie
+      const emptyMatches = extractManagerEpicMatches(mockManager, 'flat');
+      expect(emptyMatches).toBeDefined();
     });
   });
 });

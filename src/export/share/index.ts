@@ -12,12 +12,18 @@ import {
   exportStandingsPNG,
   copyStandingsToClipboard
 } from './standings';
+import {
+  shareNextRoundWhatsApp,
+  exportNextRoundPNG,
+  copyNextRoundToClipboard
+} from './nextRound';
 
 export * from './profile';
 export * from './h2h';
 export * from './records';
 export * from './albo';
 export * from './standings';
+export * from './nextRound';
 
 if (typeof window !== 'undefined') {
   Object.assign(window, {
@@ -32,6 +38,9 @@ if (typeof window !== 'undefined') {
     copyMeritStandingsLink,
     shareStandingsWhatsApp,
     exportStandingsPNG,
-    copyStandingsToClipboard
+    copyStandingsToClipboard,
+    shareNextRoundWhatsApp,
+    exportNextRoundPNG,
+    copyNextRoundToClipboard
   });
 }

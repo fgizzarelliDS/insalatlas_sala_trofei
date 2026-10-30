@@ -13,7 +13,7 @@ import {
 } from '@/analytics/analyticsCore';
 import type { EloProfileEntry } from './EloKpis';
 
-export type EloTableSortField = 'rank' | 'name' | 'elo' | 'delta' | 'peak' | 'floor';
+export type EloTableSortField = 'rank' | 'name' | 'elo' | 'delta' | 'peak' | 'floor' | 'golo' | 'luck';
 
 /**
  * Renders the responsive Elo leaderboard table with interactive column sorting
@@ -22,14 +22,19 @@ export function renderEloLeaderboardTable(
   profiles: EloProfileEntry[],
   activeMode: EloTrackMode,
   sortField: EloTableSortField,
-  sortDirection: 'desc' | 'asc'
+  sortDirection: 'desc' | 'asc',
+  selectedSeason: string = 'all'
 ): string {
   if (!profiles || profiles.length === 0) return '';
 
   const dirMultiplier = sortDirection === 'desc' ? -1 : 1;
+  const sKey = selectedSeason;
+
   const tableProfiles = [...profiles].sort((a, b) => {
     const trA = getManagerEloTrack(a.profile, activeMode);
     const trB = getManagerEloTrack(b.profile, activeMode);
+    const stA = a.profile.seasonStats?.[sKey] || a.profile.seasonStats?.['all'] || { golo: 1.0, luckDelta: 0.0 };
+    const stB = b.profile.seasonStats?.[sKey] || b.profile.seasonStats?.['all'] || { golo: 1.0, luckDelta: 0.0 };
     if (!trA || !trB) return 0;
 
     if (sortField === 'name') {
@@ -40,6 +45,10 @@ export function renderEloLeaderboardTable(
       return dirMultiplier * (trA.peak.value - trB.peak.value);
     } else if (sortField === 'floor') {
       return dirMultiplier * (trA.floor.value - trB.floor.value);
+    } else if (sortField === 'golo') {
+      return dirMultiplier * ((stA.golo || 1.0) - (stB.golo || 1.0));
+    } else if (sortField === 'luck') {
+      return dirMultiplier * ((stA.luckDelta || 0.0) - (stB.luckDelta || 0.0));
     } else {
       // 'elo' or 'rank'
       return dirMultiplier * (trA.current - trB.current);
@@ -71,6 +80,13 @@ export function renderEloLeaderboardTable(
     const deltaSign = tr.lastDelta > 0 ? '+' : '';
     const deltaColor = tr.lastDelta > 0 ? 'text-emerald-400' : tr.lastDelta < 0 ? 'text-rose-400' : 'text-slate-400';
 
+    const st = p.profile.seasonStats?.[sKey] || p.profile.seasonStats?.['all'] || { golo: 1.0, luckDelta: 0.0 };
+    const goloVal = st.golo || 1.0;
+    const luckVal = st.luckDelta || 0.0;
+    const goloBadge = goloVal >= 1.0 ? 'text-amber-400 font-bold' : 'text-slate-400 opacity-80';
+    const luckSign = luckVal > 0 ? '+' : '';
+    const luckColor = luckVal > 0.3 ? 'text-emerald-400 font-bold' : luckVal < -0.3 ? 'text-rose-400 font-bold' : 'text-slate-400';
+
     return `
       <tr onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${p.managerId}', '${escapedTeamName}')"
           class="border-b last:border-b-0 hover:bg-amber-500/10 cursor-pointer transition select-none group"
@@ -94,22 +110,32 @@ export function renderEloLeaderboardTable(
             </div>
           </div>
         </td>
-        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-32">
+        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-28">
           <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs sm:text-sm font-bold font-mono border shadow-xs ${badge.bg} ${badge.text} ${badge.border}">
             <span>${formatElo(tr.current)}</span>
           </span>
           <div class="text-[9px] font-bold uppercase tracking-wider mt-0.5 opacity-60" style="color: var(--text-muted);">${tierTitle}</div>
         </td>
-        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-24">
+        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-20">
           <span class="font-mono font-bold text-xs ${deltaColor}">
             ${deltaSign}${tr.lastDelta.toFixed(1)}
           </span>
         </td>
-        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-28">
+        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-24">
+          <span class="font-mono text-xs ${goloBadge}">
+            ${goloVal.toFixed(2)}x
+          </span>
+        </td>
+        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-24">
+          <span class="font-mono text-xs ${luckColor}">
+            ${luckSign}${luckVal.toFixed(1)} pt
+          </span>
+        </td>
+        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-24">
           <div class="font-mono font-bold text-xs" style="color: var(--text-main);">${formatElo(tr.peak.value)}</div>
           <div class="text-[9px] opacity-60" style="color: var(--text-muted);">${tr.peak.season} G${tr.peak.round}</div>
         </td>
-        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-28">
+        <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-24">
           <div class="font-mono font-bold text-xs" style="color: var(--text-main);">${formatElo(tr.floor.value)}</div>
           <div class="text-[9px] opacity-60" style="color: var(--text-muted);">${tr.floor.season} G${tr.floor.round}</div>
         </td>
@@ -135,6 +161,13 @@ export function renderEloLeaderboardTable(
 
     const deltaSign = tr.lastDelta > 0 ? '+' : '';
     const deltaColor = tr.lastDelta > 0 ? 'text-emerald-400' : tr.lastDelta < 0 ? 'text-rose-400' : 'text-slate-400';
+
+    const st = p.profile.seasonStats?.[sKey] || p.profile.seasonStats?.['all'] || { golo: 1.0, luckDelta: 0.0 };
+    const goloVal = st.golo || 1.0;
+    const luckVal = st.luckDelta || 0.0;
+    const goloBadge = goloVal >= 1.0 ? 'text-amber-400 font-bold' : 'text-slate-400 opacity-80';
+    const luckSign = luckVal > 0 ? '+' : '';
+    const luckColor = luckVal > 0.3 ? 'text-emerald-400 font-bold' : luckVal < -0.3 ? 'text-rose-400 font-bold' : 'text-slate-400';
 
     return `
       <div onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${p.managerId}', '${escapedTeamName}')"
@@ -172,9 +205,20 @@ export function renderEloLeaderboardTable(
           </div>
         </div>
 
+        <!-- Middle Subrow: Golo and Luck -->
+        <div class="flex items-center justify-between gap-2 mt-1.5 pt-1.5 border-t text-[10px] font-mono opacity-85"
+             style="border-color: var(--table-border);">
+          <div>
+            Golo: <strong class="${goloBadge}">${goloVal.toFixed(2)}x</strong>
+          </div>
+          <div>
+            Sfiga Δ: <strong class="${luckColor}">${luckSign}${luckVal.toFixed(1)} pt</strong>
+          </div>
+        </div>
+
         <!-- Bottom Subrow: Peak and Floor -->
-        <div class="flex items-center justify-between gap-2 mt-1.5 pt-1.5 border-t text-[10px] font-mono opacity-80"
-             style="border-color: var(--table-border); color: var(--text-muted);">
+        <div class="flex items-center justify-between gap-2 mt-1 pt-1 text-[10px] font-mono opacity-70"
+             style="color: var(--text-muted);">
           <div>
             Picco: <strong class="text-purple-400 font-bold">${formatElo(tr.peak.value)}</strong>
             <span class="opacity-60 text-[9px]">(${tr.peak.season} G${tr.peak.round})</span>
@@ -223,22 +267,32 @@ export function renderEloLeaderboardTable(
                   <span>Squadra / Allenatore</span>${sortIcon('name')}
                 </button>
               </th>
-              <th class="py-2.5 px-3 text-center w-32">
+              <th class="py-2.5 px-3 text-center w-28">
                 <button type="button" onclick="window.sortEloLeaderboard && window.sortEloLeaderboard('elo')" class="hover:text-amber-400 transition cursor-pointer inline-flex items-center justify-center">
                   <span>Rating Elo</span>${sortIcon('elo')}
                 </button>
               </th>
-              <th class="py-2.5 px-3 text-center w-24">
+              <th class="py-2.5 px-3 text-center w-20">
                 <button type="button" onclick="window.sortEloLeaderboard && window.sortEloLeaderboard('delta')" class="hover:text-amber-400 transition cursor-pointer inline-flex items-center justify-center">
                   <span>Δ Ultima</span>${sortIcon('delta')}
                 </button>
               </th>
-              <th class="py-2.5 px-3 text-center w-28">
+              <th class="py-2.5 px-3 text-center w-24">
+                <button type="button" onclick="window.sortEloLeaderboard && window.sortEloLeaderboard('golo')" class="hover:text-amber-400 transition cursor-pointer inline-flex items-center justify-center">
+                  <span>Golo</span>${sortIcon('golo')}
+                </button>
+              </th>
+              <th class="py-2.5 px-3 text-center w-24">
+                <button type="button" onclick="window.sortEloLeaderboard && window.sortEloLeaderboard('luck')" class="hover:text-amber-400 transition cursor-pointer inline-flex items-center justify-center">
+                  <span>Sfiga Δ</span>${sortIcon('luck')}
+                </button>
+              </th>
+              <th class="py-2.5 px-3 text-center w-24">
                 <button type="button" onclick="window.sortEloLeaderboard && window.sortEloLeaderboard('peak')" class="hover:text-amber-400 transition cursor-pointer inline-flex items-center justify-center">
                   <span>Picco</span>${sortIcon('peak')}
                 </button>
               </th>
-              <th class="py-2.5 px-3 text-center w-28">
+              <th class="py-2.5 px-3 text-center w-24">
                 <button type="button" onclick="window.sortEloLeaderboard && window.sortEloLeaderboard('floor')" class="hover:text-amber-400 transition cursor-pointer inline-flex items-center justify-center">
                   <span>Minimo</span>${sortIcon('floor')}
                 </button>

@@ -104,6 +104,19 @@ LEAGUE_RULES = {
             "Mundialito": 16.0,
             "Perdenti": 16.0,
             "default": 32.0
+        },
+        "odds": {
+            "base_draw_nu": 0.72,
+            "draw_decay_lambda": 0.03,
+            "sensitivity_kappa": 0.55,
+            "overround": 1.045,
+            "prior_sigma_elo": 60.0,
+            "min_sigma_elo": 35.0,
+            "min_sigma_power": 1.5,
+            "k_shrinkage": 5,
+            "hfa_z_shift": 0.0,
+            "atlas_weights": {"elo": 0.85, "power": 0.15},
+            "flat_weights": {"elo": 0.65, "power": 0.35}
         }
     }
 }

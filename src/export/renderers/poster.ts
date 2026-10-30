@@ -107,7 +107,7 @@ export async function renderHallOfFamePosterCanvas(
           <div style="display: flex; align-items: center; margin-right: -4px; shrink: 0;">
             ${holders.slice(0, 2).map((h, i) => {
               const hLogo = h.logo || (h.teamName ? resolveTeamLogo(h.teamName) : getTeamFallbackCrest(h.teamName || 'Team'));
-              return `<img src="${hLogo}" alt="" style="width: 26px; height: 26px; border-radius: 9999px; object-fit: contain; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); margin-left: ${i > 0 ? '-10px' : '0'}; z-index: ${2 - i};" />`;
+              return `<img src="${hLogo}" alt="" style="width: 26px; height: 26px; border-radius: 9999px; object-fit: contain; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); margin-left: ${i > 0 ? '-10px' : '0'}; z-index: ${2 - i};" onerror="this.onerror=null; this.src='${getTeamFallbackCrest(h.teamName || 'Team')}';" />`;
             }).join('')}
           </div>
           <div style="min-width: 0;">

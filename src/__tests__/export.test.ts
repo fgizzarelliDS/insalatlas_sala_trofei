@@ -554,7 +554,67 @@ describe('export.ts - Trading Card Logic and Formatting', () => {
       expect(text).toContain('MISTER A vs MISTER B vs MISTER C');
       expect(text).toContain('https://test.insalatlas.it/?h2h=multi&m=m_a%3Am_b%3Am_c');
     });
+    it('formats Next Round WhatsApp share text with real integer Elo and duel probabilities', async () => {
+      const { buildNextRoundShareText } = await import('@/export/share/nextRound');
+      const mockLive = {
+        season: '2025/2026',
+        rounds: [
+          {
+            roundNumber: 27,
+            matches: [
+              {
+                homeTeam: 'Team Alpha',
+                awayTeam: 'Team Beta',
+                homeManagerId: 'mgr_a',
+                awayManagerId: 'mgr_b',
+                isPlayed: false,
+                winProbHomeFlat: 58.2
+              }
+            ]
+          }
+        ],
+        standings: [
+          {
+            managerId: 'mgr_a',
+            teamName: 'Team Alpha',
+            rank: 2,
+            elo: { current: 1540.2 }
+          },
+          {
+            managerId: 'mgr_b',
+            teamName: 'Team Beta',
+            rank: 9,
+            elo: { current: 1485.6 }
+          }
+        ]
+      };
+
+      const text = buildNextRoundShareText(mockLive, 'https://test.insalatlas.it/?tab=seasons');
+      expect(text).toContain('PROSSIMO TURNO — GIORNATA 27');
+      expect(text).toContain('Team Alpha');
+      expect(text).toContain('1540');
+      expect(text).toContain('62%');
+      expect(text).toContain('Team Beta');
+      expect(text).toContain('1486');
+      expect(text).toContain('38%');
+      expect(text).toContain('Quote 1X2:');
+    });
+
+    it('verifies registerGlobalWindowHandlers binds next round export handlers to window', async () => {
+      const originalWindow = (globalThis as any).window;
+      (globalThis as any).window = (globalThis as any).window || {};
+      try {
+        const { registerGlobalWindowHandlers } = await import('@/bootstrap/windowRegistry');
+        registerGlobalWindowHandlers();
+        expect(typeof (globalThis as any).window.exportNextRoundPNG).toBe('function');
+        expect(typeof (globalThis as any).window.copyNextRoundToClipboard).toBe('function');
+        expect(typeof (globalThis as any).window.shareNextRoundWhatsApp).toBe('function');
+      } finally {
+        (globalThis as any).window = originalWindow;
+      }
+    });
   });
 });
+
 
 

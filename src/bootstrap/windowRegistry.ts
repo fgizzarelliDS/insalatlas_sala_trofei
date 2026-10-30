@@ -16,6 +16,11 @@ import {
   closeManagerModal,
   openConcentrationModal,
   closeConcentrationModal,
+  openEloModal,
+  closeEloModal,
+  switchEloModalTab,
+  switchEloScatterSeason,
+  switchEloLuckSubMode,
   switchAnalyticsTab,
   switchEloMode,
   switchChronologyView,
@@ -121,6 +126,9 @@ const copyStandingsToClipboard = lazyExport('copyStandingsToClipboard');
 const shareStandingsWhatsApp = lazyExport('shareStandingsWhatsApp');
 const exportTeamMatchesPNG = lazyExport('exportTeamMatchesPNG');
 const copyTeamMatchesToClipboard = lazyExport('copyTeamMatchesToClipboard');
+const exportNextRoundPNG = lazyExport('exportNextRoundPNG');
+const copyNextRoundToClipboard = lazyExport('copyNextRoundToClipboard');
+const shareNextRoundWhatsApp = lazyExport('shareNextRoundWhatsApp');
 import {
   changeSort,
   toggleDisplayMode,
@@ -173,6 +181,11 @@ declare global {
     closeProfileModal: typeof closeProfileModal;
     openConcentrationModal: typeof openConcentrationModal;
     closeConcentrationModal: typeof closeConcentrationModal;
+    openEloModal: typeof openEloModal;
+    closeEloModal: typeof closeEloModal;
+    switchEloModalTab: typeof switchEloModalTab;
+    switchEloScatterSeason: typeof switchEloScatterSeason;
+    switchEloLuckSubMode: typeof switchEloLuckSubMode;
     openSeasonModal: typeof openSeasonModal;
     closeSeasonModal: typeof closeSeasonModal;
     saveSeason: typeof saveSeason;
@@ -295,6 +308,9 @@ declare global {
     shareStandingsWhatsApp: typeof shareStandingsWhatsApp;
     exportTeamMatchesPNG: typeof exportTeamMatchesPNG;
     copyTeamMatchesToClipboard: typeof copyTeamMatchesToClipboard;
+    exportNextRoundPNG: typeof exportNextRoundPNG;
+    copyNextRoundToClipboard: typeof copyNextRoundToClipboard;
+    shareNextRoundWhatsApp: typeof shareNextRoundWhatsApp;
     closePosterShareDropdown: typeof closePosterShareDropdown;
     exportRecordStory?: (recordId: string, event?: Event) => Promise<void>;
     exportRecordStoryHD?: typeof exportRecordStoryHD;
@@ -322,6 +338,32 @@ declare global {
     clearEloChartHover?: () => void;
     sortEloLeaderboard?: (field: any) => void;
     retryEloFetch?: () => void;
+    focusEloScatterManager?: (mId: string) => void;
+    unfocusEloScatterManager?: (forceReset?: boolean) => void;
+    showEloScatterHover?: (
+      mId: string,
+      team: string,
+      coach: string,
+      valX: string,
+      valY: string,
+      meta: string,
+      quad: string,
+      color: string,
+      logo: string
+    ) => void;
+    clearEloScatterHover?: () => void;
+    selectEloScatterBubble?: (
+      mId: string,
+      team: string,
+      coach: string,
+      valX: string,
+      valY: string,
+      meta: string,
+      quad: string,
+      color: string,
+      logo: string
+    ) => void;
+    fantasyData?: any;
     MSStream?: unknown;
     switchProfileEloSeason: typeof switchProfileEloSeason;
     showProfileEloHover: typeof showProfileEloHover;
@@ -349,6 +391,11 @@ export function registerGlobalWindowHandlers(): void {
     closeProfileModal,
     openConcentrationModal,
     closeConcentrationModal,
+    openEloModal,
+    closeEloModal,
+    switchEloModalTab,
+    switchEloScatterSeason,
+    switchEloLuckSubMode,
     openSeasonModal,
     closeSeasonModal,
     saveSeason,
@@ -474,6 +521,9 @@ export function registerGlobalWindowHandlers(): void {
     shareStandingsWhatsApp,
     exportTeamMatchesPNG,
     copyTeamMatchesToClipboard,
+    exportNextRoundPNG,
+    copyNextRoundToClipboard,
+    shareNextRoundWhatsApp,
     switchProfileEloSeason,
     showProfileEloHover,
     clearProfileEloHover,

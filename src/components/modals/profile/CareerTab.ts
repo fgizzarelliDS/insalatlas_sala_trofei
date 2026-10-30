@@ -31,6 +31,13 @@ import {
   type LockedProfileEloMatch
 } from './EloSparklineChart';
 
+// Elo Upsets module
+import {
+  extractManagerEpicMatches,
+  populateEloUpsetsCard,
+  type ManagerEpicMatches
+} from './EloUpsetsCard';
+
 // Re-exports for consumers, window registry, and unit tests
 export {
   formatSeasonsList,
@@ -47,8 +54,11 @@ export {
   clearProfileEloHover,
   renderEloTrajectorySparkline,
   updateProfileEloSparklineUI,
+  extractManagerEpicMatches,
+  populateEloUpsetsCard,
   type HistoricalTeamRecord,
-  type LockedProfileEloMatch
+  type LockedProfileEloMatch,
+  type ManagerEpicMatches
 };
 
 /**
@@ -60,9 +70,10 @@ export function populateCareerTimeline(m: Manager): void {
   const timelineCard = document.getElementById('profile-career-timeline-card');
   const timelineContainer = document.getElementById('profile-career-timeline');
 
-  // 1. Reset state and update the Elo Trajectory Sparkline
+  // 1. Reset state and update the Elo Trajectory Sparkline & Upsets Card
   resetProfileEloStateForManager(m);
   updateProfileEloSparklineUI(m);
+  populateEloUpsetsCard(m);
 
   if (!m.history || m.history.length === 0) {
     if (trajCard) trajCard.classList.add('hidden');

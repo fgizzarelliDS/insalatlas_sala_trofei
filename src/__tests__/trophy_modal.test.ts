@@ -208,7 +208,11 @@ describe('Interactive Trophy Modals & Roll of Honor Suite', () => {
       expect(html).toContain('Scudetto');
       expect(html).toContain('Coppa');
       expect(html).toContain('Supercoppa');
-      expect(html).toContain('Mundialito');
+      if (LEAGUE.features.mundialito) {
+        expect(html).toContain('Mundialito');
+      } else {
+        expect(html).not.toContain('Mundialito');
+      }
       // The Seasons Overview is the ONLY modal that keeps In Corso
       expect(html).toContain('In Corso');
 
@@ -218,6 +222,32 @@ describe('Interactive Trophy Modals & Roll of Honor Suite', () => {
         expect(season2627Block).toContain('In Corso');
         expect(season2627Block).toContain('>-<');
       }
+
+      // Past seasons without Mundialito (e.g. 2016/17) must not render empty phantom Mundialito cards
+      const season1617Block = html.split('Stagione 2016/17')[1] || '';
+      if (season1617Block) {
+        expect(season1617Block).not.toContain('Mundialito');
+        expect(season1617Block).not.toContain('Supercoppa');
+        expect(season1617Block).not.toContain('Coppa');
+      }
+    });
+
+    it('renders Mundialito card in Seasons Overview when a Mundialito competition is present', () => {
+      const targetManager = state.managers[0];
+      const mockComps: CompetitionRecord[] = [
+        {
+          id: 999999,
+          name: 'Mundialito di Prova',
+          category: 'Mundialito',
+          season: '2025/26',
+          status: 'completed',
+          in_progress: false,
+          ranking: [{ rank: 1, managerId: targetManager.id, coach: targetManager.name, teamName: 'Test Team', points: 10 }]
+        }
+      ];
+      const html = renderSeasonsOverviewRollHTML(mockComps, state.managers);
+      expect(html).toContain('Mundialito');
+      expect(html).toContain(targetManager.name);
     });
   });
 

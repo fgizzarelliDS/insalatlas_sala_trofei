@@ -1,6 +1,7 @@
 import type { CompetitionRecord, Manager, CompetitionDefinition } from '@/types';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
 import type { CupSubTab, TrophyEditionParticipant } from './TrophyModalTypes';
+import { LEAGUE } from '@/config';
 
 /**
  * Helper to resolve participant details from ranking item and managers list
@@ -508,6 +509,32 @@ export function renderSeasonsOverviewRollHTML(competitions: CompetitionRecord[],
       `;
     };
 
+    const cards: string[] = [
+      renderMiniWinnerCard('🥇', 'Scudetto', champWinner)
+    ];
+
+    const showCup = LEAGUE.features.cup && (isCurrent || Boolean(cup));
+    const showSupercup = LEAGUE.features.supercup && (isCurrent || Boolean(supercup));
+    const showMundialito = LEAGUE.features.mundialito && (isCurrent || Boolean(mundialito));
+
+    if (showCup) {
+      cards.push(renderMiniWinnerCard('🏆', 'Coppa', cupWinner));
+    }
+    if (showSupercup) {
+      cards.push(renderMiniWinnerCard('⭐', 'Supercoppa', supercupWinner));
+    }
+    if (showMundialito) {
+      cards.push(renderMiniWinnerCard('🌍', 'Mundialito', mundialitoWinner));
+    }
+
+    const gridColsClass = cards.length >= 4
+      ? 'grid-cols-2 sm:grid-cols-4'
+      : cards.length === 2
+        ? 'grid-cols-2'
+        : cards.length === 1
+          ? 'grid-cols-1'
+          : 'grid-cols-3';
+
     return `
       <div class="p-3.5 sm:p-4 rounded-2xl border space-y-2.5 transition"
         style="background-color: var(--table-surface); border-color: var(--table-border);">
@@ -528,11 +555,8 @@ export function renderSeasonsOverviewRollHTML(competitions: CompetitionRecord[],
           </div>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-          ${renderMiniWinnerCard('🥇', 'Scudetto', champWinner)}
-          ${renderMiniWinnerCard('🏆', 'Coppa', cupWinner)}
-          ${renderMiniWinnerCard('⭐', 'Supercoppa', supercupWinner)}
-          ${renderMiniWinnerCard('🌍', 'Mundialito', mundialitoWinner)}
+        <div class="grid ${gridColsClass} gap-2 text-xs">
+          ${cards.join('\n')}
         </div>
       </div>
     `;

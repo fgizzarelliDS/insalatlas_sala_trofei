@@ -597,11 +597,28 @@ export interface ScheduleLuckAnalytics {
   luckLabel: string;
   monteCarlo?: {
     medianPoints: number;
+    meanPoints?: number;
     stdDev: number;
     pTitlePct?: number | null;
     pPodiumPct?: number | null;
     pSpoonPct?: number | null;
+    p10?: number;
+    p25?: number;
+    p75?: number;
+    p90?: number;
+    pMidPct?: number | null;
+    pFlopPct?: number | null;
   };
+}
+
+export interface TeamSoSMetrics {
+  teamName: string;
+  remainingOpponentsCount: number;
+  avgOpponentElo: number;
+  avgOpponentPoints: number;
+  combinedZScore: number;
+  sosRank: number;
+  totalTeams: number;
 }
 
 export interface MatchdayMatch {
@@ -664,6 +681,8 @@ export interface LiveSeasonDetails {
   competitionId: number | string;
   lastCompletedRound: number;
   totalRounds: number;
+  /** Min completed rounds before MC projections activate (from scripts/core/config.py → odds.mc_min_rounds) */
+  mcMinRounds?: number;
   rounds: MatchdayRound[];
   standings: LiveTeamMetrics[];
 }

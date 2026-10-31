@@ -322,6 +322,9 @@ declare global {
     navigateBackTeamMatchesModal?: () => void;
     toggleTeamMatchesShareDropdown?: (event?: Event) => void;
     closeTeamMatchesShareDropdown?: () => void;
+    switchTeamMatchesTab?: (tab: 'calendar' | 'montecarlo') => void;
+    toggleTeamMatchesCalendar?: () => void;
+    toggleTeamMatchesDetails?: () => void;
     toggleCompetitionDrawer?: (competitionId: number, season?: string) => void;
     switchProfileModalTab?: (tab: 'palmares' | 'career') => void;
     setMultiTournamentMode?: (mode: 'ppg' | 'simultaneous') => void;

@@ -156,7 +156,7 @@ export function renderMeritDesktopRows(standings: LiveTeamMetrics[], mode: EloTr
             </div>
           </div>
         </td>
-        <!-- Scenari Monte Carlo -->
+        <!-- Scenari MC -->
         <td class="py-2.5 px-3 text-center align-middle whitespace-nowrap w-28">
           ${mcDisplayHTML}
         </td>

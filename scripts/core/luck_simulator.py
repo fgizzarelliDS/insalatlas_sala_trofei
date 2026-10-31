@@ -239,6 +239,7 @@ def run_monte_carlo_schedule_simulation(
         # No completed rounds
         return {
             name: {
+                'meanPoints': 0.0,
                 'medianPoints': 0.0,
                 'medianRank': idx + 1,
                 'stdDev': 0.0,
@@ -292,15 +293,19 @@ def run_monte_carlo_schedule_simulation(
                 k_pts[i] += r_mat[i][j]
                 k_pts[j] += r_mat[j][i]
 
-    # Project future rounds if R >= 5 and total_rounds > R
-    enable_projections = (r_completed >= 5 and total_rounds > r_completed)
+    # Project future rounds if R >= mc_min_rounds and total_rounds > R
+    active_odds_cfg = odds_config or {}
+    mc_min_rounds = int(active_odds_cfg.get('mc_min_rounds', 4))
+    enable_projections = (r_completed >= mc_min_rounds and total_rounds > r_completed)
     title_counts = [0] * n_teams
     podium_counts = [0] * n_teams
+    mid_counts = [0] * n_teams
+    flop_counts = [0] * n_teams
     spoon_counts = [0] * n_teams
+    projected_sim_points = [[0] * n_teams for _ in range(iterations)]
 
     if enable_projections:
         remaining_rounds = total_rounds - r_completed
-        active_odds_cfg = odds_config or {}
         w_elo = float(active_odds_cfg.get('flat_weights', {}).get('elo', 0.65))
         w_pow = float(active_odds_cfg.get('flat_weights', {}).get('power', 0.35))
         kappa_0 = float(active_odds_cfg.get('sensitivity_kappa', 0.35))
@@ -427,6 +432,8 @@ def run_monte_carlo_schedule_simulation(
                         else:
                             final_k_pts[j] += 3
 
+                    projected_sim_points[k] = final_k_pts
+
                     # Official tie-breaker: Points DESC, then Expected Total FP DESC
                     ranked_indices = sorted(
                         range(n_teams),
@@ -438,6 +445,10 @@ def run_monte_carlo_schedule_simulation(
                             title_counts[t_idx] += 1
                         if pos < 3:
                             podium_counts[t_idx] += 1
+                        if 3 <= pos < 6:
+                            mid_counts[t_idx] += 1
+                        if pos >= 6:
+                            flop_counts[t_idx] += 1
                         if pos == (n_teams - 1):
                             spoon_counts[t_idx] += 1
             else:
@@ -459,6 +470,8 @@ def run_monte_carlo_schedule_simulation(
                         else:
                             final_k_pts[j] += 3
 
+                    projected_sim_points[k] = final_k_pts
+
                     ranked_indices = sorted(
                         range(n_teams),
                         key=lambda x: (final_k_pts[x], expected_total_fp[x]),
@@ -469,6 +482,10 @@ def run_monte_carlo_schedule_simulation(
                             title_counts[t_idx] += 1
                         if pos < 3:
                             podium_counts[t_idx] += 1
+                        if 3 <= pos < 6:
+                            mid_counts[t_idx] += 1
+                        if pos >= 6:
+                            flop_counts[t_idx] += 1
                         if pos == (n_teams - 1):
                             spoon_counts[t_idx] += 1
         else:
@@ -495,6 +512,8 @@ def run_monte_carlo_schedule_simulation(
                         else:
                             final_k_pts[j] += 3
 
+                projected_sim_points[k] = final_k_pts
+
                 ranked_indices = sorted(
                     range(n_teams),
                     key=lambda x: (final_k_pts[x], expected_total_fp[x]),
@@ -505,6 +524,10 @@ def run_monte_carlo_schedule_simulation(
                         title_counts[t_idx] += 1
                     if pos < 3:
                         podium_counts[t_idx] += 1
+                    if 3 <= pos < 6:
+                        mid_counts[t_idx] += 1
+                    if pos >= 6:
+                        flop_counts[t_idx] += 1
                     if pos == (n_teams - 1):
                         spoon_counts[t_idx] += 1
 
@@ -512,26 +535,57 @@ def run_monte_carlo_schedule_simulation(
     mc_results: Dict[str, Dict[str, Any]] = {}
     for name in team_names:
         i = team_idx_map[name]
-        pts_dist = [sim_points[k][i] for k in range(iterations)]
-        median_pts = float(statistics.median(pts_dist))
-        std_dev = float(statistics.stdev(pts_dist)) if len(pts_dist) > 1 else 0.0
+        
+        # Retrospective schedule luck distribution (completed rounds)
+        retro_dist = [sim_points[k][i] for k in range(iterations)]
+        retro_median = float(statistics.median(retro_dist))
+        retro_std = float(statistics.stdev(retro_dist)) if len(retro_dist) > 1 else 0.0
 
         act_pts = actual_points.get(name, 0)
-        z_score = round((act_pts - median_pts) / std_dev, 2) if std_dev > 0 else 0.0
+        z_score = round((act_pts - retro_median) / retro_std, 2) if retro_std > 0 else 0.0
         badge, label = compute_luck_badge(z_score)
+
+        if enable_projections:
+            # Projected full season points distribution (completed + future simulated rounds)
+            pts_dist = [projected_sim_points[k][i] for k in range(iterations)]
+            median_pts = float(statistics.median(pts_dist))
+            mean_pts = float(statistics.mean(pts_dist)) if len(pts_dist) > 0 else median_pts
+            std_dev = float(statistics.stdev(pts_dist)) if len(pts_dist) > 1 else 0.0
+        else:
+            # Retrospective points when projections are inactive
+            pts_dist = retro_dist
+            median_pts = retro_median
+            mean_pts = float(statistics.mean(retro_dist)) if len(retro_dist) > 0 else retro_median
+            std_dev = retro_std
+
+        sorted_pts = sorted(pts_dist)
+        n_pts = len(sorted_pts)
+        p10 = round(float(sorted_pts[int(0.10 * (n_pts - 1))]), 1) if n_pts > 0 else 0.0
+        p25 = round(float(sorted_pts[int(0.25 * (n_pts - 1))]), 1) if n_pts > 0 else 0.0
+        p75 = round(float(sorted_pts[int(0.75 * (n_pts - 1))]), 1) if n_pts > 0 else 0.0
+        p90 = round(float(sorted_pts[int(0.90 * (n_pts - 1))]), 1) if n_pts > 0 else 0.0
 
         p_title = round((title_counts[i] / iterations) * 100, 1) if enable_projections else None
         p_podium = round((podium_counts[i] / iterations) * 100, 1) if enable_projections else None
+        p_mid = round((mid_counts[i] / iterations) * 100, 1) if enable_projections else None
+        p_flop = round((flop_counts[i] / iterations) * 100, 1) if enable_projections else None
         p_spoon = round((spoon_counts[i] / iterations) * 100, 1) if enable_projections else None
 
         mc_results[name] = {
+            'meanPoints': round(mean_pts, 2),
             'medianPoints': round(median_pts, 2),
             'stdDev': round(std_dev, 2),
+            'p10': p10,
+            'p25': p25,
+            'p75': p75,
+            'p90': p90,
             'luckZScore': z_score,
             'luckBadge': badge,
             'luckLabel': label,
             'pTitlePct': p_title,
             'pPodiumPct': p_podium,
+            'pMidPct': p_mid,
+            'pFlopPct': p_flop,
             'pSpoonPct': p_spoon
         }
 
@@ -625,10 +679,17 @@ def compute_schedule_luck_analytics(
             'luckBadge': mc.get('luckBadge', '⚖️'),
             'luckLabel': mc.get('luckLabel', 'Neutro'),
             'monteCarlo': {
+                'meanPoints': mc.get('meanPoints', mc.get('medianPoints', 0.0)),
                 'medianPoints': mc.get('medianPoints', 0.0),
                 'stdDev': mc.get('stdDev', 0.0),
+                'p10': mc.get('p10'),
+                'p25': mc.get('p25'),
+                'p75': mc.get('p75'),
+                'p90': mc.get('p90'),
                 'pTitlePct': mc.get('pTitlePct'),
                 'pPodiumPct': mc.get('pPodiumPct'),
+                'pMidPct': mc.get('pMidPct'),
+                'pFlopPct': mc.get('pFlopPct'),
                 'pSpoonPct': mc.get('pSpoonPct')
             }
         }

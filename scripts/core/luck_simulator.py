@@ -21,6 +21,24 @@ def generate_round_seed(season: str, round_num: int) -> int:
     return zlib.crc32(key.encode('utf-8')) % 1_000_000
 
 
+def davidson_probs(
+    delta_z: float,
+    kappa: float = 0.55,
+    nu0: float = 0.72,
+    lam: float = 0.03
+) -> Tuple[float, float, float]:
+    """
+    Computes exact 3-way Davidson probabilities with dynamic rational draw decay.
+    Returns (p_win, p_draw, p_loss) for Home team.
+    """
+    half_kappa = 0.5 * kappa
+    term_a = math.exp(half_kappa * delta_z)
+    term_b = math.exp(-half_kappa * delta_z)
+    dynamic_nu = nu0 / (1.0 + lam * (delta_z ** 2))
+    denom = term_a + term_b + dynamic_nu
+    return (term_a / denom, dynamic_nu / denom, term_b / denom)
+
+
 def fanta_points_to_goals(
     fp: float,
     bracket_step: float = 6.0,
@@ -191,13 +209,18 @@ def run_monte_carlo_schedule_simulation(
     actual_points: Dict[str, int],
     total_rounds: int,
     iterations: int = 10000,
-    random_seed: Optional[int] = None
+    random_seed: Optional[int] = None,
+    all_rounds: Optional[List[Dict[str, Any]]] = None,
+    elo_profiles: Optional[Dict[str, Any]] = None,
+    odds_config: Optional[Dict[str, Any]] = None,
+    teams_stats: Optional[Dict[str, Dict[str, Any]]] = None
 ) -> Dict[str, Dict[str, Any]]:
     """
     Runs Tier 2 Monte Carlo calendar schedule permutations.
     For completed rounds, holding weekly goals fixed, generates K valid 1 vs 1 pairings per round.
     Computes empirical points distribution, median, standard deviation sigma, and luck Z-score.
-    If completed rounds >= 5 and total_rounds > completed, also projects Title/Podium/Spoon odds.
+    If completed rounds >= 5 and total_rounds > completed, also projects Title/Podium/Spoon odds
+    using actual banked points, remaining official calendar fixtures, and calibrated Davidson 1X2 odds.
     """
     if random_seed is not None:
         random.seed(random_seed)
@@ -252,17 +275,17 @@ def run_monte_carlo_schedule_simulation(
         for r in range(r_completed)
     ]
 
-    # Pre-allocate simulation scores: K x N
+    # Pre-allocate simulation scores for past schedule luck: K x N
     sim_points = [[0] * n_teams for _ in range(iterations)]
     indices = list(range(n_teams))
 
-    # Fast simulation loop
+    # Fast simulation loop for past completed rounds (Schedule Luck Z-score)
     for k in range(iterations):
         k_pts = sim_points[k]
         for r in range(r_completed):
             random.shuffle(indices)
             r_mat = outcome_matrix[r]
-            for p in range(0, n_teams, 2):
+            for p in range(0, n_teams - 1, 2):
                 i = indices[p]
                 j = indices[p + 1]
                 k_pts[i] += r_mat[i][j]
@@ -275,39 +298,167 @@ def run_monte_carlo_schedule_simulation(
 
     if enable_projections:
         remaining_rounds = total_rounds - r_completed
-        # Extract past goals pool for bootstrap per team
-        team_goals_pool = [
-            [rounds_goals[r][i] for r in range(r_completed)]
-            for i in range(n_teams)
-        ]
+        active_odds_cfg = odds_config or {}
+        w_elo = float(active_odds_cfg.get('flat_weights', {}).get('elo', 0.65))
+        w_pow = float(active_odds_cfg.get('flat_weights', {}).get('power', 0.35))
+        kappa = float(active_odds_cfg.get('sensitivity_kappa', 0.55))
+        nu0 = float(active_odds_cfg.get('base_draw_nu', 0.72))
+        lam = float(active_odds_cfg.get('draw_decay_lambda', 0.03))
+        min_sigma_elo = float(active_odds_cfg.get('min_sigma_elo', 35.0))
+        min_sigma_power = float(active_odds_cfg.get('min_sigma_power', 1.5))
+        k_shrink = float(active_odds_cfg.get('k_shrinkage', 5.0))
+        hfa = float(active_odds_cfg.get('hfa_z_shift', 0.0))
 
-        for k in range(iterations):
-            # Clone completed points for this iteration
-            final_k_pts = list(sim_points[k])
+        # 1. Extract Elo ratings per team
+        elos: List[float] = []
+        for name in team_names:
+            m_id = (teams_stats.get(name) or {}).get('managerId') if teams_stats else None
+            r_val = 1500.0
+            if elo_profiles:
+                prof = elo_profiles.get(m_id) if m_id else None
+                if not prof and name in elo_profiles:
+                    prof = elo_profiles.get(name)
+                if isinstance(prof, dict):
+                    track_data = prof.get('flat') or prof.get('atlas') or {}
+                    if isinstance(track_data, dict) and 'current' in track_data:
+                        r_val = float(track_data['current'])
+                elif isinstance(prof, (int, float)):
+                    r_val = float(prof)
+            elos.append(r_val)
 
-            for _ in range(remaining_rounds):
-                random.shuffle(indices)
-                for p in range(0, n_teams, 2):
-                    i = indices[p]
-                    j = indices[p + 1]
-                    # Sample bootstrapped goals from team history
-                    g_i = random.choice(team_goals_pool[i])
-                    g_j = random.choice(team_goals_pool[j])
-                    if g_i > g_j:
+        if len(elos) > 1:
+            try:
+                raw_elo_std = statistics.stdev(elos)
+            except Exception:
+                raw_elo_std = 60.0
+        else:
+            raw_elo_std = 60.0
+        sigma_elo = max(min_sigma_elo, raw_elo_std)
+
+        # 2. Extract Power (Fanta-Points) and Bayesian shrinkage
+        team_means: List[float] = []
+        n_matches_list: List[int] = []
+        total_fps: List[float] = []
+        for name in team_names:
+            scores = all_play_standings.get(name, {}).get('weeklyScores', [])
+            if scores:
+                fps = [s[1] for s in scores]
+                team_means.append(sum(fps) / len(fps))
+                n_matches_list.append(len(fps))
+                total_fps.append(sum(fps))
+            elif teams_stats and name in teams_stats:
+                st = teams_stats[name]
+                played = int(st.get('played', r_completed) or r_completed)
+                tot = float(st.get('totalFantaPoints', 0.0) or 0.0)
+                avg = float(st.get('avgFantaPoints', tot / played if played > 0 else 70.0))
+                team_means.append(avg)
+                n_matches_list.append(played)
+                total_fps.append(tot)
+            else:
+                team_means.append(70.0)
+                n_matches_list.append(r_completed)
+                total_fps.append(70.0 * r_completed)
+
+        league_mean_fp = (sum(team_means) / len(team_means)) if team_means else 70.0
+        if len(team_means) > 1:
+            try:
+                raw_fp_std = statistics.stdev(team_means)
+            except Exception:
+                raw_fp_std = 3.0
+        else:
+            raw_fp_std = 3.0
+        sigma_fp = max(min_sigma_power, raw_fp_std)
+
+        z_powers: List[float] = []
+        expected_total_fp: List[float] = []
+        for i in range(n_teams):
+            n_i = n_matches_list[i]
+            z_i = (n_i / (n_i + k_shrink)) * ((team_means[i] - league_mean_fp) / sigma_fp)
+            z_powers.append(z_i)
+            # Expected future FP volume for official tie-breaker
+            shrunk_fp_per_match = (n_i / (n_i + k_shrink)) * team_means[i] + (k_shrink / (n_i + k_shrink)) * league_mean_fp
+            expected_total_fp.append(total_fps[i] + remaining_rounds * shrunk_fp_per_match)
+
+        # 3. Build scheduled future matches from official calendar
+        future_matches_probs: List[Tuple[int, int, float, float]] = []
+        if all_rounds:
+            for r in all_rounds:
+                r_num = r.get('roundNumber', 0)
+                if r_num > r_completed:
+                    for m in r.get('matches', []):
+                        h_name = m.get('homeTeam')
+                        a_name = m.get('awayTeam')
+                        if h_name in team_idx_map and a_name in team_idx_map:
+                            i = team_idx_map[h_name]
+                            j = team_idx_map[a_name]
+                            dz_elo = (elos[i] - elos[j]) / sigma_elo
+                            dz_pow = z_powers[i] - z_powers[j]
+                            dz = w_elo * dz_elo + w_pow * dz_pow + hfa
+                            p1, px, _ = davidson_probs(dz, kappa=kappa, nu0=nu0, lam=lam)
+                            future_matches_probs.append((i, j, p1, p1 + px))
+
+        # Base starting points for future projections: ACTUAL POINTS BANKED IN STANDINGS
+        base_actual_pts = [actual_points.get(name, 0) for name in team_names]
+        rand = random.random
+
+        if future_matches_probs:
+            # Fast vectorized loop over official calendar fixtures
+            for k in range(iterations):
+                final_k_pts = list(base_actual_pts)
+                for i, j, p1, p1x in future_matches_probs:
+                    u = rand()
+                    if u < p1:
                         final_k_pts[i] += 3
-                    elif g_i == g_j:
+                    elif u < p1x:
                         final_k_pts[i] += 1
                         final_k_pts[j] += 1
                     else:
                         final_k_pts[j] += 3
 
-            # Rank teams for this iteration: higher points = better rank
-            ranked_indices = sorted(range(n_teams), key=lambda x: final_k_pts[x], reverse=True)
-            for pos, t_idx in enumerate(ranked_indices):
-                if pos < 3:
-                    podium_counts[t_idx] += 1
-                if pos == (n_teams - 1):
-                    spoon_counts[t_idx] += 1
+                # Official tie-breaker: Points DESC, then Expected Total FP DESC
+                ranked_indices = sorted(
+                    range(n_teams),
+                    key=lambda x: (final_k_pts[x], expected_total_fp[x]),
+                    reverse=True
+                )
+                for pos, t_idx in enumerate(ranked_indices):
+                    if pos < 3:
+                        podium_counts[t_idx] += 1
+                    if pos == (n_teams - 1):
+                        spoon_counts[t_idx] += 1
+        else:
+            # Fallback if future round fixtures are not in all_rounds (e.g. mock test fixtures)
+            fallback_indices = list(range(n_teams))
+            for k in range(iterations):
+                final_k_pts = list(base_actual_pts)
+                for _ in range(remaining_rounds):
+                    random.shuffle(fallback_indices)
+                    for p in range(0, n_teams - 1, 2):
+                        i = fallback_indices[p]
+                        j = fallback_indices[p + 1]
+                        dz_elo = (elos[i] - elos[j]) / sigma_elo
+                        dz_pow = z_powers[i] - z_powers[j]
+                        dz = w_elo * dz_elo + w_pow * dz_pow + hfa
+                        p1, px, _ = davidson_probs(dz, kappa=kappa, nu0=nu0, lam=lam)
+                        u = rand()
+                        if u < p1:
+                            final_k_pts[i] += 3
+                        elif u < (p1 + px):
+                            final_k_pts[i] += 1
+                            final_k_pts[j] += 1
+                        else:
+                            final_k_pts[j] += 3
+
+                ranked_indices = sorted(
+                    range(n_teams),
+                    key=lambda x: (final_k_pts[x], expected_total_fp[x]),
+                    reverse=True
+                )
+                for pos, t_idx in enumerate(ranked_indices):
+                    if pos < 3:
+                        podium_counts[t_idx] += 1
+                    if pos == (n_teams - 1):
+                        spoon_counts[t_idx] += 1
 
     # Aggregate simulation results per team
     mc_results: Dict[str, Dict[str, Any]] = {}
@@ -343,7 +494,9 @@ def compute_schedule_luck_analytics(
     total_rounds: int,
     random_seed: Optional[int] = None,
     season: str = "",
-    last_completed_round: int = 0
+    last_completed_round: int = 0,
+    elo_profiles: Optional[Dict[str, Any]] = None,
+    odds_config: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Dict[str, Any]]:
     """
     Main orchestrator function:
@@ -378,7 +531,11 @@ def compute_schedule_luck_analytics(
         actual_points=actual_points,
         total_rounds=total_rounds,
         iterations=10000,
-        random_seed=effective_seed
+        random_seed=effective_seed,
+        all_rounds=all_rounds,
+        elo_profiles=elo_profiles,
+        odds_config=odds_config,
+        teams_stats=teams_stats
     )
 
     # 3. Compute Delta Points and Expected Rankings

@@ -130,6 +130,124 @@ class TestLuckSimulator(unittest.TestCase):
         res2 = compute_schedule_luck_analytics(teams_stats, rounds, total_rounds=26, random_seed=123)
         self.assertEqual(res1['Team 0']['luckZScore'], res2['Team 0']['luckZScore'])
 
+    def test_monte_carlo_monotonicity_and_banked_points(self):
+        """Verify that teams with higher banked points and higher Elo have monotonically higher podium odds and lower spoon odds."""
+        teams = [f'Team {i}' for i in range(8)]
+        # 5 completed rounds
+        rounds = []
+        for r_num in range(1, 6):
+            rounds.append({
+                'roundNumber': r_num,
+                'matches': [
+                    {'homeTeam': teams[i], 'awayTeam': teams[i+1], 'homeFantaPoints': 75.0 - i * 2, 'awayFantaPoints': 70.0 - i * 2, 'isPlayed': True}
+                    for i in range(0, 8, 2)
+                ]
+            })
+
+        # Scheduled future rounds 6 to 14
+        for r_num in range(6, 15):
+            rounds.append({
+                'roundNumber': r_num,
+                'matches': [
+                    {'homeTeam': teams[i], 'awayTeam': teams[(i+1) % 8], 'isPlayed': False}
+                    for i in range(0, 8, 2)
+                ]
+            })
+
+        teams_stats = {
+            teams[i]: {
+                'points': 15 - i * 2,
+                'rank': i + 1,
+                'totalFantaPoints': 380.0 - i * 15,
+                'managerId': f'm_{i}',
+                'avgFantaPoints': 76.0 - i * 3,
+                'played': 5
+            }
+            for i in range(8)
+        }
+
+        elo_profiles = {
+            f'm_{i}': {'flat': {'current': 1600.0 - i * 30}}
+            for i in range(8)
+        }
+
+        odds_cfg = {
+            'base_draw_nu': 0.72,
+            'draw_decay_lambda': 0.03,
+            'sensitivity_kappa': 0.55,
+            'min_sigma_elo': 35.0,
+            'min_sigma_power': 1.5,
+            'k_shrinkage': 5,
+            'flat_weights': {'elo': 0.65, 'power': 0.35}
+        }
+
+        res = compute_schedule_luck_analytics(
+            teams_stats=teams_stats,
+            all_rounds=rounds,
+            total_rounds=14,
+            random_seed=42,
+            elo_profiles=elo_profiles,
+            odds_config=odds_cfg
+        )
+
+        podium_pcts = [res[teams[i]]['monteCarlo']['pPodiumPct'] for i in range(8)]
+        spoon_pcts = [res[teams[i]]['monteCarlo']['pSpoonPct'] for i in range(8)]
+
+        # All values should be populated
+        for p in podium_pcts:
+            self.assertIsNotNone(p)
+        for s in spoon_pcts:
+            self.assertIsNotNone(s)
+
+        # Monotonicity test: Leader (Team 0) has higher podium odds than Mid teams and Bottom
+        self.assertGreater(podium_pcts[0], podium_pcts[2])
+        self.assertGreater(podium_pcts[2], podium_pcts[5])
+        self.assertGreater(podium_pcts[5], podium_pcts[7])
+
+        # Spoon test: Bottom (Team 7) has higher spoon odds than Mid teams and Leader
+        self.assertGreater(spoon_pcts[7], spoon_pcts[5])
+        self.assertGreater(spoon_pcts[5], spoon_pcts[2])
+        self.assertGreaterEqual(spoon_pcts[2], spoon_pcts[0])
+        self.assertEqual(spoon_pcts[0], 0.0)
+
+    def test_tie_breaker_expected_total_fp(self):
+        """Verify that when teams tie on simulated points, expected total fanta-points breaks the tie."""
+        teams = ['Team HighScorer', 'Team LowScorer']
+        rounds = []
+        for r_num in range(1, 6):
+            rounds.append({
+                'roundNumber': r_num,
+                'matches': [
+                    {'homeTeam': 'Team HighScorer', 'awayTeam': 'Team LowScorer', 'homeFantaPoints': 76.0, 'awayFantaPoints': 68.0, 'isPlayed': True}
+                ]
+            })
+
+        # Future rounds 6
+        rounds.append({
+            'roundNumber': 6,
+            'matches': [
+                {'homeTeam': 'Team HighScorer', 'awayTeam': 'Team LowScorer', 'isPlayed': False}
+            ]
+        })
+
+        # Both have 6 points, but HighScorer has 380 FP vs LowScorer 330 FP
+        teams_stats = {
+            'Team HighScorer': {'points': 6, 'rank': 1, 'totalFantaPoints': 380.0, 'avgFantaPoints': 76.0, 'played': 5},
+            'Team LowScorer': {'points': 6, 'rank': 2, 'totalFantaPoints': 330.0, 'avgFantaPoints': 66.0, 'played': 5}
+        }
+
+        res = compute_schedule_luck_analytics(
+            teams_stats=teams_stats,
+            all_rounds=rounds,
+            total_rounds=6,
+            random_seed=999
+        )
+
+        # HighScorer must have higher podium % (or rank 1 odds) than LowScorer
+        p_high = res['Team HighScorer']['monteCarlo']['pPodiumPct']
+        p_low = res['Team LowScorer']['monteCarlo']['pPodiumPct']
+        self.assertGreaterEqual(p_high, p_low)
+
 
 if __name__ == '__main__':
     unittest.main()

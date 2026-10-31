@@ -459,8 +459,16 @@ Per calcolare la dispersione probabilistica e quantificare la fortuna in unità 
 | ↘️ | **Sfortunato** | $-1.0\sigma < \mathcal{L}_z \le -0.35\sigma$ | Ambra | Penalizzato dal calendario: ha affrontato spesso punteggi alti di giornata. |
 | ⛈️ | **Bersagliato** | $\mathcal{L}_z \le -1.0\sigma$ | Rosa | Sfortuna estrema: punti persi in sfide proibitive nonostante punteggi da vittoria. |
 
-#### Proiezioni di Fine Stagione (Sblocco a $R \ge 5$):
-A partire dalla 5ª giornata disputata, il simulatore proietta le giornate rimanenti campionando dalla distribuzione storica dei gol di ciascuna squadra, calcolando:
+#### Proiezioni di Fine Stagione Ibride (Sblocco a $R \ge 5$):
+A partire dalla 5ª giornata disputata, il simulatore proietta le giornate rimanenti fino al termine del campionato tramite un'architettura ibrida coerente con il motore delle quote:
+1. **Ancoraggio ai Punti Reali (`actual_points`)**: Il capitale punti già conquistato nelle prime giornate viene preservato integralmente e funge da base di partenza per tutte le $K=10.000$ iterazioni future.
+2. **Calendario Reale Residuo**: Vengono simulati gli esatti incontri ufficiali programmati da calendario da $R+1$ a $G_{\text{tot}}$, catturando la reale difficoltà asimmetrica del percorso futuro (*Strength of Schedule*).
+3. **Modello Probabilistico 1X2 Davidson**: Per ogni match futuro tra la squadra $i$ e $j$, l'esito (3 pt / 1 pt / 0 pt) viene estratto campionando dalla terna $P(1), P(X), P(2)$ calcolata dal modello Davidson ibrido:
+   $$\Delta Z = w_{\text{elo}} \Delta Z_{\text{Elo}} + w_{\text{power}} \Delta Z_{\text{power}}$$
+   integrando lo shrinkage bayesiano e l'ancoraggio della varianza Elo ($\sigma_{\min} = 35.0$).
+4. **Tie-Break Ufficiale su Fanta-Punti Attesi**: In caso di arrivo a pari punti al termine della simulazione, lo spareggio viene risolto a favore della squadra con maggior volume complessivo di fantapunti attesi ($\text{FP}_{\text{real}} + N_{\text{rem}} \cdot \mu_{\text{shrunk}}$).
+
+Metriche calcolate:
 - **$P(\text{Podio})$**: Probabilità empirica di terminare tra le prime 3 posizioni.
 - **$P(\text{Cucchiaio})$**: Probabilità empirica di concludere all'ultimo posto.
 Nelle prime 4 giornate, le percentuali rimangono neutre (`Dalla 5ª g.`) per preservare il rigore statistico del modello.

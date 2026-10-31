@@ -844,12 +844,15 @@ def compile_live_season_details(
         })
 
     # Compute Schedule Luck & Expected Rank Analytics
+    active_elo_cfg = elo_config or DEFAULT_ELO_CONFIG
     schedule_luck_data = compute_schedule_luck_analytics(
         teams_stats=teams_stats,
         all_rounds=all_rounds,
         total_rounds=total_rounds,
         season=season_name,
-        last_completed_round=last_completed
+        last_completed_round=last_completed,
+        elo_profiles=elo_profiles,
+        odds_config=active_elo_cfg.get('odds', {})
     )
 
     # Clean intermediate calculation fields from final JSON standings

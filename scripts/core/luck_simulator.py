@@ -245,6 +245,7 @@ def run_monte_carlo_schedule_simulation(
                 'luckZScore': 0.0,
                 'luckBadge': '⚖️',
                 'luckLabel': 'Neutro',
+                'pTitlePct': None,
                 'pPodiumPct': None,
                 'pSpoonPct': None
             }
@@ -293,6 +294,7 @@ def run_monte_carlo_schedule_simulation(
 
     # Project future rounds if R >= 5 and total_rounds > R
     enable_projections = (r_completed >= 5 and total_rounds > r_completed)
+    title_counts = [0] * n_teams
     podium_counts = [0] * n_teams
     spoon_counts = [0] * n_teams
 
@@ -301,13 +303,19 @@ def run_monte_carlo_schedule_simulation(
         active_odds_cfg = odds_config or {}
         w_elo = float(active_odds_cfg.get('flat_weights', {}).get('elo', 0.65))
         w_pow = float(active_odds_cfg.get('flat_weights', {}).get('power', 0.35))
-        kappa = float(active_odds_cfg.get('sensitivity_kappa', 0.55))
+        kappa_0 = float(active_odds_cfg.get('sensitivity_kappa', 0.35))
         nu0 = float(active_odds_cfg.get('base_draw_nu', 0.72))
         lam = float(active_odds_cfg.get('draw_decay_lambda', 0.03))
         min_sigma_elo = float(active_odds_cfg.get('min_sigma_elo', 35.0))
         min_sigma_power = float(active_odds_cfg.get('min_sigma_power', 1.5))
         k_shrink = float(active_odds_cfg.get('k_shrinkage', 5.0))
         hfa = float(active_odds_cfg.get('hfa_z_shift', 0.0))
+
+        # Dynamic sensitivity scaling (temporal uncertainty decay) and latent seasonal form shocks
+        alpha = float(active_odds_cfg.get('mc_alpha_decay', 0.45))
+        sigma_drift = float(active_odds_cfg.get('mc_sigma_drift', 0.25))
+        progress_ratio = (r_completed / total_rounds) if total_rounds > 0 else 1.0
+        kappa_eff = kappa_0 * (alpha + (1.0 - alpha) * progress_ratio)
 
         # 1. Extract Elo ratings per team
         elos: List[float] = []
@@ -380,7 +388,7 @@ def run_monte_carlo_schedule_simulation(
             expected_total_fp.append(total_fps[i] + remaining_rounds * shrunk_fp_per_match)
 
         # 3. Build scheduled future matches from official calendar
-        future_matches_probs: List[Tuple[int, int, float, float]] = []
+        future_match_bases: List[Tuple[int, int, float]] = []
         if all_rounds:
             for r in all_rounds:
                 r_num = r.get('roundNumber', 0)
@@ -393,44 +401,82 @@ def run_monte_carlo_schedule_simulation(
                             j = team_idx_map[a_name]
                             dz_elo = (elos[i] - elos[j]) / sigma_elo
                             dz_pow = z_powers[i] - z_powers[j]
-                            dz = w_elo * dz_elo + w_pow * dz_pow + hfa
-                            p1, px, _ = davidson_probs(dz, kappa=kappa, nu0=nu0, lam=lam)
-                            future_matches_probs.append((i, j, p1, p1 + px))
+                            base_dz = w_elo * dz_elo + w_pow * dz_pow + hfa
+                            future_match_bases.append((i, j, base_dz))
 
         # Base starting points for future projections: ACTUAL POINTS BANKED IN STANDINGS
         base_actual_pts = [actual_points.get(name, 0) for name in team_names]
         rand = random.random
+        gauss = random.gauss
 
-        if future_matches_probs:
-            # Fast vectorized loop over official calendar fixtures
-            for k in range(iterations):
-                final_k_pts = list(base_actual_pts)
-                for i, j, p1, p1x in future_matches_probs:
-                    u = rand()
-                    if u < p1:
-                        final_k_pts[i] += 3
-                    elif u < p1x:
-                        final_k_pts[i] += 1
-                        final_k_pts[j] += 1
-                    else:
-                        final_k_pts[j] += 3
+        if future_match_bases:
+            if sigma_drift > 0:
+                # Stochastic seasonal quality shock per team in each simulated season
+                for k in range(iterations):
+                    final_k_pts = list(base_actual_pts)
+                    shocks = [gauss(0, sigma_drift) for _ in range(n_teams)]
+                    for i, j, base_dz in future_match_bases:
+                        dz = base_dz + (shocks[i] - shocks[j])
+                        p1, px, _ = davidson_probs(dz, kappa=kappa_eff, nu0=nu0, lam=lam)
+                        u = rand()
+                        if u < p1:
+                            final_k_pts[i] += 3
+                        elif u < (p1 + px):
+                            final_k_pts[i] += 1
+                            final_k_pts[j] += 1
+                        else:
+                            final_k_pts[j] += 3
 
-                # Official tie-breaker: Points DESC, then Expected Total FP DESC
-                ranked_indices = sorted(
-                    range(n_teams),
-                    key=lambda x: (final_k_pts[x], expected_total_fp[x]),
-                    reverse=True
-                )
-                for pos, t_idx in enumerate(ranked_indices):
-                    if pos < 3:
-                        podium_counts[t_idx] += 1
-                    if pos == (n_teams - 1):
-                        spoon_counts[t_idx] += 1
+                    # Official tie-breaker: Points DESC, then Expected Total FP DESC
+                    ranked_indices = sorted(
+                        range(n_teams),
+                        key=lambda x: (final_k_pts[x], expected_total_fp[x]),
+                        reverse=True
+                    )
+                    for pos, t_idx in enumerate(ranked_indices):
+                        if pos == 0:
+                            title_counts[t_idx] += 1
+                        if pos < 3:
+                            podium_counts[t_idx] += 1
+                        if pos == (n_teams - 1):
+                            spoon_counts[t_idx] += 1
+            else:
+                # Static path: Precompute probabilities once with kappa_eff
+                precomputed = []
+                for i, j, base_dz in future_match_bases:
+                    p1, px, _ = davidson_probs(base_dz, kappa=kappa_eff, nu0=nu0, lam=lam)
+                    precomputed.append((i, j, p1, p1 + px))
+
+                for k in range(iterations):
+                    final_k_pts = list(base_actual_pts)
+                    for i, j, p1, p1x in precomputed:
+                        u = rand()
+                        if u < p1:
+                            final_k_pts[i] += 3
+                        elif u < p1x:
+                            final_k_pts[i] += 1
+                            final_k_pts[j] += 1
+                        else:
+                            final_k_pts[j] += 3
+
+                    ranked_indices = sorted(
+                        range(n_teams),
+                        key=lambda x: (final_k_pts[x], expected_total_fp[x]),
+                        reverse=True
+                    )
+                    for pos, t_idx in enumerate(ranked_indices):
+                        if pos == 0:
+                            title_counts[t_idx] += 1
+                        if pos < 3:
+                            podium_counts[t_idx] += 1
+                        if pos == (n_teams - 1):
+                            spoon_counts[t_idx] += 1
         else:
             # Fallback if future round fixtures are not in all_rounds (e.g. mock test fixtures)
             fallback_indices = list(range(n_teams))
             for k in range(iterations):
                 final_k_pts = list(base_actual_pts)
+                shocks = [gauss(0, sigma_drift) for _ in range(n_teams)] if sigma_drift > 0 else [0.0] * n_teams
                 for _ in range(remaining_rounds):
                     random.shuffle(fallback_indices)
                     for p in range(0, n_teams - 1, 2):
@@ -438,8 +484,8 @@ def run_monte_carlo_schedule_simulation(
                         j = fallback_indices[p + 1]
                         dz_elo = (elos[i] - elos[j]) / sigma_elo
                         dz_pow = z_powers[i] - z_powers[j]
-                        dz = w_elo * dz_elo + w_pow * dz_pow + hfa
-                        p1, px, _ = davidson_probs(dz, kappa=kappa, nu0=nu0, lam=lam)
+                        dz = w_elo * dz_elo + w_pow * dz_pow + hfa + (shocks[i] - shocks[j])
+                        p1, px, _ = davidson_probs(dz, kappa=kappa_eff, nu0=nu0, lam=lam)
                         u = rand()
                         if u < p1:
                             final_k_pts[i] += 3
@@ -455,6 +501,8 @@ def run_monte_carlo_schedule_simulation(
                     reverse=True
                 )
                 for pos, t_idx in enumerate(ranked_indices):
+                    if pos == 0:
+                        title_counts[t_idx] += 1
                     if pos < 3:
                         podium_counts[t_idx] += 1
                     if pos == (n_teams - 1):
@@ -472,6 +520,7 @@ def run_monte_carlo_schedule_simulation(
         z_score = round((act_pts - median_pts) / std_dev, 2) if std_dev > 0 else 0.0
         badge, label = compute_luck_badge(z_score)
 
+        p_title = round((title_counts[i] / iterations) * 100, 1) if enable_projections else None
         p_podium = round((podium_counts[i] / iterations) * 100, 1) if enable_projections else None
         p_spoon = round((spoon_counts[i] / iterations) * 100, 1) if enable_projections else None
 
@@ -481,6 +530,7 @@ def run_monte_carlo_schedule_simulation(
             'luckZScore': z_score,
             'luckBadge': badge,
             'luckLabel': label,
+            'pTitlePct': p_title,
             'pPodiumPct': p_podium,
             'pSpoonPct': p_spoon
         }
@@ -577,6 +627,7 @@ def compute_schedule_luck_analytics(
             'monteCarlo': {
                 'medianPoints': mc.get('medianPoints', 0.0),
                 'stdDev': mc.get('stdDev', 0.0),
+                'pTitlePct': mc.get('pTitlePct'),
                 'pPodiumPct': mc.get('pPodiumPct'),
                 'pSpoonPct': mc.get('pSpoonPct')
             }

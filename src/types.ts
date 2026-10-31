@@ -598,6 +598,7 @@ export interface ScheduleLuckAnalytics {
   monteCarlo?: {
     medianPoints: number;
     stdDev: number;
+    pTitlePct?: number | null;
     pPodiumPct?: number | null;
     pSpoonPct?: number | null;
   };

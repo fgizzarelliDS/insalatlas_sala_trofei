@@ -59,16 +59,31 @@ export function renderMeritDesktopRows(standings: LiveTeamMetrics[], mode: EloTr
       rankBadgeClass = 'bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/40 font-bold';
     }
 
+    const mcTitle = luck?.monteCarlo?.pTitlePct;
     const mcPodium = luck?.monteCarlo?.pPodiumPct;
     const mcSpoon = luck?.monteCarlo?.pSpoonPct;
+
+    // Giro di boa (50% of the season, e.g. >= 13 rounds played in a 26-round league)
+    const matchesPlayed = team.played ?? (ap.played > 0 ? Math.round(ap.played / Math.max(1, (standings.length - 1))) : 0);
+    const isTitleUnlocked = matchesPlayed >= 13;
+
     const mcDisplayHTML = (mcPodium !== null && mcPodium !== undefined && mcSpoon !== null && mcSpoon !== undefined)
-      ? `<div class="flex flex-col items-center">
-           <div class="flex items-center gap-1 text-[11px] font-bold text-amber-500 dark:text-amber-400">
-             ${renderPodiumSVG(14)}
+      ? `<div class="flex items-center justify-center gap-1.5 text-[11px] font-semibold whitespace-nowrap">
+           ${isTitleUnlocked && mcTitle !== null && mcTitle !== undefined ? `
+             <span class="inline-flex items-center gap-0.5 text-yellow-500 dark:text-yellow-400 font-bold" title="Probabilità Scudetto (1° posto): ${mcTitle.toFixed(1)}%">
+               <span>👑</span>
+               <span>${mcTitle.toFixed(1)}%</span>
+             </span>
+             <span class="opacity-30">·</span>
+           ` : ''}
+           <div class="inline-flex items-center gap-1 font-bold text-amber-500 dark:text-amber-400" title="Probabilità Podio (Top 3): ${mcPodium.toFixed(1)}%">
+             ${renderPodiumSVG(13)}
              <span>${mcPodium.toFixed(1)}%</span>
            </div>
-           <div class="text-[9px] opacity-70 font-semibold" style="color: var(--text-muted);">
-             🥄 ${mcSpoon.toFixed(1)}%
+           <span class="opacity-30">·</span>
+           <div class="inline-flex items-center gap-0.5 opacity-70 font-semibold" style="color: var(--text-muted);" title="Rischio Cucchiaio di Legno (Ultimo posto): ${mcSpoon.toFixed(1)}%">
+             <span>🥄</span>
+             <span>${mcSpoon.toFixed(1)}%</span>
            </div>
          </div>`
       : `<span class="px-2 py-0.5 rounded-full text-[9px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700" title="Le proiezioni probabilistiche di fine stagione si sbloccano dopo 5 giornate">Dalla 5ª g.</span>`;
@@ -184,8 +199,11 @@ export function renderMobileMeritCards(standings: LiveTeamMetrics[], mode: EloTr
       rankBadgeClass = 'bg-slate-200 text-slate-800 dark:bg-slate-700/60 dark:text-slate-200 font-bold';
     }
 
+    const mcTitle = luck?.monteCarlo?.pTitlePct;
     const mcPodium = luck?.monteCarlo?.pPodiumPct;
     const mcSpoon = luck?.monteCarlo?.pSpoonPct;
+    const matchesPlayed = team.played ?? (ap.played > 0 ? Math.round(ap.played / Math.max(1, (standings.length - 1))) : 0);
+    const isTitleUnlocked = matchesPlayed >= 13;
 
     return `
       <div onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${team.managerId || ''}', '${escapedTeamName}')"
@@ -234,6 +252,12 @@ export function renderMobileMeritCards(standings: LiveTeamMetrics[], mode: EloTr
           </div>
           ${(mcPodium !== null && mcPodium !== undefined && mcSpoon !== null && mcSpoon !== undefined) ? `
             <div class="flex items-center gap-1 shrink-0">
+              ${isTitleUnlocked && mcTitle !== null && mcTitle !== undefined ? `
+                <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/30" title="Probabilità Scudetto (1° posto)">
+                  <span>👑</span>
+                  <span>${mcTitle.toFixed(1)}%</span>
+                </span>
+              ` : ''}
               <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30" title="Probabilità di Podio (1°-3° posto)">
                 ${renderPodiumSVG(13)}
                 <span>${mcPodium.toFixed(1)}%</span>
@@ -347,7 +371,7 @@ export function renderMeritViewContainer(standings: LiveTeamMetrics[]): string {
                   </button>
                 </div>
               </th>
-              <th class="py-2.5 px-3 text-center w-28">
+              <th class="py-2.5 px-3 text-center w-36 sm:w-44">
                 <div class="flex items-center justify-center gap-1">
                   ${renderPodiumSVG(15)}
                   <span>Scenari MC</span>

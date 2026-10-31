@@ -190,16 +190,23 @@ class TestLuckSimulator(unittest.TestCase):
             odds_config=odds_cfg
         )
 
+        title_pcts = [res[teams[i]]['monteCarlo']['pTitlePct'] for i in range(8)]
         podium_pcts = [res[teams[i]]['monteCarlo']['pPodiumPct'] for i in range(8)]
         spoon_pcts = [res[teams[i]]['monteCarlo']['pSpoonPct'] for i in range(8)]
 
         # All values should be populated
+        for t in title_pcts:
+            self.assertIsNotNone(t)
         for p in podium_pcts:
             self.assertIsNotNone(p)
         for s in spoon_pcts:
             self.assertIsNotNone(s)
 
-        # Monotonicity test: Leader (Team 0) has higher podium odds than Mid teams and Bottom
+        # Monotonicity test: Leader (Team 0) has higher title & podium odds than Mid teams and Bottom
+        self.assertGreater(title_pcts[0], title_pcts[2])
+        self.assertEqual(title_pcts[7], 0.0)
+        self.assertLessEqual(title_pcts[0], podium_pcts[0])
+
         self.assertGreater(podium_pcts[0], podium_pcts[2])
         self.assertGreater(podium_pcts[2], podium_pcts[5])
         self.assertGreater(podium_pcts[5], podium_pcts[7])

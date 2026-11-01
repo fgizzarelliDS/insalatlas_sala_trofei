@@ -214,8 +214,9 @@ export function getOpponentDifficulty(
  * Specifically removes standings points from pill to prevent misleading '0 pt' displays early in the season.
  */
 export function getSoSBadgeInfo(teamSoS: TeamSoSMetrics) {
-  const isHard = teamSoS.sosRank <= 3;
-  const isSoft = teamSoS.sosRank >= teamSoS.totalTeams - 2;
+  const tailSize = Math.max(1, Math.min(3, Math.floor(teamSoS.totalTeams * 0.25)));
+  const isHard = teamSoS.sosRank <= tailSize;
+  const isSoft = teamSoS.sosRank > teamSoS.totalTeams - tailSize;
 
   const icon = isHard ? '🔴' : isSoft ? '🟢' : '🟡';
   const label = isHard ? 'Più Duro' : isSoft ? 'Più Morbido' : 'Difficoltà';

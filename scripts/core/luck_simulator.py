@@ -232,8 +232,13 @@ def run_monte_carlo_schedule_simulation(
     team_idx_map = {name: i for i, name in enumerate(team_names)}
 
     # Extract completed weekly goals matrix: List of rounds, where each round has [goals_0, ..., goals_{N-1}]
-    # Determine completed rounds from weeklyScores
-    r_completed = max((len(ap.get('weeklyScores', [])) for ap in all_play_standings.values()), default=0)
+    # Collect all distinct completed round numbers in chronological order
+    completed_round_nums = sorted({
+        s[0]
+        for ap in all_play_standings.values()
+        for s in ap.get('weeklyScores', [])
+    })
+    r_completed = len(completed_round_nums)
 
     if r_completed == 0:
         # No completed rounds
@@ -243,24 +248,32 @@ def run_monte_carlo_schedule_simulation(
                 'medianPoints': 0.0,
                 'medianRank': idx + 1,
                 'stdDev': 0.0,
+                'p10': 0.0,
+                'p25': 0.0,
+                'p75': 0.0,
+                'p90': 0.0,
                 'luckZScore': 0.0,
                 'luckBadge': '⚖️',
                 'luckLabel': 'Neutro',
                 'pTitlePct': None,
                 'pPodiumPct': None,
+                'pMidPct': None,
+                'pFlopPct': None,
                 'pSpoonPct': None
             }
             for idx, name in enumerate(team_names)
         }
 
-    # Pre-build rounds goals: shape (R, N)
+    # Pre-build rounds goals: shape (R, N) indexed by exact round number
+    team_score_maps = {
+        name: {s[0]: s[2] for s in all_play_standings[name].get('weeklyScores', [])}
+        for name in team_names
+    }
     rounds_goals: List[List[int]] = []
-    for r_idx in range(r_completed):
+    for r_num in completed_round_nums:
         r_goals = [0] * n_teams
         for name in team_names:
-            scores = all_play_standings[name]['weeklyScores']
-            if r_idx < len(scores):
-                r_goals[team_idx_map[name]] = scores[r_idx][2]  # goals
+            r_goals[team_idx_map[name]] = team_score_maps[name].get(r_num, 0)
         rounds_goals.append(r_goals)
 
     # Pre-build pairwise outcome matrix for each round: shape (R, N, N)
@@ -346,7 +359,6 @@ def run_monte_carlo_schedule_simulation(
                 raw_elo_std = 60.0
         else:
             raw_elo_std = 60.0
-        sigma_elo = max(min_sigma_elo, raw_elo_std)
 
         # 2. Extract Power (Fanta-Points) and Bayesian shrinkage
         team_means: List[float] = []
@@ -371,6 +383,14 @@ def run_monte_carlo_schedule_simulation(
                 team_means.append(70.0)
                 n_matches_list.append(r_completed)
                 total_fps.append(70.0 * r_completed)
+
+        prior_sigma_elo = float(active_odds_cfg.get('prior_sigma_elo', 60.0))
+        n_avg = (sum(n_matches_list) / len(n_matches_list)) if n_matches_list else 0.0
+        blended_var_elo = (
+            (n_avg / (n_avg + k_shrink)) * (raw_elo_std ** 2) +
+            (k_shrink / (n_avg + k_shrink)) * (prior_sigma_elo ** 2)
+        ) if n_avg > 0 else (prior_sigma_elo ** 2)
+        sigma_elo = max(min_sigma_elo, math.sqrt(blended_var_elo))
 
         league_mean_fp = (sum(team_means) / len(team_means)) if team_means else 70.0
         if len(team_means) > 1:
@@ -413,6 +433,8 @@ def run_monte_carlo_schedule_simulation(
         base_actual_pts = [actual_points.get(name, 0) for name in team_names]
         rand = random.random
         gauss = random.gauss
+        mid_cutoff = max(4, (n_teams + 1) // 2)
+        shock_scale = math.sqrt(remaining_rounds or 1) * sigma_fp
 
         if future_match_bases:
             if sigma_drift > 0:
@@ -434,10 +456,10 @@ def run_monte_carlo_schedule_simulation(
 
                     projected_sim_points[k] = final_k_pts
 
-                    # Official tie-breaker: Points DESC, then Expected Total FP DESC
+                    # Official tie-breaker: Points DESC, then Expected Total FP perturbed by iteration form shock DESC
                     ranked_indices = sorted(
                         range(n_teams),
-                        key=lambda x: (final_k_pts[x], expected_total_fp[x]),
+                        key=lambda x: (final_k_pts[x], expected_total_fp[x] + shocks[x] * shock_scale),
                         reverse=True
                     )
                     for pos, t_idx in enumerate(ranked_indices):
@@ -445,9 +467,9 @@ def run_monte_carlo_schedule_simulation(
                             title_counts[t_idx] += 1
                         if pos < 3:
                             podium_counts[t_idx] += 1
-                        if 3 <= pos < 6:
+                        if 3 <= pos < mid_cutoff:
                             mid_counts[t_idx] += 1
-                        if pos >= 6:
+                        if pos >= mid_cutoff:
                             flop_counts[t_idx] += 1
                         if pos == (n_teams - 1):
                             spoon_counts[t_idx] += 1
@@ -482,9 +504,9 @@ def run_monte_carlo_schedule_simulation(
                             title_counts[t_idx] += 1
                         if pos < 3:
                             podium_counts[t_idx] += 1
-                        if 3 <= pos < 6:
+                        if 3 <= pos < mid_cutoff:
                             mid_counts[t_idx] += 1
-                        if pos >= 6:
+                        if pos >= mid_cutoff:
                             flop_counts[t_idx] += 1
                         if pos == (n_teams - 1):
                             spoon_counts[t_idx] += 1
@@ -516,7 +538,7 @@ def run_monte_carlo_schedule_simulation(
 
                 ranked_indices = sorted(
                     range(n_teams),
-                    key=lambda x: (final_k_pts[x], expected_total_fp[x]),
+                    key=lambda x: (final_k_pts[x], expected_total_fp[x] + shocks[x] * shock_scale),
                     reverse=True
                 )
                 for pos, t_idx in enumerate(ranked_indices):
@@ -524,9 +546,9 @@ def run_monte_carlo_schedule_simulation(
                         title_counts[t_idx] += 1
                     if pos < 3:
                         podium_counts[t_idx] += 1
-                    if 3 <= pos < 6:
+                    if 3 <= pos < mid_cutoff:
                         mid_counts[t_idx] += 1
-                    if pos >= 6:
+                    if pos >= mid_cutoff:
                         flop_counts[t_idx] += 1
                     if pos == (n_teams - 1):
                         spoon_counts[t_idx] += 1

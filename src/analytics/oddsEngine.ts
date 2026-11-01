@@ -246,7 +246,7 @@ export function buildLeagueDistributionContext(
 
   const meanElo = elos.length > 0 ? elos.reduce((a, b) => a + b, 0) / elos.length : 1500.0;
   const rawStdElo = elos.length > 1
-    ? Math.sqrt(elos.reduce((a, b) => a + Math.pow(b - meanElo, 2), 0) / elos.length)
+    ? Math.sqrt(elos.reduce((a, b) => a + Math.pow(b - meanElo, 2), 0) / (elos.length - 1))
     : profile.priorSigmaElo;
 
   // Games played in current season across teams
@@ -282,7 +282,7 @@ export function buildLeagueDistributionContext(
   const validCurrFPs = teamCurrStats.map(t => t.fp).filter((v): v is number => v !== null);
   const meanCurrFP = validCurrFPs.length > 0 ? validCurrFPs.reduce((a, b) => a + b, 0) / validCurrFPs.length : 70.0;
   const rawStdCurrFP = validCurrFPs.length > 1
-    ? Math.sqrt(validCurrFPs.reduce((a, b) => a + Math.pow(b - meanCurrFP, 2), 0) / validCurrFPs.length)
+    ? Math.sqrt(validCurrFPs.reduce((a, b) => a + Math.pow(b - meanCurrFP, 2), 0) / (validCurrFPs.length - 1))
     : profile.minSigmaPower;
   const stdCurrFP = Math.max(profile.minSigmaPower, rawStdCurrFP);
 
@@ -291,7 +291,7 @@ export function buildLeagueDistributionContext(
 
   const meanPriorFP = teamPriorFPs.length > 0 ? teamPriorFPs.reduce((a, b) => a + b, 0) / teamPriorFPs.length : meanCurrFP;
   const rawStdPriorFP = teamPriorFPs.length > 1
-    ? Math.sqrt(teamPriorFPs.reduce((a, b) => a + Math.pow(b - meanPriorFP, 2), 0) / teamPriorFPs.length)
+    ? Math.sqrt(teamPriorFPs.reduce((a, b) => a + Math.pow(b - meanPriorFP, 2), 0) / (teamPriorFPs.length - 1))
     : 1.5;
   const stdPriorFP = Math.max(1.2, rawStdPriorFP);
 
@@ -431,9 +431,11 @@ export function computeMatchOdds1X2(
   }
 
   const { meanElo, stdElo, meanPower, stdPower, hasPowerMetric, profile } = ctx;
+  const safeStdElo = stdElo > 1e-6 ? stdElo : 60.0;
+  const safeStdPower = stdPower > 1e-6 ? stdPower : 3.5;
 
-  const zEloHome = Number.isFinite(homeElo) ? (homeElo - meanElo) / stdElo : 0.0;
-  const zEloAway = Number.isFinite(awayElo) ? (awayElo - meanElo) / stdElo : 0.0;
+  const zEloHome = Number.isFinite(homeElo) ? (homeElo - meanElo) / safeStdElo : 0.0;
+  const zEloAway = Number.isFinite(awayElo) ? (awayElo - meanElo) / safeStdElo : 0.0;
 
   let zStarHome = zEloHome;
   let zStarAway = zEloAway;
@@ -445,8 +447,8 @@ export function computeMatchOdds1X2(
     Number.isFinite(powerHome) &&
     Number.isFinite(powerAway)
   ) {
-    const zPowHome = (powerHome - meanPower) / stdPower;
-    const zPowAway = (powerAway - meanPower) / stdPower;
+    const zPowHome = (powerHome - meanPower) / safeStdPower;
+    const zPowAway = (powerAway - meanPower) / safeStdPower;
     zStarHome = profile.eloWeight * zEloHome + profile.powerWeight * zPowHome;
     zStarAway = profile.eloWeight * zEloAway + profile.powerWeight * zPowAway;
   }

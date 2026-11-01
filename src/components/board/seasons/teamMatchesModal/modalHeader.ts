@@ -24,8 +24,6 @@ export function renderModalHeaderHTML(props: ModalHeaderProps): string {
     statusLabel,
     hasHistory,
     activeTab,
-    matchesCount,
-    mcMedian,
     luck,
     xPts,
     deltaPts,
@@ -175,8 +173,6 @@ export function renderModalHeaderHTML(props: ModalHeaderProps): string {
             <span class="sm:hidden">Calendario</span>
             <span class="hidden sm:inline">Calendario Partite</span>
           </span>
-          <span class="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 ${activeTab === 'calendar' ? 'bg-black/20 text-slate-950' : 'bg-black/10 dark:bg-white/10'}"
-                style="${activeTab !== 'calendar' ? 'color: var(--text-main);' : ''}">${matchesCount}</span>
         </button>
 
         <button type="button"
@@ -189,11 +185,6 @@ export function renderModalHeaderHTML(props: ModalHeaderProps): string {
             <span class="sm:hidden">Scheda MC</span>
             <span class="hidden sm:inline">Scheda MC &amp; SoS</span>
           </span>
-          ${mcMedian !== undefined ? `
-            <span class="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 ${activeTab === 'montecarlo' ? 'bg-black/20 text-slate-950' : 'bg-blue-500/15 text-blue-600 dark:text-blue-400'}">
-              ${mcMedian.toFixed(1)}<span class="hidden sm:inline"> pt</span>
-            </span>
-          ` : ''}
         </button>
       </div>
     </div>

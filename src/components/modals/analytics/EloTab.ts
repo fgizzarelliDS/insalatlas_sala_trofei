@@ -646,6 +646,18 @@ export function renderEloTab(): string {
     </div>
   `;
 
+  // Dynamically extract available seasons from profiles
+  const extractedSeasons = Array.from(new Set(
+    profiles.flatMap(p => [
+      ...Object.keys(p.profile.seasonStats || {}),
+      ...Object.keys(p.profile.flat?.seasons || {})
+    ]).filter(k => k !== 'all')
+  )).sort().reverse();
+  const availableSeasons = extractedSeasons.length > 0 ? extractedSeasons : ['2026/27', '2025/26'];
+  if (selectedScatterSeason !== 'all' && !availableSeasons.includes(selectedScatterSeason)) {
+    selectedScatterSeason = availableSeasons[0];
+  }
+
   // Season Pills for Scatter Tabs
   const scatterSeasonPills = `
     <div class="flex items-center justify-between gap-2 p-2 rounded-xl border flex-wrap text-xs"
@@ -655,16 +667,12 @@ export function renderEloTab(): string {
           <i class="fa-solid fa-calendar-days mr-1 text-amber-400"></i>Periodo Analisi:
         </span>
         <div class="flex items-center p-0.5 rounded-lg border" style="background-color: var(--input-bg); border-color: var(--table-border);">
+          ${availableSeasons.map((sKey, idx) => `
           <button type="button"
-                  onclick="window.switchEloScatterSeason && window.switchEloScatterSeason('2026/27')"
-                  class="px-2.5 py-1 rounded-md text-[11px] font-bold transition cursor-pointer ${selectedScatterSeason === '2026/27' ? 'bg-amber-500 text-slate-950 shadow-xs' : 'opacity-70 hover:opacity-100 text-slate-300'}">
-            <span>2026/27 (Attuale)</span>
-          </button>
-          <button type="button"
-                  onclick="window.switchEloScatterSeason && window.switchEloScatterSeason('2025/26')"
-                  class="px-2.5 py-1 rounded-md text-[11px] font-bold transition cursor-pointer ${selectedScatterSeason === '2025/26' ? 'bg-amber-500 text-slate-950 shadow-xs' : 'opacity-70 hover:opacity-100 text-slate-300'}">
-            <span>2025/26</span>
-          </button>
+                  onclick="window.switchEloScatterSeason && window.switchEloScatterSeason('${sKey}')"
+                  class="px-2.5 py-1 rounded-md text-[11px] font-bold transition cursor-pointer ${selectedScatterSeason === sKey ? 'bg-amber-500 text-slate-950 shadow-xs' : 'opacity-70 hover:opacity-100 text-slate-300'}">
+            <span>${sKey}${idx === 0 ? ' (Attuale)' : ''}</span>
+          </button>`).join('')}
           <button type="button"
                   onclick="window.switchEloScatterSeason && window.switchEloScatterSeason('all')"
                   class="px-2.5 py-1 rounded-md text-[11px] font-bold transition cursor-pointer ${selectedScatterSeason === 'all' ? 'bg-amber-500 text-slate-950 shadow-xs' : 'opacity-70 hover:opacity-100 text-slate-300'}">

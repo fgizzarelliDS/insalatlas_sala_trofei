@@ -309,6 +309,49 @@ class TestLuckSimulator(unittest.TestCase):
             # Med projected points must be greater than current banked points (projections active)
             self.assertGreater(med, teams[name]['points'])
 
+    def test_round_zero_schema_and_odd_league_byes(self):
+        """Verify Round 0 full schema contract and round-number indexing with bye weeks in odd-team leagues."""
+        teams_stats = {
+            f'Team_{i}': {'points': 0, 'rank': i + 1, 'totalFantaPoints': 0.0}
+            for i in range(5)
+        }
+        # Round 0: no played matches
+        res_r0 = compute_schedule_luck_analytics(teams_stats, [], total_rounds=10, random_seed=42)
+        for name, data in res_r0.items():
+            mc = data['monteCarlo']
+            for key in ('p10', 'p25', 'p75', 'p90', 'pMidPct', 'pFlopPct', 'pTitlePct', 'pPodiumPct', 'pSpoonPct'):
+                self.assertIn(key, mc)
+            self.assertEqual(mc['p10'], 0.0)
+            self.assertIsNone(mc['pMidPct'])
+
+        # 5-team league where Team_0 has a bye in Round 2 (plays R1 and R3)
+        rounds_with_bye = [
+            {
+                'roundNumber': 1,
+                'matches': [
+                    {'homeTeam': 'Team_0', 'awayTeam': 'Team_1', 'homeFantaPoints': 78.0, 'awayFantaPoints': 66.0, 'isPlayed': True},
+                    {'homeTeam': 'Team_2', 'awayTeam': 'Team_3', 'homeFantaPoints': 72.0, 'awayFantaPoints': 70.0, 'isPlayed': True}
+                ]
+            },
+            {
+                'roundNumber': 2,
+                'matches': [
+                    {'homeTeam': 'Team_1', 'awayTeam': 'Team_2', 'homeFantaPoints': 74.0, 'awayFantaPoints': 68.0, 'isPlayed': True},
+                    {'homeTeam': 'Team_3', 'awayTeam': 'Team_4', 'homeFantaPoints': 66.0, 'awayFantaPoints': 66.0, 'isPlayed': True}
+                ]
+            },
+            {
+                'roundNumber': 3,
+                'matches': [
+                    {'homeTeam': 'Team_0', 'awayTeam': 'Team_4', 'homeFantaPoints': 84.0, 'awayFantaPoints': 60.0, 'isPlayed': True},
+                    {'homeTeam': 'Team_1', 'awayTeam': 'Team_3', 'homeFantaPoints': 70.0, 'awayFantaPoints': 72.0, 'isPlayed': True}
+                ]
+            }
+        ]
+        res_bye = compute_schedule_luck_analytics(teams_stats, rounds_with_bye, total_rounds=10, random_seed=42)
+        self.assertEqual(len(res_bye), 5)
+        self.assertGreater(res_bye['Team_0']['xPoints'], 0.0)
+
 
 if __name__ == '__main__':
     unittest.main()

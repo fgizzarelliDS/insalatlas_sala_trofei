@@ -17,7 +17,7 @@ export function renderMonteCarloTabHTML(
   mcMinRounds: number = 4
 ): string {
   const mc = luck?.monteCarlo;
-  if (!mc || typeof mc.medianPoints !== 'number') {
+  if (!mc || typeof mc.medianPoints !== 'number' || mc.pPodiumPct === null) {
     return `
       <div class="p-8 text-center rounded-2xl border space-y-2"
            style="border-color: var(--table-border); background-color: var(--table-surface);">
@@ -31,6 +31,9 @@ export function renderMonteCarloTabHTML(
   }
 
   const isTitleGated = lastCompletedRound >= Math.ceil(totalLeagueRounds / 2);
+  const totalTeams = _teamSoS?.totalTeams && _teamSoS.totalTeams > 0 ? _teamSoS.totalTeams : 12;
+  const midCutoff = Math.max(4, Math.floor((totalTeams + 1) / 2));
+  const midLabel = midCutoff > 4 ? `4&deg;&ndash;${midCutoff}&deg; Posto` : '4&deg; Posto';
   const median = mc.medianPoints;
   const mean = typeof mc.meanPoints === 'number' ? mc.meanPoints : median;
   const std = mc.stdDev > 0 ? mc.stdDev : 3.5;
@@ -255,7 +258,7 @@ export function renderMonteCarloTabHTML(
         <div class="p-3 rounded-xl border text-xs transition-colors shadow-2xs"
              style="background-color: var(--modal-bg); border-color: var(--table-border);">
           <div class="flex justify-between items-center font-bold mb-1.5" style="color: var(--text-main);">
-            <span>⚖️ 4&deg;&ndash;6&deg; Posto</span>
+            <span>⚖️ ${midLabel}</span>
             <span class="font-mono text-sm font-black">${midPctVal !== null ? `${midPctVal.toFixed(1)}%` : '-'}</span>
           </div>
           <div class="w-full h-1.5 rounded-full overflow-hidden"

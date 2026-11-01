@@ -143,24 +143,25 @@ export function computeLeagueSoS(
   return result;
 }
 
+export interface OpponentDistributionContext {
+  meanElo: number;
+  meanPts: number;
+  stdElo: number;
+  stdPts: number;
+}
+
 /**
- * Classifies an individual upcoming match opponent based on hybrid 50% Elo + 50% Standings Points.
+ * Computes and caches distribution moments across current standings once.
+ * Avoids redundant O(R·N) recalculation across match loops.
  */
-export function getOpponentDifficulty(
-  oppStanding: LiveTeamMetrics | undefined,
+export function computeOpponentDistributionContext(
   standings: LiveTeamMetrics[],
   mode: EloTrackMode
-): OpponentDifficultyResult {
-  if (!oppStanding || !standings || standings.length === 0) {
-    return {
-      difficulty: 'balanced',
-      label: 'Equilibrato',
-      badgeClass: 'bg-amber-500/15 text-amber-500 dark:text-amber-400 border-amber-500/30',
-      dotColor: 'text-amber-500'
-    };
+): OpponentDistributionContext {
+  if (!standings || standings.length === 0) {
+    return { meanElo: 1500, meanPts: 0, stdElo: 1.0, stdPts: 1.0 };
   }
 
-  // Compute distribution across current standings
   const elos = standings.map(s => {
     const tr = getManagerEloTrack(s.elo, mode);
     return extractFallbackElo(s.elo, tr);
@@ -177,6 +178,31 @@ export function getOpponentDifficulty(
     ? Math.sqrt(points.map(x => Math.pow(x - meanPts, 2)).reduce((a, b) => a + b, 0) / (standings.length - 1))
     : 1.0;
 
+  return { meanElo, meanPts, stdElo, stdPts };
+}
+
+/**
+ * Classifies an individual upcoming match opponent based on hybrid 50% Elo + 50% Standings Points.
+ */
+export function getOpponentDifficulty(
+  oppStanding: LiveTeamMetrics | undefined,
+  standingsOrCtx: LiveTeamMetrics[] | OpponentDistributionContext,
+  mode: EloTrackMode = 'flat'
+): OpponentDifficultyResult {
+  if (!oppStanding) {
+    return {
+      difficulty: 'balanced',
+      label: 'Equilibrato',
+      badgeClass: 'bg-amber-500/15 text-amber-500 dark:text-amber-400 border-amber-500/30',
+      dotColor: 'text-amber-500'
+    };
+  }
+
+  const ctx: OpponentDistributionContext = Array.isArray(standingsOrCtx)
+    ? computeOpponentDistributionContext(standingsOrCtx, mode)
+    : standingsOrCtx;
+
+  const { meanElo, meanPts, stdElo, stdPts } = ctx;
   const oppTr = getManagerEloTrack(oppStanding.elo, mode);
   const oppElo = extractFallbackElo(oppStanding.elo, oppTr);
   const oppPts = typeof oppStanding.points === 'number' ? oppStanding.points : 0;

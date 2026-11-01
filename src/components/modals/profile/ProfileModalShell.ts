@@ -1,9 +1,22 @@
 import { LEAGUE } from '@/config';
+import { getAvailableSeasons } from '@/components/board/seasons/seasonSelector';
+import { getLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 
 /**
  * Template shell for the Manager Profile modal (#manager-profile-modal)
  */
 export function getProfileModalShellHTML(): string {
+  const liveSeason = getLiveSeasonDetails()?.season;
+  const availableSeasons = getAvailableSeasons();
+  const seasons = Array.from(new Set([
+    ...(liveSeason ? [liveSeason] : []),
+    ...availableSeasons
+  ])).filter(Boolean);
+
+  const seasonOptionsHTML = seasons.map((s, idx) =>
+    `<option value="${s}">${s}${idx === 0 ? ' (Corrente)' : ''}</option>`
+  ).join('');
+
   return `
   <!-- MODAL: SCHEDA PROFILO ALLENATORE (SOLA LETTURA) -->
   <div id="manager-profile-modal"
@@ -188,8 +201,7 @@ export function getProfileModalShellHTML(): string {
                       style="background-color: var(--input-bg); border-color: var(--table-border); color: var(--text-main);">
                 <optgroup label="Stagioni">
                   <option value="all">Tutte le stagioni (Continuo)</option>
-                  <option value="2026/27">2026/27 (Corrente)</option>
-                  <option value="2025/26">2025/26</option>
+                  ${seasonOptionsHTML}
                 </optgroup>
                 <optgroup label="Finestra Recente">
                   <option value="last10">Ultimi 10 match</option>

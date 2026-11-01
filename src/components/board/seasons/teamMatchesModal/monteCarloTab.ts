@@ -14,7 +14,7 @@ export function renderMonteCarloTabHTML(
   totalLeagueRounds: number,
   lastCompletedRound: number,
   _teamSoS?: TeamSoSMetrics,
-  mcMinRounds: number = 4
+  mcMinRounds: number = 5
 ): string {
   const mc = luck?.monteCarlo;
   if (!mc || typeof mc.medianPoints !== 'number' || mc.pPodiumPct === null) {
@@ -95,9 +95,10 @@ export function renderMonteCarloTabHTML(
   const meanX = Math.round(scaleX(mean));
   const medianX = Math.round(scaleX(median));
 
-  // Threshold markers
-  const podiumPt = 44;
-  const titlePt = 51;
+  // Threshold markers (scaled proportionally for any calendar length from 26-round baseline)
+  const roundsRef = totalLeagueRounds > 0 ? totalLeagueRounds : 26;
+  const podiumPt = Math.round((44 / 26) * roundsRef);
+  const titlePt = Math.round((51 / 26) * roundsRef);
   const hasPodium = podiumPt >= minX && podiumPt <= maxX;
   const hasTitle = isTitleGated && titlePt >= minX && titlePt <= maxX;
   const podiumX = Math.round(scaleX(podiumPt));

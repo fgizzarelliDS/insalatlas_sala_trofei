@@ -8,7 +8,7 @@
 import { escapeHtml } from '@/utils/dom';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
 import { formatEloDelta } from '@/analytics/analyticsCore';
-import { getOpponentDifficulty } from '@/analytics/sosEngine';
+import { getOpponentDifficulty, computeOpponentDistributionContext } from '@/analytics/sosEngine';
 import type { LiveTeamMetrics } from '@/types';
 import type { EloTrackMode } from '@/types/analytics';
 import type { TeamMatchEntry } from './types';
@@ -30,6 +30,9 @@ export function renderCalendarTabHTML(
     `;
   }
 
+  // Precompute league distribution moments once across the 26 fixtures
+  const diffCtx = computeOpponentDistributionContext(standings, activeMode);
+
   const matchesListHTML = matchesPlayed.map(match => {
     let outcomeBadgeClass = 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30';
     let outcomeIcon = 'fa-minus';
@@ -46,17 +49,18 @@ export function renderCalendarTabHTML(
     }
 
     const oppLogo = resolveTeamLogo(match.oppTeamName, match.oppLogo);
-    const escapedOppTeamName = match.oppTeamName.replace(/'/g, "\\'");
+    const safeOppMgrId = escapeHtml(match.oppManagerId || '');
+    const safeOppTeamName = escapeHtml(match.oppTeamName.replace(/'/g, "\\'"));
     const eloDeltaColor = match.eloDelta && match.eloDelta > 0
       ? 'text-emerald-400'
       : match.eloDelta && match.eloDelta < 0
         ? 'text-rose-400'
         : 'text-slate-400';
 
-    const diff = getOpponentDifficulty(match.oppStanding, standings, activeMode);
+    const diff = getOpponentDifficulty(match.oppStanding, diffCtx, activeMode);
 
     return `
-      <div onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${match.oppManagerId || ''}', '${escapedOppTeamName}');"
+      <div onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${safeOppMgrId}', '${safeOppTeamName}');"
            class="p-2.5 sm:p-3 rounded-2xl border flex flex-col gap-2 transition-colors hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer select-none"
            style="border-color: var(--table-border); background-color: var(--table-surface);"
            title="Vedi calendario di ${escapeHtml(match.oppTeamName)}">

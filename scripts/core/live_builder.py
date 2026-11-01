@@ -965,7 +965,7 @@ def compile_live_season_details(
         'lastCompletedRound': last_completed,
         'totalRounds': total_rounds,
         # Min completed rounds before MC projections activate (config.py → elo.odds.mc_min_rounds)
-        'mcMinRounds': int(((elo_config or DEFAULT_ELO_CONFIG).get('odds') or {}).get('mc_min_rounds', 4)),
+        'mcMinRounds': int(((elo_config or DEFAULT_ELO_CONFIG).get('odds') or {}).get('mc_min_rounds', 5)),
         'rounds': masked_rounds,
         'standings': final_standings
     }

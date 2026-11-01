@@ -453,7 +453,10 @@ export async function openTeamMatchesModal(
       const powerOpp = (oppMgrId ? matchCtx.managerPowers.get(oppMgrId) : undefined)
         ?? matchCtx.managerPowers.get(oppTeam.toLowerCase());
 
-      const odds = computeMatchOdds1X2(selectedElo, oppElo, matchCtx, powerTeam, powerOpp);
+      const orientedCtx = isHome || matchCtx.profile.hfaZShift === 0
+        ? matchCtx
+        : { ...matchCtx, profile: { ...matchCtx.profile, hfaZShift: -matchCtx.profile.hfaZShift } };
+      const odds = computeMatchOdds1X2(selectedElo, oppElo, orientedCtx, powerTeam, powerOpp);
 
       matchesPlayed.push({
         roundNumber: r.roundNumber,

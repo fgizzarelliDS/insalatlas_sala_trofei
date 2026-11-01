@@ -203,6 +203,50 @@ def compute_all_play_standings(
     return result
 
 
+def extract_career_prior_fp(
+    prof: Optional[Dict[str, Any]],
+    current_season: str = ""
+) -> Optional[float]:
+    """
+    Extracts manager career average offensive power strictly prior to the current season.
+    Prevents circular data leakage in historical replay, matching TypeScript extractCareerPriorFP.
+    """
+    if not isinstance(prof, dict):
+        return None
+    stats_obj = prof.get('seasonStats') or {}
+    all_st = stats_obj.get('all') or {}
+    curr_st = stats_obj.get(current_season) or {}
+    all_played = int(all_st.get('played', 0) or 0)
+    curr_played = int(curr_st.get('played', 0) or 0)
+    past_played = all_played - curr_played
+
+    if past_played > 0 and 'totalFP' in all_st and all_st['totalFP'] is not None:
+        curr_total = float(curr_st.get('totalFP', 0.0) or 0.0)
+        if curr_total == 0.0 and 'avgFP' in curr_st and curr_st['avgFP'] is not None:
+            curr_total = float(curr_st['avgFP']) * curr_played
+        past_total = float(all_st['totalFP']) - curr_total
+        if past_total > 0:
+            return past_total / past_played
+
+    # Fallback across past seasons
+    past_total = 0.0
+    past_count = 0
+    for k, st in stats_obj.items():
+        if k != current_season and k != 'all' and isinstance(st, dict):
+            p = int(st.get('played', 0) or 0)
+            if p > 0:
+                tot = float(st.get('totalFP', 0.0) or 0.0)
+                if tot > 0:
+                    past_total += tot
+                    past_count += p
+                elif 'avgFP' in st and st['avgFP'] is not None:
+                    past_total += float(st['avgFP']) * p
+                    past_count += p
+    if past_count > 0 and past_total > 0:
+        return past_total / past_count
+    return None
+
+
 def run_monte_carlo_schedule_simulation(
     team_names: List[str],
     all_play_standings: Dict[str, Dict[str, Any]],
@@ -213,7 +257,8 @@ def run_monte_carlo_schedule_simulation(
     all_rounds: Optional[List[Dict[str, Any]]] = None,
     elo_profiles: Optional[Dict[str, Any]] = None,
     odds_config: Optional[Dict[str, Any]] = None,
-    teams_stats: Optional[Dict[str, Dict[str, Any]]] = None
+    teams_stats: Optional[Dict[str, Dict[str, Any]]] = None,
+    season: str = ""
 ) -> Dict[str, Dict[str, Any]]:
     """
     Runs Tier 2 Monte Carlo calendar schedule permutations.
@@ -308,7 +353,7 @@ def run_monte_carlo_schedule_simulation(
 
     # Project future rounds if R >= mc_min_rounds and total_rounds > R
     active_odds_cfg = odds_config or {}
-    mc_min_rounds = int(active_odds_cfg.get('mc_min_rounds', 4))
+    mc_min_rounds = int(active_odds_cfg.get('mc_min_rounds', 5))
     enable_projections = (r_completed >= mc_min_rounds and total_rounds > r_completed)
     title_counts = [0] * n_teams
     podium_counts = [0] * n_teams
@@ -402,14 +447,45 @@ def run_monte_carlo_schedule_simulation(
             raw_fp_std = 3.0
         sigma_fp = max(min_sigma_power, raw_fp_std)
 
+        # Extract career prior FP for returning managers strictly prior to current season
+        career_priors: List[Optional[float]] = []
+        for name in team_names:
+            m_id = (teams_stats.get(name) or {}).get('managerId') if teams_stats else None
+            prof = None
+            if elo_profiles:
+                prof = elo_profiles.get(m_id) if m_id else None
+                if not prof and name in elo_profiles:
+                    prof = elo_profiles.get(name)
+            career_priors.append(extract_career_prior_fp(prof, current_season=season))
+
+        valid_priors = [p for p in career_priors if p is not None]
+        mean_prior_fp = (sum(valid_priors) / len(valid_priors)) if valid_priors else league_mean_fp
+        if len(valid_priors) > 1:
+            try:
+                raw_prior_std = statistics.stdev(valid_priors)
+            except Exception:
+                raw_prior_std = 1.5
+        else:
+            raw_prior_std = 1.5
+        sigma_prior_fp = max(1.2, raw_prior_std)
+
         z_powers: List[float] = []
         expected_total_fp: List[float] = []
         for i in range(n_teams):
             n_i = n_matches_list[i]
-            z_i = (n_i / (n_i + k_shrink)) * ((team_means[i] - league_mean_fp) / sigma_fp)
+            z_curr = (team_means[i] - league_mean_fp) / sigma_fp
+            prior_fp = career_priors[i]
+            if prior_fp is not None:
+                z_prior = (prior_fp - mean_prior_fp) / sigma_prior_fp
+                z_i = (n_i / (n_i + k_shrink)) * z_curr + (k_shrink / (n_i + k_shrink)) * z_prior
+                prior_target_fp = prior_fp
+            else:
+                z_i = (n_i / (n_i + k_shrink)) * z_curr
+                prior_target_fp = league_mean_fp
+
             z_powers.append(z_i)
             # Expected future FP volume for official tie-breaker
-            shrunk_fp_per_match = (n_i / (n_i + k_shrink)) * team_means[i] + (k_shrink / (n_i + k_shrink)) * league_mean_fp
+            shrunk_fp_per_match = (n_i / (n_i + k_shrink)) * team_means[i] + (k_shrink / (n_i + k_shrink)) * prior_target_fp
             expected_total_fp.append(total_fps[i] + remaining_rounds * shrunk_fp_per_match)
 
         # 3. Build scheduled future matches from official calendar
@@ -661,7 +737,8 @@ def compute_schedule_luck_analytics(
         all_rounds=all_rounds,
         elo_profiles=elo_profiles,
         odds_config=odds_config,
-        teams_stats=teams_stats
+        teams_stats=teams_stats,
+        season=season
     )
 
     # 3. Compute Delta Points and Expected Rankings

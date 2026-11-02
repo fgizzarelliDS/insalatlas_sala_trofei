@@ -676,6 +676,50 @@ export interface LiveTeamMetrics {
   momentum?: number;
 }
 
+export interface SingleRoundScore {
+  fantaPoints: number;
+  managerId: string;
+  teamName: string;
+  season: string;
+  roundNumber: number;
+}
+
+export type BadgeTier = 'bronze' | 'silver' | 'gold' | 'platinum';
+export type BadgeCategory = 'milestone' | 'dynasty' | 'performance' | 'irony';
+
+export interface TieredManagerBadge {
+  id: string;
+  name: string;
+  description: string;
+  category: BadgeCategory;
+  tier: BadgeTier | 'locked';
+  currentTier: BadgeTier | null;
+  nextTier: BadgeTier | null;
+  currentValue: number;
+  targetValue: number;
+  nextTargetValue: number | null;
+  progressPercent: number; // 0 to 100
+  isUnlocked: boolean;
+  isPlaceholder?: boolean;
+  icon: string;
+  tierLabel: string;
+  tierColor: string;
+  tierBg: string;
+  tierBorder: string;
+  pointsScore: number; // 1 pt Bronze, 3 pt Silver, 5 pt Gold, 10 pt Platinum
+}
+
+export interface ManagerBadgeScoreboard {
+  managerId: string;
+  managerName: string;
+  totalScore: number;
+  bronzeCount: number;
+  silverCount: number;
+  goldCount: number;
+  platinumCount: number;
+  badges: TieredManagerBadge[];
+}
+
 export interface LiveSeasonDetails {
   season: string;
   competitionId: number | string;
@@ -685,6 +729,7 @@ export interface LiveSeasonDetails {
   mcMinRounds?: number;
   rounds: MatchdayRound[];
   standings: LiveTeamMetrics[];
+  topSingleRoundScores?: SingleRoundScore[];
 }
 
 

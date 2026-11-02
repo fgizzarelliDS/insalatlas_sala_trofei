@@ -852,6 +852,13 @@ def compile_live_season_details(
                 'homeOutcome': home_outcome,
                 'awayOutcome': away_outcome
             }
+            if is_played:
+                if m.get('homeScore') is not None:
+                    match_entry['homeScore'] = h_score
+                    match_entry['awayScore'] = a_score
+                if m.get('homeFantaPoints') is not None or h_fp > 0:
+                    match_entry['homeFantaPoints'] = h_fp
+                    match_entry['awayFantaPoints'] = a_fp
             if win_prob_flat is not None:
                 match_entry['winProbHomeFlat'] = win_prob_flat
             if win_prob_hist is not None:
@@ -966,7 +973,7 @@ def compile_live_season_details(
             away_outcome = ('L' if h_score > a_score else ('W' if h_score < a_score else 'D')) if is_played else None
             h_id = m.get('homeManagerId')
             a_id = m.get('awayManagerId')
-            masked_cup_matches.append({
+            cup_match_entry = {
                 'homeTeam': m.get('homeTeam'),
                 'awayTeam': m.get('awayTeam'),
                 'homeManagerId': h_id,
@@ -979,7 +986,15 @@ def compile_live_season_details(
                 'competition': 'Coppa InsalAtlas',
                 'competitionCategory': 'Coppa',
                 'championshipMatchDay': m.get('championshipMatchDay')
-            })
+            }
+            if is_played:
+                if m.get('homeScore') is not None:
+                    cup_match_entry['homeScore'] = h_score
+                    cup_match_entry['awayScore'] = a_score
+                if m.get('homeFantaPoints') is not None or h_fp > 0:
+                    cup_match_entry['homeFantaPoints'] = h_fp
+                    cup_match_entry['awayFantaPoints'] = a_fp
+            masked_cup_matches.append(cup_match_entry)
         masked_cup_rounds.append({
             'roundNumber': r_num,
             'championshipMatchDay': r.get('championshipMatchDay'),
@@ -998,6 +1013,57 @@ def compile_live_season_details(
         'rounds': masked_rounds,
         'standings': final_standings
     }
+
+    # Collect all-time single-round fantasy scores for records
+    all_single_round_scores = []
+    for s_lbl, s_rounds in historical_seasons_rounds:
+        for r in s_rounds:
+            r_num = r.get('roundNumber', 1)
+            for m in r.get('matches', []):
+                if m.get('isPlayed') or m.get('played'):
+                    h_fp = float(m.get('homeFantaPoints', 0.0) or 0.0)
+                    a_fp = float(m.get('awayFantaPoints', 0.0) or 0.0)
+                    if h_fp > 0 and m.get('homeManagerId'):
+                        all_single_round_scores.append({
+                            'fantaPoints': round(h_fp, 1),
+                            'managerId': m.get('homeManagerId'),
+                            'teamName': m.get('homeTeam', ''),
+                            'season': s_lbl,
+                            'roundNumber': r_num
+                        })
+                    if a_fp > 0 and m.get('awayManagerId'):
+                        all_single_round_scores.append({
+                            'fantaPoints': round(a_fp, 1),
+                            'managerId': m.get('awayManagerId'),
+                            'teamName': m.get('awayTeam', ''),
+                            'season': s_lbl,
+                            'roundNumber': r_num
+                        })
+    for r in all_rounds:
+        r_num = r.get('roundNumber', 1)
+        for m in r.get('matches', []):
+            if m.get('isPlayed') or m.get('played'):
+                h_fp = float(m.get('homeFantaPoints', 0.0) or 0.0)
+                a_fp = float(m.get('awayFantaPoints', 0.0) or 0.0)
+                if h_fp > 0 and m.get('homeManagerId'):
+                    all_single_round_scores.append({
+                        'fantaPoints': round(h_fp, 1),
+                        'managerId': m.get('homeManagerId'),
+                        'teamName': m.get('homeTeam', ''),
+                        'season': season_name,
+                        'roundNumber': r_num
+                    })
+                if a_fp > 0 and m.get('awayManagerId'):
+                    all_single_round_scores.append({
+                        'fantaPoints': round(a_fp, 1),
+                        'managerId': m.get('awayManagerId'),
+                        'teamName': m.get('awayTeam', ''),
+                        'season': season_name,
+                        'roundNumber': r_num
+                    })
+    all_single_round_scores.sort(key=lambda x: x['fantaPoints'], reverse=True)
+    if all_single_round_scores:
+        compiled_details['topSingleRoundScores'] = all_single_round_scores[:20]
     if cup_rounds:
         compiled_details['cupTotalRounds'] = len(cup_rounds)
         compiled_details['cupLastCompletedRound'] = cup_last_completed

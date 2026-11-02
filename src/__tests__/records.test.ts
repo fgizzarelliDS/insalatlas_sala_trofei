@@ -137,6 +137,37 @@ describe('All-Time League Records Engine', () => {
     });
   });
 
+  describe('Record FantaPunti Singola Giornata (High Roller All-Time Record)', () => {
+    it('accurately identifies highest single-round score in league history when round data is available', async () => {
+      const { setLiveSeasonDetails } = await import('@/components/board/seasons/liveAnalytics');
+      setLiveSeasonDetails({
+        season: '2026/27',
+        competitionId: 1,
+        lastCompletedRound: 5,
+        totalRounds: 26,
+        rounds: [],
+        standings: [],
+        topSingleRoundScores: [
+          { fantaPoints: 88.0, managerId: 'm_alpha', teamName: 'Alpha FC', season: '2025/26', roundNumber: 21 },
+          { fantaPoints: 87.5, managerId: 'm_beta', teamName: 'Beta FC', season: '2025/26', roundNumber: 30 }
+        ]
+      });
+
+      const records = computeAllLeagueRecords(managers, competitions);
+      const highRollerRec = records.find(r => r.id === 'high_roller_single_round');
+      expect(highRollerRec).toBeDefined();
+      expect(highRollerRec!.category).toBe('points');
+      expect(highRollerRec!.badgeLabel).toBe('Cecchino Assoluto');
+      expect(highRollerRec!.primaryHolder.value).toBe(88.0);
+      expect(highRollerRec!.primaryHolder.formattedValue).toBe('88.0 FP');
+      expect(highRollerRec!.primaryHolder.normalizedDetail).toContain('21ª Giornata');
+      expect(highRollerRec!.primaryHolder.season).toBe('2025/26');
+      expect(highRollerRec!.runnerUps).toBeDefined();
+      expect(highRollerRec!.runnerUps!.length).toBeGreaterThan(0);
+      expect(highRollerRec!.runnerUps![0].value).toBe(87.5);
+    });
+  });
+
   describe('getLeagueYearSpan', () => {
     it('extracts earliest and latest completed seasons', () => {
       const emptySpan = getLeagueYearSpan([]);

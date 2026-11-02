@@ -82,6 +82,12 @@ export function getProfileModalShellHTML(): string {
           <i class="fa-solid fa-clock-rotate-left text-[11px] sm:text-xs shrink-0"></i>
           <span class="truncate"><span class="hidden sm:inline">Cronologia &amp; </span>Piazzamenti</span>
         </button>
+        <button id="profile-tab-btn-badges" type="button" onclick="switchProfileModalTab('badges')"
+          class="min-w-0 flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 sm:gap-1.5 border border-transparent opacity-60 hover:opacity-100"
+          style="color: var(--text-main);">
+          <i class="fa-solid fa-medal text-[11px] sm:text-xs shrink-0"></i>
+          <span class="truncate"><span class="hidden sm:inline">Hall of Fame &amp; </span>Badges</span>
+        </button>
       </div>
 
       <!-- TAB 1: Bacheca & Palmarès -->
@@ -260,6 +266,11 @@ export function getProfileModalShellHTML(): string {
           </div>
           <div id="profile-career-timeline" class="space-y-3"></div>
         </div>
+      </div>
+
+      <!-- TAB 3: Hall of Fame & Badges -->
+      <div id="profile-tab-badges-content" class="hidden min-w-0">
+        <div id="profile-badges-tab-container"></div>
       </div>
 
       <!-- Footer Buttons: Compact Share Dropdown & Chiudi Scheda -->

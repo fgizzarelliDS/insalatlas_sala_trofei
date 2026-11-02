@@ -334,7 +334,8 @@ declare global {
     toggleTeamMatchesCalendar?: () => void;
     toggleTeamMatchesDetails?: () => void;
     toggleCompetitionDrawer?: (competitionId: number, season?: string) => void;
-    switchProfileModalTab?: (tab: 'palmares' | 'career') => void;
+    switchProfileModalTab?: (tab: 'palmares' | 'career' | 'badges') => void;
+    toggleProfileHoFLeaderboard?: () => void;
     setMultiTournamentMode?: (mode: 'ppg' | 'simultaneous') => void;
     setProfileEloRange?: (range: number) => void;
     switchRealSort?: (order: 'rank' | 'elo') => void;

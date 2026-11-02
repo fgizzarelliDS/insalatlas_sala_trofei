@@ -15,7 +15,9 @@ import {
 import {
   shareNextRoundWhatsApp,
   exportNextRoundPNG,
-  copyNextRoundToClipboard
+  copyNextRoundToClipboard,
+  exportNextRoundStoryPNG,
+  copyNextRoundStoryToClipboard
 } from './nextRound';
 
 export * from './profile';
@@ -41,6 +43,8 @@ if (typeof window !== 'undefined') {
     copyStandingsToClipboard,
     shareNextRoundWhatsApp,
     exportNextRoundPNG,
-    copyNextRoundToClipboard
+    copyNextRoundToClipboard,
+    exportNextRoundStoryPNG,
+    copyNextRoundStoryToClipboard
   });
 }

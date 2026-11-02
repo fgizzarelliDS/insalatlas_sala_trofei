@@ -59,7 +59,7 @@ export function shareNextRoundWhatsApp(): void {
   showToast('Apertura WhatsApp in corso...', 'info');
 }
 
-import { renderNextRoundCanvas } from '@/export/renderers/nextRound';
+import { renderNextRoundCanvas, renderNextRoundStoryCanvas } from '@/export/renderers/nextRound';
 import { downloadBlob, copyBlobToClipboard } from '@/export/renderers/core';
 
 let isExportingNextRound = false;
@@ -119,6 +119,68 @@ export async function copyNextRoundToClipboard(): Promise<boolean> {
     });
   } catch (err) {
     console.error('Next Round clipboard copy failed:', err);
+    showToast('Copia negli appunti non riuscita', 'error');
+    return false;
+  } finally {
+    isExportingNextRound = false;
+  }
+}
+
+/**
+ * Captures Next Round duels as Vertical 9:16 Story PNG (HD 1080x1920) and downloads it
+ */
+export async function exportNextRoundStoryPNG(): Promise<void> {
+  if (isExportingNextRound) {
+    showToast('Generazione story duelli in corso...', 'info');
+    return;
+  }
+  isExportingNextRound = true;
+  showToast('Generazione Story Duelli 9:16 in corso...', 'info');
+
+  try {
+    const canvas = await renderNextRoundStoryCanvas();
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        showToast("Errore durante la creazione dell'immagine", 'error');
+        return;
+      }
+      const filename = `${LEAGUE.brand.name}_Story_Duelli_${Date.now()}.png`;
+      downloadBlob(blob, filename);
+    }, 'image/png');
+  } catch (err) {
+    console.error('Next Round story export failed:', err);
+    showToast('Impossibile esportare la story duelli', 'error');
+  } finally {
+    isExportingNextRound = false;
+  }
+}
+
+/**
+ * Captures Next Round duels as Vertical 9:16 Story PNG and copies directly to clipboard
+ */
+export async function copyNextRoundStoryToClipboard(): Promise<boolean> {
+  if (isExportingNextRound) {
+    showToast('Generazione story duelli in corso...', 'info');
+    return false;
+  }
+  isExportingNextRound = true;
+  showToast('Generazione Story Duelli per appunti...', 'info');
+
+  try {
+    const canvas = await renderNextRoundStoryCanvas();
+    return new Promise<boolean>((resolve) => {
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          showToast("Errore durante la creazione dell'immagine", 'error');
+          resolve(false);
+          return;
+        }
+        const copied = await copyBlobToClipboard(blob, `${LEAGUE.brand.name}_Story_Duelli.png`);
+        resolve(copied);
+      }, 'image/png');
+    });
+  } catch (err) {
+    console.error('Next Round story clipboard copy failed:', err);
     showToast('Copia negli appunti non riuscita', 'error');
     return false;
   } finally {

@@ -3,7 +3,9 @@ import {
   renderStandingsStoryCanvas,
   renderMatchdayRecapStoryCanvas,
   renderMonteCarloStoryCanvas,
-  renderTeamPowerRadarStoryCanvas
+  renderTeamPowerRadarStoryCanvas,
+  renderNextRoundCanvas,
+  renderNextRoundStoryCanvas
 } from '@/export';
 import { setLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 import {
@@ -179,6 +181,16 @@ describe('Phase 2: Visual Story & Share Cards Hub', () => {
             isPlayed: true
           }
         ]
+      },
+      {
+        roundNumber: 3,
+        matches: [
+          {
+            homeTeam: 'Team Phoenix',
+            awayTeam: 'Team Dragon',
+            isPlayed: false
+          }
+        ]
       }
     ]
   };
@@ -256,7 +268,7 @@ describe('Phase 2: Visual Story & Share Cards Hub', () => {
     openStoryExportModal('Team Phoenix', 'recap');
     const modalEl = (globalThis as any).document.getElementById('story-export-modal');
     expect(modalEl).not.toBeNull();
-    expect(modalEl?.innerHTML).toContain('Visual Story Cards Hub');
+    expect(modalEl?.innerHTML).toContain('Story Cards Hub');
     expect(modalEl?.innerHTML).toContain('Recap Giornata');
 
     // Switch to Monte Carlo tab
@@ -295,5 +307,18 @@ describe('Phase 2: Visual Story & Share Cards Hub', () => {
     expect(modalEl?.innerHTML).not.toMatch(/id="tab-story-mc"[^>]*hidden/);
 
     closeStoryExportModal();
+  });
+
+  it('renders horizontal next round canvas with improved dimensions and clima badges', async () => {
+    const canvas = await renderNextRoundCanvas();
+    expect(canvas).toBeDefined();
+    expect(canvas.width).toBe(1040);
+  });
+
+  it('renders vertical 9:16 next round story canvas with balanced grid and duel cards', async () => {
+    const canvas = await renderNextRoundStoryCanvas(mockLiveData);
+    expect(canvas).toBeDefined();
+    expect(canvas.width).toBe(1080);
+    expect(canvas.height).toBe(1920);
   });
 });

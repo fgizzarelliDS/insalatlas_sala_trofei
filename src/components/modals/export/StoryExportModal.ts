@@ -181,7 +181,7 @@ function renderModalShell(container: HTMLElement): void {
           </div>
           <div>
             <h2 class="font-sport font-black text-lg sm:text-xl tracking-wider uppercase text-amber-400 flex items-center gap-2">
-              <span>Visual Story Cards Hub</span>
+              <span>Story Cards Hub</span>
               <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">HD 9:16</span>
             </h2>
             <p class="text-xs text-slate-400 mt-0.5">

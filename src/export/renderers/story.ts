@@ -29,7 +29,7 @@ const SAFE_ZONE_BOTTOM = 220;
 /**
  * Creates the base 1080x1920 story container with Instagram/WhatsApp safe zones
  */
-function createStoryContainer(title: string, subtitle: string): {
+export function createStoryContainer(title: string, subtitle: string): {
   container: HTMLDivElement;
   contentBox: HTMLDivElement;
 } {
@@ -842,15 +842,6 @@ export async function renderMatchdayRecapStoryCanvas(
     perfs.push({ team: m.awayTeam, logo: aLogo, fp: aFp, goals: aScore, opponent: m.homeTeam, opponentGoals: hScore, opponentFp: hFp, outcome: aOutcome });
   });
 
-  // Calculate single-round luck:
-  // - Cynical winner: winner with lowest FP
-  const winners = perfs.filter(p => p.outcome === 'W').sort((a, b) => a.fp - b.fp);
-  const cynicalWinner = winners.length > 0 ? winners[0] : null;
-
-  // - Unlucky non-winner: non-winner (D or L) with highest FP
-  const nonWinners = perfs.filter(p => p.outcome !== 'W').sort((a, b) => b.fp - a.fp);
-  const unluckyNonWinner = nonWinners.length > 0 ? nonWinners[0] : null;
-
   // 3. Compute overall round stats for the 8th slot card
   let totalGoals = 0;
   let totalFP = 0;
@@ -867,6 +858,23 @@ export async function renderMatchdayRecapStoryCanvas(
     }
   });
   const avgFP = matches.length > 0 ? (totalFP / (matches.length * 2)).toFixed(1) : '0.0';
+
+  // Calculate single-round luck:
+  // - Cynical winner: a winner who won with fewer FP than an unlucky non-winner (stolen win),
+  //   OR won with low FP (< avgFP of the round and <= 1 goal).
+  //   If all winners legitimately outscored all non-winners, there is NO cynical winner (Turno Regolare).
+  const winners = perfs.filter(p => p.outcome === 'W').sort((a, b) => a.fp - b.fp);
+  const nonWinners = perfs.filter(p => p.outcome !== 'W').sort((a, b) => b.fp - a.fp);
+  const unluckyNonWinner = nonWinners.length > 0 ? nonWinners[0] : null;
+
+  const lowestWinner = winners.length > 0 ? winners[0] : null;
+  const avgFPNum = Number(avgFP) || 72.0;
+
+  const isCynical = lowestWinner && (
+    (unluckyNonWinner && lowestWinner.fp < unluckyNonWinner.fp) ||
+    (lowestWinner.fp < avgFPNum && lowestWinner.goals <= 1)
+  );
+  const cynicalWinner = isCynical ? lowestWinner : null;
 
   // Build 2-column Duel Cards (No Name Truncation)
   const cardsHTML = matches.map((m: any, idx: number) => {
@@ -995,12 +1003,18 @@ export async function renderMatchdayRecapStoryCanvas(
           <span class="text-[10px] uppercase font-black text-indigo-300 tracking-wider">DEA BENDATA &amp; SFIGA</span>
         </div>
         <div class="space-y-1.5">
-          <div class="text-xs text-slate-300 flex items-center justify-between gap-1">
-            <span class="truncate">🍀 <strong>${cynicalWinner ? cynicalWinner.team : '-'}</strong></span>
-            <span class="text-[11px] font-mono text-emerald-400 font-bold shrink-0">${cynicalWinner ? `${cynicalWinner.fp.toFixed(1)} FP (W)` : ''}</span>
+          <div class="text-xs text-slate-300 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5 min-w-0 flex-1">
+              <span class="shrink-0">🍀</span>
+              <strong class="text-white leading-tight break-words">${cynicalWinner ? cynicalWinner.team : 'Nessun regalo'}</strong>
+            </div>
+            <span class="text-[11px] font-mono text-emerald-400 font-bold shrink-0">${cynicalWinner ? `${cynicalWinner.fp.toFixed(1)} FP (W)` : 'Vittorie meritate'}</span>
           </div>
-          <div class="text-xs text-slate-400 flex items-center justify-between gap-1">
-            <span class="truncate">⚡ <strong>${unluckyNonWinner ? unluckyNonWinner.team : '-'}</strong></span>
+          <div class="text-xs text-slate-400 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5 min-w-0 flex-1">
+              <span class="shrink-0">⚡</span>
+              <strong class="text-slate-200 leading-tight break-words">${unluckyNonWinner ? unluckyNonWinner.team : '-'}</strong>
+            </div>
             <span class="text-[11px] font-mono text-rose-400 font-bold shrink-0">${unluckyNonWinner ? `${unluckyNonWinner.fp.toFixed(1)} FP (${unluckyNonWinner.outcome})` : ''}</span>
           </div>
         </div>
@@ -1028,16 +1042,33 @@ export async function renderMonteCarloStoryCanvas(
   const logoUrl = teamMetric.logo || resolveTeamLogo(teamMetric.teamName);
   const mc = (teamMetric as any).monteCarlo || teamMetric.scheduleLuck?.monteCarlo;
 
-  const pTitle = mc?.pTitlePct != null ? `${mc.pTitlePct.toFixed(1)}%` : '--';
-  const pPodium = mc?.pPodiumPct != null ? `${mc.pPodiumPct.toFixed(1)}%` : '--';
-  const pMid = mc?.pMidPct != null ? `${mc.pMidPct.toFixed(1)}%` : '--';
-  const pFlop = mc?.pFlopPct != null ? `${mc.pFlopPct.toFixed(1)}%` : '--';
+  // Title Gating: Unlocked only after half the tournament (giro di boa)
+  const totalRounds = liveData?.totalRounds || liveData?.rounds?.length || 26;
+  const lastCompletedRound = liveData?.lastCompletedRound || 0;
+  const midpointRound = Math.ceil(totalRounds / 2);
+  const isTitleGated = lastCompletedRound >= midpointRound;
 
-  const medianPts = mc?.medianPoints != null ? `${mc.medianPoints.toFixed(1)} pt` : `${teamMetric.points} pt`;
-  const p10 = mc?.p10 != null ? mc.p10.toFixed(1) : '-';
-  const p90 = mc?.p90 != null ? mc.p90.toFixed(1) : '-';
-  const p25 = mc?.p25 != null ? mc.p25.toFixed(1) : '-';
-  const p75 = mc?.p75 != null ? mc.p75.toFixed(1) : '-';
+  // MC Projection Gating: Full season projections activate when lastCompletedRound >= mcMinRounds
+  const mcMinRounds = liveData?.mcMinRounds ?? 5;
+  const isMcUnlocked = mc?.pPodiumPct != null || typeof mc?.pMidPct === 'number';
+
+  const titlePctVal = (isTitleGated && isMcUnlocked && typeof mc?.pTitlePct === 'number') ? mc.pTitlePct : null;
+  const pTitle = titlePctVal !== null ? `${titlePctVal.toFixed(1)}%` : `G${midpointRound}+`;
+  const titleSublabel = titlePctVal !== null ? 'Vittoria Scudetto' : `Sblocco da G${midpointRound}`;
+  const titleIcon = titlePctVal !== null ? '🏆' : '🔒';
+
+  const pPodium = (isMcUnlocked && mc?.pPodiumPct != null) ? `${mc.pPodiumPct.toFixed(1)}%` : '--';
+  const pMid = (isMcUnlocked && mc?.pMidPct != null) ? `${mc.pMidPct.toFixed(1)}%` : '--';
+  const pFlop = (isMcUnlocked && mc?.pFlopPct != null) ? `${mc.pFlopPct.toFixed(1)}%` : '--';
+
+  const pointsStr = typeof teamMetric.points === 'number' ? ` (${teamMetric.points} pt)` : ' (- pt)';
+  const medianPts = (isMcUnlocked && mc?.medianPoints != null)
+    ? `${mc.medianPoints.toFixed(1)} pt`
+    : `In calibrazione (da G${mcMinRounds})`;
+  const p10 = (isMcUnlocked && mc?.p10 != null) ? mc.p10.toFixed(1) : '-';
+  const p90 = (isMcUnlocked && mc?.p90 != null) ? mc.p90.toFixed(1) : '-';
+  const p25 = (isMcUnlocked && mc?.p25 != null) ? mc.p25.toFixed(1) : '-';
+  const p75 = (isMcUnlocked && mc?.p75 != null) ? mc.p75.toFixed(1) : '-';
 
   contentBox.innerHTML = `
     <!-- Team Identity Hero -->
@@ -1050,7 +1081,7 @@ export async function renderMonteCarloStoryCanvas(
         ${teamMetric.teamName}
       </h1>
       <p class="text-xs uppercase tracking-widest text-slate-400 font-bold mt-1">
-        ${teamMetric.coach || 'Allenatore'} • Attuale #${teamMetric.rank} (${teamMetric.points} pt)
+        ${teamMetric.coach || 'Allenatore'} • Attuale #${teamMetric.rank}${pointsStr}
       </p>
     </div>
 
@@ -1061,11 +1092,11 @@ export async function renderMonteCarloStoryCanvas(
       </div>
 
       <div class="grid grid-cols-2 gap-3">
-        <!-- Scudetto -->
-        <div class="p-4 rounded-2xl border border-amber-500/50 bg-gradient-to-br from-amber-500/20 to-transparent flex flex-col items-center text-center">
-          <span class="text-3xl mb-1">🏆</span>
-          <span class="font-sport font-black text-3xl text-amber-400 font-mono">${pTitle}</span>
-          <span class="text-xs uppercase font-extrabold text-amber-200 mt-1">Vittoria Scudetto</span>
+        <!-- Scudetto (Gated until midpoint round) -->
+        <div class="p-4 rounded-2xl border ${isTitleGated ? 'border-amber-500/50 bg-gradient-to-br from-amber-500/20' : 'border-amber-500/30 bg-slate-900/60'} to-transparent flex flex-col items-center text-center">
+          <span class="text-3xl mb-1">${titleIcon}</span>
+          <span class="font-sport font-black text-3xl ${isTitleGated ? 'text-amber-400' : 'text-amber-400/80'} font-mono">${pTitle}</span>
+          <span class="text-xs uppercase font-extrabold ${isTitleGated ? 'text-amber-200' : 'text-amber-300/70'} mt-1">${titleSublabel}</span>
         </div>
 
         <!-- Podio -->
@@ -1090,15 +1121,15 @@ export async function renderMonteCarloStoryCanvas(
         </div>
       </div>
 
-      <!-- Projected Finish Box -->
+      <!-- Projected Finish Box (Displays projected score when MC is active) -->
       <div class="p-4 rounded-2xl border border-slate-800 bg-slate-900/80 mt-2">
         <div class="flex items-center justify-between text-xs text-slate-400 mb-2 font-bold">
           <span>Punteggio Finale Previsto:</span>
-          <span class="text-amber-400 font-black font-mono text-sm">${medianPts} (Mediana)</span>
+          <span class="text-amber-400 font-black font-mono text-sm">${isMcUnlocked ? `${medianPts} (Mediana)` : medianPts}</span>
         </div>
         <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-300 font-mono pt-2 border-t border-slate-800">
-          <div>Intervallo 50% (IQR): <strong>${p25} &ndash; ${p75} pt</strong></div>
-          <div class="text-right">Intervallo 80%: <strong>${p10} &ndash; ${p90} pt</strong></div>
+          <div>Intervallo 50% (IQR): <strong>${isMcUnlocked ? `${p25} &ndash; ${p75} pt` : '--'}</strong></div>
+          <div class="text-right">Intervallo 80%: <strong>${isMcUnlocked ? `${p10} &ndash; ${p90} pt` : '--'}</strong></div>
         </div>
       </div>
     </div>

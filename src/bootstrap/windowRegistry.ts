@@ -1,4 +1,12 @@
 import {
+  openStoryExportModal,
+  closeStoryExportModal,
+  switchStoryExportTab,
+  changeStoryExportTeam,
+  copyCurrentStoryCard,
+  downloadCurrentStoryCard
+} from '@/components/modals/export/StoryExportModal';
+import {
   changeTheme,
   toggleEditMode,
   handleTitleBlur
@@ -532,6 +540,12 @@ export function registerGlobalWindowHandlers(): void {
     clearProfileEloHover,
     selectProfileEloPoint,
     selectEloChartPoint,
-    toggleProfileEloMode
+    toggleProfileEloMode,
+    openStoryExportModal,
+    closeStoryExportModal,
+    switchStoryExportTab,
+    changeStoryExportTeam,
+    copyCurrentStoryCard,
+    downloadCurrentStoryCard
   });
 }

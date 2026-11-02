@@ -1,5 +1,6 @@
-import type { Manager, LeagueRecord } from '@/types';
+import type { Manager, LeagueRecord, LiveSeasonDetails, LiveTeamMetrics } from '@/types';
 import { state } from '@/state';
+import { getLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 import { calculateManagerScore, formatScore } from '@/score';
 import {
   computeManagerClutchMetrics,
@@ -616,6 +617,348 @@ export async function renderRecordsSummaryStoryCanvas(recordsList?: LeagueRecord
     <!-- Bottom Trivia Banner -->
     <div class="w-full p-3.5 rounded-2xl border border-slate-800 bg-slate-900/60 text-center text-xs text-slate-400 font-medium">
       I record ufficiali sono calcolati su tutte le edizioni storiche disputate.
+    </div>
+  `;
+
+  return renderNodeToCanvas(container, STORY_WIDTH, '#030712', 1.5, STORY_HEIGHT);
+}
+
+/**
+ * 6. Renders High-Definition Vertical 9:16 Story for Matchday Recap & Results
+ */
+export async function renderMatchdayRecapStoryCanvas(
+  targetRound?: number,
+  customLiveData?: LiveSeasonDetails
+): Promise<HTMLCanvasElement> {
+  const liveData = customLiveData || getLiveSeasonDetails() || (typeof window !== 'undefined' ? (window as any).liveSeasonData : null);
+  if (!liveData) {
+    throw new Error('Dati di stagione live non disponibili per la generazione della story');
+  }
+
+  const seasonLabel = liveData.season || 'Live';
+  const completedRounds = (liveData.rounds || []).filter((r: any) =>
+    (r.matches || []).some((m: any) => m.isPlayed || m.played || (m.homeFantaPoints || 0) > 0 || (m.awayFantaPoints || 0) > 0)
+  );
+
+  const roundObj = targetRound
+    ? (liveData.rounds || []).find((r: any) => r.roundNumber === targetRound)
+    : (completedRounds.length > 0 ? completedRounds[completedRounds.length - 1] : liveData.rounds?.[0]);
+
+  const rNum = roundObj?.roundNumber ?? 1;
+  const matches = roundObj?.matches || [];
+
+  const { container, contentBox } = createStoryContainer(
+    `Giornata ${rNum}`,
+    `Stagione ${seasonLabel}`
+  );
+
+  // Compute MVP (Highest FP of the round)
+  let mvpTeam = '';
+  let mvpScore = 0;
+  let mvpLogo = '';
+
+  matches.forEach((m: any) => {
+    const hFp = Number(m.homeFantaPoints) || 0;
+    const aFp = Number(m.awayFantaPoints) || 0;
+    if (hFp > mvpScore) {
+      mvpScore = hFp;
+      mvpTeam = m.homeTeam;
+      mvpLogo = m.homeLogo || resolveTeamLogo(m.homeTeam);
+    }
+    if (aFp > mvpScore) {
+      mvpScore = aFp;
+      mvpTeam = m.awayTeam;
+      mvpLogo = m.awayLogo || resolveTeamLogo(m.awayTeam);
+    }
+  });
+
+  // Schedule luck delta highlights
+  const luckyTeam = liveData.standings?.slice().sort((a: any, b: any) => (b.deltaLuck ?? 0) - (a.deltaLuck ?? 0))[0];
+  const unluckyTeam = liveData.standings?.slice().sort((a: any, b: any) => (a.deltaLuck ?? 0) - (b.deltaLuck ?? 0))[0];
+
+  const matchesHTML = matches.map((m: any) => {
+    const hScore = m.homeScore ?? '-';
+    const aScore = m.awayScore ?? '-';
+    const hFp = typeof m.homeFantaPoints === 'number' ? m.homeFantaPoints.toFixed(1) : '-';
+    const aFp = typeof m.awayFantaPoints === 'number' ? m.awayFantaPoints.toFixed(1) : '-';
+    const hLogo = m.homeLogo || resolveTeamLogo(m.homeTeam);
+    const aLogo = m.awayLogo || resolveTeamLogo(m.awayTeam);
+
+    const isHomeWinner = typeof m.homeScore === 'number' && typeof m.awayScore === 'number' && m.homeScore > m.awayScore;
+    const isAwayWinner = typeof m.homeScore === 'number' && typeof m.awayScore === 'number' && m.awayScore > m.homeScore;
+
+    return `
+      <div class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-800 bg-slate-900/75 shadow-md">
+        <!-- Home Team -->
+        <div class="flex items-center gap-3 w-[40%]">
+          <img src="${hLogo}" alt="${m.homeTeam}" class="w-9 h-9 object-contain shrink-0" onerror="this.onerror=null; this.src='favicon-64x64.png'">
+          <div class="min-w-0">
+            <div class="font-bold text-sm text-white truncate ${isHomeWinner ? 'text-amber-400 font-black' : ''}">
+              ${m.homeTeam}
+            </div>
+            <div class="text-[10px] text-slate-400 font-mono">${hFp} FP</div>
+          </div>
+        </div>
+
+        <!-- Score Badge -->
+        <div class="px-3 py-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 font-sport font-black text-lg text-amber-300">
+          ${hScore} - ${aScore}
+        </div>
+
+        <!-- Away Team -->
+        <div class="flex items-center justify-end gap-3 w-[40%] text-right">
+          <div class="min-w-0">
+            <div class="font-bold text-sm text-white truncate ${isAwayWinner ? 'text-amber-400 font-black' : ''}">
+              ${m.awayTeam}
+            </div>
+            <div class="text-[10px] text-slate-400 font-mono">${aFp} FP</div>
+          </div>
+          <img src="${aLogo}" alt="${m.awayTeam}" class="w-9 h-9 object-contain shrink-0" onerror="this.onerror=null; this.src='favicon-64x64.png'">
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  contentBox.innerHTML = `
+    <!-- Top Hero -->
+    <div class="w-full flex flex-col items-center text-center">
+      <div class="flex items-center gap-2 px-4 py-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 text-amber-300 text-xs font-black uppercase tracking-wider mb-2">
+        <span>⚽ TABELLINO &amp; RISULTATI</span>
+      </div>
+      <h1 class="font-sport font-black text-5xl uppercase tracking-wider text-white">
+        Giornata ${rNum}
+      </h1>
+      <p class="text-sm text-slate-400 font-bold mt-1.5">
+        Resoconto Ufficiale • Serie Atlas
+      </p>
+    </div>
+
+    <!-- Matchday Matches Grid -->
+    <div class="w-full space-y-2.5 my-3">
+      ${matchesHTML}
+    </div>
+
+    <!-- Highlights Row: MVP & Luck Callouts -->
+    <div class="grid grid-cols-2 gap-3 w-full">
+      <!-- MVP Card -->
+      <div class="p-3.5 rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/15 to-transparent flex items-center gap-3">
+        <img src="${mvpLogo}" alt="${mvpTeam}" class="w-12 h-12 object-contain shrink-0 drop-shadow-md" onerror="this.onerror=null; this.src='favicon-64x64.png'">
+        <div class="min-w-0">
+          <div class="text-[10px] uppercase font-black text-amber-400 tracking-wider">🌟 MVP DI GIORNATA</div>
+          <div class="font-bold text-sm text-white truncate">${mvpTeam}</div>
+          <div class="text-xs font-mono font-black text-amber-300">${mvpScore.toFixed(1)} FantaPunti</div>
+        </div>
+      </div>
+
+      <!-- Luck & Merit Callout -->
+      <div class="p-3.5 rounded-2xl border border-indigo-500/40 bg-gradient-to-br from-indigo-500/15 to-transparent flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-xl shrink-0">
+          🎲
+        </div>
+        <div class="min-w-0">
+          <div class="text-[10px] uppercase font-black text-indigo-300 tracking-wider">DEA BENDATA &amp; SFIGA</div>
+          <div class="text-xs text-slate-300 truncate">🍀 +Fortunato: <strong class="text-white">${luckyTeam?.teamName || '-'}</strong></div>
+          <div class="text-xs text-slate-400 truncate">⚡ Più Tartassato: <strong class="text-slate-200">${unluckyTeam?.teamName || '-'}</strong></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return renderNodeToCanvas(container, STORY_WIDTH, '#030712', 1.5, STORY_HEIGHT);
+}
+
+/**
+ * 7. Renders High-Definition Vertical 9:16 Story for Monte Carlo Odds & Projections
+ */
+export async function renderMonteCarloStoryCanvas(
+  teamMetric: LiveTeamMetrics,
+  customLiveData?: LiveSeasonDetails
+): Promise<HTMLCanvasElement> {
+  const liveData = customLiveData || getLiveSeasonDetails() || (typeof window !== 'undefined' ? (window as any).liveSeasonData : null);
+  const seasonLabel = liveData?.season || 'Live';
+  const { container, contentBox } = createStoryContainer(
+    'Quote Scudetto',
+    `Stagione ${seasonLabel}`
+  );
+
+  const logoUrl = teamMetric.logo || resolveTeamLogo(teamMetric.teamName);
+  const mc = (teamMetric as any).monteCarlo || teamMetric.scheduleLuck?.monteCarlo;
+
+  const pTitle = mc?.pTitlePct != null ? `${mc.pTitlePct.toFixed(1)}%` : '--';
+  const pPodium = mc?.pPodiumPct != null ? `${mc.pPodiumPct.toFixed(1)}%` : '--';
+  const pMid = mc?.pMidPct != null ? `${mc.pMidPct.toFixed(1)}%` : '--';
+  const pFlop = mc?.pFlopPct != null ? `${mc.pFlopPct.toFixed(1)}%` : '--';
+
+  const medianPts = mc?.medianPoints != null ? `${mc.medianPoints.toFixed(1)} pt` : `${teamMetric.points} pt`;
+  const p10 = mc?.p10 != null ? mc.p10.toFixed(1) : '-';
+  const p90 = mc?.p90 != null ? mc.p90.toFixed(1) : '-';
+  const p25 = mc?.p25 != null ? mc.p25.toFixed(1) : '-';
+  const p75 = mc?.p75 != null ? mc.p75.toFixed(1) : '-';
+
+  contentBox.innerHTML = `
+    <!-- Team Identity Hero -->
+    <div class="flex flex-col items-center text-center">
+      <div class="w-28 h-28 rounded-3xl border-2 border-amber-400/50 p-2.5 bg-slate-900/80 shadow-2xl flex items-center justify-center mb-3">
+        <img src="${logoUrl}" alt="${teamMetric.teamName}" class="w-full h-full object-contain drop-shadow-xl" onerror="this.onerror=null; this.src='favicon-64x64.png'">
+      </div>
+
+      <h1 class="font-sport font-black text-4xl uppercase tracking-wider text-white">
+        ${teamMetric.teamName}
+      </h1>
+      <p class="text-xs uppercase tracking-widest text-slate-400 font-bold mt-1">
+        ${teamMetric.coach || 'Allenatore'} • Attuale #${teamMetric.rank} (${teamMetric.points} pt)
+      </p>
+    </div>
+
+    <!-- Probability Matrix -->
+    <div class="w-full space-y-3 my-auto">
+      <div class="text-xs font-black uppercase tracking-wider text-slate-400 text-center mb-1">
+        🎲 10.000 Simulazioni Monte Carlo
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <!-- Scudetto -->
+        <div class="p-4 rounded-2xl border border-amber-500/50 bg-gradient-to-br from-amber-500/20 to-transparent flex flex-col items-center text-center">
+          <span class="text-3xl mb-1">🏆</span>
+          <span class="font-sport font-black text-3xl text-amber-400 font-mono">${pTitle}</span>
+          <span class="text-xs uppercase font-extrabold text-amber-200 mt-1">Vittoria Scudetto</span>
+        </div>
+
+        <!-- Podio -->
+        <div class="p-4 rounded-2xl border border-cyan-500/50 bg-gradient-to-br from-cyan-500/20 to-transparent flex flex-col items-center text-center">
+          <span class="text-3xl mb-1">🥉</span>
+          <span class="font-sport font-black text-3xl text-cyan-300 font-mono">${pPodium}</span>
+          <span class="text-xs uppercase font-extrabold text-cyan-200 mt-1">Piazzamento Podio</span>
+        </div>
+
+        <!-- Metà Classifica -->
+        <div class="p-4 rounded-2xl border border-emerald-500/50 bg-gradient-to-br from-emerald-500/20 to-transparent flex flex-col items-center text-center">
+          <span class="text-3xl mb-1">⚖️</span>
+          <span class="font-sport font-black text-3xl text-emerald-400 font-mono">${pMid}</span>
+          <span class="text-xs uppercase font-extrabold text-emerald-200 mt-1">Metà Classifica</span>
+        </div>
+
+        <!-- Cucchiaio -->
+        <div class="p-4 rounded-2xl border border-rose-500/50 bg-gradient-to-br from-rose-500/20 to-transparent flex flex-col items-center text-center">
+          <span class="text-3xl mb-1">🥄</span>
+          <span class="font-sport font-black text-3xl text-rose-400 font-mono">${pFlop}</span>
+          <span class="text-xs uppercase font-extrabold text-rose-200 mt-1">Cucchiaio di Legno</span>
+        </div>
+      </div>
+
+      <!-- Projected Finish Box -->
+      <div class="p-4 rounded-2xl border border-slate-800 bg-slate-900/80 mt-2">
+        <div class="flex items-center justify-between text-xs text-slate-400 mb-2 font-bold">
+          <span>Punteggio Finale Previsto:</span>
+          <span class="text-amber-400 font-black font-mono text-sm">${medianPts} (Mediana)</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-300 font-mono pt-2 border-t border-slate-800">
+          <div>Intervallo 50% (IQR): <strong>${p25} &ndash; ${p75} pt</strong></div>
+          <div class="text-right">Intervallo 80%: <strong>${p10} &ndash; ${p90} pt</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Advice -->
+    <div class="w-full p-3 rounded-2xl border border-slate-800 bg-slate-900/60 text-center text-xs text-slate-400">
+      Simulazione Davidson 1X2 ponderata su Elo &amp; Potenza Offensiva con decay asta.
+    </div>
+  `;
+
+  return renderNodeToCanvas(container, STORY_WIDTH, '#030712', 1.5, STORY_HEIGHT);
+}
+
+/**
+ * 8. Renders High-Definition Vertical 9:16 Story for Team Power & 3-Track Elo Radar
+ */
+export async function renderTeamPowerRadarStoryCanvas(
+  teamMetric: LiveTeamMetrics,
+  customLiveData?: LiveSeasonDetails
+): Promise<HTMLCanvasElement> {
+  const liveData = customLiveData || getLiveSeasonDetails() || (typeof window !== 'undefined' ? (window as any).liveSeasonData : null);
+  const seasonLabel = liveData?.season || 'Live';
+  const { container, contentBox } = createStoryContainer(
+    'Potenza & Elo',
+    `Stagione ${seasonLabel}`
+  );
+
+  const logoUrl = teamMetric.logo || resolveTeamLogo(teamMetric.teamName);
+
+  const flatElo = Math.round(teamMetric.elo?.flat?.current ?? 1500);
+  const histElo = Math.round(teamMetric.elo?.historical?.current ?? 1500);
+  const atlasElo = Math.round(teamMetric.elo?.atlas?.current ?? 1500);
+
+  // 5 Tactical Radar Axes: Attacco, Difesa, Continuità, Golo/Freddezza, Elo Power
+  const avgFP = teamMetric.avgFantaPoints || 70.0;
+  const attScore = Math.max(10, Math.min(100, Math.round(((avgFP - 60) / 24) * 100)));
+
+  const ga = teamMetric.goalsAgainst || 0;
+  const played = teamMetric.played || 1;
+  const gaPerMatch = ga / played;
+  const defScore = Math.max(10, Math.min(100, Math.round(((2.5 - gaPerMatch) / 2.0) * 100)));
+
+  const won = teamMetric.won || 0;
+  const formScore = Math.max(10, Math.min(100, Math.round((won / played) * 100)));
+
+  const goloVal = (teamMetric.elo?.seasonStats?.[seasonLabel]?.golo ?? 1.0);
+  const goloScore = Math.max(10, Math.min(100, Math.round(goloVal * 50)));
+
+  const eloPowerScore = Math.max(10, Math.min(100, Math.round(((atlasElo - 1400) / 200) * 100)));
+
+  const radarAxes: H2HAxisData[] = [
+    { key: 'att', label: 'Attacco (FP)', shortTitle: 'Attacco', acronym: 'ATT', valA: attScore, valB: 0, rawA: `${avgFP.toFixed(1)} FP`, rawB: '' },
+    { key: 'def', label: 'Difesa (Solidità)', shortTitle: 'Difesa', acronym: 'DIF', valA: defScore, valB: 0, rawA: `${gaPerMatch.toFixed(2)} GA`, rawB: '' },
+    { key: 'con', label: 'Continuità', shortTitle: 'Vittorie', acronym: 'CON', valA: formScore, valB: 0, rawA: `${won}/${played} W`, rawB: '' },
+    { key: 'gol', label: 'Freddezza (Golo)', shortTitle: 'Golo', acronym: 'GOL', valA: goloScore, valB: 0, rawA: `${goloVal.toFixed(2)}x`, rawB: '' },
+    { key: 'elo', label: 'Atlas Power', shortTitle: 'Power', acronym: 'ELO', valA: eloPowerScore, valB: 0, rawA: `${atlasElo} pt`, rawB: '' }
+  ];
+
+  const radarSvg = renderH2HRadarSVG(radarAxes, teamMetric.teamName, '', 860, 680);
+
+  contentBox.innerHTML = `
+    <!-- Team Identity Header -->
+    <div class="flex flex-col items-center text-center">
+      <div class="w-24 h-24 rounded-3xl border-2 border-amber-400/50 p-2 bg-slate-900/80 shadow-2xl flex items-center justify-center mb-2">
+        <img src="${logoUrl}" alt="${teamMetric.teamName}" class="w-full h-full object-contain drop-shadow-xl" onerror="this.onerror=null; this.src='favicon-64x64.png'">
+      </div>
+
+      <h1 class="font-sport font-black text-3xl uppercase tracking-wider text-white">
+        ${teamMetric.teamName}
+      </h1>
+      <p class="text-xs uppercase tracking-widest text-slate-400 font-bold mt-0.5">
+        ${teamMetric.coach || 'Allenatore'}
+      </p>
+    </div>
+
+    <!-- 3-Track Elo Metrics Row -->
+    <div class="grid grid-cols-3 gap-2.5 w-full my-2">
+      <div class="p-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 text-center">
+        <div class="text-[10px] uppercase font-bold text-amber-400">⚡ Elo Puro</div>
+        <div class="font-sport font-black text-2xl text-white font-mono mt-0.5">${flatElo}</div>
+        <div class="text-[9px] text-slate-400 mt-0.5">Stagionale</div>
+      </div>
+
+      <div class="p-3 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 text-center">
+        <div class="text-[10px] uppercase font-bold text-indigo-400">🏛️ Storico</div>
+        <div class="font-sport font-black text-2xl text-white font-mono mt-0.5">${histElo}</div>
+        <div class="text-[9px] text-slate-400 mt-0.5">Con Palmarès</div>
+      </div>
+
+      <div class="p-3 rounded-2xl border border-purple-500/30 bg-purple-500/10 text-center">
+        <div class="text-[10px] uppercase font-bold text-purple-400">🔮 Atlas Power</div>
+        <div class="font-sport font-black text-2xl text-white font-mono mt-0.5">${atlasElo}</div>
+        <div class="text-[9px] text-slate-400 mt-0.5">All-Play</div>
+      </div>
+    </div>
+
+    <!-- 5-Axis Tactical Radar Showcase -->
+    <div class="w-full flex justify-center my-auto">
+      ${radarSvg}
+    </div>
+
+    <!-- Bottom Tactical Callout -->
+    <div class="w-full p-3 rounded-2xl border border-slate-800 bg-slate-900/60 text-center text-xs text-slate-400">
+      Radar tattico normalizzato su 5 dimensioni chiave di rendimento atletico e strategico.
     </div>
   `;
 

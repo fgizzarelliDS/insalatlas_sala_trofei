@@ -112,6 +112,12 @@ export function renderModalHeaderHTML(props: ModalHeaderProps): string {
                  class="hidden absolute right-0 top-full mt-1.5 w-60 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
                  style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--modal-text);">
               <button type="button"
+                      onclick="window.openStoryExportModal && window.openStoryExportModal('${escapedTeamName}', 'mc'); window.closeTeamMatchesShareDropdown && window.closeTeamMatchesShareDropdown();"
+                      class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer text-amber-500 dark:text-amber-400">
+                <i class="fa-solid fa-camera"></i>
+                <span>Crea Visual Story 9:16</span>
+              </button>
+              <button type="button"
                       onclick="window.exportTeamMatchesPNG && window.exportTeamMatchesPNG('${escapedTeamName}'); window.closeTeamMatchesShareDropdown && window.closeTeamMatchesShareDropdown();"
                       class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
                 <i class="fa-solid fa-download text-amber-500"></i>

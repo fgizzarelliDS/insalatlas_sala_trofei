@@ -624,7 +624,147 @@ export async function renderRecordsSummaryStoryCanvas(recordsList?: LeagueRecord
 }
 
 /**
- * 6. Renders High-Definition Vertical 9:16 Story for Matchday Recap & Results
+ * 6. Renders High-Definition Vertical 9:16 Story for Official League Standings
+ */
+export async function renderStandingsStoryCanvas(
+  customLiveData?: LiveSeasonDetails
+): Promise<HTMLCanvasElement> {
+  const liveData = customLiveData || getLiveSeasonDetails() || (typeof window !== 'undefined' ? (window as any).liveSeasonData : null);
+  if (!liveData) {
+    throw new Error('Dati di stagione live non disponibili per la generazione della story');
+  }
+
+  const seasonLabel = liveData.season || 'Live';
+  const standings: LiveTeamMetrics[] = liveData.standings || [];
+  const lastRound = liveData.lastCompletedRound || 1;
+
+  const { container, contentBox } = createStoryContainer(
+    'Classifica Ufficiale',
+    `Stagione ${seasonLabel}`
+  );
+
+  // Identify top offense and leader
+  const leader = standings[0];
+  const topOffense = standings.slice().sort((a, b) => (b.totalFantaPoints || 0) - (a.totalFantaPoints || 0))[0];
+
+  const rowsHTML = standings.map((t, idx) => {
+    const rank = idx + 1;
+    let rankBadgeStyle = 'border-slate-700 bg-slate-800/80 text-slate-300';
+    let rowBorder = 'border-slate-800/60';
+    let rowBg = 'bg-slate-900/60';
+
+    if (rank === 1) {
+      rankBadgeStyle = 'border-amber-400 bg-amber-500/25 text-amber-300 shadow-sm';
+      rowBorder = 'border-amber-500/40';
+      rowBg = 'bg-amber-950/20';
+    } else if (rank === 2) {
+      rankBadgeStyle = 'border-slate-300 bg-slate-400/25 text-slate-100 shadow-sm';
+      rowBorder = 'border-slate-400/30';
+      rowBg = 'bg-slate-800/40';
+    } else if (rank === 3) {
+      rankBadgeStyle = 'border-amber-700 bg-amber-800/25 text-amber-500 shadow-sm';
+      rowBorder = 'border-amber-700/30';
+      rowBg = 'bg-amber-950/10';
+    } else if (rank >= standings.length - 1) {
+      // Last 2 spots (Cucchiaio zone)
+      rankBadgeStyle = 'border-rose-700 bg-rose-900/30 text-rose-300';
+    } else if (rank >= standings.length - 3) {
+      // Playout zone
+      rankBadgeStyle = 'border-amber-800 bg-amber-950/40 text-amber-400';
+    }
+
+    const crest = t.logo || resolveTeamLogo(t.teamName);
+    const pts = typeof t.points === 'number' ? t.points : (t.played ? (t.won || 0) * 3 + (t.drawn || 0) : 0);
+    const played = t.played ?? 0;
+    const record = `${t.won ?? 0}-${t.drawn ?? 0}-${t.lost ?? 0}`;
+    const gd = (t.goalDiff ?? 0) > 0 ? `+${t.goalDiff}` : `${t.goalDiff ?? 0}`;
+    const fp = typeof t.totalFantaPoints === 'number' ? t.totalFantaPoints.toFixed(1) : '-';
+    const trend = t.statusBadge || '⚖️';
+
+    return `
+      <div class="flex items-center justify-between px-3.5 py-2.5 rounded-xl border ${rowBorder} ${rowBg} text-xs">
+        <!-- Rank & Team -->
+        <div class="flex items-center gap-2.5 w-[46%] min-w-0">
+          <span class="w-6 h-6 rounded-lg border font-sport font-black text-xs flex items-center justify-center shrink-0 ${rankBadgeStyle}">
+            ${rank}
+          </span>
+          <img src="${crest}" alt="${t.teamName}" class="w-7 h-7 object-contain shrink-0" onerror="this.onerror=null; this.src='favicon-64x64.png'">
+          <div class="min-w-0 flex-1">
+            <div class="font-bold text-white text-sm truncate leading-tight">${t.teamName}</div>
+            <div class="text-[10px] text-slate-400 truncate">${t.coach || ''}</div>
+          </div>
+        </div>
+
+        <!-- Points -->
+        <div class="w-[14%] text-center">
+          <span class="font-sport font-black text-xl ${rank === 1 ? 'text-amber-400' : 'text-white'} leading-none">
+            ${pts}
+          </span>
+          <span class="text-[9px] uppercase font-bold text-slate-400 block -mt-0.5">PT</span>
+        </div>
+
+        <!-- Record & Stats -->
+        <div class="w-[28%] text-right font-mono text-[11px] text-slate-300">
+          <div><strong class="text-white">${played}</strong> <span class="text-slate-400">g.</span> (${record})</div>
+          <div class="text-[10px] text-slate-400">${fp} FP · diff ${gd}</div>
+        </div>
+
+        <!-- Trend Status -->
+        <div class="w-[8%] text-right text-base shrink-0">
+          <span title="${t.statusLabel || ''}">${trend}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  contentBox.innerHTML = `
+    <!-- Top Hero -->
+    <div class="w-full flex flex-col items-center text-center">
+      <div class="flex items-center gap-2 px-4 py-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 text-amber-300 text-xs font-black uppercase tracking-wider mb-2">
+        <span>📊 CLASSIFICA UFFICIALE</span>
+      </div>
+      <h1 class="font-sport font-black text-4xl uppercase tracking-wider text-white">
+        Classifica Generale
+      </h1>
+      <p class="text-sm text-slate-400 font-bold mt-1">
+        ${LEAGUE.brand.championshipLabel || 'Serie Atlas'} • Dopo la ${lastRound}ª Giornata
+      </p>
+    </div>
+
+    <!-- Standings Table Container -->
+    <div class="w-full space-y-1.5 my-2">
+      ${rowsHTML}
+    </div>
+
+    <!-- Bottom Highlights Strip -->
+    <div class="grid grid-cols-2 gap-3 w-full">
+      <!-- Leader -->
+      <div class="p-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 flex items-center gap-3">
+        <span class="text-2xl">👑</span>
+        <div class="min-w-0">
+          <div class="text-[10px] uppercase font-black text-amber-400 tracking-wider">CAPOLISTA</div>
+          <div class="font-bold text-sm text-white truncate">${leader?.teamName || '-'}</div>
+          <div class="text-xs text-amber-300 font-sport font-black">${leader?.points ?? 0} Punti</div>
+        </div>
+      </div>
+
+      <!-- Top Offense -->
+      <div class="p-3 rounded-2xl border border-sky-500/40 bg-sky-500/10 flex items-center gap-3">
+        <span class="text-2xl">⚡</span>
+        <div class="min-w-0">
+          <div class="text-[10px] uppercase font-black text-sky-400 tracking-wider">MIGLIOR ATTACCO</div>
+          <div class="font-bold text-sm text-white truncate">${topOffense?.teamName || '-'}</div>
+          <div class="text-xs text-sky-300 font-mono font-black">${topOffense?.totalFantaPoints ?? 0} Tot. FP</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return renderNodeToCanvas(container, STORY_WIDTH, '#030712', 1.5, STORY_HEIGHT);
+}
+
+/**
+ * 7. Renders High-Definition Vertical 9:16 Story for Matchday Recap & Results (Sky/Gazzetta Style)
  */
 export async function renderMatchdayRecapStoryCanvas(
   targetRound?: number,
@@ -652,30 +792,66 @@ export async function renderMatchdayRecapStoryCanvas(
     `Stagione ${seasonLabel}`
   );
 
-  // Compute MVP (Highest FP of the round)
+  // 1. Compute round MVP (highest FP)
   let mvpTeam = '';
   let mvpScore = 0;
   let mvpLogo = '';
+  let mvpOpponent = '';
+  let mvpMatchOutcome = '';
+
+  // 2. Track all round performances for single-round luck highlights
+  interface TeamRoundPerf {
+    team: string;
+    logo: string;
+    fp: number;
+    goals: number;
+    opponent: string;
+    opponentGoals: number;
+    opponentFp: number;
+    outcome: 'W' | 'D' | 'L';
+  }
+  const perfs: TeamRoundPerf[] = [];
 
   matches.forEach((m: any) => {
     const hFp = Number(m.homeFantaPoints) || 0;
     const aFp = Number(m.awayFantaPoints) || 0;
+    const hScore = typeof m.homeScore === 'number' ? m.homeScore : 0;
+    const aScore = typeof m.awayScore === 'number' ? m.awayScore : 0;
+    const hLogo = m.homeLogo || resolveTeamLogo(m.homeTeam);
+    const aLogo = m.awayLogo || resolveTeamLogo(m.awayTeam);
+
+    const hOutcome: 'W' | 'D' | 'L' = hScore > aScore ? 'W' : (hScore < aScore ? 'L' : 'D');
+    const aOutcome: 'W' | 'D' | 'L' = aScore > hScore ? 'W' : (aScore < hScore ? 'L' : 'D');
+
     if (hFp > mvpScore) {
       mvpScore = hFp;
       mvpTeam = m.homeTeam;
-      mvpLogo = m.homeLogo || resolveTeamLogo(m.homeTeam);
+      mvpLogo = hLogo;
+      mvpOpponent = m.awayTeam;
+      mvpMatchOutcome = `${hScore} - ${aScore}`;
     }
     if (aFp > mvpScore) {
       mvpScore = aFp;
       mvpTeam = m.awayTeam;
-      mvpLogo = m.awayLogo || resolveTeamLogo(m.awayTeam);
+      mvpLogo = aLogo;
+      mvpOpponent = m.homeTeam;
+      mvpMatchOutcome = `${aScore} - ${hScore}`;
     }
+
+    perfs.push({ team: m.homeTeam, logo: hLogo, fp: hFp, goals: hScore, opponent: m.awayTeam, opponentGoals: aScore, opponentFp: aFp, outcome: hOutcome });
+    perfs.push({ team: m.awayTeam, logo: aLogo, fp: aFp, goals: aScore, opponent: m.homeTeam, opponentGoals: hScore, opponentFp: hFp, outcome: aOutcome });
   });
 
-  // Schedule luck delta highlights
-  const luckyTeam = liveData.standings?.slice().sort((a: any, b: any) => (b.deltaLuck ?? 0) - (a.deltaLuck ?? 0))[0];
-  const unluckyTeam = liveData.standings?.slice().sort((a: any, b: any) => (a.deltaLuck ?? 0) - (b.deltaLuck ?? 0))[0];
+  // Calculate single-round luck:
+  // - Cynical winner: winner with lowest FP
+  const winners = perfs.filter(p => p.outcome === 'W').sort((a, b) => a.fp - b.fp);
+  const cynicalWinner = winners.length > 0 ? winners[0] : null;
 
+  // - Unlucky non-winner: non-winner (D or L) with highest FP
+  const nonWinners = perfs.filter(p => p.outcome !== 'W').sort((a, b) => b.fp - a.fp);
+  const unluckyNonWinner = nonWinners.length > 0 ? nonWinners[0] : null;
+
+  // Unified Tabellone Risultati Card (Sky/Gazzetta Style)
   const matchesHTML = matches.map((m: any) => {
     const hScore = m.homeScore ?? '-';
     const aScore = m.awayScore ?? '-';
@@ -688,32 +864,32 @@ export async function renderMatchdayRecapStoryCanvas(
     const isAwayWinner = typeof m.homeScore === 'number' && typeof m.awayScore === 'number' && m.awayScore > m.homeScore;
 
     return `
-      <div class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-800 bg-slate-900/75 shadow-md">
+      <div class="flex items-center justify-between px-4 py-3 hover:bg-white/[0.02]">
         <!-- Home Team -->
-        <div class="flex items-center gap-3 w-[40%]">
-          <img src="${hLogo}" alt="${m.homeTeam}" class="w-9 h-9 object-contain shrink-0" onerror="this.onerror=null; this.src='favicon-64x64.png'">
-          <div class="min-w-0">
+        <div class="flex items-center gap-3 w-[40%] min-w-0">
+          <img src="${hLogo}" alt="${m.homeTeam}" class="w-8 h-8 object-contain shrink-0 drop-shadow" onerror="this.onerror=null; this.src='favicon-64x64.png'">
+          <div class="min-w-0 flex-1">
             <div class="font-bold text-sm text-white truncate ${isHomeWinner ? 'text-amber-400 font-black' : ''}">
               ${m.homeTeam}
             </div>
-            <div class="text-[10px] text-slate-400 font-mono">${hFp} FP</div>
+            <div class="text-[11px] text-slate-400 font-mono font-medium">${hFp} FP</div>
           </div>
         </div>
 
-        <!-- Score Badge -->
-        <div class="px-3 py-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 font-sport font-black text-lg text-amber-300">
+        <!-- Center Score Badge -->
+        <div class="px-3.5 py-1.5 rounded-xl border border-amber-500/40 bg-amber-500/15 font-sport font-black text-xl text-amber-300 min-w-[78px] text-center shadow-inner tracking-wider">
           ${hScore} - ${aScore}
         </div>
 
         <!-- Away Team -->
-        <div class="flex items-center justify-end gap-3 w-[40%] text-right">
-          <div class="min-w-0">
+        <div class="flex items-center justify-end gap-3 w-[40%] min-w-0 text-right">
+          <div class="min-w-0 flex-1">
             <div class="font-bold text-sm text-white truncate ${isAwayWinner ? 'text-amber-400 font-black' : ''}">
               ${m.awayTeam}
             </div>
-            <div class="text-[10px] text-slate-400 font-mono">${aFp} FP</div>
+            <div class="text-[11px] text-slate-400 font-mono font-medium">${aFp} FP</div>
           </div>
-          <img src="${aLogo}" alt="${m.awayTeam}" class="w-9 h-9 object-contain shrink-0" onerror="this.onerror=null; this.src='favicon-64x64.png'">
+          <img src="${aLogo}" alt="${m.awayTeam}" class="w-8 h-8 object-contain shrink-0 drop-shadow" onerror="this.onerror=null; this.src='favicon-64x64.png'">
         </div>
       </div>
     `;
@@ -728,37 +904,44 @@ export async function renderMatchdayRecapStoryCanvas(
       <h1 class="font-sport font-black text-5xl uppercase tracking-wider text-white">
         Giornata ${rNum}
       </h1>
-      <p class="text-sm text-slate-400 font-bold mt-1.5">
-        Resoconto Ufficiale • Serie Atlas
+      <p class="text-sm text-slate-400 font-bold mt-1">
+        ${LEAGUE.brand.championshipLabel || 'Serie Atlas'} • Risultati Ufficiali del Turno
       </p>
     </div>
 
-    <!-- Matchday Matches Grid -->
-    <div class="w-full space-y-2.5 my-3">
+    <!-- Unified Tabellone Risultati Card (Sky/Gazzetta Style) -->
+    <div class="w-full rounded-3xl border border-slate-700/60 bg-slate-900/80 shadow-2xl overflow-hidden divide-y divide-slate-800/80 my-2">
       ${matchesHTML}
     </div>
 
-    <!-- Highlights Row: MVP & Luck Callouts -->
-    <div class="grid grid-cols-2 gap-3 w-full">
+    <!-- Highlights Row: 2 Rich Structured Cards -->
+    <div class="grid grid-cols-2 gap-3.5 w-full">
       <!-- MVP Card -->
-      <div class="p-3.5 rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/15 to-transparent flex items-center gap-3">
-        <img src="${mvpLogo}" alt="${mvpTeam}" class="w-12 h-12 object-contain shrink-0 drop-shadow-md" onerror="this.onerror=null; this.src='favicon-64x64.png'">
-        <div class="min-w-0">
+      <div class="p-4 rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/15 via-slate-900/60 to-transparent flex items-center gap-3.5 shadow-lg">
+        <img src="${mvpLogo}" alt="${mvpTeam}" class="w-14 h-14 object-contain shrink-0 drop-shadow-md" onerror="this.onerror=null; this.src='favicon-64x64.png'">
+        <div class="min-w-0 flex-1">
           <div class="text-[10px] uppercase font-black text-amber-400 tracking-wider">🌟 MVP DI GIORNATA</div>
-          <div class="font-bold text-sm text-white truncate">${mvpTeam}</div>
-          <div class="text-xs font-mono font-black text-amber-300">${mvpScore.toFixed(1)} FantaPunti</div>
+          <div class="font-bold text-base text-white truncate">${mvpTeam}</div>
+          <div class="text-sm font-mono font-black text-amber-300 mt-0.5">${mvpScore.toFixed(1)} FantaPunti</div>
+          <div class="text-[10px] text-slate-400 truncate mt-0.5">${mvpMatchOutcome} vs ${mvpOpponent}</div>
         </div>
       </div>
 
-      <!-- Luck & Merit Callout -->
-      <div class="p-3.5 rounded-2xl border border-indigo-500/40 bg-gradient-to-br from-indigo-500/15 to-transparent flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-xl shrink-0">
-          🎲
+      <!-- Dea Bendata & Beffa Card (Single Round Calculated) -->
+      <div class="p-4 rounded-2xl border border-indigo-500/40 bg-gradient-to-br from-indigo-500/15 via-slate-900/60 to-transparent flex flex-col justify-between shadow-lg">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="text-base">🎲</span>
+          <span class="text-[10px] uppercase font-black text-indigo-300 tracking-wider">DEA BENDATA &amp; SFIGA</span>
         </div>
-        <div class="min-w-0">
-          <div class="text-[10px] uppercase font-black text-indigo-300 tracking-wider">DEA BENDATA &amp; SFIGA</div>
-          <div class="text-xs text-slate-300 truncate">🍀 +Fortunato: <strong class="text-white">${luckyTeam?.teamName || '-'}</strong></div>
-          <div class="text-xs text-slate-400 truncate">⚡ Più Tartassato: <strong class="text-slate-200">${unluckyTeam?.teamName || '-'}</strong></div>
+        <div class="space-y-1.5">
+          <div class="text-xs text-slate-300 flex items-center justify-between gap-1">
+            <span class="truncate">🍀 <strong>${cynicalWinner ? cynicalWinner.team : '-'}</strong></span>
+            <span class="text-[11px] font-mono text-emerald-400 font-bold shrink-0">${cynicalWinner ? `${cynicalWinner.fp.toFixed(1)} FP (W)` : ''}</span>
+          </div>
+          <div class="text-xs text-slate-400 flex items-center justify-between gap-1">
+            <span class="truncate">⚡ <strong>${unluckyNonWinner ? unluckyNonWinner.team : '-'}</strong></span>
+            <span class="text-[11px] font-mono text-rose-400 font-bold shrink-0">${unluckyNonWinner ? `${unluckyNonWinner.fp.toFixed(1)} FP (${unluckyNonWinner.outcome})` : ''}</span>
+          </div>
         </div>
       </div>
     </div>

@@ -383,6 +383,12 @@ declare global {
     selectProfileEloPoint: typeof selectProfileEloPoint;
     selectEloChartPoint: typeof selectEloChartPoint;
     toggleProfileEloMode: typeof toggleProfileEloMode;
+    openStoryExportModal: typeof openStoryExportModal;
+    closeStoryExportModal: typeof closeStoryExportModal;
+    switchStoryExportTab: typeof switchStoryExportTab;
+    changeStoryExportTeam: typeof changeStoryExportTeam;
+    copyCurrentStoryCard: typeof copyCurrentStoryCard;
+    downloadCurrentStoryCard: typeof downloadCurrentStoryCard;
   }
 }
 

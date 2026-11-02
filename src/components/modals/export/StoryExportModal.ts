@@ -14,6 +14,7 @@ import { getLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 import { showToast } from '@/utils/toast';
 import { LEAGUE } from '@/config';
 import {
+  renderStandingsStoryCanvas,
   renderMatchdayRecapStoryCanvas,
   renderMonteCarloStoryCanvas,
   renderTeamPowerRadarStoryCanvas
@@ -23,17 +24,20 @@ import {
   downloadBlob
 } from '@/export/renderers/core';
 
-export type StoryCardType = 'recap' | 'mc' | 'power';
+export type StoryCardType = 'classifica' | 'recap' | 'mc' | 'power';
+export type StoryContext = 'league' | 'team';
 
 interface StoryModalState {
   activeTab: StoryCardType;
+  context: StoryContext;
   selectedTeamName: string;
   isGenerating: boolean;
   activeCanvas: HTMLCanvasElement | null;
 }
 
 const modalState: StoryModalState = {
-  activeTab: 'recap',
+  activeTab: 'classifica',
+  context: 'league',
   selectedTeamName: '',
   isGenerating: false,
   activeCanvas: null
@@ -46,14 +50,27 @@ function getEffectiveLiveData() {
 /**
  * Opens the Visual Story & Share Cards Modal
  */
-export function openStoryExportModal(teamName?: string, defaultTab: StoryCardType = 'recap'): void {
+export function openStoryExportModal(
+  teamName?: string,
+  defaultTab?: StoryCardType,
+  context?: StoryContext
+): void {
   const liveData = getEffectiveLiveData();
   if (!liveData || !liveData.standings || liveData.standings.length === 0) {
     showToast('Nessun dato di stagione live disponibile per creare la story', 'info');
     return;
   }
 
-  modalState.activeTab = defaultTab;
+  // Determine context: if explicitly passed, use it; otherwise if teamName is provided, default to 'team', else 'league'
+  const resolvedContext: StoryContext = context || (teamName ? 'team' : 'league');
+  modalState.context = resolvedContext;
+
+  if (defaultTab) {
+    modalState.activeTab = defaultTab;
+  } else {
+    modalState.activeTab = resolvedContext === 'league' ? 'classifica' : 'mc';
+  }
+
   modalState.selectedTeamName = teamName || liveData.standings[0]?.teamName || '';
   modalState.isGenerating = false;
   modalState.activeCanvas = null;
@@ -151,7 +168,7 @@ function renderModalShell(container: HTMLElement): void {
   const liveData = getEffectiveLiveData();
   const standings = liveData?.standings || [];
 
-  container.className = 'fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md transition-opacity duration-200';
+  container.className = 'fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md transition-opacity duration-200';
   container.innerHTML = `
     <div class="relative w-full max-w-xl max-h-[94vh] flex flex-col rounded-3xl border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
          style="background-color: var(--modal-bg, #090d16); border-color: var(--table-border, #1e293b); color: var(--text-main, #f8fafc);">
@@ -186,27 +203,33 @@ function renderModalShell(container: HTMLElement): void {
       <div class="px-5 pt-3.5 pb-2 shrink-0 flex flex-col gap-2.5">
         <div class="flex items-center p-1 rounded-2xl border" style="background-color: var(--input-bg, #0f172a); border-color: var(--table-border, #1e293b);">
           <button type="button"
+                  id="tab-story-classifica"
+                  onclick="window.switchStoryExportTab && window.switchStoryExportTab('classifica')"
+                  class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${modalState.activeTab === 'classifica' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'} ${modalState.context === 'team' ? 'hidden' : ''}">
+            <span>📊 Classifica Live</span>
+          </button>
+          <button type="button"
                   id="tab-story-recap"
                   onclick="window.switchStoryExportTab && window.switchStoryExportTab('recap')"
-                  class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${modalState.activeTab === 'recap' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'}">
+                  class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${modalState.activeTab === 'recap' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'} ${modalState.context === 'team' ? 'hidden' : ''}">
             <span>📅 Recap Giornata</span>
           </button>
           <button type="button"
                   id="tab-story-mc"
                   onclick="window.switchStoryExportTab && window.switchStoryExportTab('mc')"
-                  class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${modalState.activeTab === 'mc' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'}">
+                  class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${modalState.activeTab === 'mc' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'} ${modalState.context === 'league' ? 'hidden' : ''}">
             <span>🎲 Quote Scudetto</span>
           </button>
           <button type="button"
                   id="tab-story-power"
                   onclick="window.switchStoryExportTab && window.switchStoryExportTab('power')"
-                  class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${modalState.activeTab === 'power' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'}">
+                  class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${modalState.activeTab === 'power' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'} ${modalState.context === 'league' ? 'hidden' : ''}">
             <span>⚡ Potenza &amp; Radar</span>
           </button>
         </div>
 
         <!-- Team Selector (Visible for team-level cards) -->
-        <div id="story-team-selector-container" class="flex items-center gap-2 ${modalState.activeTab === 'recap' ? 'hidden' : ''}">
+        <div id="story-team-selector-container" class="flex items-center gap-2 ${(modalState.context === 'league' || modalState.activeTab === 'classifica' || modalState.activeTab === 'recap') ? 'hidden' : ''}">
           <label for="story-team-select" class="text-xs font-bold text-slate-400 shrink-0">
             Squadra:
           </label>
@@ -267,21 +290,29 @@ function renderModalShell(container: HTMLElement): void {
  * Updates active tab styling in DOM
  */
 function updateTabUI(): void {
-  const tabs: StoryCardType[] = ['recap', 'mc', 'power'];
+  const tabs: StoryCardType[] = ['classifica', 'recap', 'mc', 'power'];
   tabs.forEach(t => {
     const btn = document.getElementById(`tab-story-${t}`);
     if (btn) {
-      if (t === modalState.activeTab) {
-        btn.className = 'flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer bg-amber-500 text-slate-950 shadow-sm';
+      const isHiddenByContext = (modalState.context === 'league' && (t === 'mc' || t === 'power')) ||
+                                (modalState.context === 'team' && (t === 'classifica' || t === 'recap'));
+      if (isHiddenByContext) {
+        btn.classList.add('hidden');
       } else {
-        btn.className = 'flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-slate-400 hover:text-white';
+        btn.classList.remove('hidden');
+      }
+
+      if (t === modalState.activeTab) {
+        btn.className = `flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer bg-amber-500 text-slate-950 shadow-sm ${isHiddenByContext ? 'hidden' : ''}`;
+      } else {
+        btn.className = `flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-slate-400 hover:text-white ${isHiddenByContext ? 'hidden' : ''}`;
       }
     }
   });
 
   const selectorContainer = document.getElementById('story-team-selector-container');
   if (selectorContainer) {
-    if (modalState.activeTab === 'recap') {
+    if (modalState.context === 'league' || modalState.activeTab === 'classifica' || modalState.activeTab === 'recap') {
       selectorContainer.classList.add('hidden');
     } else {
       selectorContainer.classList.remove('hidden');
@@ -307,7 +338,9 @@ async function generateAndRenderPreview(): Promise<void> {
     let canvas: HTMLCanvasElement;
     const selectedTeam = (liveData.standings || []).find((t: any) => t.teamName === modalState.selectedTeamName) || liveData.standings?.[0];
 
-    if (modalState.activeTab === 'recap') {
+    if (modalState.activeTab === 'classifica') {
+      canvas = await renderStandingsStoryCanvas(liveData);
+    } else if (modalState.activeTab === 'recap') {
       canvas = await renderMatchdayRecapStoryCanvas(undefined, liveData);
     } else if (modalState.activeTab === 'mc') {
       if (!selectedTeam) throw new Error('Squadra non trovata');

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
+  renderStandingsStoryCanvas,
   renderMatchdayRecapStoryCanvas,
   renderMonteCarloStoryCanvas,
   renderTeamPowerRadarStoryCanvas
@@ -223,6 +224,13 @@ describe('Phase 2: Visual Story & Share Cards Hub', () => {
     (globalThis as any).URL = originalURL;
   });
 
+  it('renders standings story canvas with complete table and highlights', async () => {
+    const canvas = await renderStandingsStoryCanvas(mockLiveData);
+    expect(canvas).toBeDefined();
+    expect(canvas.width).toBe(1080);
+    expect(canvas.height).toBe(1920);
+  });
+
   it('renders matchday recap story canvas with match scores, MVP and season details', async () => {
     const canvas = await renderMatchdayRecapStoryCanvas(2, mockLiveData);
     expect(canvas).toBeDefined();
@@ -258,6 +266,34 @@ describe('Phase 2: Visual Story & Share Cards Hub', () => {
     changeStoryExportTeam('Team Dragon');
 
     // Close modal
+    closeStoryExportModal();
+  });
+
+  it('filters tabs and elevates z-index based on context', () => {
+    // 1. League context
+    openStoryExportModal(undefined, 'classifica', 'league');
+    let modalEl = (globalThis as any).document.getElementById('story-export-modal');
+    expect(modalEl).not.toBeNull();
+    expect(modalEl?.className).toContain('z-[100]');
+    expect(modalEl?.innerHTML).toContain('id="tab-story-classifica"');
+    expect(modalEl?.innerHTML).toContain('id="tab-story-recap"');
+    // Team tabs should have 'hidden' class in league context
+    expect(modalEl?.innerHTML).toMatch(/id="tab-story-mc"[^>]*hidden/);
+    expect(modalEl?.innerHTML).toMatch(/id="tab-story-power"[^>]*hidden/);
+
+    closeStoryExportModal();
+
+    // 2. Team context (from Team Matches Modal)
+    openStoryExportModal('Team Dragon', 'mc', 'team');
+    modalEl = (globalThis as any).document.getElementById('story-export-modal');
+    expect(modalEl).not.toBeNull();
+    expect(modalEl?.className).toContain('z-[100]');
+    // League tabs should have 'hidden' class in team context
+    expect(modalEl?.innerHTML).toMatch(/id="tab-story-classifica"[^>]*hidden/);
+    expect(modalEl?.innerHTML).toMatch(/id="tab-story-recap"[^>]*hidden/);
+    // Team tabs should not have 'hidden' class
+    expect(modalEl?.innerHTML).not.toMatch(/id="tab-story-mc"[^>]*hidden/);
+
     closeStoryExportModal();
   });
 });

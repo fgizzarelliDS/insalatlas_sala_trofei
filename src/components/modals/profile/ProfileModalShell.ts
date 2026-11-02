@@ -80,13 +80,13 @@ export function getProfileModalShellHTML(): string {
           class="min-w-0 flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 sm:gap-1.5 border border-transparent opacity-60 hover:opacity-100"
           style="color: var(--text-main);">
           <i class="fa-solid fa-clock-rotate-left text-[11px] sm:text-xs shrink-0"></i>
-          <span class="truncate"><span class="hidden sm:inline">Cronologia &amp; </span>Piazzamenti</span>
+          <span class="truncate">Piazzamenti</span>
         </button>
         <button id="profile-tab-btn-badges" type="button" onclick="switchProfileModalTab('badges')"
           class="min-w-0 flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 sm:gap-1.5 border border-transparent opacity-60 hover:opacity-100"
           style="color: var(--text-main);">
           <i class="fa-solid fa-medal text-[11px] sm:text-xs shrink-0"></i>
-          <span class="truncate"><span class="hidden sm:inline">Hall of Fame &amp; </span>Badges</span>
+          <span class="truncate">Hall of Fame</span>
         </button>
       </div>
 

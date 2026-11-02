@@ -20,6 +20,7 @@ import {
   buildHistoricalRoundContext,
   computeMatchOdds1X2,
   extractFallbackElo,
+  resolveActiveSeasonKey,
   type LeagueDistributionContext
 } from '@/analytics/oddsEngine';
 import { computeLeagueSoS } from '@/analytics/sosEngine';
@@ -433,10 +434,10 @@ export async function openTeamMatchesModal(
         if (!isHistorical) {
           return extractFallbackElo(st.elo, tr);
         }
-        const targetSeason = liveData.season || '2026/27';
+        const targetSeason = liveData.season || resolveActiveSeasonKey();
         const pt = tr?.trajectory?.find(p =>
           p.round === r.roundNumber &&
-          (p.season === targetSeason || (!p.season && targetSeason === '2026/27')) &&
+          (p.season === targetSeason || (!p.season && targetSeason === resolveActiveSeasonKey())) &&
           (p.competitionCategory === 'Campionato' || !p.competitionCategory)
         );
         if (pt) {

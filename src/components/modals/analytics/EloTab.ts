@@ -73,9 +73,21 @@ const getDefaultEloSeason = (): string =>
     ? 'last10'
     : 'all';
 
+const getDefaultScatterSeason = (): string => {
+  if (typeof window !== 'undefined') {
+    const w = window as any;
+    if (w.liveSeasonData?.season) return w.liveSeasonData.season;
+    if (w.fantasyData?.competitions && Array.isArray(w.fantasyData.competitions)) {
+      const active = w.fantasyData.competitions.find((c: any) => c.in_progress || c.status === 'in_progress');
+      if (active?.season) return active.season;
+    }
+  }
+  return 'all';
+};
+
 let currentEloModalTab: EloModalTab = 'trajectories';
 let selectedEloSeason: string = getDefaultEloSeason();
-let selectedScatterSeason: string = '2026/27';
+let selectedScatterSeason: string = getDefaultScatterSeason();
 let currentLuckSubMode: LuckScatterSubMode = 'allPlay';
 let eloSeasonUserModified = false;
 const hiddenManagerIds: Set<string> = new Set();
@@ -617,7 +629,7 @@ export function renderEloTab(): string {
         </div>
         <p class="text-[11px] opacity-75 mt-0.5 max-w-xl" style="color: var(--text-muted);">
           ${activeMode === 'flat'
-            ? '<strong>Traccia Pura (1500 Baseline):</strong> Reset a 1500 per tutti a inizio 2025/26. Calibrazione Hybrid-Capped con risoluzione del paradosso dei pareggi e carryover inter-stagionale mean-centered.'
+            ? '<strong>Traccia Pura (1500 Baseline):</strong> Reset a 1500 per tutti alla prima stagione tracciata. Calibrazione Hybrid-Capped con risoluzione del paradosso dei pareggi e carryover inter-stagionale mean-centered.'
             : activeMode === 'historical'
               ? '<strong>Traccia Storica (Ponderata):</strong> Inizializzazione basata sull\'Indice di Prestigio dell\'Albo d\'Oro (1350-1650 pt) con aggiornamento bilaterale Hybrid-Capped.'
               : '<strong>Traccia Atlas Power (All-Play):</strong> Modello continuo basato sulla funzione sigmoide di Fermi-Dirac (s = 8.5) e kernel All-Play simmetrico, isolando la qualità assoluta del roster dal calendario.'}
@@ -653,9 +665,11 @@ export function renderEloTab(): string {
       ...Object.keys(p.profile.flat?.seasons || {})
     ]).filter(k => k !== 'all')
   )).sort().reverse();
-  const availableSeasons = extractedSeasons.length > 0 ? extractedSeasons : ['2026/27', '2025/26'];
+  const liveSeason = (typeof window !== 'undefined' && (window as any).liveSeasonData?.season) || '';
+  const fallbackSeasons = liveSeason ? [liveSeason, '2025/26'] : ['2026/27', '2025/26'];
+  const availableSeasons = extractedSeasons.length > 0 ? extractedSeasons : fallbackSeasons;
   if (selectedScatterSeason !== 'all' && !availableSeasons.includes(selectedScatterSeason)) {
-    selectedScatterSeason = availableSeasons[0];
+    selectedScatterSeason = availableSeasons[0] || 'all';
   }
 
   // Season Pills for Scatter Tabs

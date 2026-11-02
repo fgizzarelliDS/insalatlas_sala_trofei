@@ -336,7 +336,8 @@ export function renderEloTrajectoryChart(
       ].filter(k => k !== 'all');
     })
   )).sort().reverse();
-  const availableSeasons = extractedSeasons.length > 0 ? extractedSeasons : ['2026/27', '2025/26'];
+  const liveSeason = (typeof window !== 'undefined' && (window as any).liveSeasonData?.season) || '';
+  const availableSeasons = extractedSeasons.length > 0 ? extractedSeasons : (liveSeason ? [liveSeason] : []);
 
   return `
     <div class="p-3.5 sm:p-4 rounded-2xl border flex flex-col gap-3"

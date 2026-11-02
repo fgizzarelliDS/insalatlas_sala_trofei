@@ -139,16 +139,33 @@ export function createDomainProfileFromOddsConfig(
 }
 
 /**
+ * Resolves the currently active season key dynamically from global context or fallback.
+ */
+export function resolveActiveSeasonKey(explicitKey?: string): string {
+  if (explicitKey) return explicitKey;
+  if (typeof window !== 'undefined') {
+    const w = window as any;
+    if (w.liveSeasonData?.season) return w.liveSeasonData.season;
+    if (w.fantasyData?.competitions && Array.isArray(w.fantasyData.competitions)) {
+      const active = w.fantasyData.competitions.find((c: any) => c.in_progress || c.status === 'in_progress');
+      if (active?.season) return active.season;
+    }
+  }
+  return '2026/27';
+}
+
+/**
  * Extracts offensive power with early-season Bayesian shrinkage.
  * Kept for backward compatibility and fallback telemetry.
  */
 export function extractShrunkOffensivePower(
   standing: LiveTeamMetrics,
-  seasonKey: string = '2026/27',
+  seasonKey?: string,
   fallbackLeagueMean: number = 70.0,
   kShrinkage: number = 5
 ): number {
-  const currStats = standing.elo?.seasonStats?.[seasonKey];
+  const effectiveSeason = resolveActiveSeasonKey(seasonKey);
+  const currStats = standing.elo?.seasonStats?.[effectiveSeason];
   const allStats = standing.elo?.seasonStats?.['all'];
 
   const n = typeof currStats?.played === 'number' && currStats.played > 0 ? currStats.played : 0;
@@ -178,9 +195,10 @@ export function extractShrunkOffensivePower(
  * Extracts a manager's career offensive power strictly prior to the current season.
  * Avoids circular contamination from the current season and future rounds in historical replay.
  */
-export function extractCareerPriorFP(standing: LiveTeamMetrics, seasonKey: string = '2026/27'): number | null {
+export function extractCareerPriorFP(standing: LiveTeamMetrics, seasonKey?: string): number | null {
+  const effectiveSeason = resolveActiveSeasonKey(seasonKey);
   const all = standing.elo?.seasonStats?.['all'];
-  const curr = standing.elo?.seasonStats?.[seasonKey];
+  const curr = standing.elo?.seasonStats?.[effectiveSeason];
   const allPlayed = all?.played ?? 0;
   const currPlayed = curr?.played ?? 0;
   const pastPlayed = allPlayed - currPlayed;
@@ -228,9 +246,10 @@ export function extractCareerPriorFP(standing: LiveTeamMetrics, seasonKey: strin
 export function buildLeagueDistributionContext(
   standings: LiveTeamMetrics[] = [],
   mode: EloTrackMode = 'atlas',
-  seasonKey: string = '2026/27',
+  seasonKey?: string,
   customProfile?: Partial<LeagueDomainProfile>
 ): LeagueDistributionContext {
+  const effectiveSeason = resolveActiveSeasonKey(seasonKey);
   const baseProfile = DOMAIN_PROFILES.FANTACALCIO_NEUTRAL;
   const profile: LeagueDomainProfile = {
     ...baseProfile,
@@ -251,7 +270,7 @@ export function buildLeagueDistributionContext(
 
   // Games played in current season across teams
   const gamesPlayedCounts = standings.map(s => {
-    const curr = s.elo?.seasonStats?.[seasonKey]?.played;
+    const curr = s.elo?.seasonStats?.[effectiveSeason]?.played;
     if (typeof curr === 'number' && curr > 0) return curr;
     return s.recentForm?.length ?? 0;
   }).filter(n => n > 0);
@@ -269,7 +288,7 @@ export function buildLeagueDistributionContext(
 
   // 1. Current season raw FP distribution
   const teamCurrStats = standings.map(s => {
-    const curr = s.elo?.seasonStats?.[seasonKey];
+    const curr = s.elo?.seasonStats?.[effectiveSeason];
     const n = typeof curr?.played === 'number' && curr.played > 0
       ? curr.played
       : (s.recentForm?.length ?? 0);
@@ -287,7 +306,7 @@ export function buildLeagueDistributionContext(
   const stdCurrFP = Math.max(profile.minSigmaPower, rawStdCurrFP);
 
   // 2. Career prior FP distribution across returning managers (without circular leakage or hardcoded years)
-  const teamPriorFPs = standings.map(s => extractCareerPriorFP(s, seasonKey)).filter((v): v is number => v !== null);
+  const teamPriorFPs = standings.map(s => extractCareerPriorFP(s, effectiveSeason)).filter((v): v is number => v !== null);
 
   const meanPriorFP = teamPriorFPs.length > 0 ? teamPriorFPs.reduce((a, b) => a + b, 0) / teamPriorFPs.length : meanCurrFP;
   const rawStdPriorFP = teamPriorFPs.length > 1
@@ -301,7 +320,7 @@ export function buildLeagueDistributionContext(
 
   teamCurrStats.forEach(({ standing: s, n, fp }) => {
     const zCurr = fp !== null ? (fp - meanCurrFP) / stdCurrFP : 0.0;
-    const priorFP = extractCareerPriorFP(s, seasonKey);
+    const priorFP = extractCareerPriorFP(s, effectiveSeason);
     const zPrior = priorFP !== null ? (priorFP - meanPriorFP) / stdPriorFP : 0.0; // rookies anchor cleanly to 0.0
 
     // Blend unit-normal Z-scores
@@ -346,14 +365,14 @@ export function buildHistoricalRoundContext(
   mode: EloTrackMode = 'atlas'
 ): LeagueDistributionContext {
   const standings = liveData.standings || [];
-  const targetSeason = liveData.season || '2026/27';
+  const targetSeason = liveData.season || resolveActiveSeasonKey();
 
   const historicalStandings: LiveTeamMetrics[] = standings.map(s => {
     const track = getManagerEloTrack(s.elo, mode);
     const allTrajectory = track?.trajectory || [];
     // Filter specifically to the relevant season and championship competition to prevent cross-season round collision
     const trajectory = allTrajectory.filter(p =>
-      (p.season === targetSeason || (!p.season && targetSeason === '2026/27')) &&
+      (p.season === targetSeason || (!p.season && targetSeason === resolveActiveSeasonKey())) &&
       (p.competitionCategory === 'Campionato' || !p.competitionCategory)
     );
     const matchAtRound = trajectory.find(p => p.round === targetRound);

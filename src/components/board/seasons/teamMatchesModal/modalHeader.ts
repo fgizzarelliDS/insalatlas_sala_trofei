@@ -114,8 +114,8 @@ export function renderModalHeaderHTML(props: ModalHeaderProps): string {
               <button type="button"
                       onclick="window.openStoryExportModal && window.openStoryExportModal('${escapedTeamName}', 'mc', 'team'); window.closeTeamMatchesShareDropdown && window.closeTeamMatchesShareDropdown();"
                       class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer text-amber-500 dark:text-amber-400">
-                <i class="fa-solid fa-camera"></i>
-                <span>Crea Visual Story 9:16</span>
+                <i class="fa-solid fa-mobile-screen text-indigo-400"></i>
+                <span>Story (9:16)</span>
               </button>
               <button type="button"
                       onclick="window.exportTeamMatchesPNG && window.exportTeamMatchesPNG('${escapedTeamName}'); window.closeTeamMatchesShareDropdown && window.closeTeamMatchesShareDropdown();"

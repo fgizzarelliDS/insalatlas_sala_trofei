@@ -851,8 +851,25 @@ export async function renderMatchdayRecapStoryCanvas(
   const nonWinners = perfs.filter(p => p.outcome !== 'W').sort((a, b) => b.fp - a.fp);
   const unluckyNonWinner = nonWinners.length > 0 ? nonWinners[0] : null;
 
-  // Unified Tabellone Risultati Card (Sky/Gazzetta Style)
-  const matchesHTML = matches.map((m: any) => {
+  // 3. Compute overall round stats for the 8th slot card
+  let totalGoals = 0;
+  let totalFP = 0;
+  let maxGoalsMatch: any = null;
+  let maxGoals = -1;
+
+  matches.forEach((m: any) => {
+    const g = (typeof m.homeScore === 'number' ? m.homeScore : 0) + (typeof m.awayScore === 'number' ? m.awayScore : 0);
+    totalGoals += g;
+    totalFP += (Number(m.homeFantaPoints) || 0) + (Number(m.awayFantaPoints) || 0);
+    if (g > maxGoals) {
+      maxGoals = g;
+      maxGoalsMatch = m;
+    }
+  });
+  const avgFP = matches.length > 0 ? (totalFP / (matches.length * 2)).toFixed(1) : '0.0';
+
+  // Build 2-column Duel Cards (No Name Truncation)
+  const cardsHTML = matches.map((m: any, idx: number) => {
     const hScore = m.homeScore ?? '-';
     const aScore = m.awayScore ?? '-';
     const hFp = typeof m.homeFantaPoints === 'number' ? m.homeFantaPoints.toFixed(1) : '-';
@@ -864,36 +881,79 @@ export async function renderMatchdayRecapStoryCanvas(
     const isAwayWinner = typeof m.homeScore === 'number' && typeof m.awayScore === 'number' && m.awayScore > m.homeScore;
 
     return `
-      <div class="flex items-center justify-between px-4 py-3 hover:bg-white/[0.02]">
-        <!-- Home Team -->
-        <div class="flex items-center gap-3 w-[40%] min-w-0">
-          <img src="${hLogo}" alt="${m.homeTeam}" class="w-8 h-8 object-contain shrink-0 drop-shadow" onerror="this.onerror=null; this.src='favicon-64x64.png'">
-          <div class="min-w-0 flex-1">
-            <div class="font-bold text-sm text-white truncate ${isHomeWinner ? 'text-amber-400 font-black' : ''}">
+      <div class="rounded-2xl border border-slate-700/60 bg-slate-900/80 p-3.5 flex flex-col justify-between shadow-lg">
+        <!-- Card Top Bar: Duel Number & Status -->
+        <div class="flex items-center justify-between text-[11px] font-mono pb-1.5 mb-1 border-b border-slate-800/80">
+          <span class="text-[10px] uppercase font-extrabold tracking-wider text-amber-400/90">DUELLO #${idx + 1}</span>
+          <span class="text-[9px] uppercase font-bold text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-md">FINALE</span>
+        </div>
+
+        <!-- Team A Row (Full Name, No Truncation) -->
+        <div class="flex items-center justify-between gap-2 py-1">
+          <div class="flex items-center gap-2.5 min-w-0 flex-1">
+            <img src="${hLogo}" alt="${m.homeTeam}" class="w-7 h-7 object-contain rounded-full bg-white/10 shrink-0 drop-shadow" onerror="this.onerror=null; this.src='favicon-64x64.png'">
+            <span class="font-bold text-sm leading-tight text-white ${isHomeWinner ? 'text-amber-400 font-black' : ''}">
               ${m.homeTeam}
-            </div>
-            <div class="text-[11px] text-slate-400 font-mono font-medium">${hFp} FP</div>
+            </span>
+          </div>
+          <div class="flex items-center gap-2 shrink-0 pl-1.5">
+            <span class="font-sport font-black text-xl leading-none ${isHomeWinner ? 'text-amber-400' : 'text-slate-200'}">
+              ${hScore}
+            </span>
+            <span class="text-xs font-mono font-bold text-slate-400">
+              (${hFp} FP)
+            </span>
           </div>
         </div>
 
-        <!-- Center Score Badge -->
-        <div class="px-3.5 py-1.5 rounded-xl border border-amber-500/40 bg-amber-500/15 font-sport font-black text-xl text-amber-300 min-w-[78px] text-center shadow-inner tracking-wider">
-          ${hScore} - ${aScore}
-        </div>
+        <!-- Divider -->
+        <div class="h-px bg-slate-800/80 my-1"></div>
 
-        <!-- Away Team -->
-        <div class="flex items-center justify-end gap-3 w-[40%] min-w-0 text-right">
-          <div class="min-w-0 flex-1">
-            <div class="font-bold text-sm text-white truncate ${isAwayWinner ? 'text-amber-400 font-black' : ''}">
+        <!-- Team B Row (Full Name, No Truncation) -->
+        <div class="flex items-center justify-between gap-2 py-1">
+          <div class="flex items-center gap-2.5 min-w-0 flex-1">
+            <img src="${aLogo}" alt="${m.awayTeam}" class="w-7 h-7 object-contain rounded-full bg-white/10 shrink-0 drop-shadow" onerror="this.onerror=null; this.src='favicon-64x64.png'">
+            <span class="font-bold text-sm leading-tight text-white ${isAwayWinner ? 'text-amber-400 font-black' : ''}">
               ${m.awayTeam}
-            </div>
-            <div class="text-[11px] text-slate-400 font-mono font-medium">${aFp} FP</div>
+            </span>
           </div>
-          <img src="${aLogo}" alt="${m.awayTeam}" class="w-8 h-8 object-contain shrink-0 drop-shadow" onerror="this.onerror=null; this.src='favicon-64x64.png'">
+          <div class="flex items-center gap-2 shrink-0 pl-1.5">
+            <span class="font-sport font-black text-xl leading-none ${isAwayWinner ? 'text-amber-400' : 'text-slate-200'}">
+              ${aScore}
+            </span>
+            <span class="text-xs font-mono font-bold text-slate-400">
+              (${aFp} FP)
+            </span>
+          </div>
         </div>
       </div>
     `;
   }).join('');
+
+  // 8th Slot: Round Stats Tile
+  const roundStatsHTML = `
+    <div class="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-slate-900/80 to-transparent p-3.5 flex flex-col justify-between shadow-lg">
+      <div class="flex items-center justify-between text-[11px] font-mono pb-1.5 mb-1 border-b border-amber-500/20">
+        <span class="text-[10px] uppercase font-extrabold tracking-wider text-amber-400">📊 STATS GIORNATA</span>
+        <span class="text-[9px] uppercase font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-md">TURNO ${rNum}</span>
+      </div>
+      <div class="grid grid-cols-2 gap-2 text-center py-1 flex-1 items-center">
+        <div class="p-2 rounded-xl bg-slate-950/40 border border-slate-800">
+          <div class="text-[10px] uppercase font-bold text-slate-400">Gol Totali</div>
+          <div class="text-xl font-sport font-black text-amber-400">${totalGoals} Reti</div>
+        </div>
+        <div class="p-2 rounded-xl bg-slate-950/40 border border-slate-800">
+          <div class="text-[10px] uppercase font-bold text-slate-400">Media FP</div>
+          <div class="text-xl font-mono font-black text-sky-400">${avgFP} FP</div>
+        </div>
+      </div>
+      ${maxGoalsMatch ? `
+        <div class="text-[11px] text-center text-slate-300 border-t border-slate-800/60 pt-1.5 truncate">
+          🔥 Spettacolo: <strong class="text-white">${maxGoalsMatch.homeTeam} ${maxGoalsMatch.homeScore}-${maxGoalsMatch.awayScore} ${maxGoalsMatch.awayTeam}</strong> (${maxGoals} gol)
+        </div>
+      ` : ''}
+    </div>
+  `;
 
   contentBox.innerHTML = `
     <!-- Top Hero -->
@@ -909,9 +969,10 @@ export async function renderMatchdayRecapStoryCanvas(
       </p>
     </div>
 
-    <!-- Unified Tabellone Risultati Card (Sky/Gazzetta Style) -->
-    <div class="w-full rounded-3xl border border-slate-700/60 bg-slate-900/80 shadow-2xl overflow-hidden divide-y divide-slate-800/80 my-2">
-      ${matchesHTML}
+    <!-- 2-Column Duel Cards Grid (4x2 Balanced Layout) -->
+    <div class="grid grid-cols-2 gap-3.5 w-full my-2">
+      ${cardsHTML}
+      ${roundStatsHTML}
     </div>
 
     <!-- Highlights Row: 2 Rich Structured Cards -->
@@ -927,7 +988,7 @@ export async function renderMatchdayRecapStoryCanvas(
         </div>
       </div>
 
-      <!-- Dea Bendata & Beffa Card (Single Round Calculated) -->
+      <!-- Dea Bendata & Sfiga Card (Single Round Calculated) -->
       <div class="p-4 rounded-2xl border border-indigo-500/40 bg-gradient-to-br from-indigo-500/15 via-slate-900/60 to-transparent flex flex-col justify-between shadow-lg">
         <div class="flex items-center gap-2 mb-1.5">
           <span class="text-base">🎲</span>

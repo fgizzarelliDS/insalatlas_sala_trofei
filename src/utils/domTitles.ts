@@ -1,5 +1,24 @@
 import type { TitlesConfig } from '@/types';
 import { state } from '@/state';
+import { LEAGUE } from '@/config';
+
+/**
+ * Toggles or hides static DOM elements mapped by data-feature according to LEAGUE.features
+ */
+export function applyFeatureFlagsToDOM(): void {
+  if (typeof document === 'undefined' || !document.querySelectorAll) return;
+
+  const featureElements = document.querySelectorAll<HTMLElement>('[data-feature]');
+  featureElements.forEach(el => {
+    const feature = el.dataset.feature as keyof typeof LEAGUE.features;
+    if (feature && LEAGUE.features && LEAGUE.features[feature] === false) {
+      el.style.display = 'none';
+      if (el.tagName === 'OPTION') {
+        (el as HTMLOptionElement).remove();
+      }
+    }
+  });
+}
 
 /**
  * Injects state.titles into mapped DOM elements
@@ -37,4 +56,6 @@ export function applyTitlesToDOM(titles: TitlesConfig = state.titles): void {
       }
     });
   }
+  // Apply league feature visibility toggles (e.g. Mundialito, Cartonato)
+  applyFeatureFlagsToDOM();
 }

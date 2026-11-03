@@ -5,13 +5,15 @@ import { getH2HReturnContext, clearH2HReturnContext } from './h2h/HeadToHeadCont
 import { getTeamMatchesReturnContext, clearTeamMatchesReturnContext } from '../board/seasons/TeamMatchesModal';
 
 /**
- * Switches between Tab 1 ('palmares') and Tab 2 ('career')
+ * Switches between Tab 1 ('palmares'), Tab 2 ('career'), and Tab 3 ('badges')
  */
-export function switchProfileModalTab(tab: 'palmares' | 'career'): void {
+export function switchProfileModalTab(tab: 'palmares' | 'career' | 'badges'): void {
   const palmaresContent = document.getElementById('profile-tab-palmares-content');
   const careerContent = document.getElementById('profile-tab-career-content');
+  const badgesContent = document.getElementById('profile-tab-badges-content');
   const btnPalmares = document.getElementById('profile-tab-btn-palmares');
   const btnCareer = document.getElementById('profile-tab-btn-career');
+  const btnBadges = document.getElementById('profile-tab-btn-badges');
 
   const activeBtnClass =
     'min-w-0 flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 sm:gap-1.5 border border-amber-500/40 bg-amber-500/10 text-amber-400 shadow-sm';
@@ -21,13 +23,24 @@ export function switchProfileModalTab(tab: 'palmares' | 'career'): void {
   if (tab === 'palmares') {
     palmaresContent?.classList.remove('hidden');
     careerContent?.classList.add('hidden');
+    badgesContent?.classList.add('hidden');
     if (btnPalmares) btnPalmares.className = activeBtnClass;
     if (btnCareer) btnCareer.className = inactiveBtnClass;
-  } else {
+    if (btnBadges) btnBadges.className = inactiveBtnClass;
+  } else if (tab === 'career') {
     palmaresContent?.classList.add('hidden');
     careerContent?.classList.remove('hidden');
+    badgesContent?.classList.add('hidden');
     if (btnCareer) btnCareer.className = activeBtnClass;
     if (btnPalmares) btnPalmares.className = inactiveBtnClass;
+    if (btnBadges) btnBadges.className = inactiveBtnClass;
+  } else {
+    palmaresContent?.classList.add('hidden');
+    careerContent?.classList.add('hidden');
+    badgesContent?.classList.remove('hidden');
+    if (btnBadges) btnBadges.className = activeBtnClass;
+    if (btnPalmares) btnPalmares.className = inactiveBtnClass;
+    if (btnCareer) btnCareer.className = inactiveBtnClass;
   }
 }
 

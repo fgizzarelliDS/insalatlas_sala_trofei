@@ -1,18 +1,18 @@
-import {
-  getLiveSeasonDetails,
-  loadLiveSeasonDetails,
-  renderLuckBadgeHTML,
-  renderDeltaPointsPillHTML
-} from './liveAnalytics';
+/**
+ * src/components/board/seasons/TeamMatchesModal.ts
+ * Main Controller for the Team Matchday Breakdown Modal:
+ * - Wide layout (max-w-3xl md:max-w-4xl) preventing text truncation
+ * - Two dedicated tabs: [ 📅 Calendario Partite ] & [ 📊 Scheda Monte Carlo & SoS ]
+ * - Coordinates state, deep-linking (?team=), return navigation, and modular tab rendering
+ */
+
+import { getLiveSeasonDetails, loadLiveSeasonDetails } from './liveAnalytics';
 import { state } from '@/state';
-import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
-import { escapeHtml } from '@/utils/dom';
+import { resolveTeamLogo } from '@/crests';
 import {
   getEloMode,
   getManagerEloTrack,
-  getEloBadgeClasses,
-  formatElo,
-  formatEloDelta
+  getEloBadgeClasses
 } from '@/analytics/analyticsCore';
 import { pushOpenModal, popCloseModal } from '@/components/modals/baseModal';
 import {
@@ -20,18 +20,25 @@ import {
   buildHistoricalRoundContext,
   computeMatchOdds1X2,
   extractFallbackElo,
-  type MatchOdds1X2,
+  resolveActiveSeasonKey,
   type LeagueDistributionContext
-} from './nextRoundMetrics';
-import type { LiveTeamMetrics } from '@/types';
+} from '@/analytics/oddsEngine';
+import { computeLeagueSoS } from '@/analytics/sosEngine';
+import type { LiveTeamMetrics, TeamSoSMetrics } from '@/types';
+import type { EloTrackMode } from '@/types/analytics';
+import type {
+  TeamMatchesTab,
+  TeamMatchesHistoryEntry,
+  TeamMatchesReturnContext,
+  TeamMatchEntry,
+  ModalHeaderProps
+} from './teamMatchesModal/types';
+import { renderModalHeaderHTML } from './teamMatchesModal/modalHeader';
+import { renderCalendarTabHTML } from './teamMatchesModal/calendarTab';
+import { renderMonteCarloTabHTML, renderMonteCarloSectionHTML } from './teamMatchesModal/monteCarloTab';
 
-/**
- * Return context preserved when navigating from Team Matches breakdown to a manager profile
- */
-export interface TeamMatchesReturnContext {
-  managerId?: string;
-  teamName?: string;
-}
+export * from './teamMatchesModal/types';
+export { renderMonteCarloSectionHTML };
 
 let teamMatchesReturnContext: TeamMatchesReturnContext | null = null;
 
@@ -48,9 +55,28 @@ export function clearTeamMatchesReturnContext(): void {
 }
 
 let isShareDismissBound = false;
+let teamMatchesHistory: TeamMatchesHistoryEntry[] = [];
+let currentlyDisplayedTeam: TeamMatchesHistoryEntry | null = null;
+let currentActiveTab: TeamMatchesTab = 'calendar';
+
+interface CachedTeamModalData {
+  headerProps: ModalHeaderProps;
+  matchesPlayed: TeamMatchEntry[];
+  standings: LiveTeamMetrics[];
+  activeMode: EloTrackMode;
+  resolvedTeamName: string;
+  resolvedManagerId?: string;
+  luck?: LiveTeamMetrics['scheduleLuck'];
+  totalLeagueRounds: number;
+  lastCompletedRound: number;
+  teamSoS?: TeamSoSMetrics;
+}
+
+let cachedModalData: CachedTeamModalData | null = null;
 
 /**
- * Injects modal container into DOM if not already present
+ * Injects modal container into DOM if not already present.
+ * Uses max-w-2xl matching TrophyModal and SeasonModal for a clean focused dialog.
  */
 function ensureTeamMatchesModalMounted(): void {
   if (typeof document === 'undefined') return;
@@ -89,14 +115,6 @@ function ensureTeamMatchesModalMounted(): void {
   }
 }
 
-interface TeamMatchesHistoryEntry {
-  managerId?: string;
-  teamName: string;
-}
-
-let teamMatchesHistory: TeamMatchesHistoryEntry[] = [];
-let currentlyDisplayedTeam: TeamMatchesHistoryEntry | null = null;
-
 export function navigateBackTeamMatchesModal(): void {
   const prev = teamMatchesHistory.pop();
   if (prev) {
@@ -118,6 +136,112 @@ export function closeTeamMatchesShareDropdown(): void {
   if (dd) dd.classList.add('hidden');
 }
 
+let isDetailsExpanded = false;
+let isCalendarExpanded = true;
+
+export function toggleTeamMatchesCalendar(): void {
+  isCalendarExpanded = !isCalendarExpanded;
+  const content = document.getElementById('calendar-accordion-content');
+  const chevron = document.getElementById('calendar-chevron');
+  const btn = document.getElementById('calendar-toggle-btn');
+  if (content && chevron && btn) {
+    if (isCalendarExpanded) {
+      content.classList.remove('hidden');
+      chevron.innerHTML = '<i class="fa-solid fa-chevron-up"></i>';
+      btn.textContent = 'Nascondi';
+    } else {
+      content.classList.add('hidden');
+      chevron.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
+      btn.textContent = 'Mostra Gare';
+    }
+  }
+}
+
+export function toggleTeamMatchesDetails(): void {
+  isDetailsExpanded = !isDetailsExpanded;
+  const el = document.getElementById('box-plot-details');
+  const chevron = document.getElementById('chevron-details-btn');
+  if (el && chevron) {
+    if (isDetailsExpanded) {
+      el.classList.remove('hidden');
+      chevron.innerHTML = '<span>Nascondi Dettaglio</span><i class="fa-solid fa-chevron-up transition-transform duration-200"></i>';
+    } else {
+      el.classList.add('hidden');
+      chevron.innerHTML = '<span>Mostra Dettaglio</span><i class="fa-solid fa-chevron-down transition-transform duration-200"></i>';
+    }
+  }
+}
+
+/**
+ * Renders full modal inner DOM from cached data and current active tab
+ */
+function renderModalContent(): void {
+  if (!cachedModalData) return;
+  const container = document.getElementById('team-matches-modal-content');
+  if (!container) return;
+
+  const {
+    headerProps,
+    matchesPlayed,
+    standings,
+    activeMode,
+    resolvedTeamName,
+    resolvedManagerId,
+    luck,
+    totalLeagueRounds,
+    lastCompletedRound,
+    teamSoS
+  } = cachedModalData;
+
+  const escapedTeamName = resolvedTeamName.replace(/'/g, "\\'");
+
+  const tabBodyHTML = currentActiveTab === 'calendar'
+    ? renderCalendarTabHTML(matchesPlayed, standings, activeMode, resolvedTeamName)
+    : renderMonteCarloTabHTML(luck, totalLeagueRounds, lastCompletedRound, teamSoS, getLiveSeasonDetails()?.mcMinRounds);
+
+  container.innerHTML = `
+    <!-- Modal Header and Tabs Switcher -->
+    ${renderModalHeaderHTML({ ...headerProps, activeTab: currentActiveTab })}
+
+    <!-- Modal Scrollable Body with Thin Scrollbar matching other modals -->
+    <div class="p-4 sm:p-5 flex-1 overflow-y-auto space-y-4 custom-scrollbar"
+         style="scrollbar-width: thin; scrollbar-color: var(--table-border) transparent;">
+      ${tabBodyHTML}
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="p-3.5 sm:p-4 border-t flex items-center justify-between gap-3 shrink-0"
+         style="border-color: var(--table-border); background-color: var(--table-surface);">
+      ${teamSoS ? `
+        <span class="text-[11px] sm:text-xs opacity-70" style="color: var(--text-muted);">
+          SoS basato su <strong style="color: var(--text-main);">50% Elo + 50% Punti</strong> avversari futuri
+        </span>
+      ` : (resolvedManagerId ? `
+        <button type="button"
+                onclick="window.openManagerProfileFromMatches && window.openManagerProfileFromMatches('${resolvedManagerId}', '${escapedTeamName}');"
+                class="px-3.5 py-2 rounded-xl text-xs font-bold border transition flex items-center gap-1.5 shadow-sm hover:scale-[1.02] active:scale-95 cursor-pointer text-amber-500"
+                style="background-color: var(--btn-bg); border-color: var(--btn-border);">
+          <i class="fa-solid fa-id-card"></i>
+          <span>Vedi Profilo Storico Allenatore</span>
+        </button>
+      ` : '<div></div>')}
+
+      <button type="button" onclick="window.closeTeamMatchesModal && window.closeTeamMatchesModal()"
+              class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition cursor-pointer shadow-sm">
+        Chiudi
+      </button>
+    </div>
+  `;
+}
+
+/**
+ * Switches between 'calendar' and 'montecarlo' tabs
+ */
+export function switchTeamMatchesTab(tab: TeamMatchesTab): void {
+  currentActiveTab = tab;
+  renderModalContent();
+}
+
 /**
  * Closes the team matches modal
  */
@@ -132,6 +256,7 @@ export function closeTeamMatchesModal(updateUrl = true): void {
   closeTeamMatchesShareDropdown();
   teamMatchesHistory = [];
   currentlyDisplayedTeam = null;
+  cachedModalData = null;
 
   if (updateUrl && typeof window !== 'undefined' && window.history && window.location) {
     const url = new URL(window.location.href);
@@ -156,7 +281,13 @@ export function openManagerProfileFromMatches(managerId: string, teamName: strin
 /**
  * Opens the interactive Team Matchday Breakdown Modal for a specific team
  */
-export async function openTeamMatchesModal(managerId?: string, teamName?: string, isBackNav = false, updateUrl = true): Promise<void> {
+export async function openTeamMatchesModal(
+  managerId?: string,
+  teamName?: string,
+  isBackNav = false,
+  updateUrl = true,
+  initialTab: TeamMatchesTab = 'calendar'
+): Promise<void> {
   if (typeof document === 'undefined') return;
   ensureTeamMatchesModalMounted();
 
@@ -165,6 +296,8 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
     liveData = await loadLiveSeasonDetails();
   }
   if (!liveData || !liveData.rounds) return;
+
+  currentActiveTab = initialTab;
 
   // Locate team stats in standings (resilient case-insensitive matching)
   const searchName = teamName?.trim().toLowerCase();
@@ -206,7 +339,6 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
   const mgr = state.managers?.find(m => m.id === resolvedManagerId);
   const managerDisplayName = mgr ? mgr.name : (teamMetric?.coach || 'Allenatore');
   const teamLogo = resolveTeamLogo(resolvedTeamName, teamMetric?.logo);
-  const escapedTeamName = resolvedTeamName.replace(/'/g, "\\'");
 
   const luck = teamMetric?.scheduleLuck;
   const xPts = luck?.xPoints;
@@ -233,19 +365,7 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
   const liveCtx = buildLeagueDistributionContext(liveData.standings || [], activeMode, liveData.season);
   const historicalCtxCache = new Map<number, LeagueDistributionContext>();
 
-  const matchesPlayed: Array<{
-    roundNumber: number;
-    isHome: boolean;
-    oppTeamName: string;
-    oppManagerId?: string;
-    oppCoach?: string;
-    oppLogo?: string;
-    outcome: 'W' | 'D' | 'L' | null;
-    isPlayed: boolean;
-    winProb: number;
-    eloDelta: number | null;
-    odds: MatchOdds1X2;
-  }> = [];
+  const matchesPlayed: TeamMatchEntry[] = [];
 
   for (const r of liveData.rounds) {
     for (const m of r.matches || []) {
@@ -294,7 +414,6 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
         eloDelta = isHome ? rawDelta : -rawDelta;
       }
 
-      // Context resolution: pre-match historical context for completed rounds, live forecast for upcoming rounds
       const isHistorical = isPlayed && r.roundNumber <= (liveData.lastCompletedRound || 0);
       let matchCtx = liveCtx;
       if (isHistorical) {
@@ -309,17 +428,16 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
              (s.teamName.trim().toLowerCase() === oppTeam.trim().toLowerCase())
       );
 
-      // Pre-match Elo ratings
       const getPreMatchElo = (st?: LiveTeamMetrics) => {
         if (!st) return 1500.0;
         const tr = getManagerEloTrack(st.elo, activeMode);
         if (!isHistorical) {
           return extractFallbackElo(st.elo, tr);
         }
-        const targetSeason = liveData.season || '2026/27';
+        const targetSeason = liveData.season || resolveActiveSeasonKey();
         const pt = tr?.trajectory?.find(p =>
           p.round === r.roundNumber &&
-          (p.season === targetSeason || (!p.season && targetSeason === '2026/27')) &&
+          (p.season === targetSeason || (!p.season && targetSeason === resolveActiveSeasonKey())) &&
           (p.competitionCategory === 'Campionato' || !p.competitionCategory)
         );
         if (pt) {
@@ -336,7 +454,10 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
       const powerOpp = (oppMgrId ? matchCtx.managerPowers.get(oppMgrId) : undefined)
         ?? matchCtx.managerPowers.get(oppTeam.toLowerCase());
 
-      const odds = computeMatchOdds1X2(selectedElo, oppElo, matchCtx, powerTeam, powerOpp);
+      const orientedCtx = isHome || matchCtx.profile.hfaZShift === 0
+        ? matchCtx
+        : { ...matchCtx, profile: { ...matchCtx.profile, hfaZShift: -matchCtx.profile.hfaZShift } };
+      const odds = computeMatchOdds1X2(selectedElo, oppElo, orientedCtx, powerTeam, powerOpp);
 
       matchesPlayed.push({
         roundNumber: r.roundNumber,
@@ -348,250 +469,70 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
         isPlayed,
         winProb: odds.h2hHome,
         eloDelta,
-        odds
+        odds,
+        oppStanding
       });
     }
   }
 
-  // Matches list HTML - clean minimalist view: [G #] [Logo] [Name] -> [Outcome] or [-]
-  const matchesListHTML = matchesPlayed.map(match => {
-    let outcomeBadgeClass = 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30';
-    let outcomeIcon = 'fa-minus';
-    let outcomeText = 'PAREGGIO';
+  // Compute League Strength of Schedule
+  const leagueSoS = computeLeagueSoS(
+    liveData.standings || [],
+    liveData.rounds || [],
+    liveData.lastCompletedRound || 0,
+    activeMode
+  );
+  const teamSoS: TeamSoSMetrics | undefined = leagueSoS.get(resolvedTeamName)
+    || leagueSoS.get(resolvedTeamName.toLowerCase())
+    || (resolvedManagerId ? leagueSoS.get(resolvedManagerId) : undefined);
 
-    if (match.outcome === 'W') {
-      outcomeBadgeClass = 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30';
-      outcomeIcon = 'fa-check';
-      outcomeText = 'VITTORIA';
-    } else if (match.outcome === 'L') {
-      outcomeBadgeClass = 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30';
-      outcomeIcon = 'fa-xmark';
-      outcomeText = 'SCONFITTA';
-    }
-
-    const oppLogo = resolveTeamLogo(match.oppTeamName, match.oppLogo);
-    const escapedOppTeamName = match.oppTeamName.replace(/'/g, "\\'");
-    const eloDeltaColor = match.eloDelta && match.eloDelta > 0 ? 'text-emerald-400' : match.eloDelta && match.eloDelta < 0 ? 'text-rose-400' : 'text-slate-400';
-
-    return `
-      <div onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${match.oppManagerId || ''}', '${escapedOppTeamName}');"
-           class="p-2.5 sm:p-3 rounded-2xl border flex flex-col gap-2 transition-colors hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer select-none"
-           style="border-color: var(--table-border); background-color: var(--table-surface);"
-           title="Vedi calendario di ${match.oppTeamName}">
-        <div class="flex items-center justify-between gap-2.5 sm:gap-3">
-          <!-- Round number & Opponent (Logo + Name side by side) -->
-          <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-            <div class="w-8 sm:w-10 h-7 sm:h-8 rounded-xl flex items-center justify-center shrink-0 border shadow-xs bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/30">
-              <span class="font-sport font-black text-xs sm:text-sm tracking-tight">G${match.roundNumber}</span>
-            </div>
-
-            <div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0 flex-1">
-              <img src="${oppLogo}" alt="${match.oppTeamName}"
-                   class="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-contain shrink-0 bg-white/10 border border-slate-300 dark:border-slate-700 shadow-xs"
-                   onerror="this.onerror=null; this.src='${getTeamFallbackCrest(match.oppTeamName)}'">
-              <span class="font-bold text-xs sm:text-sm leading-snug break-words" style="color: var(--text-main);">${match.oppTeamName}</span>
-            </div>
-          </div>
-
-          <!-- Outcome Badge & Elo Rating Impact -->
-          <div class="shrink-0 flex items-center justify-end gap-1.5 sm:gap-2">
-            ${match.isPlayed ? `
-              ${match.eloDelta !== null && match.eloDelta !== undefined ? `
-                <div class="flex flex-col items-end text-right shrink-0">
-                  <span class="text-[10px] sm:text-[11px] font-mono font-bold ${eloDeltaColor}">${formatEloDelta(match.eloDelta)} pt</span>
-                </div>
-              ` : ''}
-              <span class="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-xl text-[10px] sm:text-xs font-black tracking-wider uppercase border flex items-center gap-1 shadow-xs shrink-0 ${outcomeBadgeClass}">
-                <i class="fa-solid ${outcomeIcon} text-[9px] sm:text-[10px]"></i>
-                <span>${outcomeText}</span>
-              </span>
-            ` : `
-              <span class="text-xs font-bold text-slate-400 dark:text-slate-500 px-2 py-1 shrink-0 select-none">-</span>
-            `}
-          </div>
-        </div>
-
-        <!-- H2H Duel Probability Gauge & 1X2 Odds Pills -->
-        <div class="pt-1.5 border-t border-[var(--table-border)]/50 flex flex-col gap-1.5">
-          <div class="flex items-center justify-between text-[10px] font-mono font-bold">
-            <span class="text-emerald-500 dark:text-emerald-400 font-black">${Math.round(match.odds.h2hHome)}%</span>
-            <span class="text-[9px] uppercase tracking-wider opacity-60 font-sans font-semibold" style="color: var(--text-muted);">
-              Probabilità H2H
-            </span>
-            <span class="text-rose-500 dark:text-rose-400 font-black">${100 - Math.round(match.odds.h2hHome)}%</span>
-          </div>
-          <div class="w-full h-1.5 rounded-full overflow-hidden flex bg-slate-700/40">
-            <div style="width: ${match.odds.h2hHome}%;" class="h-full bg-emerald-500 transition-all duration-300"></div>
-            <div style="width: ${match.odds.h2hAway}%;" class="h-full bg-rose-500 transition-all duration-300"></div>
-          </div>
-
-          <!-- 1X2 Match Odds Board (Agnostic Standardized Davidson Model) -->
-          <div class="grid grid-cols-3 gap-1 pt-1 text-center select-none font-mono">
-            <div class="py-0.5 px-1 rounded-lg border flex items-center justify-center gap-1.5 bg-black/5 dark:bg-white/5 shadow-2xs"
-                 style="border-color: var(--input-border);"
-                 title="Quota 1 (Vittoria ${escapeHtml(teamName)}): ${match.odds.p1}% su 3 esiti • ${match.odds.h2hHome.toFixed(0)}% H2H">
-              <span class="text-[8px] font-bold opacity-50" style="color: var(--text-muted);">1</span>
-              <span class="text-[11px] font-black text-emerald-600 dark:text-emerald-400">${match.odds.q1.toFixed(2)}</span>
-            </div>
-            <div class="py-0.5 px-1 rounded-lg border flex items-center justify-center gap-1.5 bg-black/5 dark:bg-white/5 shadow-2xs"
-                 style="border-color: var(--input-border);"
-                 title="Quota X (Pareggio): ${match.odds.pX}% su 3 esiti">
-              <span class="text-[8px] font-bold opacity-50" style="color: var(--text-muted);">X</span>
-              <span class="text-[11px] font-black text-amber-600 dark:text-amber-400">${match.odds.qX.toFixed(2)}</span>
-            </div>
-            <div class="py-0.5 px-1 rounded-lg border flex items-center justify-center gap-1.5 bg-black/5 dark:bg-white/5 shadow-2xs"
-                 style="border-color: var(--input-border);"
-                 title="Quota 2 (Vittoria ${escapeHtml(match.oppTeamName)}): ${match.odds.p2}% su 3 esiti • ${match.odds.h2hAway.toFixed(0)}% H2H">
-              <span class="text-[8px] font-bold opacity-50" style="color: var(--text-muted);">2</span>
-              <span class="text-[11px] font-black text-rose-600 dark:text-rose-400">${match.odds.q2.toFixed(2)}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  // Status badge styling
   const statusBadge = teamMetric?.statusBadge || '⚖️';
   const statusLabel = teamMetric?.statusLabel || 'Stabile';
+  const mcMedian = luck?.monteCarlo?.medianPoints;
 
-  const modalContainer = document.getElementById('team-matches-modal-content');
-  if (!modalContainer) return;
+  const headerProps: ModalHeaderProps = {
+    resolvedTeamName,
+    resolvedManagerId,
+    managerDisplayName,
+    teamLogo,
+    teamMetric,
+    eloTrack,
+    eloBadge,
+    teamSoS,
+    statusBadge,
+    statusLabel,
+    hasHistory: teamMatchesHistory.length > 0,
+    activeTab: currentActiveTab,
+    matchesCount: matchesPlayed.length,
+    mcMedian,
+    luck,
+    xPts,
+    deltaPts,
+    ap,
+    luckBadge,
+    luckLabel,
+    luckZ
+  };
 
-  modalContainer.innerHTML = `
-    <!-- Modal Header matching TrophyModal & SeasonModal unified style -->
-    <div class="p-4 sm:p-5 border-b flex items-center justify-between gap-3 shrink-0"
-         style="border-color: var(--table-border);">
-      <div class="flex items-center gap-3 min-w-0">
-        ${teamMatchesHistory.length > 0 ? `
-          <button type="button" onclick="window.navigateBackTeamMatchesModal && window.navigateBackTeamMatchesModal()"
-                  class="w-8 h-8 rounded-full flex items-center justify-center font-bold transition border shadow-xs hover:bg-amber-500/10 active:scale-95 text-amber-500 shrink-0 cursor-pointer"
-                  style="background-color: var(--btn-bg); border-color: var(--btn-border);"
-                  title="Torna alla squadra precedente">
-            <i class="fa-solid fa-arrow-left text-xs"></i>
-          </button>
-        ` : ''}
-        <img src="${teamLogo}" alt="${escapeHtml(resolvedTeamName)}"
-             class="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-700 shadow-md"
-             onerror="this.onerror=null; this.src='${getTeamFallbackCrest(resolvedTeamName)}'">
-        <div class="min-w-0">
-          <div class="flex items-center gap-2 flex-wrap">
-            <h3 class="font-sport font-black text-base sm:text-xl truncate" style="color: var(--text-main);">${escapeHtml(resolvedTeamName)}</h3>
-            <span class="px-2 py-0.5 rounded-full text-xs font-bold border flex items-center gap-1 shadow-xs bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/30">
-              <span>${statusBadge}</span>
-              <span class="text-[10px] uppercase font-bold">${statusLabel}</span>
-            </span>
-            ${eloTrack ? `
-              <span class="px-2 py-0.5 rounded-full text-xs font-bold font-mono border flex items-center gap-1 shadow-xs ${eloBadge.bg} ${eloBadge.text} ${eloBadge.border}">
-                <i class="fa-solid fa-bolt text-[10px]"></i>
-                <span>${formatElo(eloTrack.current)} Elo</span>
-              </span>
-            ` : ''}
-          </div>
-          <div class="text-xs font-semibold flex items-center gap-1.5 mt-0.5 flex-wrap" style="color: var(--text-muted);">
-            <i class="fa-solid fa-user-tie text-[10px] opacity-70 shrink-0" style="color: var(--accent-color);"></i>
-            <span class="font-bold" style="color: var(--accent-color);">${escapeHtml(managerDisplayName)}</span>
-            ${teamMetric ? `<span class="opacity-60 text-[11px] whitespace-nowrap">• #${teamMetric.rank} in classifica (${teamMetric.points !== undefined && teamMetric.points !== null ? `${teamMetric.points} pt` : '- pt'})</span>` : ''}
-          </div>
-        </div>
-      </div>
+  cachedModalData = {
+    headerProps,
+    matchesPlayed,
+    standings: liveData.standings || [],
+    activeMode,
+    resolvedTeamName,
+    resolvedManagerId,
+    luck,
+    totalLeagueRounds: liveData.totalRounds || liveData.rounds?.length || 26,
+    lastCompletedRound: liveData.lastCompletedRound || 0,
+    teamSoS
+  };
 
-      <div class="flex items-center gap-2 shrink-0">
-        <!-- Share Dropdown Button -->
-        <div class="relative">
-          <button type="button"
-                  id="btn-team-matches-share"
-                  onclick="window.toggleTeamMatchesShareDropdown && window.toggleTeamMatchesShareDropdown(event)"
-                  class="px-2.5 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 hover:scale-105 active:scale-95 cursor-pointer text-amber-500 shadow-xs"
-                  style="background-color: var(--btn-bg); border-color: var(--btn-border);"
-                  title="Condividi calendario e statistiche">
-            <i class="fa-solid fa-share-nodes"></i>
-            <span class="hidden sm:inline">Condividi</span>
-            <i class="fa-solid fa-chevron-down text-[10px] ml-0.5 opacity-70"></i>
-          </button>
+  renderModalContent();
 
-          <!-- Dropdown Popover -->
-          <div id="team-matches-share-dropdown"
-               class="hidden absolute right-0 top-full mt-1.5 w-60 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
-               style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--modal-text);">
-            <button type="button"
-                    onclick="window.exportTeamMatchesPNG && window.exportTeamMatchesPNG('${escapedTeamName}'); window.closeTeamMatchesShareDropdown && window.closeTeamMatchesShareDropdown();"
-                    class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
-              <i class="fa-solid fa-download text-amber-500"></i>
-              <span>Scarica Scheda PNG (HD)</span>
-            </button>
-            <button type="button"
-                    onclick="window.copyTeamMatchesToClipboard && window.copyTeamMatchesToClipboard('${escapedTeamName}'); window.closeTeamMatchesShareDropdown && window.closeTeamMatchesShareDropdown();"
-                    class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
-              <i class="fa-solid fa-copy text-emerald-500"></i>
-              <span>Copia per WhatsApp</span>
-            </button>
-            <button type="button"
-                    onclick="window.shareTeamMatchesWhatsApp && window.shareTeamMatchesWhatsApp('${escapedTeamName}'); window.closeTeamMatchesShareDropdown && window.closeTeamMatchesShareDropdown();"
-                    class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
-              <i class="fa-brands fa-whatsapp text-emerald-500"></i>
-              <span>Invia Link WhatsApp</span>
-            </button>
-          </div>
-        </div>
-
-        <button type="button" onclick="window.closeTeamMatchesModal && window.closeTeamMatchesModal()"
-                class="w-8 h-8 rounded-full flex items-center justify-center font-bold opacity-75 hover:opacity-100 transition border shadow-xs"
-                style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);"
-                title="Chiudi">
-          ✕
-        </button>
-      </div>
-    </div>
-
-    <!-- Analytical Summary Strip (Merit & Schedule Luck) -->
-    ${luck && xPts !== undefined && deltaPts !== undefined && ap ? `
-      <div class="px-4 py-2 sm:px-5 sm:py-2.5 border-b flex flex-wrap items-center justify-between gap-2 text-xs"
-           style="border-color: var(--table-border); background-color: var(--table-surface);">
-        <!-- xPTS & Delta & Luck Badge -->
-        <div class="flex items-center gap-2 flex-wrap">
-          <span class="font-mono font-bold text-xs" style="color: var(--text-main);">${xPts.toFixed(2)} xPTS</span>
-          <span class="text-[11px] opacity-75 font-semibold" style="color: var(--text-muted);">vs ${teamMetric?.points !== undefined && teamMetric?.points !== null ? `${teamMetric.points} pt` : '- pt'}</span>
-          ${renderDeltaPointsPillHTML(deltaPts, teamMetric?.points !== undefined && teamMetric?.points !== null)}
-          ${luckBadge && luckLabel && luckZ !== undefined ? renderLuckBadgeHTML(luckBadge, luckLabel, luckZ, true) : ''}
-        </div>
-        <!-- All-Play Record -->
-        <div class="text-[11px] font-mono opacity-80" style="color: var(--text-muted);">
-          Tutti vs Tutti: <strong style="color: var(--text-main);">${ap.wins}V ${ap.draws}N ${ap.losses}P</strong> (${ap.winPct}%)
-        </div>
-      </div>
-    ` : ''}
-
-    <!-- Matches Scrollable Body -->
-    <div class="p-4 sm:p-5 flex-1 overflow-y-auto space-y-2.5">
-      <div class="flex items-center justify-between mb-1.5">
-        <span class="text-xs uppercase font-extrabold tracking-wider flex items-center gap-1.5" style="color: var(--accent-color);">
-          <i class="fa-solid fa-calendar-days text-amber-500"></i>
-          <span>Calendario &amp; Risultati (${matchesPlayed.length} Gare)</span>
-        </span>
-      </div>
-      ${matchesListHTML || '<div class="p-8 text-center text-sm font-semibold opacity-60">Nessuna partita registrata.</div>'}
-    </div>
-
-    <!-- Modal Footer Actions matching TrophyModal palette -->
-    <div class="p-3.5 sm:p-4 border-t flex items-center justify-between gap-3 shrink-0"
-         style="border-color: var(--table-border); background-color: var(--table-surface);">
-      ${resolvedManagerId ? `
-        <button type="button"
-                onclick="window.openManagerProfileFromMatches && window.openManagerProfileFromMatches('${resolvedManagerId}', '${escapedTeamName}');"
-                class="px-3.5 py-2 rounded-xl text-xs font-bold border transition flex items-center gap-1.5 shadow-sm hover:scale-[1.02] active:scale-95 cursor-pointer text-amber-500"
-                style="background-color: var(--btn-bg); border-color: var(--btn-border);">
-          <i class="fa-solid fa-id-card"></i>
-          <span>Vedi Profilo Storico Allenatore</span>
-        </button>
-      ` : '<div></div>'}
-
-      <button type="button" onclick="window.closeTeamMatchesModal && window.closeTeamMatchesModal()"
-              class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition cursor-pointer shadow-sm">
-        Chiudi
-      </button>
-    </div>
-  `;
+  const dialog = document.getElementById('team-matches-dialog');
+  if (dialog) {
+    dialog.className = "w-full max-w-2xl rounded-3xl border shadow-2xl flex flex-col max-h-[92vh] overflow-hidden relative transition-all duration-300";
+  }
 
   const modal = document.getElementById('team-matches-modal');
   if (modal) {
@@ -605,8 +546,11 @@ export async function openTeamMatchesModal(managerId?: string, teamName?: string
 if (typeof window !== 'undefined') {
   window.openTeamMatchesModal = openTeamMatchesModal;
   window.closeTeamMatchesModal = closeTeamMatchesModal;
+  window.switchTeamMatchesTab = switchTeamMatchesTab;
   window.openManagerProfileFromMatches = openManagerProfileFromMatches;
   window.navigateBackTeamMatchesModal = navigateBackTeamMatchesModal;
   window.toggleTeamMatchesShareDropdown = toggleTeamMatchesShareDropdown;
   window.closeTeamMatchesShareDropdown = closeTeamMatchesShareDropdown;
+  window.toggleTeamMatchesCalendar = toggleTeamMatchesCalendar;
+  window.toggleTeamMatchesDetails = toggleTeamMatchesDetails;
 }

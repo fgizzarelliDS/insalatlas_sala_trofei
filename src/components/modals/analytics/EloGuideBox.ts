@@ -135,7 +135,7 @@ export function renderEloGuideModal(customConfig?: EloConfig): string {
             <code class="font-mono text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--table-border); background: var(--modal-bg); color: var(--text-main);">⚡ Puro: ${baseRating} baseline • 🏛️ Storico: Seed Albo d'Oro • 🔮 Atlas Power</code>
           </div>
           <p class="mt-1 text-[11px] leading-relaxed">
-            <strong>⚡ Elo Puro:</strong> Reset a ${baseRating} per tutti a inizio 2025/26, misura unicamente la prestazione sportiva sul campo senza considerare il passato.<br/>
+            <strong>⚡ Elo Puro:</strong> Reset a ${baseRating} per tutti alla prima stagione tracciata, misura unicamente la prestazione sportiva sul campo senza considerare il passato.<br/>
             <strong>🏛️ Elo Storico:</strong> Inizializza i manager con un bonus/malus calcolato sull'Indice di Prestigio del Palmarès storico (Scudetti, Coppe e podi), ponderando la tradizione di lega.<br/>
             <strong>🔮 Atlas Power:</strong> Sistema continuo Dual-Kernel All-Play basato sulla funzione sigmoide di Fermi-Dirac (s = 8.5) e decay dell'incertezza post-asta, isolando la qualità assoluta del roster dal calendario.
           </p>

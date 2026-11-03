@@ -461,6 +461,17 @@ export function updateProfileEloSparklineUI(m: Manager): void {
       }
       const seasonSelect = document.getElementById('profile-elo-season-select') as HTMLSelectElement | null;
       if (seasonSelect) {
+        const seasonsGroup = seasonSelect.querySelector('optgroup[label="Stagioni"]');
+        const extractedSeasons = Array.from(new Set([
+          ...Object.keys(eloTrack.seasons || {}),
+          ...(eloTrack.trajectory || []).map(pt => pt.season).filter((s): s is string => Boolean(s))
+        ])).filter(k => k !== 'all').sort().reverse();
+        if (seasonsGroup && extractedSeasons.length > 0) {
+          seasonsGroup.innerHTML = `
+            <option value="all">Tutte le stagioni (Continuo)</option>
+            ${extractedSeasons.map((sKey, idx) => `<option value="${sKey}">${sKey}${idx === 0 ? ' (Corrente)' : ''}</option>`).join('')}
+          `;
+        }
         seasonSelect.value = profileEloSeason;
       }
       clearProfileEloHover();

@@ -73,7 +73,7 @@ export function buildLiveStandingsGuideHTML(): string {
         <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
           <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-amber-600 dark:text-amber-400">
             <i class="fa-solid fa-scale-balanced"></i>
-            <span>Guida Merito (xPTS) & Calendario Monte Carlo</span>
+            <span>Guida Merito (xPTS) & Calendario MC</span>
           </div>
           <span class="text-[10px] font-semibold opacity-70" style="color: var(--text-muted);">
             1 vs Tutti a soglie gol (66/72/78) • 10.000 calendari alternativi simulati

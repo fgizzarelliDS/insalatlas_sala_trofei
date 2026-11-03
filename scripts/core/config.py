@@ -115,6 +115,9 @@ LEAGUE_RULES = {
             "min_sigma_power": 1.5,
             "k_shrinkage": 5,
             "hfa_z_shift": 0.0,
+            "mc_alpha_decay": 0.45,
+            "mc_sigma_drift": 0.25,
+            "mc_min_rounds": 5,
             "atlas_weights": {"elo": 0.85, "power": 0.15},
             "flat_weights": {"elo": 0.65, "power": 0.35}
         }

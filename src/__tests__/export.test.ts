@@ -189,10 +189,19 @@ describe('export.ts - Trading Card Logic and Formatting', () => {
       expect(html).toContain('Scudetti');
       expect(html).toContain('Coppe Lega');
       expect(html).toContain('Supercoppe');
-      expect(html).toContain('Mundialito');
+      if (LEAGUE.features.mundialito) {
+        expect(html).toContain('Mundialito');
+      } else {
+        expect(html).not.toContain('Mundialito');
+      }
       expect(html).toContain('Cucchiai Legno');
-      expect(html).toContain('Cartonati');
-      expect(html).toContain('MAZZARRI');
+      if (LEAGUE.features.cartonato) {
+        expect(html).toContain('Cartonati');
+        expect(html).toContain('MAZZARRI');
+      } else {
+        expect(html).not.toContain('Cartonati');
+        expect(html).not.toContain('MAZZARRI');
+      }
       expect(html).toContain(LEAGUE.brand.name);
     });
   });

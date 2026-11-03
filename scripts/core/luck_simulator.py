@@ -21,6 +21,24 @@ def generate_round_seed(season: str, round_num: int) -> int:
     return zlib.crc32(key.encode('utf-8')) % 1_000_000
 
 
+def davidson_probs(
+    delta_z: float,
+    kappa: float = 0.55,
+    nu0: float = 0.72,
+    lam: float = 0.03
+) -> Tuple[float, float, float]:
+    """
+    Computes exact 3-way Davidson probabilities with dynamic rational draw decay.
+    Returns (p_win, p_draw, p_loss) for Home team.
+    """
+    half_kappa = 0.5 * kappa
+    term_a = math.exp(half_kappa * delta_z)
+    term_b = math.exp(-half_kappa * delta_z)
+    dynamic_nu = nu0 / (1.0 + lam * (delta_z ** 2))
+    denom = term_a + term_b + dynamic_nu
+    return (term_a / denom, dynamic_nu / denom, term_b / denom)
+
+
 def fanta_points_to_goals(
     fp: float,
     bracket_step: float = 6.0,
@@ -185,19 +203,69 @@ def compute_all_play_standings(
     return result
 
 
+def extract_career_prior_fp(
+    prof: Optional[Dict[str, Any]],
+    current_season: str = ""
+) -> Optional[float]:
+    """
+    Extracts manager career average offensive power strictly prior to the current season.
+    Prevents circular data leakage in historical replay, matching TypeScript extractCareerPriorFP.
+    """
+    if not isinstance(prof, dict):
+        return None
+    stats_obj = prof.get('seasonStats') or {}
+    all_st = stats_obj.get('all') or {}
+    curr_st = stats_obj.get(current_season) or {}
+    all_played = int(all_st.get('played', 0) or 0)
+    curr_played = int(curr_st.get('played', 0) or 0)
+    past_played = all_played - curr_played
+
+    if past_played > 0 and 'totalFP' in all_st and all_st['totalFP'] is not None:
+        curr_total = float(curr_st.get('totalFP', 0.0) or 0.0)
+        if curr_total == 0.0 and 'avgFP' in curr_st and curr_st['avgFP'] is not None:
+            curr_total = float(curr_st['avgFP']) * curr_played
+        past_total = float(all_st['totalFP']) - curr_total
+        if past_total > 0:
+            return past_total / past_played
+
+    # Fallback across past seasons
+    past_total = 0.0
+    past_count = 0
+    for k, st in stats_obj.items():
+        if k != current_season and k != 'all' and isinstance(st, dict):
+            p = int(st.get('played', 0) or 0)
+            if p > 0:
+                tot = float(st.get('totalFP', 0.0) or 0.0)
+                if tot > 0:
+                    past_total += tot
+                    past_count += p
+                elif 'avgFP' in st and st['avgFP'] is not None:
+                    past_total += float(st['avgFP']) * p
+                    past_count += p
+    if past_count > 0 and past_total > 0:
+        return past_total / past_count
+    return None
+
+
 def run_monte_carlo_schedule_simulation(
     team_names: List[str],
     all_play_standings: Dict[str, Dict[str, Any]],
     actual_points: Dict[str, int],
     total_rounds: int,
     iterations: int = 10000,
-    random_seed: Optional[int] = None
+    random_seed: Optional[int] = None,
+    all_rounds: Optional[List[Dict[str, Any]]] = None,
+    elo_profiles: Optional[Dict[str, Any]] = None,
+    odds_config: Optional[Dict[str, Any]] = None,
+    teams_stats: Optional[Dict[str, Dict[str, Any]]] = None,
+    season: str = ""
 ) -> Dict[str, Dict[str, Any]]:
     """
     Runs Tier 2 Monte Carlo calendar schedule permutations.
     For completed rounds, holding weekly goals fixed, generates K valid 1 vs 1 pairings per round.
     Computes empirical points distribution, median, standard deviation sigma, and luck Z-score.
-    If completed rounds >= 5 and total_rounds > completed, also projects Title/Podium/Spoon odds.
+    If completed rounds >= 5 and total_rounds > completed, also projects Title/Podium/Spoon odds
+    using actual banked points, remaining official calendar fixtures, and calibrated Davidson 1X2 odds.
     """
     if random_seed is not None:
         random.seed(random_seed)
@@ -209,33 +277,48 @@ def run_monte_carlo_schedule_simulation(
     team_idx_map = {name: i for i, name in enumerate(team_names)}
 
     # Extract completed weekly goals matrix: List of rounds, where each round has [goals_0, ..., goals_{N-1}]
-    # Determine completed rounds from weeklyScores
-    r_completed = max((len(ap.get('weeklyScores', [])) for ap in all_play_standings.values()), default=0)
+    # Collect all distinct completed round numbers in chronological order
+    completed_round_nums = sorted({
+        s[0]
+        for ap in all_play_standings.values()
+        for s in ap.get('weeklyScores', [])
+    })
+    r_completed = len(completed_round_nums)
 
     if r_completed == 0:
         # No completed rounds
         return {
             name: {
+                'meanPoints': 0.0,
                 'medianPoints': 0.0,
                 'medianRank': idx + 1,
                 'stdDev': 0.0,
+                'p10': 0.0,
+                'p25': 0.0,
+                'p75': 0.0,
+                'p90': 0.0,
                 'luckZScore': 0.0,
                 'luckBadge': '⚖️',
                 'luckLabel': 'Neutro',
+                'pTitlePct': None,
                 'pPodiumPct': None,
+                'pMidPct': None,
+                'pFlopPct': None,
                 'pSpoonPct': None
             }
             for idx, name in enumerate(team_names)
         }
 
-    # Pre-build rounds goals: shape (R, N)
+    # Pre-build rounds goals: shape (R, N) indexed by exact round number
+    team_score_maps = {
+        name: {s[0]: s[2] for s in all_play_standings[name].get('weeklyScores', [])}
+        for name in team_names
+    }
     rounds_goals: List[List[int]] = []
-    for r_idx in range(r_completed):
+    for r_num in completed_round_nums:
         r_goals = [0] * n_teams
         for name in team_names:
-            scores = all_play_standings[name]['weeklyScores']
-            if r_idx < len(scores):
-                r_goals[team_idx_map[name]] = scores[r_idx][2]  # goals
+            r_goals[team_idx_map[name]] = team_score_maps[name].get(r_num, 0)
         rounds_goals.append(r_goals)
 
     # Pre-build pairwise outcome matrix for each round: shape (R, N, N)
@@ -252,85 +335,355 @@ def run_monte_carlo_schedule_simulation(
         for r in range(r_completed)
     ]
 
-    # Pre-allocate simulation scores: K x N
+    # Pre-allocate simulation scores for past schedule luck: K x N
     sim_points = [[0] * n_teams for _ in range(iterations)]
     indices = list(range(n_teams))
 
-    # Fast simulation loop
+    # Fast simulation loop for past completed rounds (Schedule Luck Z-score)
     for k in range(iterations):
         k_pts = sim_points[k]
         for r in range(r_completed):
             random.shuffle(indices)
             r_mat = outcome_matrix[r]
-            for p in range(0, n_teams, 2):
+            for p in range(0, n_teams - 1, 2):
                 i = indices[p]
                 j = indices[p + 1]
                 k_pts[i] += r_mat[i][j]
                 k_pts[j] += r_mat[j][i]
 
-    # Project future rounds if R >= 5 and total_rounds > R
-    enable_projections = (r_completed >= 5 and total_rounds > r_completed)
+    # Project future rounds if R >= mc_min_rounds and total_rounds > R
+    active_odds_cfg = odds_config or {}
+    mc_min_rounds = int(active_odds_cfg.get('mc_min_rounds', 5))
+    enable_projections = (r_completed >= mc_min_rounds and total_rounds > r_completed)
+    title_counts = [0] * n_teams
     podium_counts = [0] * n_teams
+    mid_counts = [0] * n_teams
+    flop_counts = [0] * n_teams
     spoon_counts = [0] * n_teams
+    projected_sim_points = [[0] * n_teams for _ in range(iterations)]
 
     if enable_projections:
         remaining_rounds = total_rounds - r_completed
-        # Extract past goals pool for bootstrap per team
-        team_goals_pool = [
-            [rounds_goals[r][i] for r in range(r_completed)]
-            for i in range(n_teams)
-        ]
+        w_elo = float(active_odds_cfg.get('flat_weights', {}).get('elo', 0.65))
+        w_pow = float(active_odds_cfg.get('flat_weights', {}).get('power', 0.35))
+        kappa_0 = float(active_odds_cfg.get('sensitivity_kappa', 0.35))
+        nu0 = float(active_odds_cfg.get('base_draw_nu', 0.72))
+        lam = float(active_odds_cfg.get('draw_decay_lambda', 0.03))
+        min_sigma_elo = float(active_odds_cfg.get('min_sigma_elo', 35.0))
+        min_sigma_power = float(active_odds_cfg.get('min_sigma_power', 1.5))
+        k_shrink = float(active_odds_cfg.get('k_shrinkage', 5.0))
+        hfa = float(active_odds_cfg.get('hfa_z_shift', 0.0))
 
-        for k in range(iterations):
-            # Clone completed points for this iteration
-            final_k_pts = list(sim_points[k])
+        # Dynamic sensitivity scaling (temporal uncertainty decay) and latent seasonal form shocks
+        alpha = float(active_odds_cfg.get('mc_alpha_decay', 0.45))
+        sigma_drift = float(active_odds_cfg.get('mc_sigma_drift', 0.25))
+        progress_ratio = (r_completed / total_rounds) if total_rounds > 0 else 1.0
+        kappa_eff = kappa_0 * (alpha + (1.0 - alpha) * progress_ratio)
 
-            for _ in range(remaining_rounds):
-                random.shuffle(indices)
-                for p in range(0, n_teams, 2):
-                    i = indices[p]
-                    j = indices[p + 1]
-                    # Sample bootstrapped goals from team history
-                    g_i = random.choice(team_goals_pool[i])
-                    g_j = random.choice(team_goals_pool[j])
-                    if g_i > g_j:
-                        final_k_pts[i] += 3
-                    elif g_i == g_j:
-                        final_k_pts[i] += 1
-                        final_k_pts[j] += 1
-                    else:
-                        final_k_pts[j] += 3
+        # 1. Extract Elo ratings per team
+        elos: List[float] = []
+        for name in team_names:
+            m_id = (teams_stats.get(name) or {}).get('managerId') if teams_stats else None
+            r_val = 1500.0
+            if elo_profiles:
+                prof = elo_profiles.get(m_id) if m_id else None
+                if not prof and name in elo_profiles:
+                    prof = elo_profiles.get(name)
+                if isinstance(prof, dict):
+                    track_data = prof.get('flat') or prof.get('atlas') or {}
+                    if isinstance(track_data, dict) and 'current' in track_data:
+                        r_val = float(track_data['current'])
+                elif isinstance(prof, (int, float)):
+                    r_val = float(prof)
+            elos.append(r_val)
 
-            # Rank teams for this iteration: higher points = better rank
-            ranked_indices = sorted(range(n_teams), key=lambda x: final_k_pts[x], reverse=True)
-            for pos, t_idx in enumerate(ranked_indices):
-                if pos < 3:
-                    podium_counts[t_idx] += 1
-                if pos == (n_teams - 1):
-                    spoon_counts[t_idx] += 1
+        if len(elos) > 1:
+            try:
+                raw_elo_std = statistics.stdev(elos)
+            except Exception:
+                raw_elo_std = 60.0
+        else:
+            raw_elo_std = 60.0
+
+        # 2. Extract Power (Fanta-Points) and Bayesian shrinkage
+        team_means: List[float] = []
+        n_matches_list: List[int] = []
+        total_fps: List[float] = []
+        for name in team_names:
+            scores = all_play_standings.get(name, {}).get('weeklyScores', [])
+            if scores:
+                fps = [s[1] for s in scores]
+                team_means.append(sum(fps) / len(fps))
+                n_matches_list.append(len(fps))
+                total_fps.append(sum(fps))
+            elif teams_stats and name in teams_stats:
+                st = teams_stats[name]
+                played = int(st.get('played', r_completed) or r_completed)
+                tot = float(st.get('totalFantaPoints', 0.0) or 0.0)
+                avg = float(st.get('avgFantaPoints', tot / played if played > 0 else 70.0))
+                team_means.append(avg)
+                n_matches_list.append(played)
+                total_fps.append(tot)
+            else:
+                team_means.append(70.0)
+                n_matches_list.append(r_completed)
+                total_fps.append(70.0 * r_completed)
+
+        prior_sigma_elo = float(active_odds_cfg.get('prior_sigma_elo', 60.0))
+        n_avg = (sum(n_matches_list) / len(n_matches_list)) if n_matches_list else 0.0
+        blended_var_elo = (
+            (n_avg / (n_avg + k_shrink)) * (raw_elo_std ** 2) +
+            (k_shrink / (n_avg + k_shrink)) * (prior_sigma_elo ** 2)
+        ) if n_avg > 0 else (prior_sigma_elo ** 2)
+        sigma_elo = max(min_sigma_elo, math.sqrt(blended_var_elo))
+
+        league_mean_fp = (sum(team_means) / len(team_means)) if team_means else 70.0
+        if len(team_means) > 1:
+            try:
+                raw_fp_std = statistics.stdev(team_means)
+            except Exception:
+                raw_fp_std = 3.0
+        else:
+            raw_fp_std = 3.0
+        sigma_fp = max(min_sigma_power, raw_fp_std)
+
+        # Extract career prior FP for returning managers strictly prior to current season
+        career_priors: List[Optional[float]] = []
+        for name in team_names:
+            m_id = (teams_stats.get(name) or {}).get('managerId') if teams_stats else None
+            prof = None
+            if elo_profiles:
+                prof = elo_profiles.get(m_id) if m_id else None
+                if not prof and name in elo_profiles:
+                    prof = elo_profiles.get(name)
+            career_priors.append(extract_career_prior_fp(prof, current_season=season))
+
+        valid_priors = [p for p in career_priors if p is not None]
+        mean_prior_fp = (sum(valid_priors) / len(valid_priors)) if valid_priors else league_mean_fp
+        if len(valid_priors) > 1:
+            try:
+                raw_prior_std = statistics.stdev(valid_priors)
+            except Exception:
+                raw_prior_std = 1.5
+        else:
+            raw_prior_std = 1.5
+        sigma_prior_fp = max(1.2, raw_prior_std)
+
+        z_powers: List[float] = []
+        expected_total_fp: List[float] = []
+        for i in range(n_teams):
+            n_i = n_matches_list[i]
+            z_curr = (team_means[i] - league_mean_fp) / sigma_fp
+            prior_fp = career_priors[i]
+            if prior_fp is not None:
+                z_prior = (prior_fp - mean_prior_fp) / sigma_prior_fp
+                z_i = (n_i / (n_i + k_shrink)) * z_curr + (k_shrink / (n_i + k_shrink)) * z_prior
+                prior_target_fp = prior_fp
+            else:
+                z_i = (n_i / (n_i + k_shrink)) * z_curr
+                prior_target_fp = league_mean_fp
+
+            z_powers.append(z_i)
+            # Expected future FP volume for official tie-breaker
+            shrunk_fp_per_match = (n_i / (n_i + k_shrink)) * team_means[i] + (k_shrink / (n_i + k_shrink)) * prior_target_fp
+            expected_total_fp.append(total_fps[i] + remaining_rounds * shrunk_fp_per_match)
+
+        # 3. Build scheduled future matches from official calendar
+        future_match_bases: List[Tuple[int, int, float]] = []
+        if all_rounds:
+            for r in all_rounds:
+                r_num = r.get('roundNumber', 0)
+                if r_num > r_completed:
+                    for m in r.get('matches', []):
+                        h_name = m.get('homeTeam')
+                        a_name = m.get('awayTeam')
+                        if h_name in team_idx_map and a_name in team_idx_map:
+                            i = team_idx_map[h_name]
+                            j = team_idx_map[a_name]
+                            dz_elo = (elos[i] - elos[j]) / sigma_elo
+                            dz_pow = z_powers[i] - z_powers[j]
+                            base_dz = w_elo * dz_elo + w_pow * dz_pow + hfa
+                            future_match_bases.append((i, j, base_dz))
+
+        # Base starting points for future projections: ACTUAL POINTS BANKED IN STANDINGS
+        base_actual_pts = [actual_points.get(name, 0) for name in team_names]
+        rand = random.random
+        gauss = random.gauss
+        mid_cutoff = max(4, (n_teams + 1) // 2)
+        shock_scale = math.sqrt(remaining_rounds or 1) * sigma_fp
+
+        if future_match_bases:
+            if sigma_drift > 0:
+                # Stochastic seasonal quality shock per team in each simulated season
+                for k in range(iterations):
+                    final_k_pts = list(base_actual_pts)
+                    shocks = [gauss(0, sigma_drift) for _ in range(n_teams)]
+                    for i, j, base_dz in future_match_bases:
+                        dz = base_dz + (shocks[i] - shocks[j])
+                        p1, px, _ = davidson_probs(dz, kappa=kappa_eff, nu0=nu0, lam=lam)
+                        u = rand()
+                        if u < p1:
+                            final_k_pts[i] += 3
+                        elif u < (p1 + px):
+                            final_k_pts[i] += 1
+                            final_k_pts[j] += 1
+                        else:
+                            final_k_pts[j] += 3
+
+                    projected_sim_points[k] = final_k_pts
+
+                    # Official tie-breaker: Points DESC, then Expected Total FP perturbed by iteration form shock DESC
+                    ranked_indices = sorted(
+                        range(n_teams),
+                        key=lambda x: (final_k_pts[x], expected_total_fp[x] + shocks[x] * shock_scale),
+                        reverse=True
+                    )
+                    for pos, t_idx in enumerate(ranked_indices):
+                        if pos == 0:
+                            title_counts[t_idx] += 1
+                        if pos < 3:
+                            podium_counts[t_idx] += 1
+                        if 3 <= pos < mid_cutoff:
+                            mid_counts[t_idx] += 1
+                        if pos >= mid_cutoff:
+                            flop_counts[t_idx] += 1
+                        if pos == (n_teams - 1):
+                            spoon_counts[t_idx] += 1
+            else:
+                # Static path: Precompute probabilities once with kappa_eff
+                precomputed = []
+                for i, j, base_dz in future_match_bases:
+                    p1, px, _ = davidson_probs(base_dz, kappa=kappa_eff, nu0=nu0, lam=lam)
+                    precomputed.append((i, j, p1, p1 + px))
+
+                for k in range(iterations):
+                    final_k_pts = list(base_actual_pts)
+                    for i, j, p1, p1x in precomputed:
+                        u = rand()
+                        if u < p1:
+                            final_k_pts[i] += 3
+                        elif u < p1x:
+                            final_k_pts[i] += 1
+                            final_k_pts[j] += 1
+                        else:
+                            final_k_pts[j] += 3
+
+                    projected_sim_points[k] = final_k_pts
+
+                    ranked_indices = sorted(
+                        range(n_teams),
+                        key=lambda x: (final_k_pts[x], expected_total_fp[x]),
+                        reverse=True
+                    )
+                    for pos, t_idx in enumerate(ranked_indices):
+                        if pos == 0:
+                            title_counts[t_idx] += 1
+                        if pos < 3:
+                            podium_counts[t_idx] += 1
+                        if 3 <= pos < mid_cutoff:
+                            mid_counts[t_idx] += 1
+                        if pos >= mid_cutoff:
+                            flop_counts[t_idx] += 1
+                        if pos == (n_teams - 1):
+                            spoon_counts[t_idx] += 1
+        else:
+            # Fallback if future round fixtures are not in all_rounds (e.g. mock test fixtures)
+            fallback_indices = list(range(n_teams))
+            for k in range(iterations):
+                final_k_pts = list(base_actual_pts)
+                shocks = [gauss(0, sigma_drift) for _ in range(n_teams)] if sigma_drift > 0 else [0.0] * n_teams
+                for _ in range(remaining_rounds):
+                    random.shuffle(fallback_indices)
+                    for p in range(0, n_teams - 1, 2):
+                        i = fallback_indices[p]
+                        j = fallback_indices[p + 1]
+                        dz_elo = (elos[i] - elos[j]) / sigma_elo
+                        dz_pow = z_powers[i] - z_powers[j]
+                        dz = w_elo * dz_elo + w_pow * dz_pow + hfa + (shocks[i] - shocks[j])
+                        p1, px, _ = davidson_probs(dz, kappa=kappa_eff, nu0=nu0, lam=lam)
+                        u = rand()
+                        if u < p1:
+                            final_k_pts[i] += 3
+                        elif u < (p1 + px):
+                            final_k_pts[i] += 1
+                            final_k_pts[j] += 1
+                        else:
+                            final_k_pts[j] += 3
+
+                projected_sim_points[k] = final_k_pts
+
+                ranked_indices = sorted(
+                    range(n_teams),
+                    key=lambda x: (final_k_pts[x], expected_total_fp[x] + shocks[x] * shock_scale),
+                    reverse=True
+                )
+                for pos, t_idx in enumerate(ranked_indices):
+                    if pos == 0:
+                        title_counts[t_idx] += 1
+                    if pos < 3:
+                        podium_counts[t_idx] += 1
+                    if 3 <= pos < mid_cutoff:
+                        mid_counts[t_idx] += 1
+                    if pos >= mid_cutoff:
+                        flop_counts[t_idx] += 1
+                    if pos == (n_teams - 1):
+                        spoon_counts[t_idx] += 1
 
     # Aggregate simulation results per team
     mc_results: Dict[str, Dict[str, Any]] = {}
     for name in team_names:
         i = team_idx_map[name]
-        pts_dist = [sim_points[k][i] for k in range(iterations)]
-        median_pts = float(statistics.median(pts_dist))
-        std_dev = float(statistics.stdev(pts_dist)) if len(pts_dist) > 1 else 0.0
+        
+        # Retrospective schedule luck distribution (completed rounds)
+        retro_dist = [sim_points[k][i] for k in range(iterations)]
+        retro_median = float(statistics.median(retro_dist))
+        retro_std = float(statistics.stdev(retro_dist)) if len(retro_dist) > 1 else 0.0
 
         act_pts = actual_points.get(name, 0)
-        z_score = round((act_pts - median_pts) / std_dev, 2) if std_dev > 0 else 0.0
+        z_score = round((act_pts - retro_median) / retro_std, 2) if retro_std > 0 else 0.0
         badge, label = compute_luck_badge(z_score)
 
+        if enable_projections:
+            # Projected full season points distribution (completed + future simulated rounds)
+            pts_dist = [projected_sim_points[k][i] for k in range(iterations)]
+            median_pts = float(statistics.median(pts_dist))
+            mean_pts = float(statistics.mean(pts_dist)) if len(pts_dist) > 0 else median_pts
+            std_dev = float(statistics.stdev(pts_dist)) if len(pts_dist) > 1 else 0.0
+        else:
+            # Retrospective points when projections are inactive
+            pts_dist = retro_dist
+            median_pts = retro_median
+            mean_pts = float(statistics.mean(retro_dist)) if len(retro_dist) > 0 else retro_median
+            std_dev = retro_std
+
+        sorted_pts = sorted(pts_dist)
+        n_pts = len(sorted_pts)
+        p10 = round(float(sorted_pts[int(0.10 * (n_pts - 1))]), 1) if n_pts > 0 else 0.0
+        p25 = round(float(sorted_pts[int(0.25 * (n_pts - 1))]), 1) if n_pts > 0 else 0.0
+        p75 = round(float(sorted_pts[int(0.75 * (n_pts - 1))]), 1) if n_pts > 0 else 0.0
+        p90 = round(float(sorted_pts[int(0.90 * (n_pts - 1))]), 1) if n_pts > 0 else 0.0
+
+        p_title = round((title_counts[i] / iterations) * 100, 1) if enable_projections else None
         p_podium = round((podium_counts[i] / iterations) * 100, 1) if enable_projections else None
+        p_mid = round((mid_counts[i] / iterations) * 100, 1) if enable_projections else None
+        p_flop = round((flop_counts[i] / iterations) * 100, 1) if enable_projections else None
         p_spoon = round((spoon_counts[i] / iterations) * 100, 1) if enable_projections else None
 
         mc_results[name] = {
+            'meanPoints': round(mean_pts, 2),
             'medianPoints': round(median_pts, 2),
             'stdDev': round(std_dev, 2),
+            'p10': p10,
+            'p25': p25,
+            'p75': p75,
+            'p90': p90,
             'luckZScore': z_score,
             'luckBadge': badge,
             'luckLabel': label,
+            'pTitlePct': p_title,
             'pPodiumPct': p_podium,
+            'pMidPct': p_mid,
+            'pFlopPct': p_flop,
             'pSpoonPct': p_spoon
         }
 
@@ -343,7 +696,9 @@ def compute_schedule_luck_analytics(
     total_rounds: int,
     random_seed: Optional[int] = None,
     season: str = "",
-    last_completed_round: int = 0
+    last_completed_round: int = 0,
+    elo_profiles: Optional[Dict[str, Any]] = None,
+    odds_config: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Dict[str, Any]]:
     """
     Main orchestrator function:
@@ -378,7 +733,12 @@ def compute_schedule_luck_analytics(
         actual_points=actual_points,
         total_rounds=total_rounds,
         iterations=10000,
-        random_seed=effective_seed
+        random_seed=effective_seed,
+        all_rounds=all_rounds,
+        elo_profiles=elo_profiles,
+        odds_config=odds_config,
+        teams_stats=teams_stats,
+        season=season
     )
 
     # 3. Compute Delta Points and Expected Rankings
@@ -418,9 +778,17 @@ def compute_schedule_luck_analytics(
             'luckBadge': mc.get('luckBadge', '⚖️'),
             'luckLabel': mc.get('luckLabel', 'Neutro'),
             'monteCarlo': {
+                'meanPoints': mc.get('meanPoints', mc.get('medianPoints', 0.0)),
                 'medianPoints': mc.get('medianPoints', 0.0),
                 'stdDev': mc.get('stdDev', 0.0),
+                'p10': mc.get('p10'),
+                'p25': mc.get('p25'),
+                'p75': mc.get('p75'),
+                'p90': mc.get('p90'),
+                'pTitlePct': mc.get('pTitlePct'),
                 'pPodiumPct': mc.get('pPodiumPct'),
+                'pMidPct': mc.get('pMidPct'),
+                'pFlopPct': mc.get('pFlopPct'),
                 'pSpoonPct': mc.get('pSpoonPct')
             }
         }

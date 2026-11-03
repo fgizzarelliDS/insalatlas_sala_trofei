@@ -126,6 +126,7 @@ export function buildTradingCardHTML(manager: Manager): string {
           </div>
         </div>
 
+        ${LEAGUE.features.mundialito ? `
         <!-- Mundialito -->
         <div class="trading-card-stat-box p-3 flex items-center gap-3">
           <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center">
@@ -136,6 +137,7 @@ export function buildTradingCardHTML(manager: Manager): string {
             <span class="text-[11px] uppercase font-bold opacity-70">Mundialito</span>
           </div>
         </div>
+        ` : ''}
 
         <!-- Cucchiai di Legno -->
         <div class="trading-card-stat-box p-3 flex items-center gap-3">
@@ -148,6 +150,7 @@ export function buildTradingCardHTML(manager: Manager): string {
           </div>
         </div>
 
+        ${LEAGUE.features.cartonato ? `
         <!-- Cartonati Playout -->
         <div class="trading-card-stat-box p-3 flex items-center gap-3">
           <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center">
@@ -158,13 +161,16 @@ export function buildTradingCardHTML(manager: Manager): string {
             <span class="text-[11px] uppercase font-bold opacity-70">Cartonati</span>
           </div>
         </div>
+        ` : ''}
       </div>
 
+      ${LEAGUE.features.cartonato ? `
       <!-- Playout Coach Banners Strip -->
       <div class="my-2 p-3 trading-card-stat-box">
         <span class="block text-[10px] uppercase font-extrabold tracking-wider opacity-60 mb-2">Bacheca Allenatori Cartonato</span>
         <div class="flex items-center flex-wrap gap-1.5">${bannersMarkup}</div>
       </div>
+      ` : ''}
 
       <!-- Card Footer -->
       <div class="border-t pt-2.5 flex items-center justify-between text-[11px] opacity-50 font-mono" style="border-color: var(--table-border);">

@@ -1,4 +1,5 @@
-import type { Manager, CompetitionRecord, LeagueRecord, RecordHolder } from '@/types';
+import type { Manager, CompetitionRecord, LeagueRecord, RecordHolder, SingleRoundScore } from '@/types';
+import { getLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 import {
   getSeasonMatchdays,
   resolveManagerName,
@@ -409,6 +410,63 @@ export function computePointsRecords(
       primaryHolder: primaryHolders[0],
       runnerUps,
       description: `La media punti più alta mai realizzata da un fantallenatore nella sua primissima stagione in ${LEAGUE.brand.championshipLabel || LEAGUE.brand.name} (esclusa la stagione inaugurale della lega).`
+    });
+  }
+
+  // -------------------------------------------------------------
+  // Record 1.7: Cecchino / High Roller (Record FantaPunti Singola Giornata)
+  // -------------------------------------------------------------
+  const liveDetails = getLiveSeasonDetails() || (typeof window !== 'undefined' ? (window as any).liveSeasonData : null);
+  const singleRoundScores = liveDetails?.topSingleRoundScores || [];
+
+  if (singleRoundScores.length > 0) {
+    const maxScore = singleRoundScores[0].fantaPoints;
+    const topTied = singleRoundScores.filter((s: SingleRoundScore) => s.fantaPoints === maxScore);
+    const primaryHolders: RecordHolder[] = topTied.map((item: SingleRoundScore) => {
+      const crest = resolveManagerRecordCrest(item.managerId, item.season, item.teamName, managers, competitions);
+      return {
+        managerId: item.managerId,
+        managerName: resolveManagerName(item.managerId, '', managers),
+        teamName: crest.teamName,
+        logo: crest.logo,
+        fallbackCrest: crest.fallbackCrest,
+        season: item.season,
+        value: item.fantaPoints,
+        formattedValue: `${item.fantaPoints.toFixed(1)} FP`,
+        normalizedDetail: `${item.roundNumber}ª Giornata · ${item.season}`
+      };
+    });
+
+    const runnerUps: RecordHolder[] = singleRoundScores
+      .filter((s: SingleRoundScore) => s.fantaPoints < maxScore)
+      .slice(0, 2)
+      .map((item: SingleRoundScore) => {
+        const crest = resolveManagerRecordCrest(item.managerId, item.season, item.teamName, managers, competitions);
+        return {
+          managerId: item.managerId,
+          managerName: resolveManagerName(item.managerId, '', managers),
+          teamName: crest.teamName,
+          logo: crest.logo,
+          fallbackCrest: crest.fallbackCrest,
+          season: item.season,
+          value: item.fantaPoints,
+          formattedValue: `${item.fantaPoints.toFixed(1)} FP`,
+          normalizedDetail: `${item.roundNumber}ª Giornata · ${item.season}`
+        };
+      });
+
+    records.push({
+      id: 'high_roller_single_round',
+      title: 'Record FantaPunti Singola Giornata',
+      category: 'points',
+      icon: 'fa-solid fa-crosshairs',
+      watermark: '🎯',
+      badgeLabel: 'Cecchino Assoluto',
+      badgeColor: 'amber',
+      primaryHolders,
+      primaryHolder: primaryHolders[0],
+      runnerUps,
+      description: `Miglior punteggio assoluto (FantaPunti) registrato da una squadra in una singola giornata di campionato nella storia della lega.`
     });
   }
 

@@ -848,11 +848,14 @@ def compute_season_diagnostics(
 
 
 def run_multi_track_elo_pipeline(
-    season_2025_rounds: List[Dict[str, Any]],
-    season_2026_rounds: List[Dict[str, Any]],
-    managers_list: List[Dict[str, Any]],
+    seasons_rounds: Optional[List[Tuple[str, List[Dict[str, Any]]]]] = None,
+    managers_list: Optional[List[Dict[str, Any]]] = None,
     scoring_weights: Optional[Dict[str, float]] = None,
     elo_config: Optional[Dict[str, Any]] = None,
+    # Backward compatibility arguments
+    season_2025_rounds: Optional[List[Dict[str, Any]]] = None,
+    season_2026_rounds: Optional[List[Dict[str, Any]]] = None,
+    existing_trackers: Optional[Dict[str, Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]]] = None,
     existing_2025_trackers: Optional[Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]] = None
 ) -> Dict[str, Any]:
     """
@@ -861,10 +864,30 @@ def run_multi_track_elo_pipeline(
     2. Track 2: Historical (Dynasty H2H Hybrid-Capped, seeded by historical palmares)
     3. Track 3: Atlas Power (Atlas-Elo v2 Dual-Kernel All-Play, starting at 1500)
     Plus exact per-season diagnostics (Golo Score, xPts All-Play, Luck Delta, avgFP).
+
+    Supports an arbitrary chronological sequence of N seasons:
+    `seasons_rounds = [(season_label_1, rounds_1), (season_label_2, rounds_2), ...]`
     """
     cfg = elo_config or DEFAULT_ELO_CONFIG
     base_r = float(cfg.get("base_rating", 1500.0))
     carryover_alpha = float(cfg.get("carryover_alpha", 0.75))
+    managers_list = managers_list or []
+
+    # Normalize existing_trackers if deprecated existing_2025_trackers was provided
+    if existing_trackers is None and existing_2025_trackers is not None:
+        existing_trackers = {"2025/26": existing_2025_trackers}
+    elif existing_trackers is None:
+        existing_trackers = {}
+
+    # Normalize seasons_rounds if deprecated pairwise rounds were provided
+    if seasons_rounds is None:
+        seasons_rounds = []
+        if season_2025_rounds is not None or "2025/26" in existing_trackers:
+            seasons_rounds.append(("2025/26", season_2025_rounds or []))
+        if season_2026_rounds is not None:
+            seasons_rounds.append(("2026/27", season_2026_rounds or []))
+        if not seasons_rounds:
+            seasons_rounds = [("live", [])]
 
     hist_seeds = compute_historical_seed_elos(
         managers_list=managers_list,
@@ -879,135 +902,135 @@ def run_multi_track_elo_pipeline(
             h = m.get("history", [])
             manager_years[m_id] = len(h) if isinstance(h, list) else int(m.get("years", 0) or 0)
 
-    # Collect managers in 2025 and 2026
-    mgrs_2025 = set()
-    for r in season_2025_rounds:
-        for m in r.get("matches", []):
-            if m.get("homeManagerId"): mgrs_2025.add(m["homeManagerId"])
-            if m.get("awayManagerId"): mgrs_2025.add(m["awayManagerId"])
+    flat_tracker: Dict[str, Any] = {}
+    hist_tracker: Dict[str, Any] = {}
+    atlas_tracker: Dict[str, Any] = {}
 
-    mgrs_2026 = set()
-    for r in season_2026_rounds:
-        for m in r.get("matches", []):
-            if m.get("homeManagerId"): mgrs_2026.add(m["homeManagerId"])
-            if m.get("awayManagerId"): mgrs_2026.add(m["awayManagerId"])
+    for s_idx, (s_label, s_rounds) in enumerate(seasons_rounds):
+        # Collect managers in this season's rounds
+        season_mgrs = set()
+        for r in s_rounds:
+            for m in r.get("matches", []):
+                if m.get("homeManagerId"): season_mgrs.add(m["homeManagerId"])
+                if m.get("awayManagerId"): season_mgrs.add(m["awayManagerId"])
 
-    if existing_2025_trackers and not season_2025_rounds:
-        if len(existing_2025_trackers) == 3:
-            flat_tracker_2025, hist_tracker_2025, atlas_tracker_2025 = existing_2025_trackers
+        # Check if pre-computed trackers are supplied for this season (e.g. disk recovery in CI)
+        if s_label in existing_trackers and (not s_rounds or len(s_rounds) == 0):
+            ex_tuple = existing_trackers[s_label]
+            if len(ex_tuple) == 3:
+                flat_tracker, hist_tracker, atlas_tracker = ex_tuple
+            else:
+                flat_tracker, hist_tracker = ex_tuple[0], ex_tuple[1]
+                atlas_tracker = {}
+            continue
+
+        if s_idx == 0 and not flat_tracker:
+            # First season initialization
+            flat_start = {m_id: base_r for m_id in season_mgrs}
+            hist_start = {m_id: hist_seeds.get(m_id, base_r) for m_id in season_mgrs}
+            atlas_start = {m_id: base_r for m_id in season_mgrs}
+
+            flat_tracker = simulate_season_elo(
+                rounds_data=s_rounds,
+                starting_elos=flat_start,
+                season_label=s_label,
+                competition_category="Campionato",
+                elo_config=cfg
+            )
+            hist_tracker = simulate_season_elo(
+                rounds_data=s_rounds,
+                starting_elos=hist_start,
+                season_label=s_label,
+                competition_category="Campionato",
+                elo_config=cfg
+            )
+            atlas_tracker = simulate_season_atlas_elo(
+                rounds_data=s_rounds,
+                starting_elos=atlas_start,
+                season_label=s_label,
+                manager_years=manager_years,
+                elo_config=cfg
+            )
         else:
-            flat_tracker_2025, hist_tracker_2025 = existing_2025_trackers[0], existing_2025_trackers[1]
-            atlas_tracker_2025 = {}
-    else:
-        # Track 1: Flat 2025
-        flat_start_2025 = {m_id: base_r for m_id in mgrs_2025}
-        flat_tracker_2025 = simulate_season_elo(
-            rounds_data=season_2025_rounds,
-            starting_elos=flat_start_2025,
-            season_label="2025/26",
-            competition_category="Campionato",
-            elo_config=cfg
-        )
+            # Subsequent season carryover
+            active_list = list(season_mgrs)
 
-        # Track 2: Historical 2025
-        hist_start_2025 = {m_id: hist_seeds.get(m_id, base_r) for m_id in mgrs_2025}
-        hist_tracker_2025 = simulate_season_elo(
-            rounds_data=season_2025_rounds,
-            starting_elos=hist_start_2025,
-            season_label="2025/26",
-            competition_category="Campionato",
-            elo_config=cfg
-        )
+            # 1. Flat Carryover
+            flat_end_prev = {m_id: flat_tracker[m_id]["current"] for m_id in flat_tracker}
+            flat_start = apply_inter_season_carryover(
+                flat_end_prev, carryover_alpha, base_r, active_managers=active_list
+            )
+            for m_id in active_list:
+                if m_id not in flat_start:
+                    flat_start[m_id] = base_r
 
-        # Track 3: Atlas Power 2025 (starts at 1500)
-        atlas_start_2025 = {m_id: base_r for m_id in mgrs_2025}
-        atlas_tracker_2025 = simulate_season_atlas_elo(
-            rounds_data=season_2025_rounds,
-            starting_elos=atlas_start_2025,
-            season_label="2025/26",
-            manager_years=manager_years,
-            elo_config=cfg
-        )
+            flat_tracker = simulate_season_elo(
+                rounds_data=s_rounds,
+                starting_elos=flat_start,
+                season_label=s_label,
+                competition_category="Campionato",
+                elo_config=cfg,
+                existing_tracker=flat_tracker
+            )
 
-    active_2026_list = list(mgrs_2026)
+            # 2. Historical Carryover
+            hist_end_prev = {m_id: hist_tracker[m_id]["current"] for m_id in hist_tracker}
+            hist_start = apply_inter_season_carryover(
+                hist_end_prev, carryover_alpha, base_r, active_managers=active_list
+            )
+            for m_id in active_list:
+                if m_id not in hist_start:
+                    hist_start[m_id] = hist_seeds.get(m_id, base_r)
 
-    # 1. Carryover into 2026/27 (Flat)
-    flat_end_2025 = {m_id: flat_tracker_2025[m_id]["current"] for m_id in flat_tracker_2025}
-    flat_start_2026 = apply_inter_season_carryover(
-        flat_end_2025, carryover_alpha, base_r, active_managers=active_2026_list
-    )
-    for m_id in active_2026_list:
-        if m_id not in flat_start_2026:
-            flat_start_2026[m_id] = base_r
+            hist_tracker = simulate_season_elo(
+                rounds_data=s_rounds,
+                starting_elos=hist_start,
+                season_label=s_label,
+                competition_category="Campionato",
+                elo_config=cfg,
+                existing_tracker=hist_tracker
+            )
 
-    flat_tracker_final = simulate_season_elo(
-        rounds_data=season_2026_rounds,
-        starting_elos=flat_start_2026,
-        season_label="2026/27",
-        competition_category="Campionato",
-        elo_config=cfg,
-        existing_tracker=flat_tracker_2025
-    )
+            # 3. Atlas Power Carryover
+            atlas_end_prev = {m_id: atlas_tracker[m_id]["current"] for m_id in atlas_tracker}
+            atlas_start = apply_inter_season_carryover(
+                atlas_end_prev, carryover_alpha, base_r, active_managers=active_list
+            )
+            for m_id in active_list:
+                if m_id not in atlas_start:
+                    atlas_start[m_id] = base_r
 
-    # 2. Carryover into 2026/27 (Historical)
-    hist_end_2025 = {m_id: hist_tracker_2025[m_id]["current"] for m_id in hist_tracker_2025}
-    hist_start_2026 = apply_inter_season_carryover(
-        hist_end_2025, carryover_alpha, base_r, active_managers=active_2026_list
-    )
-    for m_id in active_2026_list:
-        if m_id not in hist_start_2026:
-            hist_start_2026[m_id] = hist_seeds.get(m_id, base_r)
-
-    hist_tracker_final = simulate_season_elo(
-        rounds_data=season_2026_rounds,
-        starting_elos=hist_start_2026,
-        season_label="2026/27",
-        competition_category="Campionato",
-        elo_config=cfg,
-        existing_tracker=hist_tracker_2025
-    )
-
-    # 3. Carryover into 2026/27 (Atlas Power)
-    atlas_end_2025 = {m_id: atlas_tracker_2025[m_id]["current"] for m_id in atlas_tracker_2025}
-    atlas_start_2026 = apply_inter_season_carryover(
-        atlas_end_2025, carryover_alpha, base_r, active_managers=active_2026_list
-    )
-    for m_id in active_2026_list:
-        if m_id not in atlas_start_2026:
-            atlas_start_2026[m_id] = base_r
-
-    atlas_tracker_final = simulate_season_atlas_elo(
-        rounds_data=season_2026_rounds,
-        starting_elos=atlas_start_2026,
-        season_label="2026/27",
-        manager_years=manager_years,
-        elo_config=cfg,
-        existing_tracker=atlas_tracker_2025
-    )
+            atlas_tracker = simulate_season_atlas_elo(
+                rounds_data=s_rounds,
+                starting_elos=atlas_start,
+                season_label=s_label,
+                manager_years=manager_years,
+                elo_config=cfg,
+                existing_tracker=atlas_tracker
+            )
 
     # All managers union
     all_manager_ids = sorted(list(
-        set(flat_tracker_final.keys()).union(set(hist_tracker_final.keys())).union(set(atlas_tracker_final.keys()))
+        set(flat_tracker.keys()).union(set(hist_tracker.keys())).union(set(atlas_tracker.keys()))
     ))
 
-    # Compute exact season diagnostics
+    # Compute exact season diagnostics dynamically for all seasons present
+    rounds_by_season = {s_label: s_rounds for s_label, s_rounds in seasons_rounds if s_rounds}
     season_diagnostics = compute_season_diagnostics(
-        rounds_by_season={
-            "2025/26": season_2025_rounds,
-            "2026/27": season_2026_rounds
-        },
+        rounds_by_season=rounds_by_season,
         all_managers=all_manager_ids
     )
 
-    # Build team and coach lookups
+    # Build team and coach lookups dynamically
     team_name_lookup = {}
     coach_lookup = {}
-    for r in season_2026_rounds + season_2025_rounds:
-        for m in r.get("matches", []):
-            if m.get("homeManagerId") and m.get("homeTeam"):
-                team_name_lookup[m["homeManagerId"]] = m["homeTeam"]
-            if m.get("awayManagerId") and m.get("awayTeam"):
-                team_name_lookup[m["awayManagerId"]] = m["awayTeam"]
+    for s_label, s_rounds in seasons_rounds:
+        for r in s_rounds:
+            for m in r.get("matches", []):
+                if m.get("homeManagerId") and m.get("homeTeam"):
+                    team_name_lookup[m["homeManagerId"]] = m["homeTeam"]
+                if m.get("awayManagerId") and m.get("awayTeam"):
+                    team_name_lookup[m["awayManagerId"]] = m["awayTeam"]
 
     for m in managers_list:
         if m.get("id"):
@@ -1021,26 +1044,28 @@ def run_multi_track_elo_pipeline(
         data_dict["seasons"] = seasons
         return data_dict
 
+    latest_season = seasons_rounds[-1][0] if seasons_rounds else "unknown"
+
     result_profiles: Dict[str, Any] = {}
     for m_id in all_manager_ids:
-        f_data = partition_seasons(flat_tracker_final.get(m_id, {
+        f_data = partition_seasons(flat_tracker.get(m_id, {
             "current": base_r,
-            "peak": {"value": base_r, "season": "2026/27", "round": 0},
-            "floor": {"value": base_r, "season": "2026/27", "round": 0},
+            "peak": {"value": base_r, "season": latest_season, "round": 0},
+            "floor": {"value": base_r, "season": latest_season, "round": 0},
             "lastDelta": 0.0,
             "trajectory": []
         }))
-        h_data = partition_seasons(hist_tracker_final.get(m_id, {
+        h_data = partition_seasons(hist_tracker.get(m_id, {
             "current": base_r,
-            "peak": {"value": base_r, "season": "2026/27", "round": 0},
-            "floor": {"value": base_r, "season": "2026/27", "round": 0},
+            "peak": {"value": base_r, "season": latest_season, "round": 0},
+            "floor": {"value": base_r, "season": latest_season, "round": 0},
             "lastDelta": 0.0,
             "trajectory": []
         }))
-        a_data = partition_seasons(atlas_tracker_final.get(m_id, {
+        a_data = partition_seasons(atlas_tracker.get(m_id, {
             "current": base_r,
-            "peak": {"value": base_r, "season": "2026/27", "round": 0},
-            "floor": {"value": base_r, "season": "2026/27", "round": 0},
+            "peak": {"value": base_r, "season": latest_season, "round": 0},
+            "floor": {"value": base_r, "season": latest_season, "round": 0},
             "lastDelta": 0.0,
             "trajectory": []
         }))

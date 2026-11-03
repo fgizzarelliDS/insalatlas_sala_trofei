@@ -1,9 +1,22 @@
 import { LEAGUE } from '@/config';
+import { getAvailableSeasons } from '@/components/board/seasons/seasonSelector';
+import { getLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 
 /**
  * Template shell for the Manager Profile modal (#manager-profile-modal)
  */
 export function getProfileModalShellHTML(): string {
+  const liveSeason = getLiveSeasonDetails()?.season;
+  const availableSeasons = getAvailableSeasons();
+  const seasons = Array.from(new Set([
+    ...(liveSeason ? [liveSeason] : []),
+    ...availableSeasons
+  ])).filter(Boolean);
+
+  const seasonOptionsHTML = seasons.map((s, idx) =>
+    `<option value="${s}">${s}${idx === 0 ? ' (Corrente)' : ''}</option>`
+  ).join('');
+
   return `
   <!-- MODAL: SCHEDA PROFILO ALLENATORE (SOLA LETTURA) -->
   <div id="manager-profile-modal"
@@ -67,7 +80,13 @@ export function getProfileModalShellHTML(): string {
           class="min-w-0 flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 sm:gap-1.5 border border-transparent opacity-60 hover:opacity-100"
           style="color: var(--text-main);">
           <i class="fa-solid fa-clock-rotate-left text-[11px] sm:text-xs shrink-0"></i>
-          <span class="truncate"><span class="hidden sm:inline">Cronologia &amp; </span>Piazzamenti</span>
+          <span class="truncate">Piazzamenti</span>
+        </button>
+        <button id="profile-tab-btn-badges" type="button" onclick="switchProfileModalTab('badges')"
+          class="min-w-0 flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 sm:gap-1.5 border border-transparent opacity-60 hover:opacity-100"
+          style="color: var(--text-main);">
+          <i class="fa-solid fa-medal text-[11px] sm:text-xs shrink-0"></i>
+          <span class="truncate">Hall of Fame</span>
         </button>
       </div>
 
@@ -188,8 +207,7 @@ export function getProfileModalShellHTML(): string {
                       style="background-color: var(--input-bg); border-color: var(--table-border); color: var(--text-main);">
                 <optgroup label="Stagioni">
                   <option value="all">Tutte le stagioni (Continuo)</option>
-                  <option value="2026/27">2026/27 (Corrente)</option>
-                  <option value="2025/26">2025/26</option>
+                  ${seasonOptionsHTML}
                 </optgroup>
                 <optgroup label="Finestra Recente">
                   <option value="last10">Ultimi 10 match</option>
@@ -248,6 +266,11 @@ export function getProfileModalShellHTML(): string {
           </div>
           <div id="profile-career-timeline" class="space-y-3"></div>
         </div>
+      </div>
+
+      <!-- TAB 3: Hall of Fame & Badges -->
+      <div id="profile-tab-badges-content" class="hidden min-w-0">
+        <div id="profile-badges-tab-container"></div>
       </div>
 
       <!-- Footer Buttons: Compact Share Dropdown & Chiudi Scheda -->

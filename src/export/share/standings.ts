@@ -12,6 +12,7 @@ import {
  * Builds rich text for sharing a team's live matches & season analytics
  */
 export function buildTeamMatchesShareText(teamMetric: any, shareUrl: string): string {
+  const seasonLabel = getLiveSeasonDetails()?.season || 'Live';
   const luck = teamMetric.scheduleLuck;
   const luckZ = luck ? `${luck.luckBadge} ${luck.luckLabel} (${luck.luckZScore > 0 ? '+' : ''}${luck.luckZScore.toFixed(2)}σ)` : '';
   const xPts = luck ? `${luck.xPoints.toFixed(2)} xPTS` : '';
@@ -20,7 +21,7 @@ export function buildTeamMatchesShareText(teamMetric: any, shareUrl: string): st
 
   const lines = [
     `📊 *${teamMetric.teamName}* (${teamMetric.coach || 'Allenatore'})`,
-    `🏆 *Stagione Live 2026/27* • Posizione Reale: #${teamMetric.rank}`,
+    `🏆 *Stagione ${seasonLabel}* • Posizione Reale: #${teamMetric.rank}`,
     luck ? `🎯 *Merito:* #${luck.xRank} (${xPts})` : '',
     luckZ ? `🎲 *Calendario:* ${luckZ}` : '',
     tvt ? `⚔️ *Record Tutti vs Tutti:* ${tvt}` : '',
@@ -34,6 +35,7 @@ export function buildTeamMatchesShareText(teamMetric: any, shareUrl: string): st
  * Builds rich text for sharing the live Merit Standings snapshot
  */
 export function buildMeritStandingsShareText(standings: any[], shareUrl: string): string {
+  const seasonLabel = getLiveSeasonDetails()?.season || 'Live';
   const top3 = standings
     .slice()
     .sort((a, b) => (a.scheduleLuck?.xRank ?? a.rank) - (b.scheduleLuck?.xRank ?? b.rank))
@@ -46,7 +48,7 @@ export function buildMeritStandingsShareText(standings: any[], shareUrl: string)
   });
 
   const lines = [
-    `⚖️ *Classifica di Merito (xPTS) — Stagione Live 2026/27*`,
+    `⚖️ *Classifica di Merito (xPTS) — Stagione ${seasonLabel}*`,
     `Graduatoria oggettiva depurata dalla fortuna del calendario (Tutti vs Tutti):\n`,
     ...topLines,
     `\n👉 Scopri la classifica di merito completa e l'indice di fortuna:\n${shareUrl}`

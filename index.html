@@ -47,6 +47,18 @@
   <!-- Modular Stylesheets -->
   <link rel="stylesheet" href="css/themes.css">
   <link rel="stylesheet" href="css/layout.css">
+
+  <!-- Vite Chunk Preload & Deployment Recovery Handler -->
+  <script>
+    window.addEventListener('vite:preloadError', function () {
+      var lastReload = sessionStorage.getItem('last_chunk_reload');
+      var now = Date.now();
+      if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
+        sessionStorage.setItem('last_chunk_reload', now.toString());
+        window.location.reload();
+      }
+    });
+  </script>
 </head>
 
 <body class="theme-gazzetta antialiased selection:bg-amber-500 selection:text-white min-h-screen pb-16">
@@ -107,9 +119,9 @@
             <option value="trophies_desc" selected>🏆 Più Titolati (Trofei)</option>
             <option value="scudetti_desc">🥇 Più Scudetti (1° Campionato)</option>
             <option value="years_desc">📅 Partecipazioni (Anzianità)</option>
-            <option value="mundialito_desc">🌍 Più Mundialito</option>
-            <option value="spoons_desc">🥄 Cucchiai di Legno</option>
-            <option value="cartonato_desc">📦 Cartonati (Playout)</option>
+            <option data-feature="mundialito" value="mundialito_desc">🌍 Più Mundialito</option>
+            <option data-feature="spoon" value="spoons_desc">🥄 Cucchiai di Legno</option>
+            <option data-feature="cartonato" value="cartonato_desc">📦 Cartonati (Playout)</option>
             <option value="rating_desc">⭐ Rating Storico (Punti)</option>
           </select>
         </div>
@@ -273,11 +285,11 @@
               class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-slate-300 inline-block shadow-sm"></span> 2° Posto</span>
           <span class="flex items-center gap-1.5"><span
               class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-amber-700 inline-block shadow-sm"></span> 3° Posto</span>
-          <span class="flex items-center gap-1">🥄 Cucchiaio</span>
-          <span class="flex items-center gap-1">🏆 Coppa Lega</span>
-          <span class="flex items-center gap-1">⭐ Supercoppa</span>
-          <span class="flex items-center gap-1 text-amber-500">🌍 Mundialito</span>
-          <span class="flex items-center gap-1.5"><span
+          <span data-feature="spoon" class="flex items-center gap-1">🥄 Cucchiaio</span>
+          <span data-feature="cup" class="flex items-center gap-1">🏆 Coppa Lega</span>
+          <span data-feature="supercup" class="flex items-center gap-1">⭐ Supercoppa</span>
+          <span data-feature="mundialito" class="flex items-center gap-1 text-amber-500">🌍 Mundialito</span>
+          <span data-feature="cartonato" class="flex items-center gap-1.5"><span
               class="px-1.5 py-0.5 rounded bg-blue-600 text-[10px] text-white font-extrabold shadow-sm">BANNER</span>
             Cartonato</span>
         </div>
@@ -402,7 +414,7 @@
           </div>
 
           <!-- Card 3: Mundialito -->
-          <div onclick="window.openTrophyModal && window.openTrophyModal('mundialito')"
+          <div data-feature="mundialito" onclick="window.openTrophyModal && window.openTrophyModal('mundialito')"
             title="Clicca per visualizzare l'Albo d'Oro e i finalisti del Mundialito"
             class="h-[76px] sm:h-[82px] px-3 py-2.5 rounded-2xl albo-table-wrap flex items-center gap-2.5 sm:gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
             <div
@@ -419,7 +431,7 @@
           </div>
 
           <!-- Card 4: Cucchiai di Legno -->
-          <div onclick="window.openTrophyModal && window.openTrophyModal('spoons')"
+          <div data-feature="spoon" onclick="window.openTrophyModal && window.openTrophyModal('spoons')"
             title="Clicca per visualizzare il Muro dei Cucchiai di Legno (ultimi posti)"
             class="h-[76px] sm:h-[82px] px-3 py-2.5 rounded-2xl albo-table-wrap flex items-center gap-2.5 sm:gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
             <div
@@ -436,7 +448,7 @@
           </div>
 
           <!-- Card 5: Banner Cartonato -->
-          <div onclick="window.openTrophyModal && window.openTrophyModal('cartonato')"
+          <div data-feature="cartonato" onclick="window.openTrophyModal && window.openTrophyModal('cartonato')"
             title="Clicca per visualizzare l'Albo dei Cartonati e Playout"
             class="h-[76px] sm:h-[82px] px-3 py-2.5 rounded-2xl albo-table-wrap flex items-center gap-2.5 sm:gap-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:border-amber-500/50 shadow-sm group">
             <div
@@ -498,8 +510,47 @@
                   class="text-center px-2 transition text-[11px] sm:text-xs">Cartonato</div>
               </div>
 
-              <!-- Dynamic Table Shelf Rows Target -->
-              <div id="managers-table-body"></div>
+              <!-- Dynamic Table Shelf Rows Target (with pre-hydration skeleton) -->
+              <div id="managers-table-body">
+                <div class="animate-pulse space-y-2 p-2">
+                  <div class="h-14 rounded-xl bg-white/5 border border-white/5 flex items-center px-4 gap-4">
+                    <div class="w-8 h-8 rounded-full bg-white/10 shrink-0"></div>
+                    <div class="h-4 w-32 bg-white/10 rounded"></div>
+                    <div class="flex-1 flex justify-end gap-3">
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                    </div>
+                  </div>
+                  <div class="h-14 rounded-xl bg-white/5 border border-white/5 flex items-center px-4 gap-4">
+                    <div class="w-8 h-8 rounded-full bg-white/10 shrink-0"></div>
+                    <div class="h-4 w-40 bg-white/10 rounded"></div>
+                    <div class="flex-1 flex justify-end gap-3">
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                    </div>
+                  </div>
+                  <div class="h-14 rounded-xl bg-white/5 border border-white/5 flex items-center px-4 gap-4">
+                    <div class="w-8 h-8 rounded-full bg-white/10 shrink-0"></div>
+                    <div class="h-4 w-28 bg-white/10 rounded"></div>
+                    <div class="flex-1 flex justify-end gap-3">
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                    </div>
+                  </div>
+                  <div class="h-14 rounded-xl bg-white/5 border border-white/5 flex items-center px-4 gap-4">
+                    <div class="w-8 h-8 rounded-full bg-white/10 shrink-0"></div>
+                    <div class="h-4 w-36 bg-white/10 rounded"></div>
+                    <div class="flex-1 flex justify-end gap-3">
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
             </div>
           </div>

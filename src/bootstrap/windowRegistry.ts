@@ -1,4 +1,12 @@
 import {
+  openStoryExportModal,
+  closeStoryExportModal,
+  switchStoryExportTab,
+  changeStoryExportTeam,
+  copyCurrentStoryCard,
+  downloadCurrentStoryCard
+} from '@/components/modals/export/StoryExportModal';
+import {
   changeTheme,
   toggleEditMode,
   handleTitleBlur
@@ -129,6 +137,8 @@ const copyTeamMatchesToClipboard = lazyExport('copyTeamMatchesToClipboard');
 const exportNextRoundPNG = lazyExport('exportNextRoundPNG');
 const copyNextRoundToClipboard = lazyExport('copyNextRoundToClipboard');
 const shareNextRoundWhatsApp = lazyExport('shareNextRoundWhatsApp');
+const exportNextRoundStoryPNG = lazyExport('exportNextRoundStoryPNG');
+const copyNextRoundStoryToClipboard = lazyExport('copyNextRoundStoryToClipboard');
 import {
   changeSort,
   toggleDisplayMode,
@@ -311,6 +321,8 @@ declare global {
     exportNextRoundPNG: typeof exportNextRoundPNG;
     copyNextRoundToClipboard: typeof copyNextRoundToClipboard;
     shareNextRoundWhatsApp: typeof shareNextRoundWhatsApp;
+    exportNextRoundStoryPNG: typeof exportNextRoundStoryPNG;
+    copyNextRoundStoryToClipboard: typeof copyNextRoundStoryToClipboard;
     closePosterShareDropdown: typeof closePosterShareDropdown;
     exportRecordStory?: (recordId: string, event?: Event) => Promise<void>;
     exportRecordStoryHD?: typeof exportRecordStoryHD;
@@ -322,8 +334,12 @@ declare global {
     navigateBackTeamMatchesModal?: () => void;
     toggleTeamMatchesShareDropdown?: (event?: Event) => void;
     closeTeamMatchesShareDropdown?: () => void;
+    switchTeamMatchesTab?: (tab: 'calendar' | 'montecarlo') => void;
+    toggleTeamMatchesCalendar?: () => void;
+    toggleTeamMatchesDetails?: () => void;
     toggleCompetitionDrawer?: (competitionId: number, season?: string) => void;
-    switchProfileModalTab?: (tab: 'palmares' | 'career') => void;
+    switchProfileModalTab?: (tab: 'palmares' | 'career' | 'badges') => void;
+    toggleProfileHoFLeaderboard?: () => void;
     setMultiTournamentMode?: (mode: 'ppg' | 'simultaneous') => void;
     setProfileEloRange?: (range: number) => void;
     switchRealSort?: (order: 'rank' | 'elo') => void;
@@ -371,6 +387,12 @@ declare global {
     selectProfileEloPoint: typeof selectProfileEloPoint;
     selectEloChartPoint: typeof selectEloChartPoint;
     toggleProfileEloMode: typeof toggleProfileEloMode;
+    openStoryExportModal: typeof openStoryExportModal;
+    closeStoryExportModal: typeof closeStoryExportModal;
+    switchStoryExportTab: typeof switchStoryExportTab;
+    changeStoryExportTeam: typeof changeStoryExportTeam;
+    copyCurrentStoryCard: typeof copyCurrentStoryCard;
+    downloadCurrentStoryCard: typeof downloadCurrentStoryCard;
   }
 }
 
@@ -524,11 +546,19 @@ export function registerGlobalWindowHandlers(): void {
     exportNextRoundPNG,
     copyNextRoundToClipboard,
     shareNextRoundWhatsApp,
+    exportNextRoundStoryPNG,
+    copyNextRoundStoryToClipboard,
     switchProfileEloSeason,
     showProfileEloHover,
     clearProfileEloHover,
     selectProfileEloPoint,
     selectEloChartPoint,
-    toggleProfileEloMode
+    toggleProfileEloMode,
+    openStoryExportModal,
+    closeStoryExportModal,
+    switchStoryExportTab,
+    changeStoryExportTeam,
+    copyCurrentStoryCard,
+    downloadCurrentStoryCard
   });
 }

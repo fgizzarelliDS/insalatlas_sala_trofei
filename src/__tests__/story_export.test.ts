@@ -255,6 +255,76 @@ describe('Social Story Export (9:16) Format Engine', () => {
     });
   });
 
+  describe('renderStandingsStoryCanvas', () => {
+    it('renders official standings story at 1080x1920 with xPTS and all-play metrics', async () => {
+      const { renderStandingsStoryCanvas } = await import('@/export/renderers/story');
+      const mockLiveData: any = {
+        season: '2026/27',
+        lastCompletedRound: 4,
+        standings: [
+          {
+            teamName: 'Scalo San Genesio',
+            coach: 'Valery',
+            rank: 1,
+            points: 10,
+            played: 4,
+            won: 3,
+            drawn: 1,
+            lost: 0,
+            goalDiff: 5,
+            totalFantaPoints: 312.5,
+            statusBadge: '🔥',
+            statusLabel: 'In vetta',
+            scheduleLuck: {
+              xPoints: 9.89,
+              allPlayRecord: { wins: 26, draws: 11, losses: 8, winPct: 57.8 }
+            }
+          }
+        ]
+      };
+
+      const canvas = await renderStandingsStoryCanvas(mockLiveData);
+      expect(canvas).toBeDefined();
+      expect(canvas.width).toBe(1080);
+      expect(canvas.height).toBe(1920);
+    });
+  });
+
+  describe('renderMonteCarloStoryCanvas', () => {
+    it('renders Monte Carlo story with title gating and median points', async () => {
+      const { renderMonteCarloStoryCanvas } = await import('@/export/renderers/story');
+      const teamMetric: any = {
+        teamName: 'Scalo San Genesio',
+        coach: 'Valery',
+        rank: 1,
+        points: 10,
+        scheduleLuck: {
+          monteCarlo: {
+            pTitlePct: 47.7,
+            pPodiumPct: 86.3,
+            pMidPct: 10.5,
+            pSpoonPct: 3.1,
+            medianPoints: 49.0,
+            p10: 41.0,
+            p90: 57.0,
+            p25: 45.0,
+            p75: 54.0
+          }
+        }
+      };
+      const mockLiveData: any = {
+        season: '2026/27',
+        totalRounds: 26,
+        lastCompletedRound: 4
+      };
+
+      const canvas = await renderMonteCarloStoryCanvas(teamMetric, mockLiveData);
+      expect(canvas).toBeDefined();
+      expect(canvas.width).toBe(1080);
+      expect(canvas.height).toBe(1920);
+    });
+  });
+
   describe('Share Facade Functions', () => {
     it('exports profile story without throwing errors', async () => {
       const { exportProfileStoryHD } = await import('@/export/share');

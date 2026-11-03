@@ -17,7 +17,18 @@ import {
   switchMeritSort,
   toggleMobileMeritSort
 } from '@/components/board/seasons/standingsTable';
-import { openTeamMatchesModal, closeTeamMatchesModal } from '@/components/board/seasons/TeamMatchesModal';
+import {
+  openTeamMatchesModal,
+  closeTeamMatchesModal,
+  switchTeamMatchesTab,
+  renderMonteCarloSectionHTML,
+  toggleTeamMatchesCalendar,
+  toggleTeamMatchesDetails
+} from '@/components/board/seasons/TeamMatchesModal';
+import {
+  computeLeagueSoS,
+  getOpponentDifficulty
+} from '@/components/board/seasons/nextRoundMetrics';
 import {
   renderNextRoundStrip,
   toggleNextRoundAccordion,
@@ -523,9 +534,9 @@ describe('Live In-Progress Form & Analytics Engine', () => {
       expect(content?.innerHTML).not.toContain('CASA');
       expect(content?.innerHTML).not.toContain('TRASFERTA');
       expect(content?.innerHTML).not.toContain('vs sebbadavid');
-      // Unplayed G2 match has no outcome yet and renders simple '-' instead of PAREGGIO
+      // Unplayed G2 match has no outcome yet and renders SoS difficulty badge instead of PAREGGIO
       expect(content?.innerHTML).toContain('G2');
-      expect(content?.innerHTML).toContain('select-none">-</span>');
+      expect(content?.innerHTML).toMatch(/Favorevole|Equilibrato|Match Duro/);
       expect(content?.innerHTML).not.toContain('PAREGGIO');
       // No back button initially
       expect(content?.innerHTML).not.toContain('navigateBackTeamMatchesModal');
@@ -599,6 +610,101 @@ describe('Live In-Progress Form & Analytics Engine', () => {
       expect(modalContent?.innerHTML).toContain('12V 0N 1P');
       expect(modalContent?.innerHTML).toContain('92.3%');
       expect(modalContent?.innerHTML).toContain('Fortunato');
+      closeTeamMatchesModal();
+    });
+
+    it('supports 2 dedicated tabs: Calendario Partite and Scheda Monte Carlo with Elo-only SoS pill', () => {
+      setLiveSeasonDetails({
+        season: '2026/27',
+        competitionId: 863632,
+        lastCompletedRound: 4,
+        totalRounds: 26,
+        standings: [
+          {
+            rank: 1,
+            points: 10,
+            managerId: 'm_kiwi',
+            teamName: 'Kiwi Football Club',
+            coach: 'Tazio',
+            elo: { flat: { current: 1532.0 }, atlas: { current: 1532.0 } } as any,
+            recentForm: ['W', 'W', 'D', 'W'],
+            statusBadge: '📈',
+            statusLabel: 'In Ascesa',
+            scheduleLuck: {
+              xPoints: 8.5,
+              deltaPoints: 1.5,
+              xRank: 1,
+              deltaRank: 0,
+              allPlayRecord: { played: 52, wins: 38, draws: 4, losses: 10, winPct: 76.9 },
+              luckZScore: 0.8,
+              luckBadge: '↗️',
+              luckLabel: 'Favorevole',
+              monteCarlo: {
+                medianPoints: 46.5,
+                stdDev: 5.2,
+                p10: 38.0,
+                p25: 42.0,
+                p75: 50.0,
+                p90: 54.0,
+                pTitlePct: 32.5,
+                pPodiumPct: 75.0,
+                pMidPct: 20.0,
+                pFlopPct: 5.0
+              }
+            }
+          },
+          {
+            rank: 2,
+            points: 9,
+            managerId: 'm_opp',
+            teamName: 'Scalo San Genesio',
+            coach: 'valerio',
+            elo: { flat: { current: 1501.0 }, atlas: { current: 1501.0 } } as any,
+            recentForm: ['W', 'W', 'W', 'L'],
+            statusBadge: '📈',
+            statusLabel: 'In Ascesa'
+          }
+        ],
+        rounds: [
+          {
+            roundNumber: 5,
+            matches: [
+              {
+                homeTeam: 'Kiwi Football Club',
+                awayTeam: 'Scalo San Genesio',
+                isPlayed: false
+              }
+            ]
+          }
+        ]
+      });
+
+      // 1. Opens in default Calendar tab
+      openTeamMatchesModal('m_kiwi', 'Kiwi Football Club');
+      const content = elements['team-matches-modal-content'];
+
+      // Header verification: complete team title and Elo-only pill (no 0 pt)
+      expect(content?.innerHTML).toContain('Kiwi Football Club');
+      expect(content?.innerHTML).toContain('Calendario');
+      expect(content?.innerHTML).toContain('Scheda MC');
+      expect(content?.innerHTML).toContain('1501 Elo');
+      expect(content?.innerHTML).not.toContain('· 0 pt');
+      expect(content?.innerHTML).not.toContain('Elo ·');
+
+      // 2. Switch to Monte Carlo Tab
+      switchTeamMatchesTab('montecarlo');
+      expect(content?.innerHTML).toContain('Proiezioni MC a Fine Campionato');
+      expect(content?.innerHTML).toContain('Distribuzione di Densit&agrave; dei Punti Finali');
+      expect(content?.innerHTML).toContain('46.5'); // Projected median points
+      expect(content?.innerHTML).toContain('Podio (Top 3)');
+      expect(content?.innerHTML).toContain('Approfondimento Statistico &amp; Box-Plot dei Percentili');
+      expect(content?.innerHTML).not.toContain('Difficolt&agrave; Calendario Rimanente');
+
+      // 3. Switch back to Calendar tab
+      switchTeamMatchesTab('calendar');
+      expect(content?.innerHTML).toContain('Scalo San Genesio');
+      expect(content?.innerHTML).toContain('Probabilità H2H');
+
       closeTeamMatchesModal();
     });
   });
@@ -1564,6 +1670,166 @@ describe('Live In-Progress Form & Analytics Engine', () => {
         closeTeamMatchesModal(false);
         (globalThis as any).document = origDoc;
         setLiveSeasonDetails(null);
+      }
+    });
+
+    it('computes League Strength of Schedule (SoS) and opponent difficulty accurately', () => {
+      const mockStandings = [
+        {
+          teamName: 'Titan FC',
+          managerId: 'm_titan',
+          rank: 1,
+          points: 15,
+          elo: { flat: { current: 1650.0 } }
+        },
+        {
+          teamName: 'Mid FC',
+          managerId: 'm_mid',
+          rank: 2,
+          points: 8,
+          elo: { flat: { current: 1500.0 } }
+        },
+        {
+          teamName: 'Challenger FC',
+          managerId: 'm_chal',
+          rank: 3,
+          points: 7,
+          elo: { flat: { current: 1480.0 } }
+        },
+        {
+          teamName: 'Underdog FC',
+          managerId: 'm_under',
+          rank: 4,
+          points: 2,
+          elo: { flat: { current: 1350.0 } }
+        }
+      ] as any[];
+
+      const mockRounds = [
+        {
+          roundNumber: 1,
+          matches: [
+            { homeTeam: 'Titan FC', awayTeam: 'Underdog FC', isPlayed: true },
+            { homeTeam: 'Mid FC', awayTeam: 'Challenger FC', isPlayed: true }
+          ]
+        },
+        {
+          roundNumber: 2,
+          matches: [
+            { homeTeam: 'Challenger FC', awayTeam: 'Titan FC', isPlayed: false },
+            { homeTeam: 'Mid FC', awayTeam: 'Underdog FC', isPlayed: false }
+          ]
+        }
+      ];
+
+      // Challenger FC faces Titan FC (hard opponent: 1650 Elo, 15 pt)
+      // Mid FC faces Underdog FC (easy opponent: 1350 Elo, 2 pt)
+      const sosMap = computeLeagueSoS(mockStandings, mockRounds, 1, 'flat');
+      const chalSoS = sosMap.get('Challenger FC');
+      const midSoS = sosMap.get('Mid FC');
+
+      expect(chalSoS).toBeDefined();
+      expect(midSoS).toBeDefined();
+      expect(chalSoS!.avgOpponentElo).toBeGreaterThan(midSoS!.avgOpponentElo);
+      expect(chalSoS!.avgOpponentPoints).toBeGreaterThan(midSoS!.avgOpponentPoints);
+      expect(chalSoS!.sosRank).toBe(1); // Tougher schedule ranks #1
+
+      // Test individual match difficulty classification
+      const hardDiff = getOpponentDifficulty(mockStandings[0], mockStandings, 'flat'); // Titan FC
+      const easyDiff = getOpponentDifficulty(mockStandings[3], mockStandings, 'flat'); // Underdog FC
+
+      expect(hardDiff.difficulty).toBe('hard');
+      expect(hardDiff.label).toBe('Match Duro');
+      expect(easyDiff.difficulty).toBe('favorable');
+      expect(easyDiff.label).toBe('Favorevole');
+    });
+
+    it('renders Monte Carlo section with midpoint title gating and collapsible Box-Plot', () => {
+      const mockLuck = {
+        xPoints: 8.0,
+        deltaPoints: 5.0,
+        monteCarlo: {
+          medianPoints: 48.2,
+          stdDev: 3.8,
+          p10: 38.0,
+          p25: 44.4,
+          p75: 52.0,
+          p90: 54.0,
+          pTitlePct: 46.8,
+          pPodiumPct: 86.2,
+          pMidPct: 12.6,
+          pFlopPct: 1.2
+        }
+      } as any;
+
+      // 1. Before midpoint (MD 5 of 26): title is gated
+      const htmlBeforeMid = renderMonteCarloSectionHTML(mockLuck, 26, 5);
+      expect(htmlBeforeMid).toContain('');
+      expect(htmlBeforeMid).toContain('G13+'); // Gated indicator
+      expect(htmlBeforeMid).not.toContain('46.8%'); // Title % hidden before MD13
+      expect(htmlBeforeMid).toContain('Podio');
+      expect(htmlBeforeMid).toContain('Approfondimento Statistico &amp; Box-Plot dei Percentili');
+      expect(htmlBeforeMid).toContain('>38 pt<');
+      expect(htmlBeforeMid).toContain('>54 pt<');
+      expect(htmlBeforeMid).not.toContain('Cosa significa P10'); // Verifies didactic box was removed
+
+      // 2. At or after midpoint (MD 13 of 26): title is unlocked
+      const htmlAfterMid = renderMonteCarloSectionHTML(mockLuck, 26, 13);
+      expect(htmlAfterMid).toContain('46.8%');
+      expect(htmlAfterMid).toContain('👑 Scudetto');
+      expect(htmlAfterMid).toContain('51 pt (Scudetto)');
+    });
+
+    it('toggles calendar and statistical box-plot accordion states', () => {
+      const origDoc = (globalThis as any).document;
+      const elements: Record<string, any> = {};
+
+      const createMockEl = (id: string, initialClass = '') => {
+        const classList = new Set(initialClass.split(' ').filter(Boolean));
+        const el = {
+          id,
+          classList: {
+            contains: (cls: string) => classList.has(cls),
+            add: (cls: string) => classList.add(cls),
+            remove: (cls: string) => classList.delete(cls)
+          },
+          innerHTML: '',
+          textContent: ''
+        };
+        elements[id] = el;
+        return el;
+      };
+
+      createMockEl('calendar-accordion-content');
+      createMockEl('calendar-chevron');
+      createMockEl('calendar-toggle-btn');
+      createMockEl('box-plot-details', 'hidden');
+      createMockEl('chevron-details-btn');
+
+      (globalThis as any).document = {
+        getElementById: (id: string) => elements[id] || null
+      };
+
+      try {
+        // Toggle calendar (starts expanded -> collapses)
+        toggleTeamMatchesCalendar();
+        expect(elements['calendar-accordion-content'].classList.contains('hidden')).toBe(true);
+        expect(elements['calendar-toggle-btn'].textContent).toBe('Mostra Gare');
+
+        // Toggle calendar again -> expands
+        toggleTeamMatchesCalendar();
+        expect(elements['calendar-accordion-content'].classList.contains('hidden')).toBe(false);
+        expect(elements['calendar-toggle-btn'].textContent).toBe('Nascondi');
+
+        // Toggle box plot details (starts hidden -> expands)
+        toggleTeamMatchesDetails();
+        expect(elements['box-plot-details'].classList.contains('hidden')).toBe(false);
+
+        // Toggle box plot details again -> collapses
+        toggleTeamMatchesDetails();
+        expect(elements['box-plot-details'].classList.contains('hidden')).toBe(true);
+      } finally {
+        (globalThis as any).document = origDoc;
       }
     });
   });

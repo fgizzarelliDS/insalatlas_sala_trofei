@@ -597,10 +597,28 @@ export interface ScheduleLuckAnalytics {
   luckLabel: string;
   monteCarlo?: {
     medianPoints: number;
+    meanPoints?: number;
     stdDev: number;
+    pTitlePct?: number | null;
     pPodiumPct?: number | null;
     pSpoonPct?: number | null;
+    p10?: number;
+    p25?: number;
+    p75?: number;
+    p90?: number;
+    pMidPct?: number | null;
+    pFlopPct?: number | null;
   };
+}
+
+export interface TeamSoSMetrics {
+  teamName: string;
+  remainingOpponentsCount: number;
+  avgOpponentElo: number;
+  avgOpponentPoints: number;
+  combinedZScore: number;
+  sosRank: number;
+  totalTeams: number;
 }
 
 export interface MatchdayMatch {
@@ -658,13 +676,60 @@ export interface LiveTeamMetrics {
   momentum?: number;
 }
 
+export interface SingleRoundScore {
+  fantaPoints: number;
+  managerId: string;
+  teamName: string;
+  season: string;
+  roundNumber: number;
+}
+
+export type BadgeTier = 'bronze' | 'silver' | 'gold' | 'platinum';
+export type BadgeCategory = 'milestone' | 'dynasty' | 'performance' | 'irony';
+
+export interface TieredManagerBadge {
+  id: string;
+  name: string;
+  description: string;
+  category: BadgeCategory;
+  tier: BadgeTier | 'locked';
+  currentTier: BadgeTier | null;
+  nextTier: BadgeTier | null;
+  currentValue: number;
+  targetValue: number;
+  nextTargetValue: number | null;
+  progressPercent: number; // 0 to 100
+  isUnlocked: boolean;
+  isPlaceholder?: boolean;
+  icon: string;
+  tierLabel: string;
+  tierColor: string;
+  tierBg: string;
+  tierBorder: string;
+  pointsScore: number; // 1 pt Bronze, 3 pt Silver, 5 pt Gold, 10 pt Platinum
+}
+
+export interface ManagerBadgeScoreboard {
+  managerId: string;
+  managerName: string;
+  totalScore: number;
+  bronzeCount: number;
+  silverCount: number;
+  goldCount: number;
+  platinumCount: number;
+  badges: TieredManagerBadge[];
+}
+
 export interface LiveSeasonDetails {
   season: string;
   competitionId: number | string;
   lastCompletedRound: number;
   totalRounds: number;
+  /** Min completed rounds before MC projections activate (from scripts/core/config.py → odds.mc_min_rounds) */
+  mcMinRounds?: number;
   rounds: MatchdayRound[];
   standings: LiveTeamMetrics[];
+  topSingleRoundScores?: SingleRoundScore[];
 }
 
 

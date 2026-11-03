@@ -188,7 +188,7 @@ function renderMatchCard(
         <span class="opacity-40 text-[9px] font-mono tracking-wider" style="color: var(--text-muted);">
           MATCH ${idx + 1}
         </span>
-        <span class="px-2 py-0.5 rounded-full text-[9px] font-black tracking-wide border flex items-center gap-1 ${meta.clima.badgeClass}">
+        <span class="px-2 py-0.5 rounded-full text-[9px] font-black tracking-wide border inline-flex items-center gap-1 whitespace-nowrap shrink-0 ${meta.clima.badgeClass}">
           <span>${meta.clima.label}</span>
         </span>
       </div>
@@ -197,14 +197,14 @@ function renderMatchCard(
       <div class="flex flex-col gap-2 py-0.5">
         <!-- Team 1 -->
         <div class="flex items-center justify-between gap-2 min-w-0">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="w-6 shrink-0 font-mono text-[10px] font-bold opacity-45 text-left inline-block" style="color: var(--text-muted);" title="Posizione attuale in classifica: #${meta.homeRank}">
+          <div class="flex items-center gap-2 min-w-0 flex-1">
+            <span class="w-5 shrink-0 font-mono text-[10px] font-bold opacity-45 text-left inline-block" style="color: var(--text-muted);" title="Posizione attuale in classifica: #${meta.homeRank}">
               #${meta.homeRank}
             </span>
             <img src="${meta.homeLogo}" alt="${meta.homeTeam}"
                  class="w-6 h-6 rounded-full object-contain shrink-0 bg-white/10 border border-slate-300 dark:border-slate-700 shadow-xs"
                  onerror="this.onerror=null; this.src='${getTeamFallbackCrest(meta.homeTeam)}'">
-            <span class="font-bold text-xs sm:text-sm leading-snug break-words min-w-0" style="color: var(--text-main);">${escapeHtml(meta.homeTeam)}</span>
+            <span class="font-bold text-xs leading-snug break-words [overflow-wrap:anywhere] min-w-0 line-clamp-2" style="color: var(--text-main);" title="${escapeHtml(meta.homeTeam)}">${escapeHtml(meta.homeTeam)}</span>
           </div>
           <span class="font-mono text-[11px] font-bold px-1.5 py-0.5 rounded border shrink-0 bg-black/5 dark:bg-white/5 border-slate-200 dark:border-slate-800"
                 style="color: var(--text-muted);"
@@ -215,14 +215,14 @@ function renderMatchCard(
 
         <!-- Team 2 -->
         <div class="flex items-center justify-between gap-2 min-w-0">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="w-6 shrink-0 font-mono text-[10px] font-bold opacity-45 text-left inline-block" style="color: var(--text-muted);" title="Posizione attuale in classifica: #${meta.awayRank}">
+          <div class="flex items-center gap-2 min-w-0 flex-1">
+            <span class="w-5 shrink-0 font-mono text-[10px] font-bold opacity-45 text-left inline-block" style="color: var(--text-muted);" title="Posizione attuale in classifica: #${meta.awayRank}">
               #${meta.awayRank}
             </span>
             <img src="${meta.awayLogo}" alt="${meta.awayTeam}"
                  class="w-6 h-6 rounded-full object-contain shrink-0 bg-white/10 border border-slate-300 dark:border-slate-700 shadow-xs"
                  onerror="this.onerror=null; this.src='${getTeamFallbackCrest(meta.awayTeam)}'">
-            <span class="font-bold text-xs sm:text-sm leading-snug break-words min-w-0" style="color: var(--text-main);">${escapeHtml(meta.awayTeam)}</span>
+            <span class="font-bold text-xs leading-snug break-words [overflow-wrap:anywhere] min-w-0 line-clamp-2" style="color: var(--text-main);" title="${escapeHtml(meta.awayTeam)}">${escapeHtml(meta.awayTeam)}</span>
           </div>
           <span class="font-mono text-[11px] font-bold px-1.5 py-0.5 rounded border shrink-0 bg-black/5 dark:bg-white/5 border-slate-200 dark:border-slate-800"
                 style="color: var(--text-muted);"
@@ -352,6 +352,12 @@ export function renderNextRoundStrip(liveData: LiveSeasonDetails, mode: EloTrack
                    onclick="event.stopPropagation();"
                    class="hidden absolute left-0 sm:left-auto sm:right-0 top-full mt-1.5 w-64 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
                    style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--modal-text);">
+                <button type="button"
+                        onclick="window.exportNextRoundStoryPNG && window.exportNextRoundStoryPNG(); window.closeNextRoundShareDropdown && window.closeNextRoundShareDropdown();"
+                        class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2.5 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer text-amber-500 dark:text-amber-400">
+                  <i class="fa-solid fa-mobile-screen text-indigo-400 text-xs"></i>
+                  <span>Story (9:16)</span>
+                </button>
                 <button type="button"
                         onclick="window.exportNextRoundPNG && window.exportNextRoundPNG(); window.closeNextRoundShareDropdown && window.closeNextRoundShareDropdown();"
                         class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2.5 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">

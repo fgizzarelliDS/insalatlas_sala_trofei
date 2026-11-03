@@ -327,6 +327,18 @@ export function renderEloTrajectoryChart(
     }
   }
 
+  const extractedSeasons = Array.from(new Set(
+    kpiProfiles.flatMap(p => {
+      const tr = getManagerEloTrack(p.profile, activeMode);
+      return [
+        ...Object.keys(tr?.seasons || {}),
+        ...Object.keys(p.profile.seasonStats || {})
+      ].filter(k => k !== 'all');
+    })
+  )).sort().reverse();
+  const liveSeason = (typeof window !== 'undefined' && (window as any).liveSeasonData?.season) || '';
+  const availableSeasons = extractedSeasons.length > 0 ? extractedSeasons : (liveSeason ? [liveSeason] : []);
+
   return `
     <div class="p-3.5 sm:p-4 rounded-2xl border flex flex-col gap-3"
          style="background-color: var(--table-surface); border-color: var(--table-border);">
@@ -347,8 +359,8 @@ export function renderEloTrajectoryChart(
                   style="background-color: var(--input-bg); border-color: var(--table-border); color: var(--text-main);">
             <optgroup label="Stagioni">
               <option value="all" ${selectedEloSeason === 'all' ? 'selected' : ''}>Tutte le stagioni (Continuo)</option>
-              <option value="2026/27" ${selectedEloSeason === '2026/27' ? 'selected' : ''}>2026/27 (Corrente)</option>
-              <option value="2025/26" ${selectedEloSeason === '2025/26' ? 'selected' : ''}>2025/26</option>
+              ${availableSeasons.map((sKey, idx) => `
+              <option value="${sKey}" ${selectedEloSeason === sKey ? 'selected' : ''}>${sKey}${idx === 0 ? ' (Corrente)' : ''}</option>`).join('')}
             </optgroup>
             <optgroup label="Finestra Recente">
               <option value="last10" ${selectedEloSeason === 'last10' ? 'selected' : ''}>Ultimi 10 match</option>

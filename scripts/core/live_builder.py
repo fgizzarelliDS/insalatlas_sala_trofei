@@ -597,24 +597,38 @@ def compile_live_season_details(
     ]
     last_completed = max(completed_rounds, default=0)
 
-    # Load 2025/26 season rounds for Elo historical trajectory if available locally,
+    # Load historical season rounds for multi-season Elo trajectory if available locally,
     # otherwise recover directly from public/analytics_data.json or public/live_season_details.json
-    rounds_2025_path = os.path.join(root_dir, 'data', 'seasons', '2025-26_rounds.json')
-    season_2025_rounds = []
-    if os.path.exists(rounds_2025_path):
-        try:
-            with open(rounds_2025_path, 'r', encoding='utf-8') as f:
-                s25_data = json.load(f)
-                season_2025_rounds = s25_data.get('rounds', [])
-        except Exception:
-            season_2025_rounds = []
+    seasons_dir = os.path.join(root_dir, 'data', 'seasons')
+    historical_seasons_rounds: List[Tuple[str, List[Dict[str, Any]]]] = []
+    existing_trackers: Dict[str, Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]] = {}
 
-    # If 2025 rounds are not present on disk (e.g. in CI/CD without raw match archives),
-    # recover the 2025/26 trackers directly from public/analytics_data.json or live details
-    existing_2025_trackers = None
+    if os.path.exists(seasons_dir):
+        s_round_files = [
+            f for f in os.listdir(seasons_dir)
+            if f.endswith('_rounds.json') and not f.startswith('.')
+        ]
+        s_round_files.sort()
+
+        for rf in s_round_files:
+            rf_path = os.path.join(seasons_dir, rf)
+            try:
+                with open(rf_path, 'r', encoding='utf-8') as f:
+                    rf_data = json.load(f)
+                    s_label = rf_data.get('season')
+                    if not s_label:
+                        s_label = rf.replace('_rounds.json', '').replace('-', '/')
+                    s_rounds = rf_data.get('rounds', [])
+                    if s_label != season_name:
+                        historical_seasons_rounds.append((s_label, s_rounds))
+            except Exception as e:
+                print(f"[WARN] Failed to load historical rounds from {rf}: {e}")
+
+    # If historical rounds are not present on disk (e.g. in CI/CD without raw match archives),
+    # recover previous season trackers dynamically from public/analytics_data.json
     analytics_output_path = os.path.join(root_dir, 'public', 'analytics_data.json')
     source_path = analytics_output_path if os.path.exists(analytics_output_path) else output_path
-    if not season_2025_rounds and os.path.exists(source_path):
+    if os.path.exists(source_path):
         try:
             with open(source_path, 'r', encoding='utf-8') as f:
                 prev_data = json.load(f)
@@ -626,47 +640,62 @@ def compile_live_season_details(
                     if m_id and s.get('elo'):
                         prev_profiles[m_id] = s['elo']
 
-            fb_flat = {}
-            fb_hist = {}
-            fb_atlas = {}
+            # Identify historical seasons stored in previous analytics profiles
+            recovered_seasons = set()
             for m_id, prof in prev_profiles.items():
-                t_flat = prof.get('flat', {}).get('seasons', {}).get('2025/26') or [
-                    p for p in prof.get('flat', {}).get('trajectory', []) if p.get('season') == '2025/26'
-                ]
-                if t_flat:
-                    fb_flat[m_id] = {
-                        'current': t_flat[-1]['elo'],
-                        'peak': prof['flat'].get('peak', {}),
-                        'floor': prof['flat'].get('floor', {}),
-                        'lastDelta': t_flat[-1].get('delta', 0.0),
-                        'trajectory': t_flat
-                    }
-                t_hist = prof.get('historical', {}).get('seasons', {}).get('2025/26') or [
-                    p for p in prof.get('historical', {}).get('trajectory', []) if p.get('season') == '2025/26'
-                ]
-                if t_hist:
-                    fb_hist[m_id] = {
-                        'current': t_hist[-1]['elo'],
-                        'peak': prof['historical'].get('peak', {}),
-                        'floor': prof['historical'].get('floor', {}),
-                        'lastDelta': t_hist[-1].get('delta', 0.0),
-                        'trajectory': t_hist
-                    }
-                t_atlas = prof.get('atlas', {}).get('seasons', {}).get('2025/26') or [
-                    p for p in prof.get('atlas', {}).get('trajectory', []) if p.get('season') == '2025/26'
-                ]
-                if t_atlas:
-                    fb_atlas[m_id] = {
-                        'current': t_atlas[-1]['elo'],
-                        'peak': prof['atlas'].get('peak', {}),
-                        'floor': prof['atlas'].get('floor', {}),
-                        'lastDelta': t_atlas[-1].get('delta', 0.0),
-                        'trajectory': t_atlas
-                    }
-            if fb_flat and fb_hist:
-                existing_2025_trackers = (fb_flat, fb_hist, fb_atlas)
+                for tr_mode in ('flat', 'historical', 'atlas'):
+                    s_map = prof.get(tr_mode, {}).get('seasons', {})
+                    for s_k in s_map.keys():
+                        if s_k and s_k != season_name and s_k != 'unknown':
+                            recovered_seasons.add(s_k)
+
+            loaded_season_labels = {s_lbl for s_lbl, _ in historical_seasons_rounds}
+            for rec_s in sorted(recovered_seasons):
+                if rec_s not in loaded_season_labels:
+                    fb_flat = {}
+                    fb_hist = {}
+                    fb_atlas = {}
+                    for m_id, prof in prev_profiles.items():
+                        t_flat = prof.get('flat', {}).get('seasons', {}).get(rec_s) or [
+                            p for p in prof.get('flat', {}).get('trajectory', []) if p.get('season') == rec_s
+                        ]
+                        if t_flat:
+                            fb_flat[m_id] = {
+                                'current': t_flat[-1]['elo'],
+                                'peak': prof['flat'].get('peak', {}),
+                                'floor': prof['flat'].get('floor', {}),
+                                'lastDelta': t_flat[-1].get('delta', 0.0),
+                                'trajectory': t_flat
+                            }
+                        t_hist = prof.get('historical', {}).get('seasons', {}).get(rec_s) or [
+                            p for p in prof.get('historical', {}).get('trajectory', []) if p.get('season') == rec_s
+                        ]
+                        if t_hist:
+                            fb_hist[m_id] = {
+                                'current': t_hist[-1]['elo'],
+                                'peak': prof['historical'].get('peak', {}),
+                                'floor': prof['historical'].get('floor', {}),
+                                'lastDelta': t_hist[-1].get('delta', 0.0),
+                                'trajectory': t_hist
+                            }
+                        t_atlas = prof.get('atlas', {}).get('seasons', {}).get(rec_s) or [
+                            p for p in prof.get('atlas', {}).get('trajectory', []) if p.get('season') == rec_s
+                        ]
+                        if t_atlas:
+                            fb_atlas[m_id] = {
+                                'current': t_atlas[-1]['elo'],
+                                'peak': prof['atlas'].get('peak', {}),
+                                'floor': prof['atlas'].get('floor', {}),
+                                'lastDelta': t_atlas[-1].get('delta', 0.0),
+                                'trajectory': t_atlas
+                            }
+                    if fb_flat:
+                        existing_trackers[rec_s] = (fb_flat, fb_hist, fb_atlas)
+                        historical_seasons_rounds.append((rec_s, []))
         except Exception as e:
-            print(f"[WARN] Failed to recover 2025 Elo trackers from existing files: {e}")
+            print(f"[WARN] Failed to recover historical Elo trackers from existing files: {e}")
+
+    historical_seasons_rounds.sort(key=lambda x: x[0])
 
     # Load managers with career history for historical seeding
     managers_list = []
@@ -709,16 +738,16 @@ def compile_live_season_details(
             m['matchIndex'] = idx
             m['championshipMatchDay'] = r.get('championshipMatchDay')
 
-    # Run Multi-Track Elo Pipeline with unified chronological rounds
+    # Run Multi-Track Elo Pipeline with unified chronological rounds across all seasons
+    all_seasons_rounds = list(historical_seasons_rounds) + [(season_name, elo_season_rounds)]
     elo_config = LEAGUE_RULES.get('elo')
     elo_profiles = {}
     try:
         elo_profiles = run_multi_track_elo_pipeline(
-            season_2025_rounds=season_2025_rounds,
-            season_2026_rounds=elo_season_rounds,
+            seasons_rounds=all_seasons_rounds,
             managers_list=managers_list,
             elo_config=elo_config,
-            existing_2025_trackers=existing_2025_trackers
+            existing_trackers=existing_trackers
         )
     except Exception as e:
         print(f"[WARN] Error running Elo pipeline: {e}")
@@ -823,6 +852,13 @@ def compile_live_season_details(
                 'homeOutcome': home_outcome,
                 'awayOutcome': away_outcome
             }
+            if is_played:
+                if m.get('homeScore') is not None:
+                    match_entry['homeScore'] = h_score
+                    match_entry['awayScore'] = a_score
+                if m.get('homeFantaPoints') is not None or h_fp > 0:
+                    match_entry['homeFantaPoints'] = h_fp
+                    match_entry['awayFantaPoints'] = a_fp
             if win_prob_flat is not None:
                 match_entry['winProbHomeFlat'] = win_prob_flat
             if win_prob_hist is not None:
@@ -844,12 +880,15 @@ def compile_live_season_details(
         })
 
     # Compute Schedule Luck & Expected Rank Analytics
+    active_elo_cfg = elo_config or DEFAULT_ELO_CONFIG
     schedule_luck_data = compute_schedule_luck_analytics(
         teams_stats=teams_stats,
         all_rounds=all_rounds,
         total_rounds=total_rounds,
         season=season_name,
-        last_completed_round=last_completed
+        last_completed_round=last_completed,
+        elo_profiles=elo_profiles,
+        odds_config=active_elo_cfg.get('odds', {})
     )
 
     # Clean intermediate calculation fields from final JSON standings
@@ -934,7 +973,7 @@ def compile_live_season_details(
             away_outcome = ('L' if h_score > a_score else ('W' if h_score < a_score else 'D')) if is_played else None
             h_id = m.get('homeManagerId')
             a_id = m.get('awayManagerId')
-            masked_cup_matches.append({
+            cup_match_entry = {
                 'homeTeam': m.get('homeTeam'),
                 'awayTeam': m.get('awayTeam'),
                 'homeManagerId': h_id,
@@ -947,7 +986,15 @@ def compile_live_season_details(
                 'competition': 'Coppa InsalAtlas',
                 'competitionCategory': 'Coppa',
                 'championshipMatchDay': m.get('championshipMatchDay')
-            })
+            }
+            if is_played:
+                if m.get('homeScore') is not None:
+                    cup_match_entry['homeScore'] = h_score
+                    cup_match_entry['awayScore'] = a_score
+                if m.get('homeFantaPoints') is not None or h_fp > 0:
+                    cup_match_entry['homeFantaPoints'] = h_fp
+                    cup_match_entry['awayFantaPoints'] = a_fp
+            masked_cup_matches.append(cup_match_entry)
         masked_cup_rounds.append({
             'roundNumber': r_num,
             'championshipMatchDay': r.get('championshipMatchDay'),
@@ -961,9 +1008,62 @@ def compile_live_season_details(
         'competitionId': competition_id,
         'lastCompletedRound': last_completed,
         'totalRounds': total_rounds,
+        # Min completed rounds before MC projections activate (config.py → elo.odds.mc_min_rounds)
+        'mcMinRounds': int(((elo_config or DEFAULT_ELO_CONFIG).get('odds') or {}).get('mc_min_rounds', 5)),
         'rounds': masked_rounds,
         'standings': final_standings
     }
+
+    # Collect all-time single-round fantasy scores for records
+    all_single_round_scores = []
+    for s_lbl, s_rounds in historical_seasons_rounds:
+        for r in s_rounds:
+            r_num = r.get('roundNumber', 1)
+            for m in r.get('matches', []):
+                if m.get('isPlayed') or m.get('played'):
+                    h_fp = float(m.get('homeFantaPoints', 0.0) or 0.0)
+                    a_fp = float(m.get('awayFantaPoints', 0.0) or 0.0)
+                    if h_fp > 0 and m.get('homeManagerId'):
+                        all_single_round_scores.append({
+                            'fantaPoints': round(h_fp, 1),
+                            'managerId': m.get('homeManagerId'),
+                            'teamName': m.get('homeTeam', ''),
+                            'season': s_lbl,
+                            'roundNumber': r_num
+                        })
+                    if a_fp > 0 and m.get('awayManagerId'):
+                        all_single_round_scores.append({
+                            'fantaPoints': round(a_fp, 1),
+                            'managerId': m.get('awayManagerId'),
+                            'teamName': m.get('awayTeam', ''),
+                            'season': s_lbl,
+                            'roundNumber': r_num
+                        })
+    for r in all_rounds:
+        r_num = r.get('roundNumber', 1)
+        for m in r.get('matches', []):
+            if m.get('isPlayed') or m.get('played'):
+                h_fp = float(m.get('homeFantaPoints', 0.0) or 0.0)
+                a_fp = float(m.get('awayFantaPoints', 0.0) or 0.0)
+                if h_fp > 0 and m.get('homeManagerId'):
+                    all_single_round_scores.append({
+                        'fantaPoints': round(h_fp, 1),
+                        'managerId': m.get('homeManagerId'),
+                        'teamName': m.get('homeTeam', ''),
+                        'season': season_name,
+                        'roundNumber': r_num
+                    })
+                if a_fp > 0 and m.get('awayManagerId'):
+                    all_single_round_scores.append({
+                        'fantaPoints': round(a_fp, 1),
+                        'managerId': m.get('awayManagerId'),
+                        'teamName': m.get('awayTeam', ''),
+                        'season': season_name,
+                        'roundNumber': r_num
+                    })
+    all_single_round_scores.sort(key=lambda x: x['fantaPoints'], reverse=True)
+    if all_single_round_scores:
+        compiled_details['topSingleRoundScores'] = all_single_round_scores[:20]
     if cup_rounds:
         compiled_details['cupTotalRounds'] = len(cup_rounds)
         compiled_details['cupLastCompletedRound'] = cup_last_completed

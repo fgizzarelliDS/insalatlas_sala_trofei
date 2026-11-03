@@ -44,19 +44,29 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 1. Network-First for data.json (normalised cache key to avoid cache bloat with ?t= timestamp)
-  if (url.pathname.endsWith('data.json')) {
+  // 1. Network-First for core data JSONs (normalised cache key to avoid cache bloat with ?t= timestamp)
+  const isDataJson = url.pathname.endsWith('data.json');
+  const isLiveDetails = url.pathname.endsWith('live_season_details.json');
+  const isAnalyticsData = url.pathname.endsWith('analytics_data.json');
+
+  if (isDataJson || isLiveDetails || isAnalyticsData) {
+    const cacheKey = isDataJson
+      ? './data.json'
+      : isLiveDetails
+        ? './live_season_details.json'
+        : './analytics_data.json';
+
     event.respondWith(
       caches.open(CACHE_NAME).then(async (cache) => {
         try {
           const networkResponse = await fetch(event.request);
           if (networkResponse && networkResponse.status === 200) {
-            await cache.put('./data.json', networkResponse.clone());
+            await cache.put(cacheKey, networkResponse.clone());
           }
           return networkResponse;
         } catch {
           const cachedResponse =
-            (await cache.match('./data.json')) ||
+            (await cache.match(cacheKey)) ||
             (await cache.match(event.request, { ignoreSearch: true }));
           return cachedResponse || Response.error();
         }

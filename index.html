@@ -47,6 +47,18 @@
   <!-- Modular Stylesheets -->
   <link rel="stylesheet" href="css/themes.css">
   <link rel="stylesheet" href="css/layout.css">
+
+  <!-- Vite Chunk Preload & Deployment Recovery Handler -->
+  <script>
+    window.addEventListener('vite:preloadError', function () {
+      var lastReload = sessionStorage.getItem('last_chunk_reload');
+      var now = Date.now();
+      if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
+        sessionStorage.setItem('last_chunk_reload', now.toString());
+        window.location.reload();
+      }
+    });
+  </script>
 </head>
 
 <body class="theme-gazzetta antialiased selection:bg-amber-500 selection:text-white min-h-screen pb-16">
@@ -498,8 +510,47 @@
                   class="text-center px-2 transition text-[11px] sm:text-xs">Cartonato</div>
               </div>
 
-              <!-- Dynamic Table Shelf Rows Target -->
-              <div id="managers-table-body"></div>
+              <!-- Dynamic Table Shelf Rows Target (with pre-hydration skeleton) -->
+              <div id="managers-table-body">
+                <div class="animate-pulse space-y-2 p-2">
+                  <div class="h-14 rounded-xl bg-white/5 border border-white/5 flex items-center px-4 gap-4">
+                    <div class="w-8 h-8 rounded-full bg-white/10 shrink-0"></div>
+                    <div class="h-4 w-32 bg-white/10 rounded"></div>
+                    <div class="flex-1 flex justify-end gap-3">
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                    </div>
+                  </div>
+                  <div class="h-14 rounded-xl bg-white/5 border border-white/5 flex items-center px-4 gap-4">
+                    <div class="w-8 h-8 rounded-full bg-white/10 shrink-0"></div>
+                    <div class="h-4 w-40 bg-white/10 rounded"></div>
+                    <div class="flex-1 flex justify-end gap-3">
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                    </div>
+                  </div>
+                  <div class="h-14 rounded-xl bg-white/5 border border-white/5 flex items-center px-4 gap-4">
+                    <div class="w-8 h-8 rounded-full bg-white/10 shrink-0"></div>
+                    <div class="h-4 w-28 bg-white/10 rounded"></div>
+                    <div class="flex-1 flex justify-end gap-3">
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                    </div>
+                  </div>
+                  <div class="h-14 rounded-xl bg-white/5 border border-white/5 flex items-center px-4 gap-4">
+                    <div class="w-8 h-8 rounded-full bg-white/10 shrink-0"></div>
+                    <div class="h-4 w-36 bg-white/10 rounded"></div>
+                    <div class="flex-1 flex justify-end gap-3">
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                      <div class="h-6 w-10 bg-white/10 rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
             </div>
           </div>

@@ -363,14 +363,14 @@ export async function renderNextRoundStoryCanvas(
   contentBox.innerHTML = `
     <!-- Top Hero -->
     <div class="w-full flex flex-col items-center text-center">
-      <div class="flex items-center gap-2 px-4 py-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 text-amber-300 text-xs font-black uppercase tracking-wider mb-2">
+      <div class="flex items-center gap-2 px-4 py-4 rounded-full border border-amber-500/40 bg-amber-500/15 text-amber-300 text-xs font-black uppercase tracking-wider mb-2">
         <span>⚽ QUOTE PRE-MATCH &amp; DUELLI</span>
       </div>
       <h1 class="font-sport font-black text-5xl uppercase tracking-wider text-white">
         Giornata ${nextRound.roundNumber}
       </h1>
       <p class="text-sm text-slate-400 font-bold mt-1">
-        ${LEAGUE.brand.championshipLabel || 'Serie Atlas'} • Previsioni Elo &amp; Modello Bradley-Terry
+        ${LEAGUE.brand.championshipLabel || 'Serie Atlas'} • Previsioni Elo &amp; Modello Bradley-Terry H2H &amp; Davidson Odds Ibrido 1X2
       </p>
     </div>
 

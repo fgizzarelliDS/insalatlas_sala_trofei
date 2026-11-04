@@ -236,8 +236,8 @@ export async function renderNextRoundStoryCanvas(
     `Stagione ${liveData.season || 'Live'}`
   );
 
-  // Compute round overview stats: Big Match, Closest Duel, and Average Elo
-  let totalElo = 0;
+  // Compute round overview stats: Big Match, Closest Duel, and Average Elo Gap (Squilibrio Medio)
+  let totalEloGap = 0;
   let bigMatchMeta: any = null;
   let maxCombinedElo = -1;
   let closestMatchMeta: any = null;
@@ -245,7 +245,7 @@ export async function renderNextRoundStoryCanvas(
 
   const matchMetas = matches.map((m: any, idx: number) => {
     const meta = resolveMatchupMetrics(m, idx, liveData, mode, totalTeams, leagueCtx);
-    totalElo += meta.homeElo + meta.awayElo;
+    totalEloGap += Math.abs(meta.homeElo - meta.awayElo);
 
     const combinedElo = meta.homeElo + meta.awayElo;
     if (combinedElo > maxCombinedElo) {
@@ -262,7 +262,7 @@ export async function renderNextRoundStoryCanvas(
     return meta;
   });
 
-  const avgElo = matches.length > 0 ? Math.round(totalElo / (matches.length * 2)) : 1500;
+  const avgEloGap = matches.length > 0 ? Math.round(totalEloGap / matches.length) : 0;
 
   // Build the 7 Duel Cards (Zero Truncation, single line)
   const cardsHTML = matchMetas.map((meta: any, idx: number) => {
@@ -344,8 +344,8 @@ export async function renderNextRoundStoryCanvas(
       </div>
       <div class="grid grid-cols-2 gap-2 text-center py-1 flex-1 items-center">
         <div class="p-2 rounded-xl bg-slate-950/40 border border-slate-800">
-          <div class="text-[9px] uppercase font-bold text-slate-400">Rating Medio</div>
-          <div class="text-xl font-mono font-black text-sky-400">${avgElo}</div>
+          <div class="text-[9px] uppercase font-bold text-slate-400">Squilibrio Medio</div>
+          <div class="text-xl font-mono font-black text-sky-400">±${avgEloGap}<span class="text-xs text-slate-400 font-bold ml-1">pts</span></div>
         </div>
         <div class="p-2 rounded-xl bg-slate-950/40 border border-slate-800">
           <div class="text-[9px] uppercase font-bold text-slate-400">Modalità</div>

@@ -1,6 +1,6 @@
 /**
  * src/analytics/tactical/tacticalMindset.ts
- * Live Seasonal Mindset & Momentum Evaluation Engine (SPEC-25)
+ * Live Seasonal Mindset & Momentum Evaluation Engine 
  */
 
 import type { Manager } from '@/types';

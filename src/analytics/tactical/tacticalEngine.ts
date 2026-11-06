@@ -1,6 +1,6 @@
 /**
  * src/analytics/tactical/tacticalEngine.ts
- * Main Tactical Profiler Orchestration Engine (SPEC-25)
+ * Main Tactical Profiler Orchestration Engine 
  */
 
 import type { Manager } from '@/types';
@@ -206,7 +206,7 @@ export function computeManagerTacticalProfile(
     reg: scoreReg
   };
 
-  // 2. Select Archetype & Apply Custom Lore Overrides (SPEC-25)
+  // 2. Select Archetype & Apply Custom Lore Overrides 
   const baseArchetype = selectTacticalArchetype(manager, targetRaw, normalizedScores);
   const loreCatalog = getCachedManagerLore();
   const customLore = loreCatalog[manager.id] ||

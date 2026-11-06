@@ -647,7 +647,7 @@ Ciascun match riceve un'etichetta contestuale (*Clima Partita*) valutata tramite
 
 ---
 
-## 11. Modello Matematico del Profiler Tattico a 5 Assi (SPEC-25)
+## 11. Modello Matematico del Profiler Tattico a 5 Assi 
 
 Il **Profiler Tattico** analizza lo stile manageriale all-time e stagionale attraverso 5 dimensioni ortogonali normalizzate su scala $[5, 100]$ con mediana ancorata a $50$.
 

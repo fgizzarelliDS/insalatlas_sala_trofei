@@ -131,7 +131,7 @@ export function renderHeadToHeadModalHTML(
               <button type="button"
                 onclick="window.openMatchupModal && window.openMatchupModal('${managerA.id}', '${managerB.id}');"
                 class="px-3 py-1.5 rounded-xl text-xs font-bold border transition shadow-sm flex items-center gap-1.5 bg-indigo-500/10 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/20 active:scale-95 cursor-pointer"
-                title="Apri il Matchup Tattico pre-partita a 5 assi">
+                title="Apri il Matchup Tattico pre-partita">
                 <i class="fa-solid fa-bolt text-indigo-400"></i>
                 <span class="hidden sm:inline">Matchup Tattico</span>
                 <span class="sm:hidden">Matchup</span>

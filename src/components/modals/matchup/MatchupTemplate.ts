@@ -7,51 +7,173 @@ import type { Manager, LiveSeasonDetails } from '@/types';
 import { computeTacticalMatchup } from '@/analytics/tacticalMatchup';
 import { renderDualRadar5AxesSVG } from '@/components/modals/h2h/HeadToHeadRadar';
 import { renderPrecedentiCampionato, renderChiaveTattica } from '@/components/modals/h2h/HeadToHeadMatchupView';
+import { getCachedAnalyticsManagers } from '@/analytics/analyticsCore';
+import { getTeamFallbackCrest, isCustomLogo } from '@/crests';
+import { resolveManagerRecordCrest } from '@/analytics/records/helpers';
 import { escapeHtml } from '@/utils/dom';
 
+export interface DirectMatchEntry {
+  season: string;
+  roundNumber: number;
+  roundLabel: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeLogo: string;
+  awayLogo: string;
+  isPlayed: boolean;
+  outcome: 'A' | 'B' | 'tie' | 'scheduled';
+}
+
+export interface DirectMatchesSummary {
+  matches: DirectMatchEntry[];
+  seasonsList: string[];
+  winsA: number;
+  ties: number;
+  winsB: number;
+  totalPlayed: number;
+  totalScheduled: number;
+}
+
 /**
- * Computes consolidated round-by-round direct match statistics between two managers
+ * Dynamically collects round-by-round direct encounters between two managers
+ * across all available seasons (from trajectory analytics and live rounds) with zero hardcoded season strings.
  */
-export function computeRoundByRoundMetrics(
+export function collectDirectRoundMatches(
   managerAId: string,
   managerBId: string,
+  managerAName: string,
+  managerBName: string,
   liveData?: LiveSeasonDetails | null
-): { winsA: number; ties: number; winsB: number; totalPlayed: number } {
-  let winsA = 0;
-  let ties = 0;
-  let winsB = 0;
+): DirectMatchesSummary {
+  const matchesMap = new Map<string, DirectMatchEntry>();
+  const analyticsManagers = getCachedAnalyticsManagers();
 
+  // 1. Collect past rounds from manager A's trajectory in analytics data
+  if (analyticsManagers && analyticsManagers[managerAId]) {
+    const mgrData = analyticsManagers[managerAId];
+    const traj = mgrData.flat?.trajectory || mgrData.atlas?.trajectory || [];
+
+    for (const pt of traj) {
+      if (pt.opponentId === managerBId && (pt.competitionCategory === 'Campionato' || !pt.competitionCategory)) {
+        const season = pt.season || 'Stagione';
+        const roundNum = pt.round || 1;
+        const roundLabel = pt.roundLabel || `G${roundNum}`;
+        const key = `${season}_${roundNum}`;
+
+        const isHome = Boolean(pt.isHome);
+        const homeManagerId = isHome ? managerAId : managerBId;
+        const awayManagerId = isHome ? managerBId : managerAId;
+        const homeTeam = isHome ? (mgrData.teamName || managerAName) : (pt.opponentTeamName || managerBName);
+        const awayTeam = isHome ? (pt.opponentTeamName || managerBName) : (mgrData.teamName || managerAName);
+        const homeLogo = resolveManagerRecordCrest(homeManagerId, season, homeTeam).logo;
+        const awayLogo = resolveManagerRecordCrest(awayManagerId, season, awayTeam).logo;
+
+        const outcome: 'A' | 'B' | 'tie' = pt.result === 'W' ? 'A' : pt.result === 'L' ? 'B' : 'tie';
+
+        matchesMap.set(key, {
+          season,
+          roundNumber: roundNum,
+          roundLabel,
+          homeTeam,
+          awayTeam,
+          homeLogo,
+          awayLogo,
+          isPlayed: true,
+          outcome
+        });
+      }
+    }
+  }
+
+  // 2. Collect current / upcoming rounds from liveData (matches in live season)
   if (liveData && Array.isArray(liveData.rounds)) {
+    const liveSeason = liveData.season || 'In Corso';
+
     for (const r of liveData.rounds) {
       if (!Array.isArray(r.matches)) continue;
       for (const m of r.matches) {
-        if (!m.isPlayed) continue;
         const isAHome = m.homeManagerId === managerAId && m.awayManagerId === managerBId;
         const isBHome = m.homeManagerId === managerBId && m.awayManagerId === managerAId;
 
-        if (isAHome) {
-          if (m.homeOutcome === 'W') winsA++;
-          else if (m.homeOutcome === 'L') winsB++;
-          else ties++;
-        } else if (isBHome) {
-          if (m.homeOutcome === 'W') winsB++;
-          else if (m.homeOutcome === 'L') winsA++;
-          else ties++;
+        if (isAHome || isBHome) {
+          const roundNum = r.roundNumber;
+          const roundLabel = `G${roundNum}`;
+          const key = `${liveSeason}_${roundNum}`;
+
+          const isPlayed = Boolean(m.isPlayed);
+          let outcome: 'A' | 'B' | 'tie' | 'scheduled' = 'scheduled';
+
+          if (isPlayed) {
+            if (isAHome) {
+              outcome = m.homeOutcome === 'W' ? 'A' : m.homeOutcome === 'L' ? 'B' : 'tie';
+            } else {
+              outcome = m.homeOutcome === 'W' ? 'B' : m.homeOutcome === 'L' ? 'A' : 'tie';
+            }
+          }
+
+          const homeTeam = m.homeTeam;
+          const awayTeam = m.awayTeam;
+          const homeLogo = isCustomLogo(m.homeLogo)
+            ? m.homeLogo!
+            : resolveManagerRecordCrest(m.homeManagerId || '', liveSeason, homeTeam).logo;
+          const awayLogo = isCustomLogo(m.awayLogo)
+            ? m.awayLogo!
+            : resolveManagerRecordCrest(m.awayManagerId || '', liveSeason, awayTeam).logo;
+
+          matchesMap.set(key, {
+            season: liveSeason,
+            roundNumber: roundNum,
+            roundLabel,
+            homeTeam,
+            awayTeam,
+            homeLogo,
+            awayLogo,
+            isPlayed,
+            outcome
+          });
         }
       }
     }
   }
 
+  // Convert to sorted list (chronological: past to future)
+  const matches = Array.from(matchesMap.values()).sort((a, b) => {
+    if (a.season !== b.season) {
+      return a.season.localeCompare(b.season);
+    }
+    return a.roundNumber - b.roundNumber;
+  });
+
+  const seasonsList = Array.from(new Set(matches.map(m => m.season))).sort();
+
+  let winsA = 0;
+  let ties = 0;
+  let winsB = 0;
+  let totalScheduled = 0;
+
+  for (const m of matches) {
+    if (m.isPlayed) {
+      if (m.outcome === 'A') winsA++;
+      else if (m.outcome === 'B') winsB++;
+      else if (m.outcome === 'tie') ties++;
+    } else {
+      totalScheduled++;
+    }
+  }
+
   return {
+    matches,
+    seasonsList,
     winsA,
     ties,
     winsB,
-    totalPlayed: winsA + ties + winsB
+    totalPlayed: winsA + ties + winsB,
+    totalScheduled
   };
 }
 
 /**
- * Extracts initials for avatar
+ * Extracts initials for manager avatar
  */
 function getInitials(name: string): string {
   const parts = name.split(/[ &+/,-]/).filter(Boolean);
@@ -68,11 +190,19 @@ export function renderMatchupModalHTML(
   managerA: Manager,
   managerB: Manager,
   allManagers: Manager[],
-  liveData?: LiveSeasonDetails | null
+  liveData?: LiveSeasonDetails | null,
+  isDirectDetailsExpanded: boolean = false
 ): string {
   const matchup = computeTacticalMatchup(managerA, managerB, allManagers, liveData);
   const { profileA, profileB, tacticalKey, h2hStats } = matchup;
-  const roundMetrics = computeRoundByRoundMetrics(managerA.id, managerB.id, liveData);
+
+  const directSummary = collectDirectRoundMatches(
+    managerA.id,
+    managerB.id,
+    managerA.name,
+    managerB.name,
+    liveData
+  );
 
   const initialsA = getInitials(managerA.name);
   const initialsB = getInitials(managerB.name);
@@ -92,6 +222,11 @@ export function renderMatchupModalHTML(
     )
     .join('');
 
+  // Seasons badge text dynamically
+  const seasonsBadgeText = directSummary.seasonsList.length > 0
+    ? directSummary.seasonsList.join(' • ')
+    : (liveData?.season || 'Campionato');
+
   return `
     <!-- Modal Header -->
     <div class="flex items-center justify-between border-b px-4 sm:px-6 py-3 shrink-0 gap-2.5" style="border-color: var(--table-border);">
@@ -100,11 +235,12 @@ export function renderMatchupModalHTML(
           <i class="fa-solid fa-bolt text-sm"></i>
         </div>
         <div>
-          <h2 class="font-sport font-black text-base sm:text-lg uppercase tracking-wide leading-none" style="color: var(--text-main);">
-            Matchup Tattico <span style="color: var(--accent-color);">&amp; Pre-Partita</span>
+          <h2 class="font-sport font-black text-sm sm:text-lg uppercase tracking-wide leading-tight sm:leading-none flex flex-col sm:flex-row sm:items-center sm:gap-1.5" style="color: var(--text-main);">
+            <span>Matchup Tattico</span>
+            <span style="color: var(--accent-color);">&amp; Pre-Partita</span>
           </h2>
           <p class="text-[10px] sm:text-[11px] opacity-70 mt-0.5" style="color: var(--text-muted);">
-            Scontro di stili, radar a 5 assi &amp; precedenti diretti
+            Scontro di stili, radar &amp; precedenti diretti
           </p>
         </div>
       </div>
@@ -165,12 +301,12 @@ export function renderMatchupModalHTML(
                 ${escapeHtml(managerA.name)}
               </h3>
             </div>
-            <div class="flex flex-col items-center justify-center gap-0.5 mt-1 w-full min-w-0">
-              <span class="inline-block text-[10px] font-black px-2 py-0.5 rounded-full border truncate max-w-full"
+            <div class="flex flex-col items-center justify-center gap-1 mt-1 w-full min-w-0">
+              <span class="inline-flex items-center justify-center text-[10px] font-black px-2 py-0.5 rounded-full border text-center leading-tight break-words max-w-full"
                     style="background: ${profileA.archetype.color}18; color: ${profileA.archetype.color}; border-color: ${profileA.archetype.color}40;">
-                <i class="fa-solid ${profileA.archetype.icon} text-[9px] mr-1"></i>${escapeHtml(profileA.archetype.title)}
+                <i class="fa-solid ${profileA.archetype.icon} text-[9px] mr-1 shrink-0"></i><span>${escapeHtml(profileA.archetype.title)}</span>
               </span>
-              <span class="text-[9px] font-bold opacity-75 truncate max-w-full block" style="color: var(--text-muted);">
+              <span class="text-[9px] font-bold opacity-75 text-center leading-tight break-words max-w-full block" style="color: var(--text-muted);">
                 ${escapeHtml(profileA.archetype.trait)}
               </span>
             </div>
@@ -193,12 +329,12 @@ export function renderMatchupModalHTML(
                 ${escapeHtml(managerB.name)}
               </h3>
             </div>
-            <div class="flex flex-col items-center justify-center gap-0.5 mt-1 w-full min-w-0">
-              <span class="inline-block text-[10px] font-black px-2 py-0.5 rounded-full border truncate max-w-full"
+            <div class="flex flex-col items-center justify-center gap-1 mt-1 w-full min-w-0">
+              <span class="inline-flex items-center justify-center text-[10px] font-black px-2 py-0.5 rounded-full border text-center leading-tight break-words max-w-full"
                     style="background: ${profileB.archetype.color}18; color: ${profileB.archetype.color}; border-color: ${profileB.archetype.color}40;">
-                <i class="fa-solid ${profileB.archetype.icon} text-[9px] mr-1"></i>${escapeHtml(profileB.archetype.title)}
+                <i class="fa-solid ${profileB.archetype.icon} text-[9px] mr-1 shrink-0"></i><span>${escapeHtml(profileB.archetype.title)}</span>
               </span>
-              <span class="text-[9px] font-bold opacity-75 truncate max-w-full block" style="color: var(--text-muted);">
+              <span class="text-[9px] font-bold opacity-75 text-center leading-tight break-words max-w-full block" style="color: var(--text-muted);">
                 ${escapeHtml(profileB.archetype.trait)}
               </span>
             </div>
@@ -212,7 +348,7 @@ export function renderMatchupModalHTML(
         <div class="flex items-center justify-between w-full mb-1 px-1">
           <span class="text-xs font-bold font-sport uppercase tracking-wider flex items-center gap-1.5" style="color: var(--text-main);">
             <i class="fa-solid fa-compass text-amber-500"></i>
-            <span>Radar Tattico a 5 Assi</span>
+            <span>Radar Tattico</span>
           </span>
           <span class="text-[10px] font-semibold" style="color: var(--text-muted);">
             Scontro di Stile
@@ -231,7 +367,7 @@ export function renderMatchupModalHTML(
             <span>Scontri Diretti in Campionato (Round-by-Round)</span>
           </span>
           <span class="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400">
-            2025/26 &bull; 2026/27
+            ${escapeHtml(seasonsBadgeText)}
           </span>
         </div>
 
@@ -240,27 +376,118 @@ export function renderMatchupModalHTML(
              style="background-color: var(--modal-bg); border-color: var(--table-border);">
           <div>
             <span class="text-[10px] uppercase font-extrabold opacity-70 block" style="color: var(--h2h-contender-a, #f59e0b);">Vittorie ${escapeHtml(managerA.name)}</span>
-            <span class="text-lg font-black font-sport" style="color: var(--h2h-contender-a, #f59e0b);">${roundMetrics.winsA}</span>
+            <span class="text-lg font-black font-sport" style="color: var(--h2h-contender-a, #f59e0b);">${directSummary.winsA}</span>
           </div>
           <div class="h-6 w-px opacity-30" style="background-color: var(--table-border);"></div>
           <div>
             <span class="text-[10px] uppercase font-extrabold opacity-70 block" style="color: var(--text-muted);">Pareggi</span>
-            <span class="text-lg font-black font-sport opacity-80" style="color: var(--text-main);">${roundMetrics.ties}</span>
+            <span class="text-lg font-black font-sport opacity-80" style="color: var(--text-main);">${directSummary.ties}</span>
           </div>
           <div class="h-6 w-px opacity-30" style="background-color: var(--table-border);"></div>
           <div>
             <span class="text-[10px] uppercase font-extrabold opacity-70 block" style="color: var(--h2h-contender-b, #06b6d4);">Vittorie ${escapeHtml(managerB.name)}</span>
-            <span class="text-lg font-black font-sport" style="color: var(--h2h-contender-b, #06b6d4);">${roundMetrics.winsB}</span>
+            <span class="text-lg font-black font-sport" style="color: var(--h2h-contender-b, #06b6d4);">${directSummary.winsB}</span>
           </div>
         </div>
 
-        <!-- Structured Placeholder Box -->
-        <div class="mt-2.5 p-3 rounded-xl border border-dashed text-center" style="border-color: var(--table-border); background-color: var(--modal-bg);">
-          <div class="flex items-center justify-center gap-1.5 text-[11px] font-semibold opacity-75" style="color: var(--text-muted);">
-            <i class="fa-solid fa-clock-rotate-left text-amber-500 text-xs"></i>
-            <span>Tabellino dettagliato delle singole sfide in arrivo con il parsing delle giornate.</span>
-          </div>
+        <!-- Accordion Button: Mostra / Nascondi Dettaglio Gare -->
+        <div class="mt-2.5 flex justify-center">
+          <button type="button"
+            onclick="window.toggleMatchupDirectDetails && window.toggleMatchupDirectDetails();"
+            class="px-4 py-1.5 rounded-full text-[11px] font-extrabold border transition shadow-xs flex items-center gap-2 cursor-pointer active:scale-95"
+            style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--text-main);">
+            <i class="fa-solid fa-clock-rotate-left text-[10px] text-indigo-400"></i>
+            <span>${isDirectDetailsExpanded ? 'Nascondi Dettaglio Gare' : `Mostra Dettaglio Gare (${directSummary.matches.length})`}</span>
+            <i class="fa-solid ${isDirectDetailsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[9px] text-amber-500"></i>
+          </button>
         </div>
+
+        <!-- Collapsible Matches List -->
+        ${isDirectDetailsExpanded ? `
+          <div class="mt-3 space-y-2 border-t pt-2.5 animate-fadeIn" style="border-color: var(--table-border);">
+            ${directSummary.matches.length === 0 ? `
+              <div class="p-3 text-center text-xs font-semibold opacity-60">
+                Nessuna gara registrata a calendario tra i due manager.
+              </div>
+            ` : directSummary.matches.map(m => {
+    const outcomeBadge = m.isPlayed
+      ? (m.outcome === 'A'
+        ? `<span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border shrink-0 flex items-center gap-1 shadow-xs"
+                             style="color: var(--h2h-contender-a, #f59e0b); border-color: var(--h2h-contender-a, #f59e0b); background-color: rgba(125, 125, 125, 0.08);">
+                         <i class="fa-solid fa-trophy text-[8px]"></i>
+                         <span>W ${escapeHtml(managerA.name)}</span>
+                       </span>`
+        : m.outcome === 'B'
+          ? `<span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border shrink-0 flex items-center gap-1 shadow-xs"
+                               style="color: var(--h2h-contender-b, #06b6d4); border-color: var(--h2h-contender-b, #06b6d4); background-color: rgba(125, 125, 125, 0.08);">
+                           <i class="fa-solid fa-trophy text-[8px]"></i>
+                           <span>W ${escapeHtml(managerB.name)}</span>
+                         </span>`
+          : `<span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border shrink-0 flex items-center gap-1 shadow-xs"
+                               style="color: var(--text-main); border-color: var(--table-border); background-color: var(--shelf-line, rgba(148, 163, 184, 0.15));">
+                           <i class="fa-solid fa-handshake text-[8px] opacity-75"></i>
+                           <span>PAREGGIO</span>
+                         </span>`)
+      : `<span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-dashed shrink-0 flex items-center gap-1 opacity-80"
+                         style="color: var(--text-muted); border-color: var(--table-border); background-color: transparent;">
+                     <i class="fa-regular fa-clock text-[8px]"></i>
+                     <span>In programma</span>
+                   </span>`;
+
+    return `
+                <div class="p-2.5 rounded-xl border flex flex-col gap-2 text-xs shadow-xs transition"
+                     style="background-color: var(--modal-bg); border-color: var(--table-border);">
+                  
+                  <!-- Row 1: Season & Round (Left) + Outcome Badge (Right) -->
+                  <div class="flex items-center justify-between w-full">
+                    <span class="px-2 py-0.5 rounded-md font-mono text-[10px] font-bold border flex items-center gap-1 shrink-0"
+                          style="background-color: var(--shelf-line, rgba(148, 163, 184, 0.15)); border-color: var(--table-border); color: var(--text-main);">
+                      <i class="fa-solid fa-calendar-day text-[9px] opacity-70"></i>
+                      <span>${escapeHtml(m.season)} &bull; ${escapeHtml(m.roundLabel)}</span>
+                    </span>
+
+                    ${outcomeBadge}
+                  </div>
+
+                  <!-- Row 2: Teams face-off with full width and centered '-' placeholder -->
+                  <div class="flex items-center justify-between gap-2 w-full pt-1.5 border-t"
+                       style="border-color: var(--table-border);">
+                    
+                    <!-- Home Team (Logo A on the left, Team A name next, left-aligned) -->
+                    <div class="flex items-center justify-start gap-1.5 flex-1 min-w-0">
+                      <img src="${m.homeLogo}" alt="${escapeHtml(m.homeTeam)}"
+                           class="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-contain shrink-0 bg-white/10 border shadow-xs"
+                           style="border-color: var(--table-border);"
+                           onerror="this.onerror=null; this.src='${getTeamFallbackCrest(m.homeTeam)}'">
+                      <span class="font-bold text-[11px] sm:text-xs truncate text-left" style="color: var(--text-main);" title="${escapeHtml(m.homeTeam)}">
+                        ${escapeHtml(m.homeTeam)}
+                      </span>
+                    </div>
+
+                    <!-- Explicit '-' placeholder (no score revealed) -->
+                    <div class="w-6 h-5 sm:w-7 sm:h-6 rounded-md flex items-center justify-center font-mono font-black text-xs shrink-0 border border-dashed select-none"
+                         style="background-color: var(--shelf-line, rgba(0, 0, 0, 0.05)); border-color: var(--table-border); color: var(--text-muted);"
+                         title="Risultato numerico non mostrato">
+                      -
+                    </div>
+
+                    <!-- Away Team (Text and logo aligned on the right) -->
+                    <div class="flex items-center justify-end gap-1.5 flex-1 min-w-0">
+                      <span class="font-bold text-[11px] sm:text-xs truncate text-right" style="color: var(--text-main);" title="${escapeHtml(m.awayTeam)}">
+                        ${escapeHtml(m.awayTeam)}
+                      </span>
+                      <img src="${m.awayLogo}" alt="${escapeHtml(m.awayTeam)}"
+                           class="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-contain shrink-0 bg-white/10 border shadow-xs"
+                           style="border-color: var(--table-border);"
+                           onerror="this.onerror=null; this.src='${getTeamFallbackCrest(m.awayTeam)}'">
+                    </div>
+
+                  </div>
+                </div>
+              `;
+  }).join('')}
+          </div>
+        ` : ''}
       </div>
 
       <!-- 4. Precedenti in Campionato (Scoreboard all-time) -->
@@ -269,32 +496,66 @@ export function renderMatchupModalHTML(
       <!-- 5. Chiave Tattica del Duello -->
       ${renderChiaveTattica(tacticalKey)}
 
-      <!-- 6. Actions Row: Story + Banter + Open H2H -->
-      <div class="pt-2 flex flex-col sm:flex-row items-center gap-2 sm:gap-2.5">
-        <button type="button"
-          onclick="window.exportCurrentH2HDuelStoryHD && window.exportCurrentH2HDuelStoryHD();"
-          class="w-full sm:flex-1 py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-md active:scale-95">
-          <i class="fa-solid fa-mobile-screen"></i>
-          <span>Esporta Story 9:16</span>
-        </button>
+    </div>
 
-        <button type="button"
-          onclick="window.copyCurrentH2HDuelBanter && window.copyCurrentH2HDuelBanter();"
-          class="w-full sm:flex-1 py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer active:scale-95"
-          style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);">
-          <i class="fa-brands fa-whatsapp text-emerald-500"></i>
-          <span>Copia Banter WhatsApp</span>
-        </button>
-
+    <!-- Modal Footer Actions (Pinned at bottom) -->
+    <div class="flex items-center justify-between border-t px-4 sm:px-6 py-3 shrink-0 gap-2" style="border-color: var(--table-border);">
+      <div class="flex items-center gap-2">
+        <!-- H2H Button -->
         <button type="button"
           onclick="window.closeMatchupModal && window.closeMatchupModal(); window.openHeadToHeadModal && window.openHeadToHeadModal('${managerA.id}', '${managerB.id}');"
-          class="w-full sm:flex-1 py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer active:scale-95 bg-indigo-500/10 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/20"
-          title="Apri lo storico Head-to-Head completo con il tabellino annate e bacheca trofei">
+          class="px-3 py-1.5 rounded-xl text-xs font-bold border transition shadow-sm flex items-center gap-1.5 bg-indigo-500/10 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/20 active:scale-95 cursor-pointer"
+          title="Apri lo storico Head-to-Head completo con tabellino annate e bacheca trofei">
           <i class="fa-solid fa-book-open text-indigo-400"></i>
-          <span>Storico Completo H2H</span>
+          <span class="hidden sm:inline">Storico H2H</span>
+          <span class="sm:hidden">H2H</span>
         </button>
+
+        <!-- Dropdown Popover Menu: Scarica / Condividi (opens upward) -->
+        <div class="relative">
+          <button id="btn-matchup-share-dropdown" onclick="window.toggleMatchupShareDropdown && window.toggleMatchupShareDropdown(event);"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold border transition shadow-sm flex items-center gap-1.5 opacity-90 hover:opacity-100 cursor-pointer active:scale-95"
+            style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);">
+            <i class="fa-solid fa-share-nodes text-xs"></i>
+            <span class="hidden sm:inline">Scarica / Condividi</span>
+            <span class="sm:hidden">Condividi</span>
+            <i class="fa-solid fa-chevron-up text-[10px] ml-0.5"></i>
+          </button>
+
+          <div id="matchup-share-dropdown-menu"
+            class="hidden absolute bottom-full left-0 mb-2 w-56 rounded-2xl border shadow-2xl p-1.5 z-50 text-xs backdrop-blur-md"
+            style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--modal-text);">
+            <button onclick="window.exportMatchupCardHD && window.exportMatchupCardHD();"
+              class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
+              <i class="fa-solid fa-download text-amber-500"></i>
+              <span>Scarica PNG Scheda</span>
+            </button>
+            <button onclick="window.exportMatchupStoryHD && window.exportMatchupStoryHD();"
+              class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
+              <i class="fa-solid fa-mobile-screen text-indigo-400"></i>
+              <span>Story (9:16)</span>
+            </button>
+            <button onclick="window.copyMatchupBanter && window.copyMatchupBanter();"
+              class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer">
+              <i class="fa-brands fa-whatsapp text-emerald-500"></i>
+              <span>Copia Banter WhatsApp</span>
+            </button>
+            <button onclick="window.shareMatchupWhatsApp && window.shareMatchupWhatsApp();"
+              class="w-full px-3 py-2 rounded-xl text-left font-bold flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition border-t mt-1 pt-2 cursor-pointer"
+              style="border-color: var(--table-border);">
+              <i class="fa-solid fa-link text-indigo-400"></i>
+              <span>Invia Link WhatsApp</span>
+            </button>
+          </div>
+        </div>
       </div>
 
+      <!-- Right: Chiudi Button -->
+      <button onclick="window.closeMatchupModal && window.closeMatchupModal();"
+        class="px-4 py-1.5 rounded-xl text-xs font-bold transition border cursor-pointer hover:opacity-100 opacity-90"
+        style="background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--btn-text);">
+        Chiudi
+      </button>
     </div>
   `;
 }

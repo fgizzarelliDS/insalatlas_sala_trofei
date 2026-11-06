@@ -11,21 +11,39 @@ import { computeTacticalMatchup } from '@/analytics/tacticalMatchup';
 import { calculateRadarSvgPoints } from '@/analytics/tacticalProfiler';
 import { state } from '@/state';
 import { getLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
+import { collectDirectRoundMatches } from '@/components/modals/matchup/MatchupTemplate';
+import { escapeHtml } from '@/utils/dom';
 
 /**
- * 2. Renders High-Definition Vertical 9:16 Story for a 1vs1 Head-to-Head Duel 
+ * 2. Renders High-Definition Vertical 9:16 Story for a 1vs1 Tactical Matchup & Pre-Match Duel
  */
 export async function renderH2HDuelStoryCanvas(
   managerA: Manager,
   managerB: Manager
 ): Promise<HTMLCanvasElement> {
-  const { container, contentBox } = createStoryContainer('Duello H2H', 'Scontro Tattico & Filosofico');
+  const { container, contentBox } = createStoryContainer('Matchup Tattico', 'Pre-Partita & Scontri Diretti');
   contentBox.className = 'flex-1 flex flex-col justify-between py-2 w-full max-w-[960px] mx-auto';
 
   const liveData = getLiveSeasonDetails();
   const allManagers = state.managers && state.managers.length > 0 ? state.managers : [managerA, managerB];
   const matchup = computeTacticalMatchup(managerA, managerB, allManagers, liveData);
   const { profileA, profileB, h2hStats, axesList, tacticalKey } = matchup;
+
+  const directSummary = collectDirectRoundMatches(
+    managerA.id,
+    managerB.id,
+    managerA.name,
+    managerB.name,
+    liveData
+  );
+
+  const seasonsBadgeText = directSummary.seasonsList.length > 0
+    ? directSummary.seasonsList.join(' • ')
+    : (liveData?.season || 'Campionato');
+
+  const matchesToRender = directSummary.matches.length > 5
+    ? directSummary.matches.slice(directSummary.matches.length - 5)
+    : directSummary.matches;
 
   const teamA = profileA.teamName;
   const teamB = profileB.teamName;
@@ -66,51 +84,51 @@ export async function renderH2HDuelStoryCanvas(
     <div class="w-full flex items-center justify-between px-3">
       <!-- Contender A (Amber) -->
       <div class="flex-1 flex flex-col items-center text-center">
-        <div class="w-28 h-28 rounded-3xl border-2 p-2 bg-slate-900/90 shadow-2xl flex items-center justify-center mb-2"
-             style="border-color: #f59e0b; box-shadow: 0 0 35px rgba(245, 158, 11, 0.25);">
+        <div class="w-24 h-24 rounded-3xl border-2 p-2 bg-slate-900/90 shadow-2xl flex items-center justify-center mb-1.5"
+             style="border-color: #f59e0b; box-shadow: 0 0 30px rgba(245, 158, 11, 0.25);">
           <img src="${logoA}" alt="${managerA.name}" class="w-full h-full object-contain drop-shadow-2xl" onerror="this.onerror=null; this.src='favicon-64x64.png'">
         </div>
-        <h3 class="font-sport font-black text-2xl uppercase tracking-wider text-amber-400">
+        <h3 class="font-sport font-black text-xl uppercase tracking-wider text-amber-400">
           ${managerA.name}
         </h3>
         <span class="text-xs font-bold text-slate-300 mt-0.5">
           ${teamA}
         </span>
-        <span class="mt-1.5 px-3 py-0.5 rounded-full text-[10px] font-black border border-amber-500/40 bg-amber-500/15 text-amber-300">
+        <span class="mt-1 px-3 py-0.5 rounded-full text-[10px] font-black border border-amber-500/40 bg-amber-500/15 text-amber-300">
           <i class="fa-solid ${profileA.archetype.icon} mr-1"></i>${profileA.archetype.title}
         </span>
       </div>
 
       <!-- VS Badge -->
       <div class="flex flex-col items-center px-4">
-        <div class="w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center font-sport font-black text-xl shadow-xl">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center font-sport font-black text-lg shadow-xl">
           VS
         </div>
-        <span class="text-[11px] uppercase font-bold text-slate-400 mt-1">
+        <span class="text-[10px] uppercase font-bold text-slate-400 mt-1">
           ${h2hStats.sharedSeasonsCount} campionati
         </span>
       </div>
 
       <!-- Contender B (Cyan) -->
       <div class="flex-1 flex flex-col items-center text-center">
-        <div class="w-28 h-28 rounded-3xl border-2 p-2 bg-slate-900/90 shadow-2xl flex items-center justify-center mb-2"
-             style="border-color: #06b6d4; box-shadow: 0 0 35px rgba(6, 182, 212, 0.25);">
+        <div class="w-24 h-24 rounded-3xl border-2 p-2 bg-slate-900/90 shadow-2xl flex items-center justify-center mb-1.5"
+             style="border-color: #06b6d4; box-shadow: 0 0 30px rgba(6, 182, 212, 0.25);">
           <img src="${logoB}" alt="${managerB.name}" class="w-full h-full object-contain drop-shadow-2xl" onerror="this.onerror=null; this.src='favicon-64x64.png'">
         </div>
-        <h3 class="font-sport font-black text-2xl uppercase tracking-wider text-cyan-400">
+        <h3 class="font-sport font-black text-xl uppercase tracking-wider text-cyan-400">
           ${managerB.name}
         </h3>
         <span class="text-xs font-bold text-slate-300 mt-0.5">
           ${teamB}
         </span>
-        <span class="mt-1.5 px-3 py-0.5 rounded-full text-[10px] font-black border border-cyan-500/40 bg-cyan-500/15 text-cyan-300">
+        <span class="mt-1 px-3 py-0.5 rounded-full text-[10px] font-black border border-cyan-500/40 bg-cyan-500/15 text-cyan-300">
           <i class="fa-solid ${profileB.archetype.icon} mr-1"></i>${profileB.archetype.title}
         </span>
       </div>
     </div>
 
     <!-- 2. HIGH-RES 5-AXIS DUAL RADAR CARD -->
-    <div class="w-full rounded-2xl border border-slate-800 bg-slate-900/85 p-4 flex flex-col items-center shadow-2xl backdrop-blur-md">
+    <div class="w-full rounded-2xl border border-slate-800 bg-slate-900/85 p-3.5 flex flex-col items-center shadow-2xl backdrop-blur-md">
       <!-- Card Legend -->
       <div class="flex items-center justify-between w-full mb-1 px-4 text-xs font-bold">
         <span class="flex items-center gap-1.5 text-amber-400">
@@ -126,7 +144,7 @@ export async function renderH2HDuelStoryCanvas(
 
       <!-- Radar SVG 680x460 -->
       <div class="w-full flex justify-center py-1">
-        <svg viewBox="0 0 680 460" class="w-[740px] max-w-full h-auto">
+        <svg viewBox="0 0 680 460" class="w-[620px] max-w-full h-auto">
           <!-- Concentric Pentagons -->
           <polygon points="340,70 492,181 434,360 246,360 188,181" fill="none" stroke="#334155" stroke-width="2"></polygon>
           <polygon points="340,110 454,193 411,327 269,327 226,193" fill="none" stroke="#1e293b" stroke-width="1.5"></polygon>
@@ -182,7 +200,7 @@ export async function renderH2HDuelStoryCanvas(
       </div>
 
       <!-- 5-Axis Tactical Advantage Badges -->
-      <div class="w-full mt-1 pt-3 border-t border-slate-800 grid grid-cols-5 gap-2 px-2 text-center">
+      <div class="w-full mt-1 pt-2.5 border-t border-slate-800 grid grid-cols-5 gap-2 px-2 text-center">
         ${axesList.map(ax => {
     const colorClass = ax.winner === 'A' ? 'text-amber-400' : ax.winner === 'B' ? 'text-cyan-400' : 'text-slate-400';
     const labelWinner = ax.winner === 'A' ? `${managerA.name.slice(0, 4)} ▲` : ax.winner === 'B' ? `${managerB.name.slice(0, 4)} ▲` : 'PARI =';
@@ -196,34 +214,109 @@ export async function renderH2HDuelStoryCanvas(
       </div>
     </div>
 
-    <!-- 3. PRECEDENTI IN CAMPIONATO (Scoreboard Big Numbers sopra Chiave Tattica) -->
-    <div class="w-full p-4 rounded-2xl border border-slate-800 bg-slate-900/90 flex items-center justify-around shadow-xl">
-      <div class="text-center">
-        <span class="text-xs uppercase font-extrabold text-amber-400">Vittorie ${managerA.name}</span>
-        <div class="font-sport font-black text-4xl text-amber-400 font-mono mt-1">${h2hStats.winsA}</div>
+    <!-- 3. SCONTRI DIRETTI IN CAMPIONATO (Round-by-Round) -->
+    <div class="w-full rounded-2xl border border-slate-800 bg-slate-900/90 p-3.5 shadow-xl">
+      <div class="flex items-center justify-between mb-2 px-1">
+        <span class="text-xs font-black uppercase tracking-wider flex items-center gap-2 text-slate-200">
+          <i class="fa-solid fa-futbol text-indigo-400"></i>
+          <span>Scontri Diretti in Campionato</span>
+          <span class="text-[10px] text-slate-400 font-semibold">(Round-by-Round)</span>
+        </span>
+        <span class="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full border border-indigo-500/40 bg-indigo-500/15 text-indigo-300">
+          ${escapeHtml(seasonsBadgeText)}
+        </span>
       </div>
-      <div class="h-10 w-px bg-slate-800"></div>
-      <div class="text-center">
-        <span class="text-xs uppercase font-extrabold text-slate-400">Pareggi</span>
-        <div class="font-sport font-black text-4xl text-slate-300 font-mono mt-1">${h2hStats.ties}</div>
+
+      <!-- Consolidated Metric Bar: W A | X | W B -->
+      <div class="p-2 rounded-xl border border-slate-800 bg-slate-950/70 flex items-center justify-around text-center text-xs font-bold mb-2.5">
+        <div>
+          <span class="text-[10px] uppercase font-extrabold text-amber-400/80 block">Vittorie ${escapeHtml(managerA.name)}</span>
+          <span class="text-xl font-black font-sport text-amber-400 font-mono">${directSummary.winsA}</span>
+        </div>
+        <div class="h-7 w-px bg-slate-800"></div>
+        <div>
+          <span class="text-[10px] uppercase font-extrabold text-slate-400 block">Pareggi</span>
+          <span class="text-xl font-black font-sport text-slate-200 font-mono">${directSummary.ties}</span>
+        </div>
+        <div class="h-7 w-px bg-slate-800"></div>
+        <div>
+          <span class="text-[10px] uppercase font-extrabold text-cyan-400/80 block">Vittorie ${escapeHtml(managerB.name)}</span>
+          <span class="text-xl font-black font-sport text-cyan-400 font-mono">${directSummary.winsB}</span>
+        </div>
       </div>
-      <div class="h-10 w-px bg-slate-800"></div>
-      <div class="text-center">
-        <span class="text-xs uppercase font-extrabold text-cyan-400">Vittorie ${managerB.name}</span>
-        <div class="font-sport font-black text-4xl text-cyan-400 font-mono mt-1">${h2hStats.winsB}</div>
+
+      <!-- Round-by-Round Matches List -->
+      <div class="space-y-1.5">
+        ${matchesToRender.length === 0 ? `
+          <div class="p-3 text-center text-xs font-semibold text-slate-400">
+            Nessun precedente registrato a calendario tra i due manager.
+          </div>
+        ` : matchesToRender.map(m => {
+          const outcomeBadge = m.isPlayed
+            ? (m.outcome === 'A'
+              ? `<span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border border-amber-500/40 bg-amber-500/15 text-amber-300 flex items-center gap-1">
+                   <i class="fa-solid fa-trophy text-[8px]"></i> W ${escapeHtml(managerA.name)}
+                 </span>`
+              : m.outcome === 'B'
+                ? `<span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border border-cyan-500/40 bg-cyan-500/15 text-cyan-300 flex items-center gap-1">
+                     <i class="fa-solid fa-trophy text-[8px]"></i> W ${escapeHtml(managerB.name)}
+                   </span>`
+                : `<span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border border-slate-700 bg-slate-800 text-slate-300 flex items-center gap-1">
+                     <i class="fa-solid fa-handshake text-[8px]"></i> PAREGGIO
+                   </span>`)
+            : `<span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-dashed border-slate-700 text-slate-400 flex items-center gap-1">
+                 <i class="fa-regular fa-clock text-[8px]"></i> In programma
+               </span>`;
+
+          return `
+            <div class="p-2 rounded-xl border border-slate-800/90 bg-slate-950/60 flex flex-col gap-1.5 text-xs">
+              <div class="flex items-center justify-between w-full">
+                <span class="px-2 py-0.5 rounded-md font-mono text-[10px] font-bold border border-slate-800 bg-slate-900 text-slate-300 flex items-center gap-1">
+                  <i class="fa-solid fa-calendar-day text-[9px] text-slate-400"></i>
+                  <span>${escapeHtml(m.season)} &bull; ${escapeHtml(m.roundLabel)}</span>
+                </span>
+                ${outcomeBadge}
+              </div>
+
+              <div class="flex items-center justify-between gap-2 w-full pt-1 border-t border-slate-800/60">
+                <div class="flex items-center justify-start gap-1.5 flex-1 min-w-0">
+                  <img src="${m.homeLogo}" alt="${escapeHtml(m.homeTeam)}"
+                       class="w-5 h-5 rounded-full object-contain shrink-0 bg-white/10 border border-slate-700 shadow-xs"
+                       onerror="this.onerror=null; this.src='favicon-64x64.png'">
+                  <span class="font-bold text-[11px] truncate text-left text-slate-200">
+                    ${escapeHtml(m.homeTeam)}
+                  </span>
+                </div>
+
+                <div class="w-6 h-5 rounded-md flex items-center justify-center font-mono font-black text-xs shrink-0 border border-dashed border-slate-700 bg-slate-900 text-slate-400">
+                  -
+                </div>
+
+                <div class="flex items-center justify-end gap-1.5 flex-1 min-w-0">
+                  <span class="font-bold text-[11px] truncate text-right text-slate-200">
+                    ${escapeHtml(m.awayTeam)}
+                  </span>
+                  <img src="${m.awayLogo}" alt="${escapeHtml(m.awayTeam)}"
+                       class="w-5 h-5 rounded-full object-contain shrink-0 bg-white/10 border border-slate-700 shadow-xs"
+                       onerror="this.onerror=null; this.src='favicon-64x64.png'">
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
       </div>
     </div>
 
     <!-- 4. CHIAVE TATTICA DEL DUELLO NARRATIVE BOX -->
-    <div class="w-full p-4 rounded-2xl border border-indigo-500/30 bg-slate-900/95 flex items-start gap-3.5 shadow-2xl">
-      <div class="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center text-lg shrink-0 shadow-inner">
+    <div class="w-full p-3.5 rounded-2xl border border-indigo-500/30 bg-slate-900/95 flex items-start gap-3 shadow-2xl">
+      <div class="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center text-base shrink-0 shadow-inner">
         <i class="fa-solid fa-lightbulb"></i>
       </div>
       <div class="min-w-0 flex-1">
         <h4 class="text-xs font-black uppercase tracking-wider text-amber-400">
           ${tacticalKey.headline}
         </h4>
-        <p class="text-xs text-slate-200 mt-1 leading-relaxed">
+        <p class="text-xs text-slate-200 mt-0.5 leading-relaxed">
           ${tacticalKey.description}
         </p>
       </div>

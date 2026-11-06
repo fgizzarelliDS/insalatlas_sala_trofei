@@ -290,7 +290,7 @@ Per le stagioni contrassegnate come `in_progress: true`, il sistema attiva un mo
 
 ---
 
-### 12. Profiler Tattico & Identikit Manageriale (SPEC-25)
+### 12. Profiler Tattico & Identikit Manageriale
 
 Il modulo **Profiler Tattico** arricchisce la Scheda Profilo di ciascun allenatore con un'analisi multidimensionale fondata su econometria sportiva, normalizzazione $Z$-score con $\tanh$ e archetipi comportamentali della cultura calcistica italiana.
 
@@ -316,7 +316,7 @@ Il modulo **Profiler Tattico** arricchisce la Scheda Profilo di ciascun allenato
 
 ---
 
-### 13. Matchup Tattico Pre-Partita & Coesistenza con Head-to-Head Storico (SPEC-26)
+### 13. Matchup Tattico Pre-Partita & Coesistenza con Head-to-Head Storico 
 
 L'esperienza degli scontri diretti è organizzata su due livelli distinti e complementari, preservando integralmente l'archivio storico all-time e dedicando una nuova esperienza verticale al pre-partita:
 

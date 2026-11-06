@@ -1,6 +1,6 @@
 /**
  * src/analytics/tactical/types.ts
- * Domain Types and Interfaces for Tactical Profiler & Identikit (SPEC-25)
+ * Domain Types and Interfaces for Tactical Profiler & Identikit 
  */
 
 export type TacticalAxisKey = 'pot' | 'cin' | 'luk' | 'koc' | 'reg';

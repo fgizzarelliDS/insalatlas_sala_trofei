@@ -124,7 +124,7 @@ export function renderHeadToHeadMatchupView(
         <div class="flex items-center justify-between w-full mb-1 px-1">
           <span class="text-xs font-bold font-sport uppercase tracking-wider flex items-center gap-1.5" style="color: var(--text-main);">
             <i class="fa-solid fa-compass text-amber-500"></i>
-            <span>Radar Tattico a 5 Assi</span>
+            <span>Radar Tattico</span>
           </span>
           <span class="text-[10px] font-semibold" style="color: var(--text-muted);">
             Scontro di Stile

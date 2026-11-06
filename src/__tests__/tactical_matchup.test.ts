@@ -281,14 +281,14 @@ describe('Tactical Matchup & H2H Duel Engine ', () => {
       const html = renderHeadToHeadMatchupView(mockStats, allManagers);
 
       // Verify all components exist
-      expect(html).toContain('Radar Tattico a 5 Assi');
+      expect(html).toContain('Radar Tattico');
       expect(html).toContain('Precedenti in Campionato');
       expect(html).toContain('Chiave Tattica');
       expect(html).toContain('Esporta Story 9:16 Duello');
       expect(html).toContain('Copia Banter WhatsApp');
 
       // Verify ordering: Precedenti in Campionato must appear before Chiave Tattica
-      const posRadar = html.indexOf('Radar Tattico a 5 Assi');
+      const posRadar = html.indexOf('Radar Tattico');
       const posPrecedenti = html.indexOf('Precedenti in Campionato');
       const posChiave = html.indexOf('fa-lightbulb');
       const posButtons = html.indexOf('Esporta Story 9:16 Duello');

@@ -1,6 +1,6 @@
 /**
  * src/analytics/tactical/tacticalBanter.ts
- * WhatsApp Banter & Social Sharing Generator (SPEC-25)
+ * WhatsApp Banter & Social Sharing Generator 
  */
 
 import { LEAGUE } from '@/config';
@@ -30,6 +30,6 @@ _${profile.archetype.motto}_
 ${profile.mindset.pill}
 _${profile.mindset.desc}_
 
-👉 *Consulta la scheda completa e il radar a 5 assi:*
+👉 *Consulta la scheda completa e il radar:*
 ${url}`;
 }

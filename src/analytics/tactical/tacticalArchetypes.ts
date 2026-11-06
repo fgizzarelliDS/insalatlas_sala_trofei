@@ -1,6 +1,6 @@
 /**
  * src/analytics/tactical/tacticalArchetypes.ts
- * 10 Career Archetype Catalog and Decision Tree Engine (SPEC-25)
+ * 10 Career Archetype Catalog and Decision Tree Engine 
  */
 
 import type { Manager } from '@/types';

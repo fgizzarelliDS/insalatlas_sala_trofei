@@ -99,12 +99,12 @@ export function renderHeadToHeadHero(
               <i class="fa-solid fa-arrow-up-right-from-square text-[9px] opacity-0 group-hover:opacity-75 transition shrink-0" style="color: var(--h2h-contender-a);"></i>
             </h3>
           </div>
-          <div class="flex flex-col items-center justify-center gap-0.5 mt-1 w-full min-w-0">
-            <span class="inline-block text-[10px] font-black px-2 py-0.5 rounded-full border truncate max-w-full"
+          <div class="flex flex-col items-center justify-center gap-1 mt-1 w-full min-w-0">
+            <span class="inline-flex items-center justify-center text-[10px] font-black px-2 py-0.5 rounded-full border text-center leading-tight break-words max-w-full"
                   style="background: ${archColorA}18; color: ${archColorA}; border-color: ${archColorA}40;">
-              <i class="fa-solid ${archIconA} text-[9px] mr-1"></i>${archTitleA}
+              <i class="fa-solid ${archIconA} text-[9px] mr-1 shrink-0"></i><span>${archTitleA}</span>
             </span>
-            ${archTraitA ? `<span class="text-[9px] font-bold opacity-75 truncate max-w-full block" style="color: var(--text-muted);">${archTraitA}</span>` : ''}
+            ${archTraitA ? `<span class="text-[9px] font-bold opacity-75 text-center leading-tight break-words max-w-full block" style="color: var(--text-muted);">${archTraitA}</span>` : ''}
             ${archMottoA ? `<p class="text-[9.5px] italic opacity-85 mt-1 leading-tight line-clamp-2 px-1 hidden sm:block" style="color: var(--text-main);">${archMottoA}</p>` : ''}
           </div>
         </div>
@@ -128,12 +128,12 @@ export function renderHeadToHeadHero(
               <i class="fa-solid fa-arrow-up-right-from-square text-[9px] opacity-0 group-hover:opacity-75 transition shrink-0" style="color: var(--h2h-contender-b);"></i>
             </h3>
           </div>
-          <div class="flex flex-col items-center justify-center gap-0.5 mt-1 w-full min-w-0">
-            <span class="inline-block text-[10px] font-black px-2 py-0.5 rounded-full border truncate max-w-full"
+          <div class="flex flex-col items-center justify-center gap-1 mt-1 w-full min-w-0">
+            <span class="inline-flex items-center justify-center text-[10px] font-black px-2 py-0.5 rounded-full border text-center leading-tight break-words max-w-full"
                   style="background: ${archColorB}18; color: ${archColorB}; border-color: ${archColorB}40;">
-              <i class="fa-solid ${archIconB} text-[9px] mr-1"></i>${archTitleB}
+              <i class="fa-solid ${archIconB} text-[9px] mr-1 shrink-0"></i><span>${archTitleB}</span>
             </span>
-            ${archTraitB ? `<span class="text-[9px] font-bold opacity-75 truncate max-w-full block" style="color: var(--text-muted);">${archTraitB}</span>` : ''}
+            ${archTraitB ? `<span class="text-[9px] font-bold opacity-75 text-center leading-tight break-words max-w-full block" style="color: var(--text-muted);">${archTraitB}</span>` : ''}
             ${archMottoB ? `<p class="text-[9.5px] italic opacity-85 mt-1 leading-tight line-clamp-2 px-1 hidden sm:block" style="color: var(--text-main);">${archMottoB}</p>` : ''}
           </div>
         </div>

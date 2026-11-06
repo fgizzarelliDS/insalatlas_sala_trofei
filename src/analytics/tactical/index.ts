@@ -1,6 +1,6 @@
 /**
  * src/analytics/tactical/index.ts
- * Barrel Export for Modular Tactical Profiler Engine (SPEC-25)
+ * Barrel Export for Modular Tactical Profiler Engine 
  */
 
 export * from './types';

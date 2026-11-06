@@ -108,6 +108,12 @@ import {
   selectEloChartPoint,
   toggleProfileEloMode
 } from '@/components/modals';
+import {
+  openMatchupModal,
+  closeMatchupModal,
+  changeMatchupManagerA,
+  changeMatchupManagerB
+} from '@/components/modals/matchup';
 // Lazy export bindings to decouple canvas, svg foreignObject, and html-to-image from main bundle chunk
 type ExportModule = typeof import('@/export');
 const lazyExport = <K extends keyof ExportModule>(name: K): ExportModule[K] => {
@@ -277,6 +283,10 @@ declare global {
     copyCurrentH2HDuelToClipboard: typeof copyCurrentH2HDuelToClipboard;
     copyCurrentH2HDuelBanter: typeof copyCurrentH2HDuelBanter;
     exportCurrentH2HDuelStoryHD: typeof exportCurrentH2HDuelStoryHD;
+    openMatchupModal: typeof openMatchupModal;
+    closeMatchupModal: typeof closeMatchupModal;
+    changeMatchupManagerA: typeof changeMatchupManagerA;
+    changeMatchupManagerB: typeof changeMatchupManagerB;
     openMultiManagerModal: typeof openMultiManagerModal;
     changeMultiManager: typeof changeMultiManager;
     addNextMultiManager: typeof addNextMultiManager;
@@ -500,6 +510,10 @@ export function registerGlobalWindowHandlers(): void {
     copyCurrentH2HDuelToClipboard,
     copyCurrentH2HDuelBanter,
     exportCurrentH2HDuelStoryHD,
+    openMatchupModal,
+    closeMatchupModal,
+    changeMatchupManagerA,
+    changeMatchupManagerB,
     openMultiManagerModal,
     changeMultiManager,
     addNextMultiManager,

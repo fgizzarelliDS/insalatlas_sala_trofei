@@ -10,6 +10,10 @@ import {
   closeEloModal
 } from '@/components/modals';
 import {
+  openMatchupModal,
+  closeMatchupModal
+} from '@/components/modals/matchup';
+import {
   switchMainViewTab,
   selectArchiveSeason,
   openTeamMatchesModal,
@@ -24,6 +28,7 @@ import {
   findManagerByParam,
   getManagerParamFromURL,
   getH2HParamFromURL,
+  getMatchupParamFromURL,
   getMultiH2HParamFromURL,
   getRecordParamFromURL,
   getSearchParamFromURL,
@@ -76,6 +81,16 @@ export async function handleInitialDeepLinking(): Promise<void> {
       if (foundA && foundB) {
         openHeadToHeadModal(foundA.id, foundB.id);
       }
+    }
+  }
+
+  // Deep-linking: auto-open Matchup Modal if ?matchup=... in URL
+  const matchupParam = getMatchupParamFromURL();
+  if (matchupParam) {
+    const foundA = findManagerByParam(matchupParam.managerA);
+    const foundB = findManagerByParam(matchupParam.managerB);
+    if (foundA && foundB) {
+      openMatchupModal(foundA.id, foundB.id);
     }
   }
 
@@ -167,11 +182,25 @@ export function initPopstateNavigation(): void {
       const foundB = findManagerByParam(h2h.managerB);
       if (foundA && foundB) {
         closeProfileModal();
+        closeMatchupModal(false);
         openHeadToHeadModal(foundA.id, foundB.id);
         return;
       }
     }
     closeHeadToHeadModal();
+
+    const matchup = getMatchupParamFromURL();
+    if (matchup) {
+      const foundA = findManagerByParam(matchup.managerA);
+      const foundB = findManagerByParam(matchup.managerB);
+      if (foundA && foundB) {
+        closeProfileModal();
+        closeHeadToHeadModal();
+        openMatchupModal(foundA.id, foundB.id);
+        return;
+      }
+    }
+    closeMatchupModal(false);
 
     const p = getManagerParamFromURL();
     if (p) {

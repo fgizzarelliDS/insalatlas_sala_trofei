@@ -7,5 +7,6 @@ export * from './ConcentrationModal';
 export * from './analytics';
 export * from './season';
 export * from './h2h';
+export * from './matchup';
 export * from './trophy';
 export * from './initModals';

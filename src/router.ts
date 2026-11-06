@@ -122,6 +122,29 @@ export function getH2HParamFromURL(customUrl?: string): { managerA: string; mana
 }
 
 /**
+ * Extracts ?matchup=idA:idB query parameter from search or hash
+ */
+export function getMatchupParamFromURL(customUrl?: string): { managerA: string; managerB: string } | null {
+  const raw = getURLParam('matchup', customUrl);
+  if (!raw) return null;
+  const decoded = safeDecodeURI(raw).trim();
+  let parts: string[] = [];
+  if (decoded.includes(':')) {
+    parts = decoded.split(':');
+  } else if (/_vs_/i.test(decoded)) {
+    parts = decoded.split(/_vs_/i);
+  } else if (/-vs-/i.test(decoded)) {
+    parts = decoded.split(/-vs-/i);
+  } else if (/ vs /i.test(decoded)) {
+    parts = decoded.split(/ vs /i);
+  }
+  if (parts.length >= 2 && parts[0].trim() && parts[1].trim()) {
+    return { managerA: parts[0].trim(), managerB: parts[1].trim() };
+  }
+  return null;
+}
+
+/**
  * Extracts multi-manager comparison parameters (?h2h=multi&m=id1:id2:id3 or ?compare=id1:id2:id3)
  */
 export function getMultiH2HParamFromURL(customUrl?: string): string[] | null {

@@ -316,26 +316,35 @@ Il modulo **Profiler Tattico** arricchisce la Scheda Profilo di ciascun allenato
 
 ---
 
-### 13. Matchup Tattico Head-to-Head & Pre-Match Experience 
+### 13. Matchup Tattico Pre-Partita & Coesistenza con Head-to-Head Storico (SPEC-26)
 
-L'esperienza degli scontri diretti viene unificata e portata a livello televisivo integrando il confronto di stili di gioco sia nel modale Head-to-Head che nella striscia delle giornate live.
+L'esperienza degli scontri diretti è organizzata su due livelli distinti e complementari, preservando integralmente l'archivio storico all-time e dedicando una nuova esperienza verticale al pre-partita:
 
-1. **Modale H2H a Tab Unificato (`HeadToHeadMatchupView.ts`)**:
-   - Risponde all'esigenza di una consultazione immediata e priva di ridondanze attraverso una singola vista verticale focalizzata sul duello tattico:
-     1. **Hero Contenders con Selettori Interattivi & Archetipi**: Dropdown dinamici per selezionare qualsiasi coppia di manager della lega, stemmi dei club correnti o storici, badge degli archetipi tattici e motti identificativi a confronto.
-     2. **Radar Tattico a Doppio Poligono a 5 Assi (`HeadToHeadRadar.ts`)**:
-        - Poligono ambra per il Manager A sovrapposto al poligono ciano per il Manager B su sfondo neutro scuro con linea guida tratteggiata al $50\%$ della media lega.
-        - Sotto ciascuno dei 5 vertici (POTENZA, CINISMO, FORTUNA, STABILITÀ, COPPE) sono riportati sia il valore raw di A che quello di B affiancati (`74.2 FP vs 68.1 FP`).
-     3. **Precedenti in Campionato (Scoreboard Big Numbers)**:
-        - Posizionato strategicamente **direttamente sopra** la Chiave Tattica per fornire subito il bilancio storico dello scontro.
-        - 3 colonne sintetiche: *Vittorie Manager A*, *Pareggi*, *Vittorie Manager B* con conteggio delle stagioni condivise.
-     4. **Chiave Tattica del Duello (Analisi Narrativa Algoritmica)**:
-        - Box ambra con icona lampadina che sintetizza lo scontro filosofico (es. *Potenza di Fuoco vs Freddezza da Coppe*), spiegando in prosa quale manager possiede il vantaggio relativo sul campo e quale fattore deciderà il match.
-     5. **Pulsanti d'Azione Rapida**:
-        - `[📱 Esporta Story 9:16 Duello]`: Genera il poster verticale HD pronto per Instagram/WhatsApp Status.
-        - `[📋 Copia Banter WhatsApp]`: Genera e copia negli appunti un testo pronto per le chat di lega con formattazione corsivo/grassetto, emoji e link all'app.
-2. **Pillola Scontro Filosofico nel Prossimo Turno (`NextRoundStrip.ts`)**:
-   - In ciascuna card di matchday nella striscia live del Prossimo Turno, a fianco dell'indice di gara e del Clima Partita, è inserita una pillola compatta indaco (`⚡ Spavaldo vs ⚙️ Metodico`) che anticipa il clash filosofico tra i due mister al timone.
-   - Cliccando sulla card dell'incontro, il modale H2H si apre configurato direttamente con i due mister pronti per l'analisi tattica approfondita.
-3. **Generatore WhatsApp Banter (`tacticalMatchup.ts`)**:
-   - Formatta un messaggio ricco con riepilogo dello scontro filosofico, motti dei mister, confronto asse per asse con frecce di vantaggio (`Alfo ▲`), bilancio precedenti e verdetto della chiave tattica.
+1. **Modale Head-to-Head Storico Originale (`HeadToHeadTemplate.ts` & `HeadToHeadModal.ts`)**:
+   - Preserva l'enciclopedia storica di tutti i confronti diretti tra manager:
+     - **Hero Contenders con Selettori**: Dropdown dinamici per selezionare qualsiasi coppia di manager della lega e schede biografiche interattive.
+     - **Scoreboard Scontri Diretti in Campionato con Tabellino Annate**: Big numbers di vittorie/pareggi con il pulsante espandibile a fisarmonica **`Mostra Tabellino Annate (X) ⌵`**, che visualizza stagione per stagione i piazzamenti, fantapunti, club e l'esito dello scontro.
+     - **Bacheca Trofei a Confronto (Palmares)**: Matrice comparativa di Scudetti (oro), argenti, bronzi, coppe, supercoppe, mundialiti, cucchiai e cartonato.
+     - **Radar a 6 Assi & Mirrored Duel Bars**: Selettore per passare dalla visualizzazione radar pentagonale/esagonale alle barre orizzontali specchiate.
+     - **Tabella Metriche Avanzate**: GCI, Killer Instinct, Tasso di Conversione Finali, NTI e stabilità.
+     - **Sub-Tab Matrice Nemesi & Tavolo dei Rivali**: Matrice incrociata $N \times N$ e comparatore a 3+ manager.
+     - **Pulsante di Collegamento Rapido `[⚡ Matchup Tattico Pre-Gara]`**: Permette di passare istantaneamente al nuovo modale di matchup tattico.
+
+2. **Nuovo Modale Dedicato Matchup Pre-Partita (`MatchupModal.ts` & `MatchupTemplate.ts`)**:
+   - Aperto direttamente dalle card del Prossimo Turno nella striscia live o tramite URL `?matchup=idA:idB`:
+     - **Hero Contenders & Archetipi**: Visualizzazione degli stemmi club, badge degli archetipi tattici (es. `🎯 Il Corto Muso Allegriano`) e motti filosofici.
+     - **Radar Tattico a Doppio Poligono a 5 Assi (`HeadToHeadRadar.ts`)**: Poligoni sovrapposti ambra (Mister A) e ciano (Mister B) con linea guida tratteggiata della media di lega al $50\%$ e valori raw affiancati sotto ciascun vertice.
+     - **Scontri Diretti in Campionato (Round-by-Round)**:
+       - Badge stagioni analizzate (`2025/26 • 2026/27`).
+       - Metrica consolidata a 3 blocchi: `Vittorie A | Pareggi | Vittorie B` calcolata sulle singole gare di campionato effettivamente giocate.
+       - Placeholder strutturato ed elegante con indicazione di completamento del parsing singola sfida per singola sfida.
+     - **Precedenti in Campionato (Scoreboard all-time)**: 3 colonne con bilancio complessivo e stagioni condivise.
+     - **Chiave Tattica del Duello**: Box ambra con sintesi euristica narrativa dell'asse con maggior dislivello.
+     - **Tris di Pulsanti d'Azione**:
+       - `[📱 Esporta Story 9:16 Duello]`: Genera il canvas verticale HD pronto per i social.
+       - `[📋 Copia Banter WhatsApp]`: Copia negli appunti il testo formattato per le chat.
+       - `[📜 Apri Storico Completo H2H]`: Apre l'archivio H2H originale senza perdere i due manager selezionati.
+
+3. **Pillola Scontro Filosofico nel Prossimo Turno (`NextRoundStrip.ts`)**:
+   - In ciascuna card di matchday nella striscia live, a fianco dell'indice di gara e del Clima Partita, è inserita la pillola indaco (`⚡ Spavaldo vs ⚙️ Metodico`) che anticipa il contrasto filosofico.
+   - Il click sulla card apre direttamente il `MatchupModal`.

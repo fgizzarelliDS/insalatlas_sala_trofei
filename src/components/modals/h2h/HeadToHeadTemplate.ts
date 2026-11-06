@@ -1,8 +1,10 @@
 import type { Manager, HeadToHeadStats } from '@/types';
-import { renderHeadToHeadMatchupView } from './HeadToHeadMatchupView';
+import { renderHeadToHeadHero } from './HeadToHeadHero';
+import { renderHeadToHeadScoreboard } from './HeadToHeadScoreboard';
+import { renderHeadToHeadPalmares } from './HeadToHeadPalmares';
+import { renderHeadToHeadMetrics } from './HeadToHeadMetrics';
 import { renderNemesisMatrixView } from './NemesisMatrixView';
 import { renderMultiManagerView } from './MultiManagerView';
-import { getLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 
 export type H2HTabMode = 'duel' | 'multi' | 'matrix';
 
@@ -16,8 +18,8 @@ export type H2HTabMode = 'duel' | 'multi' | 'matrix';
 export function renderHeadToHeadModalHTML(
   stats: HeadToHeadStats,
   allManagers: Manager[],
-  _isChronologyExpanded: boolean = false,
-  _visualMode: 'radar' | 'bars' = 'radar',
+  isChronologyExpanded: boolean = false,
+  visualMode: 'radar' | 'bars' = 'radar',
   activeTab: H2HTabMode = 'duel',
   nemesisFilter: 'active' | 'veterans' | 'all' = 'active',
   profileReturnName?: string | null,
@@ -25,6 +27,7 @@ export function renderHeadToHeadModalHTML(
   hiddenMultiManagerIds: Set<string> = new Set(),
   multiTournamentMode: 'ppg' | 'simultaneous' = 'simultaneous'
 ): string {
+  const { managerA, managerB, palmares } = stats;
 
   return `
     <!-- Modal Header with Sub-tab Switcher -->
@@ -94,7 +97,19 @@ export function renderHeadToHeadModalHTML(
     <!-- Scrollable Modal Body -->
     <div class="p-3 sm:p-5 overflow-y-auto flex-1 space-y-4" style="scrollbar-width: thin; scrollbar-color: var(--table-border) transparent;">
       ${activeTab === 'duel'
-      ? renderHeadToHeadMatchupView(stats, allManagers, getLiveSeasonDetails())
+      ? `
+            <!-- 1. Hero Contenders & Selectors -->
+            ${renderHeadToHeadHero(stats, allManagers)}
+
+            <!-- 2. Big Numbers Scoreboard & Historical Chronology Accordion ("Mostra Tabellino Annate") -->
+            ${renderHeadToHeadScoreboard(stats, managerA, managerB, isChronologyExpanded)}
+
+            <!-- 3. Palmares Breakdown: Scudetti, Coppe & Finali a Confronto -->
+            ${renderHeadToHeadPalmares(palmares, managerA, managerB)}
+
+            <!-- 4. 6-Axis Radar Plot & Mirrored Duel Bars Toggleable View -->
+            ${renderHeadToHeadMetrics(stats, managerA, managerB, visualMode)}
+          `
       : activeTab === 'multi'
         ? `
             <!-- 3+ Managers "Tavolo dei Rivali" Multi-Radar & Mini-Tournament -->
@@ -112,6 +127,16 @@ export function renderHeadToHeadModalHTML(
       <div class="flex items-center gap-2">
         ${activeTab === 'duel'
       ? `
+              <!-- Jump to Matchup Tattico Pre-Gara -->
+              <button type="button"
+                onclick="window.openMatchupModal && window.openMatchupModal('${managerA.id}', '${managerB.id}');"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold border transition shadow-sm flex items-center gap-1.5 bg-indigo-500/10 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/20 active:scale-95 cursor-pointer"
+                title="Apri il Matchup Tattico pre-partita a 5 assi">
+                <i class="fa-solid fa-bolt text-indigo-400"></i>
+                <span class="hidden sm:inline">Matchup Tattico</span>
+                <span class="sm:hidden">Matchup</span>
+              </button>
+
               <!-- Dropdown Popover Menu for H2H Duel (opens upward) -->
               <div class="relative">
                 <button id="btn-h2h-share-dropdown" onclick="toggleH2HShareDropdown(event)"

@@ -200,10 +200,10 @@ function renderMatchCard(
   }
 
   return `
-    <div onclick="window.openHeadToHeadModal && window.openHeadToHeadModal('${meta.homeMgrId}', '${meta.awayMgrId}');"
+    <div onclick="window.openMatchupModal ? window.openMatchupModal('${meta.homeMgrId}', '${meta.awayMgrId}') : (window.openHeadToHeadModal && window.openHeadToHeadModal('${meta.homeMgrId}', '${meta.awayMgrId}'));"
          class="p-3 rounded-2xl border transition-all duration-200 hover:scale-[1.01] hover:shadow-md cursor-pointer select-none flex flex-col justify-between gap-2.5"
          style="border-color: var(--table-border); background-color: var(--table-surface);"
-         title="Analizza lo scontro diretto tra ${escapeHtml(meta.homeTeam)} e ${escapeHtml(meta.awayTeam)}">
+         title="Analizza il matchup tattico e lo scontro diretto tra ${escapeHtml(meta.homeTeam)} e ${escapeHtml(meta.awayTeam)}">
       
       <!-- Header: Match Index + Tactical Clash Pill + Clima Match Badge -->
       <div class="flex items-center justify-between gap-1 text-[10px] font-bold">

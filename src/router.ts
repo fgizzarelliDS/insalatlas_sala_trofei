@@ -99,10 +99,10 @@ export function getManagerParamFromURL(customUrl?: string): string | null {
 }
 
 /**
- * Extracts ?h2h=idA:idB query parameter from search or hash
+ * Extracts ?h2h=idA:idB or ?duel=idA_vs_idB query parameter from search or hash
  */
 export function getH2HParamFromURL(customUrl?: string): { managerA: string; managerB: string } | null {
-  const raw = getURLParam('h2h', customUrl);
+  const raw = getURLParam('h2h', customUrl) || getURLParam('duel', customUrl);
   if (!raw) return null;
   const decoded = safeDecodeURI(raw).trim();
   let parts: string[] = [];

@@ -219,7 +219,7 @@ export function extractCareerPriorFP(standing: LiveTeamMetrics, seasonKey?: stri
     let pastTotal = 0;
     let pastCount = 0;
     for (const [key, stats] of Object.entries(statsObj)) {
-      if (key !== seasonKey && key !== 'all' && typeof stats?.played === 'number' && stats.played > 0) {
+      if (key !== effectiveSeason && key !== 'all' && typeof stats?.played === 'number' && stats.played > 0) {
         if (typeof stats.totalFP === 'number' && stats.totalFP > 0) {
           pastTotal += stats.totalFP;
           pastCount += stats.played;

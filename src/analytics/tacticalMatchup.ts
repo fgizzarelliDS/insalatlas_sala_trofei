@@ -6,6 +6,7 @@
 import type { Manager, LiveSeasonDetails, HeadToHeadStats } from '@/types';
 import { state } from '@/state';
 import { LEAGUE } from '@/config';
+import { escapeHtml } from '@/utils/dom';
 import {
   computeManagerTacticalProfile,
   type TacticalProfile,
@@ -103,32 +104,35 @@ export function computeTacticalMatchup(
 
   const descParts: string[] = [];
 
+  const safeNameA = escapeHtml(managerA.name);
+  const safeNameB = escapeHtml(managerB.name);
+
   // Edge A narrative
   if (bestForA.diff > 3) {
     descParts.push(
-      `<strong>${managerA.name}</strong> (${profileA.archetype.title}) impone la propria superiorità su <strong>${bestForA.label}</strong> con un netto vantaggio relativo.`
+      `<strong>${safeNameA}</strong> (${escapeHtml(profileA.archetype.title)}) impone la propria superiorità su <strong>${escapeHtml(bestForA.label)}</strong> con un netto vantaggio relativo.`
     );
   } else {
     descParts.push(
-      `<strong>${managerA.name}</strong> imposta la gara su un piano di solida parità tattica.`
+      `<strong>${safeNameA}</strong> imposta la gara su un piano di solida parità tattica.`
     );
   }
 
   // Edge B narrative
   if (Math.abs(bestForB.diff) > 3) {
     descParts.push(
-      `Dall'altra parte, <strong>${managerB.name}</strong> (${profileB.archetype.title}) risponde con un decisivo punto di forza su <strong>${bestForB.label}</strong>.`
+      `Dall'altra parte, <strong>${safeNameB}</strong> (${escapeHtml(profileB.archetype.title)}) risponde con un decisivo punto di forza su <strong>${escapeHtml(bestForB.label)}</strong>.`
     );
   } else {
     descParts.push(
-      `<strong>${managerB.name}</strong> cerca l'allungo affidandosi all'equilibrio complessivo.`
+      `<strong>${safeNameB}</strong> cerca l'allungo affidandosi all'equilibrio complessivo.`
     );
   }
 
   // Momentum / Live mindset clause
   if (profileA.mindset.isActive && profileB.mindset.isActive) {
     descParts.push(
-      `Fattore inerzia live: momento <em>${profileA.mindset.pill}</em> per ${managerA.name} contro <em>${profileB.mindset.pill}</em> per ${managerB.name}.`
+      `Fattore inerzia live: momento <em>${escapeHtml(profileA.mindset.pill)}</em> per ${safeNameA} contro <em>${escapeHtml(profileB.mindset.pill)}</em> per ${safeNameB}.`
     );
   }
 

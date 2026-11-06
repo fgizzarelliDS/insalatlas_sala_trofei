@@ -22,6 +22,32 @@ export interface OpponentDifficultyResult {
 }
 
 /**
+ * Resolves a team's active season standings points with fallback to elo.seasonStats[latest].actualPts
+ * or scheduleLuck.xPoints when top-level `points` has not been populated by a client-side HTML upload.
+ */
+function resolveStandingPoints(s: LiveTeamMetrics): number {
+  if (typeof s.points === 'number' && !Number.isNaN(s.points)) {
+    return s.points;
+  }
+  const seasonStats = s.elo?.seasonStats;
+  if (seasonStats && typeof seasonStats === 'object') {
+    const seasonKeys = Object.keys(seasonStats)
+      .filter(k => k !== 'all')
+      .sort((a, b) => b.localeCompare(a));
+    for (const key of seasonKeys) {
+      const actualPts = seasonStats[key]?.actualPts;
+      if (typeof actualPts === 'number' && !Number.isNaN(actualPts)) {
+        return actualPts;
+      }
+    }
+  }
+  if (typeof s.scheduleLuck?.xPoints === 'number' && !Number.isNaN(s.scheduleLuck.xPoints)) {
+    return s.scheduleLuck.xPoints;
+  }
+  return 0;
+}
+
+/**
  * Computes Strength of Schedule (SoS) across all teams based on remaining unplayed calendar fixtures:
  * 50% Opponent Elo + 50% Opponent Standings Points (neutral ground, HFA = 0.0).
  */
@@ -39,7 +65,7 @@ export function computeLeagueSoS(
   for (const s of standings) {
     const tr = getManagerEloTrack(s.elo, mode);
     const elo = extractFallbackElo(s.elo, tr);
-    const points = typeof s.points === 'number' ? s.points : 0;
+    const points = resolveStandingPoints(s);
     teamMap.set(s.teamName.trim().toLowerCase(), { elo, points });
     if (s.managerId) {
       teamMap.set(s.managerId.trim().toLowerCase(), { elo, points });
@@ -166,7 +192,7 @@ export function computeOpponentDistributionContext(
     const tr = getManagerEloTrack(s.elo, mode);
     return extractFallbackElo(s.elo, tr);
   });
-  const points = standings.map(s => (typeof s.points === 'number' ? s.points : 0));
+  const points = standings.map(s => resolveStandingPoints(s));
 
   const meanElo = elos.reduce((a, b) => a + b, 0) / standings.length;
   const meanPts = points.reduce((a, b) => a + b, 0) / standings.length;
@@ -205,7 +231,7 @@ export function getOpponentDifficulty(
   const { meanElo, meanPts, stdElo, stdPts } = ctx;
   const oppTr = getManagerEloTrack(oppStanding.elo, mode);
   const oppElo = extractFallbackElo(oppStanding.elo, oppTr);
-  const oppPts = typeof oppStanding.points === 'number' ? oppStanding.points : 0;
+  const oppPts = resolveStandingPoints(oppStanding);
 
   const zElo = (oppElo - meanElo) / (stdElo > 1e-6 ? stdElo : 1.0);
   const zPts = (oppPts - meanPts) / (stdPts > 1e-6 ? stdPts : 1.0);

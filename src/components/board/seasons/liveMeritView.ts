@@ -1,11 +1,13 @@
 import type { LiveTeamMetrics } from '@/types';
 import { state } from '@/state';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
+import { escapeHtml, escapeJsAttr } from '@/utils/dom';
 import {
   renderLuckBadgeHTML,
   renderDeltaRankPillHTML,
   renderDeltaPointsPillHTML,
-  renderPodiumSVG
+  renderPodiumSVG,
+  getLiveSeasonDetails
 } from './liveAnalytics';
 import {
   getEloMode,
@@ -24,11 +26,15 @@ import { updateNextRoundStripUI } from './NextRoundStrip';
  * Renders desktop table rows for the Merit & Schedule Luck Standings
  */
 export function renderMeritDesktopRows(standings: LiveTeamMetrics[], mode: EloTrackMode = getEloMode()): string {
+  const totalRounds = getLiveSeasonDetails()?.totalRounds ?? 26;
+  const midpointRound = Math.ceil(totalRounds / 2);
+  const bottomStartRank = Math.max(4, standings.length - 2);
+
   return standings.map(team => {
     const mgr = state.managers?.find(m => m.id === team.managerId);
     const managerName = mgr ? mgr.name : (team.coach || 'Allenatore');
     const teamLogo = resolveTeamLogo(team.teamName, team.logo);
-    const escapedTeamName = team.teamName.replace(/'/g, "\\'");
+    const escapedTeamName = escapeJsAttr(team.teamName);
     const luck = team.scheduleLuck;
     const xRank = luck?.xRank ?? team.rank;
     const deltaRank = luck?.deltaRank ?? 0;
@@ -55,7 +61,7 @@ export function renderMeritDesktopRows(standings: LiveTeamMetrics[], mode: EloTr
       rankBadgeClass = 'bg-slate-200 text-slate-800 border-slate-300 dark:bg-slate-700/60 dark:text-slate-200 dark:border-slate-600 font-bold';
     } else if (xRank === 3) {
       rankBadgeClass = 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-700/25 dark:text-amber-400 dark:border-amber-700/40 font-bold';
-    } else if (xRank >= 12) {
+    } else if (xRank >= bottomStartRank) {
       rankBadgeClass = 'bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/40 font-bold';
     }
 
@@ -65,7 +71,7 @@ export function renderMeritDesktopRows(standings: LiveTeamMetrics[], mode: EloTr
 
     // Giro di boa (50% of the season, e.g. >= 13 rounds played in a 26-round league)
     const matchesPlayed = team.played ?? (ap.played > 0 ? Math.round(ap.played / Math.max(1, (standings.length - 1))) : 0);
-    const isTitleUnlocked = matchesPlayed >= 13;
+    const isTitleUnlocked = matchesPlayed >= midpointRound;
 
     const mcDisplayHTML = (mcPodium !== null && mcPodium !== undefined && mcSpoon !== null && mcSpoon !== undefined)
       ? `<div class="flex items-center justify-center gap-1.5 text-[11px] font-semibold whitespace-nowrap">
@@ -89,7 +95,7 @@ export function renderMeritDesktopRows(standings: LiveTeamMetrics[], mode: EloTr
       : `<span class="px-2 py-0.5 rounded-full text-[9px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700" title="Le proiezioni probabilistiche di fine stagione si sbloccano dopo 5 giornate">Dalla 5ª g.</span>`;
 
     return `
-      <tr onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${team.managerId || ''}', '${escapedTeamName}')"
+      <tr onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${escapeJsAttr(team.managerId || '')}', '${escapedTeamName}')"
           class="border-b last:border-b-0 transition-colors cursor-pointer hover:bg-amber-500/10 group"
           style="border-color: var(--table-border);">
         <!-- Pos. xPTS & Delta vs Reale -->
@@ -107,16 +113,16 @@ export function renderMeritDesktopRows(standings: LiveTeamMetrics[], mode: EloTr
         <!-- Squadra & Manager -->
         <td class="py-2.5 px-3 text-left align-middle min-w-0">
           <div class="flex items-center gap-2.5 min-w-0">
-            <img src="${teamLogo}" alt="${team.teamName}"
+            <img src="${teamLogo}" alt="${escapeHtml(team.teamName)}"
                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-700 shadow-sm transition-transform group-hover:scale-105"
                  onerror="this.onerror=null; this.src='${getTeamFallbackCrest(team.teamName)}'">
             <div class="min-w-0 flex-1">
               <div class="font-bold text-xs sm:text-sm leading-snug truncate" style="color: var(--text-main);">
-                ${team.teamName}
+                ${escapeHtml(team.teamName)}
               </div>
               <div class="text-[10px] sm:text-[11px] font-semibold flex items-center gap-1 mt-0.5 truncate" style="color: var(--accent-color);">
                 <i class="fa-solid fa-user-tie text-[9px] opacity-70 shrink-0"></i>
-                <span class="truncate">${managerName}</span>
+                <span class="truncate">${escapeHtml(managerName)}</span>
               </div>
             </div>
           </div>
@@ -169,11 +175,14 @@ export function renderMeritDesktopRows(standings: LiveTeamMetrics[], mode: EloTr
  * Renders mobile cards (< 768px) for the Merit & Schedule Luck Standings
  */
 export function renderMobileMeritCards(standings: LiveTeamMetrics[], mode: EloTrackMode = getEloMode()): string {
+  const totalRounds = getLiveSeasonDetails()?.totalRounds ?? 26;
+  const midpointRound = Math.ceil(totalRounds / 2);
+
   return standings.map(team => {
     const mgr = state.managers?.find(m => m.id === team.managerId);
     const managerName = mgr ? mgr.name : (team.coach || 'Allenatore');
     const teamLogo = resolveTeamLogo(team.teamName, team.logo);
-    const escapedTeamName = team.teamName.replace(/'/g, "\\'");
+    const escapedTeamName = escapeJsAttr(team.teamName);
     const luck = team.scheduleLuck;
     const xRank = luck?.xRank ?? team.rank;
     const deltaRank = luck?.deltaRank ?? 0;
@@ -203,10 +212,10 @@ export function renderMobileMeritCards(standings: LiveTeamMetrics[], mode: EloTr
     const mcPodium = luck?.monteCarlo?.pPodiumPct;
     const mcSpoon = luck?.monteCarlo?.pSpoonPct;
     const matchesPlayed = team.played ?? (ap.played > 0 ? Math.round(ap.played / Math.max(1, (standings.length - 1))) : 0);
-    const isTitleUnlocked = matchesPlayed >= 13;
+    const isTitleUnlocked = matchesPlayed >= midpointRound;
 
     return `
-      <div onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${team.managerId || ''}', '${escapedTeamName}')"
+      <div onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${escapeJsAttr(team.managerId || '')}', '${escapedTeamName}')"
            class="p-2.5 sm:p-3 border-b last:border-b-0 transition-colors active:bg-amber-500/10 cursor-pointer"
            style="border-color: var(--table-border);">
         <div class="flex items-center justify-between gap-2">
@@ -219,15 +228,15 @@ export function renderMobileMeritCards(standings: LiveTeamMetrics[], mode: EloTr
                 ${renderDeltaRankPillHTML(deltaRank, team.rank)}
               </div>
             </div>
-            <img src="${teamLogo}" alt="${team.teamName}"
+            <img src="${teamLogo}" alt="${escapeHtml(team.teamName)}"
                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-700 shadow-xs"
                  onerror="this.onerror=null; this.src='${getTeamFallbackCrest(team.teamName)}'">
             <div class="min-w-0 flex-1">
               <div class="font-bold text-xs sm:text-sm leading-snug break-words" style="color: var(--text-main);">
-                ${team.teamName}
+                ${escapeHtml(team.teamName)}
               </div>
               <div class="text-[10px] sm:text-[11px] font-semibold opacity-80 break-words mt-0.5" style="color: var(--accent-color);">
-                ${managerName}
+                ${escapeHtml(managerName)}
               </div>
               <div class="text-[10px] font-semibold opacity-60 truncate mt-0.5" style="color: var(--text-muted);">
                 Reale #${team.rank} (${isRealLoaded ? `${team.points} pt` : '- pt'})

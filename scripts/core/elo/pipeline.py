@@ -161,9 +161,11 @@ def run_multi_track_elo_pipeline(
         if not seasons_rounds:
             seasons_rounds = [("live", [])]
 
+    first_season_label = seasons_rounds[0][0] if seasons_rounds else "2025/26"
     hist_seeds = compute_historical_seed_elos(
         managers_list=managers_list,
         scoring_weights=scoring_weights,
+        season_until=first_season_label,
         elo_config=cfg
     )
 

@@ -2,6 +2,7 @@ import type { Manager, HeadToHeadStats } from '@/types';
 import { renderHeadToHeadMatchupView } from './HeadToHeadMatchupView';
 import { renderNemesisMatrixView } from './NemesisMatrixView';
 import { renderMultiManagerView } from './MultiManagerView';
+import { getLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 
 export type H2HTabMode = 'duel' | 'multi' | 'matrix';
 
@@ -93,7 +94,7 @@ export function renderHeadToHeadModalHTML(
     <!-- Scrollable Modal Body -->
     <div class="p-3 sm:p-5 overflow-y-auto flex-1 space-y-4" style="scrollbar-width: thin; scrollbar-color: var(--table-border) transparent;">
       ${activeTab === 'duel'
-      ? renderHeadToHeadMatchupView(stats, allManagers)
+      ? renderHeadToHeadMatchupView(stats, allManagers, getLiveSeasonDetails())
       : activeTab === 'multi'
         ? `
             <!-- 3+ Managers "Tavolo dei Rivali" Multi-Radar & Mini-Tournament -->

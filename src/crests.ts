@@ -126,7 +126,7 @@ export function isCustomLogo(logo?: string | null): boolean {
  * - If the team has an authentic custom logo, returns it.
  * - Otherwise, returns the deterministic vector SVG crest from the 20-crest catalog.
  */
-export function resolveTeamLogo(teamName: string, rawLogo?: string | null): string {
+export function resolveTeamLogo(teamName?: string | null, rawLogo?: string | null): string {
   if (isCustomLogo(rawLogo)) {
     return rawLogo!;
   }

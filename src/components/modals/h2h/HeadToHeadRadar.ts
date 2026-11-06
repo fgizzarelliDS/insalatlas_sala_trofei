@@ -8,6 +8,7 @@ import {
   calculateRadarSvgPoints,
   type TacticalProfile
 } from '@/analytics/tacticalProfiler';
+import { escapeHtml } from '@/utils/dom';
 
 export { computeH2HAxes, RADAR_CANONICAL_AXES };
 export type { H2HAxisData, RadarAxisMetadata };
@@ -343,15 +344,18 @@ export function renderDualRadar5AxesSVG(
     r
   );
 
-  // League average baseline at 50%
-  const avgPts = '220,101 272,139 252,200 188,200 168,139';
+  // League average baseline at 50% and concentric rings (100%, 75%, 25%) computed dynamically from (cx, cy, r)
+  const avgPts = calculateRadarSvgPoints({ pot: 50, cin: 50, luk: 50, reg: 50, koc: 50 }, cx, cy, r);
+  const ring100 = calculateRadarSvgPoints({ pot: 100, cin: 100, luk: 100, reg: 100, koc: 100 }, cx, cy, r);
+  const ring75 = calculateRadarSvgPoints({ pot: 75, cin: 75, luk: 75, reg: 75, koc: 75 }, cx, cy, r);
+  const ring25 = calculateRadarSvgPoints({ pot: 25, cin: 25, luk: 25, reg: 25, koc: 25 }, cx, cy, r);
 
   const axes = [
-    { key: 'pot', label: 'POTENZA', x: 220, y: 18, scoreY: 33, anchor: 'middle', rawA: profileA.axes.pot.raw, rawB: profileB.axes.pot.raw },
-    { key: 'cin', label: 'CINISMO', x: 338, y: 118, scoreY: 133, anchor: 'start', rawA: profileA.axes.cin.raw, rawB: profileB.axes.cin.raw },
-    { key: 'luk', label: 'FORTUNA', x: 292, y: 269, scoreY: 284, anchor: 'middle', rawA: profileA.axes.luk.raw, rawB: profileB.axes.luk.raw },
-    { key: 'reg', label: 'STABILITÀ', x: 148, y: 269, scoreY: 284, anchor: 'middle', rawA: profileA.axes.reg.raw, rawB: profileB.axes.reg.raw },
-    { key: 'koc', label: 'COPPE', x: 102, y: 118, scoreY: 133, anchor: 'end', rawA: profileA.axes.koc.raw, rawB: profileB.axes.koc.raw }
+    { key: 'pot', label: 'POTENZA', x: cx, y: 18, scoreY: 33, anchor: 'middle', rawA: profileA.axes.pot.raw, rawB: profileB.axes.pot.raw },
+    { key: 'cin', label: 'CINISMO', x: cx + 118, y: 118, scoreY: 133, anchor: 'start', rawA: profileA.axes.cin.raw, rawB: profileB.axes.cin.raw },
+    { key: 'luk', label: 'FORTUNA', x: cx + 72, y: 269, scoreY: 284, anchor: 'middle', rawA: profileA.axes.luk.raw, rawB: profileB.axes.luk.raw },
+    { key: 'reg', label: 'STABILITÀ', x: cx - 72, y: 269, scoreY: 284, anchor: 'middle', rawA: profileA.axes.reg.raw, rawB: profileB.axes.reg.raw },
+    { key: 'koc', label: 'COPPE', x: cx - 118, y: 118, scoreY: 133, anchor: 'end', rawA: profileA.axes.koc.raw, rawB: profileB.axes.koc.raw }
   ];
 
   return `
@@ -360,23 +364,23 @@ export function renderDualRadar5AxesSVG(
       <div class="flex items-center justify-between w-full mb-1 px-2 text-xs font-bold">
         <span class="flex items-center gap-1.5" style="color: var(--h2h-contender-a, #f59e0b);">
           <span class="w-3 h-1.5 rounded-sm inline-block" style="background-color: var(--h2h-contender-a, #f59e0b);"></span>
-          <span>${nameA}</span>
+          <span>${escapeHtml(nameA)}</span>
         </span>
         <span class="text-[11px] opacity-60" style="color: var(--text-muted);">
           <span class="w-3 h-1 border-b border-dashed inline-block mr-1 opacity-60" style="border-color: var(--text-muted);"></span>
           Media Lega (50)
         </span>
         <span class="flex items-center gap-1.5" style="color: var(--h2h-contender-b, #06b6d4);">
-          <span>${nameB}</span>
+          <span>${escapeHtml(nameB)}</span>
           <span class="w-3 h-1.5 rounded-sm inline-block" style="background-color: var(--h2h-contender-b, #06b6d4);"></span>
         </span>
       </div>
 
       <svg viewBox="0 0 ${viewWidth} ${viewHeight}" class="w-full max-w-[420px] h-auto my-1 select-none">
         <!-- Concentric Pentagons (100%, 75%, 25%) -->
-        <polygon points="220,46 325,122 285,245 155,245 115,122" fill="none" stroke="currentColor" stroke-opacity="0.20" stroke-width="1.4"></polygon>
-        <polygon points="220,74 298,131 268,223 172,223 142,131" fill="none" stroke="currentColor" stroke-opacity="0.14" stroke-width="1.1"></polygon>
-        <polygon points="220,129 246,148 236,178 204,178 194,148" fill="none" stroke="currentColor" stroke-opacity="0.12" stroke-width="1"></polygon>
+        <polygon points="${ring100}" fill="none" stroke="currentColor" stroke-opacity="0.20" stroke-width="1.4"></polygon>
+        <polygon points="${ring75}" fill="none" stroke="currentColor" stroke-opacity="0.14" stroke-width="1.1"></polygon>
+        <polygon points="${ring25}" fill="none" stroke="currentColor" stroke-opacity="0.12" stroke-width="1"></polygon>
 
         <!-- Spokes from center (220, 156) -->
         <line x1="220" y1="156" x2="220" y2="46" stroke="currentColor" stroke-opacity="0.18" stroke-width="1.2"></line>

@@ -4,7 +4,7 @@
  * analytical merit strip, and the two dedicated tab switchers.
  */
 
-import { escapeHtml } from '@/utils/dom';
+import { escapeHtml, escapeJsAttr } from '@/utils/dom';
 import { formatElo } from '@/analytics/analyticsCore';
 import { getTeamFallbackCrest } from '@/crests';
 import { renderLuckBadgeHTML, renderDeltaPointsPillHTML } from '../liveAnalytics';
@@ -33,7 +33,7 @@ export function renderModalHeaderHTML(props: ModalHeaderProps): string {
     luckZ
   } = props;
 
-  const escapedTeamName = resolvedTeamName.replace(/'/g, "\\'");
+  const escapedTeamName = escapeJsAttr(resolvedTeamName);
   const sosInfo = teamSoS ? getSoSBadgeInfo(teamSoS) : null;
 
   return `

@@ -13,6 +13,7 @@ let selectedMatchupManagerIdA: string | null = null;
 let selectedMatchupManagerIdB: string | null = null;
 let isMatchupModalOpen = false;
 let isDirectDetailsExpanded = false;
+let matchupScope: 'career' | 'season' = 'career';
 
 /**
  * Ensures the Matchup modal DOM container exists
@@ -76,7 +77,7 @@ function renderMatchupDOM(preserveScroll = false): void {
   selectedMatchupManagerIdB = mgrB.id;
 
   const liveData = getLiveSeasonDetails();
-  contentEl.innerHTML = renderMatchupModalHTML(mgrA, mgrB, state.managers, liveData, isDirectDetailsExpanded);
+  contentEl.innerHTML = renderMatchupModalHTML(mgrA, mgrB, state.managers, liveData, isDirectDetailsExpanded, matchupScope);
 
   if (preserveScroll && prevScrollTop > 0 && typeof contentEl.querySelector === 'function') {
     const newScrollContainer = contentEl.querySelector('.overflow-y-auto') as HTMLElement | null;
@@ -96,6 +97,14 @@ function renderMatchupDOM(preserveScroll = false): void {
  */
 export function toggleMatchupDirectDetails(): void {
   isDirectDetailsExpanded = !isDirectDetailsExpanded;
+  renderMatchupDOM(true);
+}
+
+/**
+ * Changes active tactical radar scope between 'career' and 'season'
+ */
+export function setMatchupScope(scope: 'career' | 'season'): void {
+  matchupScope = scope;
   renderMatchupDOM(true);
 }
 
@@ -231,7 +240,7 @@ export async function exportMatchupStoryHD(): Promise<void> {
   const managerB = state.managers.find(m => m.id === selectedMatchupManagerIdB);
   if (managerA && managerB) {
     const { exportH2HDuelStoryHD } = await import('@/export');
-    await exportH2HDuelStoryHD(managerA, managerB);
+    await exportH2HDuelStoryHD(managerA, managerB, matchupScope);
   }
 }
 
@@ -291,7 +300,7 @@ export async function copyMatchupBanter(): Promise<void> {
   }
   const { computeTacticalMatchup } = await import('@/analytics/tacticalMatchup');
   const liveData = getLiveSeasonDetails();
-  const matchup = computeTacticalMatchup(managerA, managerB, state.managers, liveData);
+  const matchup = computeTacticalMatchup(managerA, managerB, state.managers, liveData, matchupScope);
   const text = matchup.banterText;
 
   try {

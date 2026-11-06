@@ -15,6 +15,7 @@ export interface TacticalAxisData {
   deltaPct: string; // e.g. "(+32%)" or "(-10%)"
   deltaNumeric: number; // score - 50
   barColor: string;
+  subRaw?: string; // e.g. "(2 gare)" or "(1 gara)"
 }
 
 export interface TacticalStyleAxes {
@@ -60,6 +61,7 @@ export interface TacticalProfile {
   axes: TacticalStyleAxes;
   stats: [TacticalStatPill, TacticalStatPill, TacticalStatPill];
   mindset: SeasonalMindset;
+  scope?: 'career' | 'season';
 }
 
 export interface ManagerLoreItem {
@@ -83,4 +85,7 @@ export interface RawManagerTacticalValues {
   finalsPlayed: number;
   finalsWon: number;
   stdDevRank: number;
+  isSeasonal?: boolean;
+  bigMatchPts?: number;
+  bigMatchPlayed?: number;
 }

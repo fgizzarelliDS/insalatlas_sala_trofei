@@ -41,6 +41,7 @@ export interface TacticalMatchup {
     edgeB: string;
   };
   banterText: string;
+  scope?: 'career' | 'season';
 }
 
 /**
@@ -52,11 +53,12 @@ export function computeTacticalMatchup(
   managerA: Manager,
   managerB: Manager,
   allManagers: Manager[] = state.managers || [],
-  liveData?: LiveSeasonDetails | null
+  liveData?: LiveSeasonDetails | null,
+  scope: 'career' | 'season' = 'career'
 ): TacticalMatchup {
   const pool = allManagers.length > 0 ? allManagers : [managerA, managerB];
-  const profileA = computeManagerTacticalProfile(managerA, pool, liveData);
-  const profileB = computeManagerTacticalProfile(managerB, pool, liveData);
+  const profileA = computeManagerTacticalProfile(managerA, pool, liveData, undefined, scope);
+  const profileB = computeManagerTacticalProfile(managerB, pool, liveData, undefined, scope);
   const h2hStats = computeHeadToHead(managerA, managerB);
 
   const axisKeys: TacticalAxisKey[] = ['pot', 'cin', 'luk', 'reg', 'koc'];
@@ -152,7 +154,8 @@ export function computeTacticalMatchup(
       edgeA,
       edgeB
     },
-    banterText: ''
+    banterText: '',
+    scope
   };
 
   matchup.banterText = formatTacticalDuelWhatsAppBanter(matchup);

@@ -20,6 +20,7 @@ import { selectTacticalArchetype } from './tacticalArchetypes';
 import {
   extractManagerCupAndHonorMetrics,
   computeRawManagerValues,
+  computeRawManagerSeasonalValues,
   calculateRadarSvgPoints
 } from './tacticalAxes';
 import { computeSeasonalMindset } from './tacticalMindset';
@@ -159,29 +160,24 @@ export function computeManagerTacticalProfile(
   manager: Manager,
   allManagers: Manager[],
   liveData = getLiveSeasonDetails(),
-  analyticsManagers = getCachedAnalyticsManagers()
+  analyticsManagers = getCachedAnalyticsManagers(),
+  scope: 'career' | 'season' = 'career'
 ): TacticalProfile {
 
-  // 1. Calculate raw values for all managers to establish league mean & standard deviation
-  const allRaws = allManagers.map(m => ({
+  // 1. Calculate career raw values for baseline archetype determination
+  const careerRaws = allManagers.map(m => ({
     id: m.id,
     raw: computeRawManagerValues(m, analyticsManagers)
   }));
 
-  const computeStats = (key: 'pot' | 'cin' | 'luk' | 'koc' | 'reg') => {
-    const vals = allRaws.map(r => r.raw[key]);
+  const computeStatsForPool = (pool: Array<{ id: string; raw: RawManagerTacticalValues }>, key: 'pot' | 'cin' | 'luk' | 'koc' | 'reg') => {
+    const vals = pool.map(r => r.raw[key]);
     const mean = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
     const denom = vals.length > 1 ? vals.length - 1 : 1;
     const variance = vals.length > 0 ? vals.reduce((a, v) => a + Math.pow(v - mean, 2), 0) / denom : 1;
     const stdDev = Math.sqrt(variance);
     return { mean, stdDev: stdDev < 1e-6 ? 1 : stdDev };
   };
-
-  const statsPot = computeStats('pot');
-  const statsCin = computeStats('cin');
-  const statsLuk = computeStats('luk');
-  const statsKoc = computeStats('koc');
-  const statsReg = computeStats('reg');
 
   // Z-Score + Hyperbolic Tangent Normalization: guarantees exact Mean = 50 on all 5 axes
   const normalizeZ = (val: number, st: { mean: number; stdDev: number }): number => {
@@ -190,7 +186,63 @@ export function computeManagerTacticalProfile(
     return Math.min(98, Math.max(5, score));
   };
 
-  const targetRaw = allRaws.find(r => r.id === manager.id)?.raw ?? computeRawManagerValues(manager, analyticsManagers);
+  const targetCareerRaw = careerRaws.find(r => r.id === manager.id)?.raw ?? computeRawManagerValues(manager, analyticsManagers);
+
+  // Baseline Career Normalized Scores for Archetype Selection
+  const careerStatsPot = computeStatsForPool(careerRaws, 'pot');
+  const careerStatsCin = computeStatsForPool(careerRaws, 'cin');
+  const careerStatsLuk = computeStatsForPool(careerRaws, 'luk');
+  const careerStatsKoc = computeStatsForPool(careerRaws, 'koc');
+  const careerStatsReg = computeStatsForPool(careerRaws, 'reg');
+
+  const careerNormalizedScores = {
+    pot: normalizeZ(targetCareerRaw.pot, careerStatsPot),
+    cin: normalizeZ(targetCareerRaw.cin, careerStatsCin),
+    luk: normalizeZ(targetCareerRaw.luk, careerStatsLuk),
+    koc: normalizeZ(targetCareerRaw.koc, careerStatsKoc),
+    reg: normalizeZ(targetCareerRaw.reg, careerStatsReg)
+  };
+
+  // 2. Select Archetype & Apply Custom Lore Overrides based strictly on Career DNA
+  const baseArchetype = selectTacticalArchetype(manager, targetCareerRaw, careerNormalizedScores);
+  const loreCatalog = getCachedManagerLore();
+  const customLore = loreCatalog[manager.id] ||
+    Object.entries(loreCatalog).find(([k]) => k.toLowerCase() === manager.name?.toLowerCase())?.[1];
+
+  const archetype: TacticalArchetype = {
+    ...baseArchetype,
+    motto: customLore?.customMotto || baseArchetype.motto,
+    trait: customLore?.customTrait || baseArchetype.trait
+  };
+
+  // 3. Determine Active Raws and Normalization based on requested scope ('career' vs 'season')
+  const isSeasonalRequested = scope === 'season' && Boolean(liveData && liveData.standings && liveData.standings.length > 0);
+  let activeRaws = careerRaws;
+  let targetRaw = targetCareerRaw;
+
+  if (isSeasonalRequested) {
+    const seasonalList: Array<{ id: string; raw: RawManagerTacticalValues }> = [];
+    for (const m of allManagers) {
+      const sRaw = computeRawManagerSeasonalValues(m, liveData, analyticsManagers);
+      if (sRaw) {
+        seasonalList.push({ id: m.id, raw: sRaw });
+      }
+    }
+
+    if (seasonalList.length >= 2) {
+      activeRaws = seasonalList;
+      const targetSeasonal = computeRawManagerSeasonalValues(manager, liveData, analyticsManagers);
+      if (targetSeasonal) {
+        targetRaw = targetSeasonal;
+      }
+    }
+  }
+
+  const statsPot = computeStatsForPool(activeRaws, 'pot');
+  const statsCin = computeStatsForPool(activeRaws, 'cin');
+  const statsLuk = computeStatsForPool(activeRaws, 'luk');
+  const statsKoc = computeStatsForPool(activeRaws, 'koc');
+  const statsReg = computeStatsForPool(activeRaws, 'reg');
 
   const scorePot = normalizeZ(targetRaw.pot, statsPot);
   const scoreCin = normalizeZ(targetRaw.cin, statsCin);
@@ -206,24 +258,14 @@ export function computeManagerTacticalProfile(
     reg: scoreReg
   };
 
-  // 2. Select Archetype & Apply Custom Lore Overrides 
-  const baseArchetype = selectTacticalArchetype(manager, targetRaw, normalizedScores);
-  const loreCatalog = getCachedManagerLore();
-  const customLore = loreCatalog[manager.id] ||
-    Object.entries(loreCatalog).find(([k]) => k.toLowerCase() === manager.name?.toLowerCase())?.[1];
-
-  const archetype: TacticalArchetype = {
-    ...baseArchetype,
-    motto: customLore?.customMotto || baseArchetype.motto,
-    trait: customLore?.customTrait || baseArchetype.trait
-  };
-
-  // 3. Seasonal Mindset
+  // 4. Seasonal Mindset
   const mindset = computeSeasonalMindset(manager, liveData);
 
-  // 4. Bar Helpers & Styles with Real Metric Deviations vs League Benchmark
-  const meanAvgFP = allRaws.length > 0 ? allRaws.reduce((acc, r) => acc + r.raw.avgFP, 0) / allRaws.length : 70.0;
-  const meanCloseWinRate = allRaws.length > 0 ? allRaws.reduce((acc, r) => acc + r.raw.closeWinRate, 0) / allRaws.length : 50.0;
+  const isCurrentSeasonal = Boolean(targetRaw.isSeasonal);
+
+  // 5. Bar Helpers & Styles with Real Metric Deviations vs Active Benchmark Pool
+  const meanAvgFP = activeRaws.length > 0 ? activeRaws.reduce((acc, r) => acc + r.raw.avgFP, 0) / activeRaws.length : 70.0;
+  const meanCloseWinRate = activeRaws.length > 0 ? activeRaws.reduce((acc, r) => acc + r.raw.closeWinRate, 0) / activeRaws.length : 50.0;
 
   const deltaPotPct = ((targetRaw.avgFP - meanAvgFP) / (meanAvgFP || 1)) * 100;
   const deltaPotStr = `(${deltaPotPct >= 0 ? '+' : ''}${deltaPotPct.toFixed(1)}%)`;
@@ -247,7 +289,8 @@ export function computeManagerTacticalProfile(
     rawStr: string,
     score: number,
     deltaPctStr: string,
-    deltaNum: number
+    deltaNum: number,
+    subRaw?: string
   ): TacticalAxisData => {
     let barColor = 'bg-slate-400';
     if (score >= 65) barColor = 'bg-emerald-500';
@@ -263,24 +306,25 @@ export function computeManagerTacticalProfile(
       score,
       deltaPct: deltaPctStr,
       deltaNumeric: deltaNum,
-      barColor
+      barColor,
+      subRaw
     };
   };
 
   const axes: TacticalStyleAxes = {
     pot: makeAxisData(
       'pot',
-      'Potenza Offensiva (Media FP)',
+      isCurrentSeasonal ? 'Potenza Offensiva Live (Fantamedia 2026/27)' : 'Potenza Offensiva (Media FP)',
       'POTENZA',
       'POT',
-      `${targetRaw.avgFP.toFixed(1)} FP`,
+      isCurrentSeasonal ? `${targetRaw.avgFP.toFixed(1)} FM` : `${targetRaw.avgFP.toFixed(1)} FP`,
       scorePot,
       deltaPotStr,
       deltaPotPct
     ),
     cin: makeAxisData(
       'cin',
-      'Cinismo Corto Muso (Vittorie ≤1 gol)',
+      isCurrentSeasonal ? 'Cinismo Corto Muso Live (Vittorie ≤1 gol)' : 'Cinismo Corto Muso (Vittorie ≤1 gol)',
       'CINISMO',
       'CIN',
       `${Math.round(targetRaw.closeWinRate)}%`,
@@ -290,7 +334,7 @@ export function computeManagerTacticalProfile(
     ),
     luk: makeAxisData(
       'luk',
-      'Fattore Fortuna (Punti vs xPTS)',
+      isCurrentSeasonal ? 'Fattore Fortuna Live (Punti vs xPTS)' : 'Fattore Fortuna (Punti vs xPTS)',
       'FORTUNA',
       'LUK',
       `${targetRaw.luckDelta >= 0 ? '+' : ''}${targetRaw.luckDelta.toFixed(1)} pt`,
@@ -300,20 +344,23 @@ export function computeManagerTacticalProfile(
     ),
     koc: makeAxisData(
       'koc',
-      'Freddezza da Coppe (Finali Vinte)',
-      'COPPE',
-      'KOC',
-      `${targetRaw.finalsWon} ${targetRaw.finalsWon === 1 ? 'Trofeo' : 'Trofei'}`,
+      isCurrentSeasonal ? 'Rendimento Big Match (vs Top 4)' : 'Freddezza da Coppe (Finali Vinte)',
+      isCurrentSeasonal ? 'BIG MATCH' : 'COPPE',
+      isCurrentSeasonal ? 'BIG' : 'KOC',
+      isCurrentSeasonal
+        ? `${targetRaw.bigMatchPts ?? 0} PT`
+        : `${targetRaw.finalsWon} ${targetRaw.finalsWon === 1 ? 'Trofeo' : 'Trofei'}`,
       scoreKoc,
       deltaKocStr,
-      deltaKocNum
+      deltaKocNum,
+      isCurrentSeasonal ? `(${targetRaw.bigMatchPlayed ?? 0} ${targetRaw.bigMatchPlayed === 1 ? 'gara' : 'gare'})` : undefined
     ),
     reg: makeAxisData(
       'reg',
-      'Stabilità Rendimento (Anti-Varianza)',
+      isCurrentSeasonal ? 'Costanza Punteggio Live (Anti-Varianza FP)' : 'Stabilità Rendimento (Anti-Varianza)',
       'STABILITÀ',
       'REG',
-      `σ ${targetRaw.stdDevRank.toFixed(1)}`,
+      isCurrentSeasonal ? `σ ${targetRaw.stdDevRank.toFixed(1)} FP` : `σ ${targetRaw.stdDevRank.toFixed(1)} pos`,
       scoreReg,
       deltaRegStr,
       deltaRegNum
@@ -321,10 +368,10 @@ export function computeManagerTacticalProfile(
     radarPoints: calculateRadarSvgPoints(normalizedScores)
   };
 
-  // 5. Philosophy Stats
+  // 6. Philosophy Stats
   const stats = generatePhilosophyStats(manager, archetype, targetRaw);
 
-  // 6. Sub-meta and Team info (resolve newest season or live standing team name)
+  // 7. Sub-meta and Team info
   const standing = liveData?.standings?.find(
     s => s.managerId === manager.id || s.coach?.toLowerCase() === manager.name?.toLowerCase()
   );
@@ -354,6 +401,7 @@ export function computeManagerTacticalProfile(
     archetype,
     axes,
     stats,
-    mindset
+    mindset,
+    scope: isCurrentSeasonal ? 'season' : 'career'
   };
 }

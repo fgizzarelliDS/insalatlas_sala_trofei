@@ -17,6 +17,18 @@ import { getLiveSeasonDetails } from '@/state';
 
 let activeTacticalProfile: TacticalProfile | null = null;
 let activeTacticalManager: Manager | null = null;
+let activeTacticalAllManagers: Manager[] = [];
+let activeTacticalScope: 'career' | 'season' = 'career';
+
+/**
+ * Toggles tactical profiler scope between career and live season
+ */
+export function setProfileTacticalScope(scope: 'career' | 'season'): void {
+  activeTacticalScope = scope;
+  if (activeTacticalManager && activeTacticalAllManagers.length > 0) {
+    populateTacticalProfileDOM(activeTacticalManager, activeTacticalAllManagers);
+  }
+}
 
 /**
  * Copies the preformatted WhatsApp banter message to the system clipboard
@@ -65,6 +77,7 @@ export async function exportActiveManagerTacticalStory(): Promise<void> {
 if (typeof window !== 'undefined') {
   (window as any).copyActiveManagerTacticalBanter = copyActiveManagerTacticalBanter;
   (window as any).exportActiveManagerTacticalStory = exportActiveManagerTacticalStory;
+  (window as any).setProfileTacticalScope = setProfileTacticalScope;
 }
 
 /**
@@ -75,8 +88,9 @@ export function populateTacticalProfileDOM(
   allManagers: Manager[]
 ): void {
   activeTacticalManager = manager;
+  activeTacticalAllManagers = allManagers;
   const liveData = getLiveSeasonDetails();
-  const profile = computeManagerTacticalProfile(manager, allManagers, liveData);
+  const profile = computeManagerTacticalProfile(manager, allManagers, liveData, undefined, activeTacticalScope);
   activeTacticalProfile = profile;
 
   const container = document.getElementById('profile-tab-tactical-content');
@@ -87,6 +101,9 @@ export function populateTacticalProfileDOM(
   const mindset = profile.mindset;
   const liveSeasonLabel = liveData?.season || '2026/27';
   const shortSeasonLabel = liveSeasonLabel.replace(/^20/, '');
+  const isManagerActive = Boolean(
+    liveData?.standings?.some(s => s.managerId === manager.id || s.coach?.toLowerCase() === manager.name?.toLowerCase())
+  );
 
   // Full-width radar league average polygon points (baseline Score = 50 on all 5 axes)
   // viewBox = 440x305, cx = 220, cy = 156, r = 110 (baseline r = 55)
@@ -204,13 +221,33 @@ export function populateTacticalProfileDOM(
       <div class="rounded-2xl border p-4 sm:p-5 flex flex-col items-center justify-center transition-colors"
            style="background-color: var(--table-surface); border-color: var(--table-border); color: var(--text-main);">
         <div class="flex items-center justify-between gap-2 flex-wrap w-full mb-2">
-          <span class="text-xs sm:text-sm font-bold font-sport uppercase tracking-wider flex items-center gap-1.5" style="color: var(--text-main);">
-            <i class="fa-solid fa-compass" style="color: var(--accent-color, #f59e0b);"></i>
-            <span>Radar Tattico (5 Assi)</span>
-          </span>
-          <div class="flex items-center gap-3 text-[11px] font-semibold" style="color: var(--text-muted);">
-            <span class="flex items-center gap-1.5"><span class="w-3 h-1.5 bg-amber-500 inline-block rounded-sm"></span> Mister</span>
-            <span class="flex items-center gap-1.5"><span class="w-3 h-1 border-b-2 border-dashed border-slate-400 inline-block"></span> Media Lega</span>
+          <div class="flex items-center gap-2">
+            <span class="text-xs sm:text-sm font-bold font-sport uppercase tracking-wider flex items-center gap-1.5" style="color: var(--text-main);">
+              <i class="fa-solid fa-compass" style="color: var(--accent-color, #f59e0b);"></i>
+              <span>Radar Tattico (5 Assi)</span>
+            </span>
+            <span class="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider"
+                  style="background-color: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.3); color: #818cf8;">
+              ${profile.scope === 'season' ? `Assetto Live ${escapeHtml(liveSeasonLabel)}` : 'DNA All-Time'}
+            </span>
+          </div>
+
+          <!-- Scope Switch Toggle: Carriera vs Stagione Live -->
+          <div class="inline-flex p-0.5 rounded-xl border text-[10px] font-bold shadow-xs"
+               style="background-color: var(--input-bg); border-color: var(--table-border);">
+            <button type="button"
+              onclick="window.setProfileTacticalScope && window.setProfileTacticalScope('career')"
+              class="px-2.5 py-1 rounded-lg transition-all cursor-pointer ${activeTacticalScope === 'career' ? 'shadow-xs font-black' : 'opacity-60 hover:opacity-100'}"
+              style="${activeTacticalScope === 'career' ? 'background-color: var(--modal-bg); color: var(--text-main);' : 'color: var(--text-muted);'}">
+              🏛️ Carriera
+            </button>
+            <button type="button"
+              onclick="window.setProfileTacticalScope && window.setProfileTacticalScope('season')"
+              ${!isManagerActive ? 'disabled title="Il mister non partecipa alla stagione in corso"' : ''}
+              class="px-2.5 py-1 rounded-lg transition-all ${activeTacticalScope === 'season' ? 'shadow-xs font-black' : 'opacity-60 hover:opacity-100'} ${!isManagerActive ? 'cursor-not-allowed opacity-30' : 'cursor-pointer'}"
+              style="${activeTacticalScope === 'season' ? 'background-color: var(--modal-bg); color: var(--accent-color, #f59e0b);' : 'color: var(--text-muted);'}">
+              ⚡ Stagione ${escapeHtml(shortSeasonLabel)}
+            </button>
           </div>
         </div>
 
@@ -251,9 +288,9 @@ export function populateTacticalProfileDOM(
           <text x="148" y="269" text-anchor="middle" fill="currentColor" opacity="0.92" font-size="11" font-weight="800" letter-spacing="0.5">STABILITÀ</text>
           <text x="148" y="284" text-anchor="middle" fill="#f59e0b" font-size="10.5" font-weight="800">${axes.reg.raw}</text>
 
-          <!-- 4: COPPE (Top Left) -->
-          <text x="102" y="118" text-anchor="end" fill="currentColor" opacity="0.92" font-size="11" font-weight="800" letter-spacing="0.5">COPPE</text>
-          <text x="102" y="133" text-anchor="end" fill="#f59e0b" font-size="10.5" font-weight="800">${axes.koc.raw}</text>
+          <!-- 4: COPPE / BIG MATCH (Top Left) -->
+          <text x="102" y="118" text-anchor="end" fill="currentColor" opacity="0.92" font-size="11" font-weight="800" letter-spacing="0.5">${axes.koc.shortTitle || 'COPPE'}</text>
+          <text x="102" y="133" text-anchor="end" fill="#f59e0b" font-size="10.5" font-weight="800">${axes.koc.raw}${axes.koc.subRaw ? ` <tspan font-size="9" opacity="0.65">${axes.koc.subRaw}</tspan>` : ''}</text>
         </svg>
       </div>
 
@@ -275,7 +312,7 @@ export function populateTacticalProfileDOM(
               <div class="flex items-center justify-between gap-2 text-xs mb-1">
                 <span class="font-semibold text-xs truncate" style="color: var(--text-muted);">${ax.label}</span>
                 <span class="font-bold text-xs whitespace-nowrap shrink-0" style="color: var(--text-main);">
-                  ${ax.raw} <span class="font-mono text-[11px] ${ax.deltaNumeric >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}">${ax.deltaPct}</span>
+                  ${ax.raw}${ax.subRaw ? ` <span class="opacity-60 text-[10px] font-normal">${ax.subRaw}</span>` : ''} <span class="font-mono text-[11px] ${ax.deltaNumeric >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}">${ax.deltaPct}</span>
                 </span>
               </div>
               <div class="w-full h-2.5 rounded-full overflow-hidden relative border" style="background-color: var(--input-bg); border-color: var(--table-border);">

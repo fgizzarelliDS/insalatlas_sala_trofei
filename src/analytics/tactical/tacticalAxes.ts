@@ -3,7 +3,7 @@
  * Raw Tactical Metrics Extraction, Z-Score Normalization and Radar Chart Geometry
  */
 
-import type { Manager } from '@/types';
+import type { Manager, LiveSeasonDetails } from '@/types';
 import { getActiveCompetitions } from '@/config';
 import { getManagerTrophyCount, getManagerTotalTrophies } from '@/score';
 import { computeStabilityProfile } from '../badges';
@@ -113,6 +113,190 @@ export function computeRawManagerValues(
     finalsPlayed,
     finalsWon,
     stdDevRank: stability.stdDevRank
+  };
+}
+
+/**
+ * Computes raw tactical metrics for a manager exclusively within the current live season.
+ * Returns null if the manager has not played in the live season.
+ */
+export function computeRawManagerSeasonalValues(
+  manager: Manager,
+  liveData?: LiveSeasonDetails | null,
+  analyticsManagers = getCachedAnalyticsManagers()
+): RawManagerTacticalValues | null {
+  if (!liveData || !liveData.standings || liveData.standings.length === 0) {
+    return null;
+  }
+
+  const standing = liveData.standings.find(
+    s => s.managerId === manager.id || s.coach?.toLowerCase() === manager.name?.toLowerCase()
+  );
+
+  if (!standing) {
+    return null;
+  }
+
+  // 1. Gather all played matches in the current live season
+  const playedMatches: Array<{
+    fantaPoints: number;
+    goalsFor: number;
+    goalsAgainst: number;
+    outcome: string;
+  }> = [];
+
+  if (liveData.rounds && liveData.rounds.length > 0) {
+    for (const round of liveData.rounds) {
+      if (!round.matches) continue;
+      for (const match of round.matches) {
+        if (!match.isPlayed && !match.played) continue;
+        const isHome = match.homeManagerId === manager.id || (standing.teamName && match.homeTeam === standing.teamName);
+        const isAway = match.awayManagerId === manager.id || (standing.teamName && match.awayTeam === standing.teamName);
+        if (isHome && typeof match.homeFantaPoints === 'number' && match.homeFantaPoints > 0) {
+          playedMatches.push({
+            fantaPoints: match.homeFantaPoints,
+            goalsFor: match.homeScore ?? 0,
+            goalsAgainst: match.awayScore ?? 0,
+            outcome: match.homeOutcome || 'D'
+          });
+        } else if (isAway && typeof match.awayFantaPoints === 'number' && match.awayFantaPoints > 0) {
+          playedMatches.push({
+            fantaPoints: match.awayFantaPoints,
+            goalsFor: match.awayScore ?? 0,
+            goalsAgainst: match.homeScore ?? 0,
+            outcome: match.awayOutcome || 'D'
+          });
+        }
+      }
+    }
+  }
+
+  const liveSeason = liveData.season;
+  const eloProfile = analyticsManagers ? analyticsManagers[manager.id] : null;
+  const seasonStats = standing.elo?.seasonStats?.[liveSeason] || eloProfile?.seasonStats?.[liveSeason];
+
+  if (playedMatches.length === 0 && (!seasonStats || seasonStats.played === 0)) {
+    return null;
+  }
+
+  // 1. POT (Potenza Offensiva Live)
+  let avgFP = 0;
+  if (typeof standing.avgFantaPoints === 'number' && standing.avgFantaPoints > 0) {
+    avgFP = standing.avgFantaPoints;
+  } else if (seasonStats && typeof seasonStats.avgFP === 'number' && seasonStats.avgFP > 0) {
+    avgFP = seasonStats.avgFP;
+  } else if (playedMatches.length > 0) {
+    avgFP = parseFloat((playedMatches.reduce((s, m) => s + m.fantaPoints, 0) / playedMatches.length).toFixed(2));
+  } else {
+    avgFP = 70.0;
+  }
+
+  let goalsPerMatch = 1.2;
+  const totalPlayed = standing.played ?? seasonStats?.played ?? playedMatches.length;
+  const totalGf = standing.goalsFor ?? seasonStats?.gf ?? playedMatches.reduce((s, m) => s + m.goalsFor, 0);
+  if (totalPlayed > 0) {
+    goalsPerMatch = totalGf / totalPlayed;
+  }
+  const rawPOT = 0.70 * avgFP + 0.30 * (goalsPerMatch * 48.0);
+
+  // 2. CIN (Cinismo Corto Muso Live)
+  let closeWinRate = 50.0;
+  const wins = playedMatches.filter(m => m.outcome === 'W');
+  if (wins.length > 0) {
+    const closeWins = wins.filter(m => (m.goalsFor - m.goalsAgainst === 1) || (m.fantaPoints <= 68.0));
+    closeWinRate = parseFloat(((closeWins.length / wins.length) * 100).toFixed(1));
+  } else if (seasonStats && seasonStats.played > 0) {
+    closeWinRate = 50.0;
+  }
+  const rawCIN = Math.min(95, Math.max(20, closeWinRate));
+
+  // 3. LUK (Fattore Fortuna Live)
+  let luckDelta = 0.0;
+  if (typeof standing.deltaLuck === 'number') {
+    luckDelta = standing.deltaLuck;
+  } else if (seasonStats && typeof seasonStats.luckDelta === 'number') {
+    luckDelta = seasonStats.luckDelta;
+  } else if (typeof standing.points === 'number' && standing.scheduleLuck?.xPoints) {
+    luckDelta = parseFloat((standing.points - standing.scheduleLuck.xPoints).toFixed(1));
+  }
+  const rawLUK = luckDelta;
+
+  // 4. KOC (Rendimento Big Match vs Top 4 in Classifica)
+  // Identifica i manager / squadre attualmente nelle prime 4 posizioni
+  const top4List = (liveData.standings || [])
+    .filter(s => typeof s.rank === 'number' && s.rank <= 4)
+    .filter(s => s.managerId !== manager.id && s.coach?.toLowerCase() !== manager.name?.toLowerCase());
+
+  const top4Identifiers = new Set<string>();
+  for (const s of top4List) {
+    if (s.managerId) top4Identifiers.add(s.managerId.toLowerCase());
+    if (s.coach) top4Identifiers.add(s.coach.toLowerCase());
+    if (s.teamName) top4Identifiers.add(s.teamName.toLowerCase());
+  }
+
+  let bigMatchPlayed = 0;
+  let bigMatchPts = 0;
+
+  if (liveData.rounds && liveData.rounds.length > 0) {
+    for (const round of liveData.rounds) {
+      if (!round.matches) continue;
+      for (const match of round.matches) {
+        if (!match.isPlayed && !match.played) continue;
+        const isHome = match.homeManagerId === manager.id || (standing.teamName && match.homeTeam === standing.teamName);
+        const isAway = match.awayManagerId === manager.id || (standing.teamName && match.awayTeam === standing.teamName);
+        if (!isHome && !isAway) continue;
+
+        const oppManagerId = isHome ? match.awayManagerId : match.homeManagerId;
+        const oppTeam = isHome ? match.awayTeam : match.homeTeam;
+        const isOpponentTop4 = (oppManagerId && top4Identifiers.has(oppManagerId.toLowerCase())) ||
+                               (oppTeam && top4Identifiers.has(oppTeam.toLowerCase()));
+
+        if (isOpponentTop4) {
+          bigMatchPlayed++;
+          const outcome = isHome ? (match.homeOutcome || 'D') : (match.awayOutcome || 'D');
+          if (outcome === 'W') bigMatchPts += 3;
+          else if (outcome === 'D') bigMatchPts += 1;
+        }
+      }
+    }
+  }
+
+  // Bayesian shrinkage per il punteggio Big Match a inizio / metà stagione:
+  // Prior: ~1.35 pts/match attesi contro le prime 4 (su base 1.5 partite)
+  const effectivePPG = (bigMatchPts + 2.025) / (bigMatchPlayed + 1.5);
+  const rawKOC = effectivePPG * 35.0;
+
+  // 5. REG (Stabilità Rendimento Live: Anti-Varianza Fantapunti Round-by-Round)
+  let stdDevFP = 0;
+  if (playedMatches.length >= 2) {
+    const fpList = playedMatches.map(m => m.fantaPoints);
+    const meanFP = fpList.reduce((acc, v) => acc + v, 0) / fpList.length;
+    const varianceFP = fpList.reduce((acc, v) => acc + Math.pow(v - meanFP, 2), 0) / (fpList.length - 1);
+    stdDevFP = parseFloat(Math.sqrt(varianceFP).toFixed(2));
+  } else {
+    stdDevFP = 5.0;
+  }
+
+  let rawREG = Math.max(15, Math.min(95, 100 - (stdDevFP * 9.0)));
+  if (playedMatches.length < 3) {
+    rawREG = 0.5 * rawREG + 0.5 * 55.0;
+  }
+
+  return {
+    pot: rawPOT,
+    cin: rawCIN,
+    luk: rawLUK,
+    koc: rawKOC,
+    reg: rawREG,
+    avgFP,
+    closeWinRate,
+    luckDelta,
+    finalsPlayed: 0,
+    finalsWon: 0,
+    stdDevRank: stdDevFP,
+    isSeasonal: true,
+    bigMatchPts,
+    bigMatchPlayed
   };
 }
 

@@ -19,14 +19,15 @@ import { escapeHtml } from '@/utils/dom';
  */
 export async function renderH2HDuelStoryCanvas(
   managerA: Manager,
-  managerB: Manager
+  managerB: Manager,
+  scope: 'career' | 'season' = 'career'
 ): Promise<HTMLCanvasElement> {
   const { container, contentBox } = createStoryContainer('Matchup Tattico', 'Pre-Partita & Scontri Diretti');
   contentBox.className = 'flex-1 flex flex-col justify-between py-2 w-full max-w-[960px] mx-auto';
 
   const liveData = getLiveSeasonDetails();
   const allManagers = state.managers && state.managers.length > 0 ? state.managers : [managerA, managerB];
-  const matchup = computeTacticalMatchup(managerA, managerB, allManagers, liveData);
+  const matchup = computeTacticalMatchup(managerA, managerB, allManagers, liveData, scope);
   const { profileA, profileB, h2hStats, axesList, tacticalKey } = matchup;
 
   const directSummary = collectDirectRoundMatches(
@@ -134,8 +135,8 @@ export async function renderH2HDuelStoryCanvas(
         <span class="flex items-center gap-1.5 text-amber-400">
           <span class="w-3.5 h-1.5 bg-amber-500 rounded-sm"></span> ${managerA.name}
         </span>
-        <span class="text-[11px] text-slate-400">
-          <span class="w-3.5 h-1 border-b-2 border-dashed border-slate-400 inline-block mr-1"></span> Media Lega
+        <span class="text-[11px] text-slate-300 font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full border border-slate-700 bg-slate-800">
+          <span class="w-2.5 h-1 border-b-2 border-dashed border-slate-400 inline-block mr-1"></span> ${scope === 'season' ? `Assetto Live ${escapeHtml(liveData?.season || '2026/27')}` : 'DNA All-Time'}
         </span>
         <span class="flex items-center gap-1.5 text-cyan-400">
           ${managerB.name} <span class="w-3.5 h-1.5 bg-cyan-500 rounded-sm"></span>
@@ -191,8 +192,8 @@ export async function renderH2HDuelStoryCanvas(
             <tspan fill="#f59e0b">${profileA.axes.reg.raw}</tspan> <tspan fill="#64748b">vs</tspan> <tspan fill="#06b6d4">${profileB.axes.reg.raw}</tspan>
           </text>
 
-          <!-- COPPE -->
-          <text x="170" y="174" text-anchor="end" fill="#cbd5e1" font-size="14" font-weight="900" letter-spacing="1">COPPE</text>
+          <!-- COPPE / BIG MATCH -->
+          <text x="170" y="174" text-anchor="end" fill="#cbd5e1" font-size="14" font-weight="900" letter-spacing="1">${profileA.axes.koc.shortTitle || 'COPPE'}</text>
           <text x="170" y="194" text-anchor="end" font-size="13" font-weight="800">
             <tspan fill="#f59e0b">${profileA.axes.koc.raw}</tspan> <tspan fill="#64748b">vs</tspan> <tspan fill="#06b6d4">${profileB.axes.koc.raw}</tspan>
           </text>

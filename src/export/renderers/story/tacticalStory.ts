@@ -14,14 +14,17 @@ import { createStoryContainer, STORY_WIDTH, STORY_HEIGHT } from './base';
 /**
  * Renders High-Definition Vertical 9:16 Story for a Manager's Tactical Identikit
  */
-export async function renderTacticalStoryCanvas(manager: Manager): Promise<HTMLCanvasElement> {
+export async function renderTacticalStoryCanvas(
+  manager: Manager,
+  scope: 'career' | 'season' = 'career'
+): Promise<HTMLCanvasElement> {
   const { container, contentBox } = createStoryContainer('Identikit Tattico', 'DNA & Profiler Psicologico');
 
   const liveData = getLiveSeasonDetails();
   const liveSeasonLabel = liveData?.season || '2026/27';
   const shortSeasonLabel = liveSeasonLabel.replace(/^20/, '');
   const allManagers = state.managers && state.managers.length > 0 ? state.managers : [manager];
-  const profile = computeManagerTacticalProfile(manager, allManagers, liveData);
+  const profile = computeManagerTacticalProfile(manager, allManagers, liveData, undefined, scope);
 
   // 1. Resolve authentic current team name and custom logo
   const standing = liveData?.standings?.find(
@@ -111,7 +114,10 @@ export async function renderTacticalStoryCanvas(manager: Manager): Promise<HTMLC
         <span class="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
           <i class="fa-solid fa-compass"></i> Impronta Filosofica (5 Assi)
         </span>
-        <div class="flex items-center gap-4 text-[11px] font-bold text-slate-400">
+        <div class="flex items-center gap-3 text-[11px] font-bold text-slate-400">
+          <span class="text-[10px] text-slate-300 font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full border border-slate-700 bg-slate-800">
+            ${scope === 'season' ? `Assetto Live ${escapeHtml(liveSeasonLabel)}` : 'DNA All-Time'}
+          </span>
           <span class="flex items-center gap-1.5"><span class="w-3.5 h-1.5 bg-amber-500 rounded-sm"></span> Mister</span>
           <span class="flex items-center gap-1.5"><span class="w-3.5 h-1 border-b-2 border-dashed border-slate-400"></span> Media Lega</span>
         </div>
@@ -155,8 +161,8 @@ export async function renderTacticalStoryCanvas(manager: Manager): Promise<HTMLC
           <text x="246" y="396" text-anchor="middle" fill="#cbd5e1" font-size="14" font-weight="900" letter-spacing="1">STABILITÀ</text>
           <text x="246" y="416" text-anchor="middle" fill="#f59e0b" font-size="13" font-weight="800">${axes.reg.raw}</text>
 
-          <!-- 4: COPPE (Top Left) -->
-          <text x="170" y="174" text-anchor="end" fill="#cbd5e1" font-size="14" font-weight="900" letter-spacing="1">COPPE</text>
+          <!-- 4: COPPE / BIG MATCH (Top Left) -->
+          <text x="170" y="174" text-anchor="end" fill="#cbd5e1" font-size="14" font-weight="900" letter-spacing="1">${axes.koc.shortTitle || 'COPPE'}</text>
           <text x="170" y="194" text-anchor="end" fill="#f59e0b" font-size="13" font-weight="800">${axes.koc.raw}</text>
         </svg>
       </div>

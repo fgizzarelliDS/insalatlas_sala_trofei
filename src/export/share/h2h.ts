@@ -85,13 +85,17 @@ export async function copyH2HDuelToClipboard(managerA: Manager, managerB: Manage
 /**
  * Renders and downloads high-definition 9:16 vertical Instagram/WhatsApp Story for a 1vs1 H2H Duel
  */
-export async function exportH2HDuelStoryHD(managerA: Manager, managerB: Manager): Promise<void> {
+export async function exportH2HDuelStoryHD(
+  managerA: Manager,
+  managerB: Manager,
+  scope: 'career' | 'season' = 'career'
+): Promise<void> {
   showToast('Generazione Story Duello 9:16 in corso...', 'info');
   const dropdown = document.getElementById('h2h-share-dropdown-menu');
   if (dropdown) dropdown.classList.add('hidden');
 
   try {
-    const canvas = await renderH2HDuelStoryCanvas(managerA, managerB);
+    const canvas = await renderH2HDuelStoryCanvas(managerA, managerB, scope);
     canvas.toBlob((blob) => {
       if (!blob) {
         showToast("Errore durante la creazione della Story", 'error');

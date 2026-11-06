@@ -350,12 +350,24 @@ export function renderDualRadar5AxesSVG(
   const ring75 = calculateRadarSvgPoints({ pot: 75, cin: 75, luk: 75, reg: 75, koc: 75 }, cx, cy, r);
   const ring25 = calculateRadarSvgPoints({ pot: 25, cin: 25, luk: 25, reg: 25, koc: 25 }, cx, cy, r);
 
+  // Big Match sub-label: compact comparative games "(X vs Y gare)"
+  const subA = profileA.axes.koc.subRaw ? profileA.axes.koc.subRaw.replace(/[()]/g, '') : '';
+  const subB = profileB.axes.koc.subRaw ? profileB.axes.koc.subRaw.replace(/[()]/g, '') : '';
+  let kocSubLabel = '';
+  if (subA && subB) {
+    const numA = subA.split(' ')[0] || subA;
+    const numB = subB.split(' ')[0] || subB;
+    kocSubLabel = `(${numA} vs ${numB} gare)`;
+  } else if (subA || subB) {
+    kocSubLabel = `(${subA || subB})`;
+  }
+
   const axes = [
-    { key: 'pot', label: 'POTENZA', x: cx, y: 18, scoreY: 33, anchor: 'middle', rawA: profileA.axes.pot.raw, rawB: profileB.axes.pot.raw },
-    { key: 'cin', label: 'CINISMO', x: cx + 118, y: 118, scoreY: 133, anchor: 'start', rawA: profileA.axes.cin.raw, rawB: profileB.axes.cin.raw },
-    { key: 'luk', label: 'FORTUNA', x: cx + 72, y: 269, scoreY: 284, anchor: 'middle', rawA: profileA.axes.luk.raw, rawB: profileB.axes.luk.raw },
-    { key: 'reg', label: 'STABILITÀ', x: cx - 72, y: 269, scoreY: 284, anchor: 'middle', rawA: profileA.axes.reg.raw, rawB: profileB.axes.reg.raw },
-    { key: 'koc', label: 'COPPE', x: cx - 118, y: 118, scoreY: 133, anchor: 'end', rawA: profileA.axes.koc.raw, rawB: profileB.axes.koc.raw }
+    { key: 'pot', label: 'POTENZA', x: cx, y: 18, scoreY: 33, subY: 0, anchor: 'middle', rawA: profileA.axes.pot.raw, rawB: profileB.axes.pot.raw, sub: '' },
+    { key: 'cin', label: 'CINISMO', x: cx + 118, y: 118, scoreY: 133, subY: 0, anchor: 'start', rawA: profileA.axes.cin.raw, rawB: profileB.axes.cin.raw, sub: '' },
+    { key: 'luk', label: 'FORTUNA', x: cx + 72, y: 269, scoreY: 284, subY: 0, anchor: 'middle', rawA: profileA.axes.luk.raw, rawB: profileB.axes.luk.raw, sub: '' },
+    { key: 'reg', label: profileA.axes.reg.shortTitle || 'STABILITÀ', x: cx - 72, y: 269, scoreY: 284, subY: 0, anchor: 'middle', rawA: profileA.axes.reg.raw, rawB: profileB.axes.reg.raw, sub: '' },
+    { key: 'koc', label: profileA.axes.koc.shortTitle || 'COPPE', x: cx - 118, y: 118, scoreY: 133, subY: 146, anchor: 'end', rawA: profileA.axes.koc.raw, rawB: profileB.axes.koc.raw, sub: kocSubLabel }
   ];
 
   return `
@@ -376,7 +388,7 @@ export function renderDualRadar5AxesSVG(
         </span>
       </div>
 
-      <svg viewBox="0 0 ${viewWidth} ${viewHeight}" class="w-full max-w-[420px] h-auto my-1 select-none">
+      <svg viewBox="0 0 ${viewWidth} ${viewHeight}" class="w-full max-w-[420px] h-auto my-1 select-none overflow-visible">
         <!-- Concentric Pentagons (100%, 75%, 25%) -->
         <polygon points="${ring100}" fill="none" stroke="currentColor" stroke-opacity="0.20" stroke-width="1.4"></polygon>
         <polygon points="${ring75}" fill="none" stroke="currentColor" stroke-opacity="0.14" stroke-width="1.1"></polygon>
@@ -406,6 +418,11 @@ export function renderDualRadar5AxesSVG(
             <tspan fill="currentColor" opacity="0.45"> vs </tspan>
             <tspan fill="var(--h2h-contender-b, #06b6d4)">${ax.rawB}</tspan>
           </text>
+          ${ax.sub ? `
+            <text x="${ax.x}" y="${ax.subY}" text-anchor="${ax.anchor}" font-size="8.5" font-weight="700" fill="currentColor" opacity="0.55">
+              ${ax.sub}
+            </text>
+          ` : ''}
         `).join('')}
       </svg>
     </div>

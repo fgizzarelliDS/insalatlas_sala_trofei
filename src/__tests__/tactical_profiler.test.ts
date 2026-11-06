@@ -12,12 +12,14 @@ import {
   setManagerLore,
   getCachedManagerLore
 } from '@/analytics/tacticalProfiler';
+import { computeRawManagerSeasonalValues } from '@/analytics/tactical/tacticalAxes';
 import { createTestManager } from './test-utils';
 import type { Manager, LiveSeasonDetails } from '@/types';
-import { populateTacticalProfileDOM } from '@/components/modals/profile/ProfileTacticalTab';
+import { populateTacticalProfileDOM, setProfileTacticalScope } from '@/components/modals/profile/ProfileTacticalTab';
 import { renderTacticalStoryCanvas } from '@/export/renderers/story/tacticalStory';
 import { openStoryExportModal, switchStoryExportTab, closeStoryExportModal } from '@/components/modals/export/StoryExportModal';
-import { state } from '@/state';
+import { state, setLiveSeasonDetails } from '@/state';
+import { LEAGUE } from '@/config';
 
 class MockElement {
   id: string = '';
@@ -429,7 +431,7 @@ describe('Tactical Profiler & Psychological Identikit ', () => {
       const profile = computeManagerTacticalProfile(managerVannico, allManagers, mockLiveData);
       const text = formatTacticalWhatsAppBanter(profile, 'https://insalatlas.it/');
 
-      expect(text).toContain('🗞️ *PAGELLA TATTICA • INSALATLAS SALA TROFEI*');
+      expect(text).toContain(`🗞️ *PAGELLA TATTICA • ${LEAGUE.brand.name.toUpperCase()} SALA TROFEI*`);
       expect(text).toContain(`*Mister:* ${profile.managerName}`);
       expect(text).toContain(`*Identikit:* *${profile.archetype.title}*`);
       expect(text).toContain(profile.archetype.motto);
@@ -582,6 +584,132 @@ describe('Tactical Profiler & Psychological Identikit ', () => {
       const profile = computeManagerTacticalProfile(mCupZeroFp, [mCupZeroFp, managerAlfo], null, mockAnalyticsManagers);
       // None of the 3 multi-goal wins had 0 < fpFor <= 68.0, so closeWinRate is 0%
       expect(profile.axes.cin.raw).toBe('0%');
+    });
+
+    it('computes seasonal tactical values and switches scope between career and season', () => {
+      const mockLive: LiveSeasonDetails = {
+        season: '2026/27',
+        competitionId: 1,
+        lastCompletedRound: 3,
+        totalRounds: 26,
+        rounds: [
+          {
+            roundNumber: 1,
+            matches: [
+              {
+                homeTeam: 'Alfo FC',
+                awayTeam: 'Vannico FC',
+                homeManagerId: managerAlfo.id,
+                awayManagerId: managerVannico.id,
+                isPlayed: true,
+                homeScore: 2,
+                awayScore: 1,
+                homeFantaPoints: 74.0,
+                awayFantaPoints: 67.5,
+                homeOutcome: 'W',
+                awayOutcome: 'L'
+              }
+            ]
+          },
+          {
+            roundNumber: 2,
+            matches: [
+              {
+                homeTeam: 'Vannico FC',
+                awayTeam: 'Alfo FC',
+                homeManagerId: managerVannico.id,
+                awayManagerId: managerAlfo.id,
+                isPlayed: true,
+                homeScore: 1,
+                awayScore: 1,
+                homeFantaPoints: 71.0,
+                awayFantaPoints: 72.0,
+                homeOutcome: 'D',
+                awayOutcome: 'D'
+              }
+            ]
+          },
+          {
+            roundNumber: 3,
+            matches: [
+              {
+                homeTeam: 'Alfo FC',
+                awayTeam: 'Other FC',
+                homeManagerId: managerAlfo.id,
+                isPlayed: true,
+                homeScore: 1,
+                awayScore: 0,
+                homeFantaPoints: 73.0,
+                awayFantaPoints: 65.0,
+                homeOutcome: 'W',
+                awayOutcome: 'L'
+              }
+            ]
+          }
+        ],
+        standings: [
+          {
+            rank: 1,
+            managerId: managerAlfo.id,
+            teamName: 'Alfo FC',
+            coach: 'Alfo',
+            avgFantaPoints: 73.0,
+            recentForm: ['W', 'D', 'W'],
+            points: 7,
+            statusBadge: '📈',
+            statusLabel: 'In forma',
+            scheduleLuck: { xPoints: 5.5 } as any
+          },
+          {
+            rank: 2,
+            managerId: managerVannico.id,
+            teamName: 'Vannico FC',
+            coach: 'Vannico',
+            avgFantaPoints: 69.25,
+            recentForm: ['L', 'D'],
+            points: 1,
+            statusBadge: '📉',
+            statusLabel: 'In crisi',
+            scheduleLuck: { xPoints: 2.0 } as any
+          }
+        ]
+      };
+
+      const sRaw = computeRawManagerSeasonalValues(managerAlfo, mockLive);
+      expect(sRaw).not.toBeNull();
+      expect(sRaw!.isSeasonal).toBe(true);
+      expect(sRaw!.avgFP).toBe(73.0);
+      expect(sRaw!.stdDevRank).toBe(1.0); // 74.0, 72.0, 73.0 -> mean 73.0, sample variance 1.0, std dev 1.0!
+      expect(sRaw!.bigMatchPlayed).toBe(2);
+      expect(sRaw!.bigMatchPts).toBe(4); // Round 1 (W=3) + Round 2 (D=1) = 4 pts vs Vannico (Rank 2)
+
+      const careerProfile = computeManagerTacticalProfile(managerAlfo, [managerAlfo, managerVannico], mockLive, null, 'career');
+      expect(careerProfile.scope).toBe('career');
+      expect(careerProfile.axes.reg.raw).toContain('pos');
+      expect(careerProfile.axes.koc.shortTitle).toBe('COPPE');
+      expect(careerProfile.axes.koc.raw).toContain('Trofe');
+
+      const seasonProfile = computeManagerTacticalProfile(managerAlfo, [managerAlfo, managerVannico], mockLive, null, 'season');
+      expect(seasonProfile.scope).toBe('season');
+      expect(seasonProfile.axes.reg.raw).toContain('FP');
+      expect(seasonProfile.axes.pot.raw).toContain('FM');
+      expect(seasonProfile.axes.koc.shortTitle).toBe('BIG MATCH');
+      expect(seasonProfile.axes.koc.raw).toBe('4 PT');
+      expect(seasonProfile.axes.koc.subRaw).toBe('(2 gare)');
+
+      // Test Profiler DOM with toggle
+      setLiveSeasonDetails(mockLive);
+      const mockContainer = new MockElement('div');
+      mockContainer.id = 'profile-tab-tactical-content';
+      (globalThis as any).document.getElementById = (id: string) => (id === 'profile-tab-tactical-content' ? mockContainer : null);
+
+      populateTacticalProfileDOM(managerAlfo, [managerAlfo, managerVannico]);
+      expect(mockContainer.innerHTML).toContain('Radar Tattico (5 Assi)');
+      expect(mockContainer.innerHTML).toContain('Carriera');
+      expect(mockContainer.innerHTML).toContain('Stagione');
+
+      setProfileTacticalScope('season');
+      expect(mockContainer.innerHTML).toContain('Assetto Live');
     });
   });
 });

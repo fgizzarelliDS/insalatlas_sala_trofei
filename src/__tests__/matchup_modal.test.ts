@@ -13,10 +13,11 @@ import {
   toggleMatchupShareDropdown,
   closeMatchupShareDropdown,
   exportMatchupStoryHD,
+  setMatchupScope,
   isMatchupOpen,
   getSelectedMatchupManagers
 } from '@/components/modals/matchup/MatchupModal';
-import { state } from '@/state';
+import { state, setLiveSeasonDetails } from '@/state';
 
 function createMockManager(id: string, name: string): Manager {
   return {
@@ -120,6 +121,7 @@ describe('Dedicated Matchup Modal (Pre-Match & Next Round Experience)', () => {
   });
 
   afterEach(() => {
+    setLiveSeasonDetails(null);
     (globalThis as any).document = originalDocument;
     (globalThis as any).window = originalWindow;
   });
@@ -395,6 +397,93 @@ describe('Dedicated Matchup Modal (Pre-Match & Next Round Experience)', () => {
       expect(calledWithMgrA.id).toBe('m_tazio');
       expect(calledWithMgrB.id).toBe('m_avvisatina');
       storySpy.mockRestore();
+    });
+
+    it('renders the live form widget, displays N for draws, and toggles radar scope with BIG MATCH', () => {
+      // Mock live standing with draws to verify 'N' badge
+      const mockLiveWithDraw: LiveSeasonDetails = {
+        season: '2026/27',
+        competitionId: 1,
+        lastCompletedRound: 1,
+        totalRounds: 26,
+        rounds: [
+          {
+            roundNumber: 1,
+            matches: [
+              {
+                homeTeam: 'Tazio FC',
+                awayTeam: 'Avvisatina FC',
+                homeManagerId: mgrA.id,
+                awayManagerId: mgrB.id,
+                isPlayed: true,
+                homeScore: 1,
+                awayScore: 1,
+                homeFantaPoints: 72.5,
+                awayFantaPoints: 70.0,
+                homeOutcome: 'D',
+                awayOutcome: 'D'
+              }
+            ]
+          }
+        ],
+        standings: [
+          {
+            rank: 1,
+            managerId: mgrA.id,
+            teamName: 'Tazio FC',
+            coach: 'Tazio',
+            points: 1,
+            avgFantaPoints: 72.5,
+            recentForm: ['W', 'D', 'L', 'D', 'W']
+          } as any,
+          {
+            rank: 2,
+            managerId: mgrB.id,
+            teamName: 'Avvisatina FC',
+            coach: 'Avvisatina',
+            points: 1,
+            avgFantaPoints: 70.0,
+            recentForm: ['D', 'W', 'L', 'W', 'D']
+          } as any
+        ]
+      };
+      setLiveSeasonDetails(mockLiveWithDraw);
+
+      openMatchupModal('m_tazio', 'm_avvisatina');
+      const contentEl = document.getElementById('matchup-modal-content');
+      expect(contentEl?.innerHTML).toContain('Stato di Forma &amp; Trend Live');
+      expect(contentEl?.innerHTML).toContain('Carriera');
+      expect(contentEl?.innerHTML).toContain('Stagione');
+
+      // Verify 'N' is rendered for draws, not 'X'
+      expect(contentEl?.innerHTML).toContain('>N<');
+
+      // When in career scope, radar shows COPPE
+      expect(contentEl?.innerHTML).toContain('COPPE');
+
+      // Toggle to season scope -> shows BIG MATCH instead of COPPE
+      setMatchupScope('season');
+      expect(contentEl?.innerHTML).toContain('Assetto Live');
+      expect(contentEl?.innerHTML).toContain('BIG MATCH');
+
+      setMatchupScope('career');
+      expect(contentEl?.innerHTML).toContain('DNA All-Time');
+
+      // Verify placeholder '-' when points are undefined (e.g. Levrieri)
+      const mockLiveUndefinedPts: LiveSeasonDetails = {
+        ...mockLiveWithDraw,
+        standings: [
+          {
+            ...mockLiveWithDraw.standings[0],
+            points: undefined
+          } as any,
+          mockLiveWithDraw.standings[1]
+        ]
+      };
+      setLiveSeasonDetails(mockLiveUndefinedPts);
+      openMatchupModal('m_tazio', 'm_avvisatina');
+      const updatedContentEl = document.getElementById('matchup-modal-content');
+      expect(updatedContentEl?.innerHTML).toContain('1&deg; • -');
     });
   });
 });

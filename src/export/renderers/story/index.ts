@@ -7,6 +7,7 @@ export {
 } from './base';
 
 export { renderManagerStoryCanvas } from './managerStory';
+export { renderTacticalStoryCanvas } from './tacticalStory';
 export { renderH2HDuelStoryCanvas, renderMultiManagerStoryCanvas } from './h2hStory';
 export { renderRecordStoryCanvas, renderRecordsSummaryStoryCanvas } from './recordStory';
 export { renderStandingsStoryCanvas } from './standingsStory';

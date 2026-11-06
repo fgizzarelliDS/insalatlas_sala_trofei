@@ -4,30 +4,19 @@ import type {
   LuckBadge,
   LiveSeasonDetails
 } from '@/types';
+import { getLiveSeasonDetails, setLiveSeasonDetails } from '@/state';
 
-let cachedLiveSeasonDetails: LiveSeasonDetails | null = null;
+export { getLiveSeasonDetails, setLiveSeasonDetails };
+
 let activeLiveFetchPromise: Promise<LiveSeasonDetails | null> | null = null;
-
-/**
- * Returns currently cached live season details (if any)
- */
-export function getLiveSeasonDetails(): LiveSeasonDetails | null {
-  return cachedLiveSeasonDetails;
-}
-
-/**
- * Sets or overrides cached live season details
- */
-export function setLiveSeasonDetails(details: LiveSeasonDetails | null): void {
-  cachedLiveSeasonDetails = details;
-}
 
 /**
  * Loads live_season_details.json asynchronously from server/local
  */
 export async function loadLiveSeasonDetails(season?: string): Promise<LiveSeasonDetails | null> {
-  if (cachedLiveSeasonDetails && (!season || cachedLiveSeasonDetails.season === season)) {
-    return cachedLiveSeasonDetails;
+  const cached = getLiveSeasonDetails();
+  if (cached && (!season || cached.season === season)) {
+    return cached;
   }
 
   if (activeLiveFetchPromise) {
@@ -68,13 +57,13 @@ export async function loadLiveSeasonDetails(season?: string): Promise<LiveSeason
       }
 
       if (data) {
-        cachedLiveSeasonDetails = data;
+        setLiveSeasonDetails(data);
         return data;
       }
-      cachedLiveSeasonDetails = null;
+      setLiveSeasonDetails(null);
       return null;
     } catch {
-      cachedLiveSeasonDetails = null;
+      setLiveSeasonDetails(null);
       return null;
     } finally {
       activeLiveFetchPromise = null;

@@ -12,25 +12,30 @@
 import { pushOpenModal, popCloseModal } from '@/components/modals/baseModal';
 import { getLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 import { showToast } from '@/utils/toast';
+import { escapeHtml } from '@/utils/dom';
 import { LEAGUE } from '@/config';
 import {
   renderStandingsStoryCanvas,
   renderMatchdayRecapStoryCanvas,
   renderMonteCarloStoryCanvas,
-  renderTeamPowerRadarStoryCanvas
+  renderTeamPowerRadarStoryCanvas,
+  renderManagerStoryCanvas,
+  renderTacticalStoryCanvas
 } from '@/export/renderers/story';
+import { state } from '@/state';
 import {
   copyBlobToClipboard,
   downloadBlob
 } from '@/export/renderers/core';
 
-export type StoryCardType = 'classifica' | 'recap' | 'mc' | 'power';
+export type StoryCardType = 'classifica' | 'recap' | 'mc' | 'power' | 'palmares' | 'tactical';
 export type StoryContext = 'league' | 'team';
 
 interface StoryModalState {
   activeTab: StoryCardType;
   context: StoryContext;
   selectedTeamName: string;
+  selectedManagerId: string;
   isGenerating: boolean;
   activeCanvas: HTMLCanvasElement | null;
 }
@@ -39,12 +44,86 @@ const modalState: StoryModalState = {
   activeTab: 'classifica',
   context: 'league',
   selectedTeamName: '',
+  selectedManagerId: '',
   isGenerating: false,
   activeCanvas: null
 };
 
 function getEffectiveLiveData() {
   return getLiveSeasonDetails() || (typeof window !== 'undefined' ? (window as any).liveSeasonData : null);
+}
+
+/**
+ * Resolves a target identifier (teamName, managerId, or managerName) to both a teamName and managerId.
+ * Supports all 20 managers (active in live season + historical/inactive).
+ */
+function resolveTargetSelection(target?: string, liveData?: any): { teamName: string; managerId: string } {
+  const standings: any[] = liveData?.standings || [];
+  const managers = state.managers || [];
+  const raw = (target || '').trim();
+  const rawLower = raw.toLowerCase();
+
+  let matchedManager = raw
+    ? managers.find(
+        m =>
+          m.id === raw ||
+          m.id.toLowerCase() === rawLower ||
+          m.name.toLowerCase() === rawLower
+      )
+    : undefined;
+
+  let matchedStanding = raw
+    ? standings.find(
+        s =>
+          s.teamName === raw ||
+          s.teamName?.toLowerCase() === rawLower ||
+          s.managerId === raw ||
+          s.coach?.toLowerCase() === rawLower
+      )
+    : undefined;
+
+  if (!matchedManager && matchedStanding) {
+    matchedManager = managers.find(
+      m =>
+        m.id === matchedStanding.managerId ||
+        m.name.toLowerCase() === matchedStanding.coach?.toLowerCase()
+    );
+  }
+
+  if (matchedManager && !matchedStanding) {
+    matchedStanding = standings.find(
+      s =>
+        s.managerId === matchedManager!.id ||
+        s.coach?.toLowerCase() === matchedManager!.name.toLowerCase()
+    );
+  }
+
+  if (!matchedManager && raw) {
+    matchedManager = managers.find(m =>
+      m.history?.some(h => h.team?.toLowerCase() === rawLower)
+    );
+  }
+
+  const sortedHistory = matchedManager?.history
+    ? [...matchedManager.history]
+        .filter(h => h.team && h.team.trim() !== '')
+        .sort((a, b) => (b.season || '').localeCompare(a.season || ''))
+    : [];
+
+  const resolvedManagerId =
+    matchedManager?.id ||
+    matchedStanding?.managerId ||
+    managers[0]?.id ||
+    '';
+
+  const resolvedTeamName =
+    matchedStanding?.teamName ||
+    (sortedHistory.length > 0 ? sortedHistory[0].team! : '') ||
+    raw ||
+    standings[0]?.teamName ||
+    '';
+
+  return { teamName: resolvedTeamName, managerId: resolvedManagerId };
 }
 
 /**
@@ -56,7 +135,11 @@ export function openStoryExportModal(
   context?: StoryContext
 ): void {
   const liveData = getEffectiveLiveData();
-  if (!liveData || !liveData.standings || liveData.standings.length === 0) {
+  const isAllTimeManagerTab = defaultTab === 'palmares' || defaultTab === 'tactical';
+  const hasLiveStandings = Boolean(liveData && liveData.standings && liveData.standings.length > 0);
+  const hasManagers = Boolean(state.managers && state.managers.length > 0);
+
+  if (!hasLiveStandings && !(isAllTimeManagerTab && hasManagers)) {
     showToast('Nessun dato di stagione live disponibile per creare la story', 'info');
     return;
   }
@@ -71,7 +154,9 @@ export function openStoryExportModal(
     modalState.activeTab = resolvedContext === 'league' ? 'classifica' : 'mc';
   }
 
-  modalState.selectedTeamName = teamName || liveData.standings[0]?.teamName || '';
+  const resolved = resolveTargetSelection(teamName, liveData);
+  modalState.selectedTeamName = resolved.teamName;
+  modalState.selectedManagerId = resolved.managerId;
   modalState.isGenerating = false;
   modalState.activeCanvas = null;
 
@@ -110,12 +195,61 @@ export function switchStoryExportTab(tab: StoryCardType): void {
 }
 
 /**
- * Changes the selected team for team-specific story cards
+ * Changes the selected team or manager for team/manager-specific story cards
  */
-export function changeStoryExportTeam(teamName: string): void {
-  if (modalState.selectedTeamName === teamName || modalState.isGenerating) return;
-  modalState.selectedTeamName = teamName;
+export function changeStoryExportTeam(teamOrManagerId: string): void {
+  if (modalState.isGenerating) return;
+  const liveData = getEffectiveLiveData();
+  const resolved = resolveTargetSelection(teamOrManagerId, liveData);
+  if (
+    resolved.teamName === modalState.selectedTeamName &&
+    resolved.managerId === modalState.selectedManagerId &&
+    teamOrManagerId === modalState.selectedTeamName
+  ) {
+    return;
+  }
+  modalState.selectedTeamName = resolved.teamName || teamOrManagerId;
+  modalState.selectedManagerId = resolved.managerId;
   generateAndRenderPreview();
+}
+
+/**
+ * Generates <option> elements for #story-team-select:
+ * - For all-time manager tabs ('palmares' | 'tactical'): lists all managers from state.managers (active + historical)
+ * - For live season tabs ('mc' | 'power'): lists active teams from liveData.standings
+ */
+function renderSelectorOptionsHtml(liveData: any): string {
+  const standings: any[] = liveData?.standings || [];
+  const managers = state.managers || [];
+  const isAllTimeManagerTab = modalState.activeTab === 'palmares' || modalState.activeTab === 'tactical';
+
+  if (isAllTimeManagerTab && managers.length > 0) {
+    return managers
+      .map(m => {
+        const liveStanding = standings.find(
+          s => s.managerId === m.id || s.coach?.toLowerCase() === m.name.toLowerCase()
+        );
+        const sortedHistory = [...(m.history || [])]
+          .filter(h => h.team && h.team.trim() !== '')
+          .sort((a, b) => (b.season || '').localeCompare(a.season || ''));
+        const latestTeam = liveStanding?.teamName || (sortedHistory.length > 0 ? sortedHistory[0].team! : 'Storico');
+        const isSelected = m.id === modalState.selectedManagerId;
+        return `
+          <option value="${escapeHtml(m.id)}" ${isSelected ? 'selected' : ''}>
+            ${escapeHtml(m.name)} (${escapeHtml(latestTeam)}) — ${m.years} ${m.years === 1 ? 'Stagione' : 'Stagioni'}
+          </option>
+        `;
+      })
+      .join('');
+  }
+
+  return standings
+    .map((t: any) => `
+      <option value="${escapeHtml(t.teamName)}" ${t.teamName === modalState.selectedTeamName ? 'selected' : ''}>
+        #${t.rank} ${escapeHtml(t.teamName)} (${escapeHtml(t.coach || 'Allenatore')})
+      </option>
+    `)
+    .join('');
 }
 
 /**
@@ -166,7 +300,7 @@ export function downloadCurrentStoryCard(): void {
  */
 function renderModalShell(container: HTMLElement): void {
   const liveData = getEffectiveLiveData();
-  const standings = liveData?.standings || [];
+  const isAllTimeManagerTab = modalState.activeTab === 'palmares' || modalState.activeTab === 'tactical';
 
   container.className = 'fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md transition-opacity duration-200';
   container.innerHTML = `
@@ -201,47 +335,55 @@ function renderModalShell(container: HTMLElement): void {
 
       <!-- Segmented Card Vertical Switcher -->
       <div class="px-5 pt-3.5 pb-2 shrink-0 flex flex-col gap-2.5">
-        <div class="flex items-center p-1 rounded-2xl border" style="background-color: var(--input-bg, #0f172a); border-color: var(--table-border, #1e293b);">
+        <div class="flex items-center p-1 rounded-2xl border flex-wrap sm:flex-nowrap gap-1" style="background-color: var(--input-bg, #0f172a); border-color: var(--table-border, #1e293b);">
           <button type="button"
                   id="tab-story-classifica"
                   onclick="window.switchStoryExportTab && window.switchStoryExportTab('classifica')"
-                  class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${modalState.activeTab === 'classifica' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'} ${modalState.context === 'team' ? 'hidden' : ''}">
+                  class="flex-1 py-2 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer ${modalState.activeTab === 'classifica' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'} ${modalState.context === 'team' ? 'hidden' : ''}">
             <span>📊 Classifica Live</span>
           </button>
           <button type="button"
                   id="tab-story-recap"
                   onclick="window.switchStoryExportTab && window.switchStoryExportTab('recap')"
-                  class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${modalState.activeTab === 'recap' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'} ${modalState.context === 'team' ? 'hidden' : ''}">
+                  class="flex-1 py-2 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer ${modalState.activeTab === 'recap' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'} ${modalState.context === 'team' ? 'hidden' : ''}">
             <span>📅 Recap Giornata</span>
           </button>
           <button type="button"
                   id="tab-story-mc"
                   onclick="window.switchStoryExportTab && window.switchStoryExportTab('mc')"
-                  class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${modalState.activeTab === 'mc' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'} ${modalState.context === 'league' ? 'hidden' : ''}">
-            <span>🎲 Quote Scudetto</span>
+                  class="flex-1 py-2 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer ${modalState.activeTab === 'mc' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'} ${modalState.context === 'league' ? 'hidden' : ''}">
+            <span>🎲 Quote</span>
           </button>
           <button type="button"
                   id="tab-story-power"
                   onclick="window.switchStoryExportTab && window.switchStoryExportTab('power')"
-                  class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${modalState.activeTab === 'power' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'} ${modalState.context === 'league' ? 'hidden' : ''}">
-            <span>⚡ Potenza &amp; Radar</span>
+                  class="flex-1 py-2 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer ${modalState.activeTab === 'power' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'} ${modalState.context === 'league' ? 'hidden' : ''}">
+            <span>⚡ Potenza</span>
+          </button>
+          <button type="button"
+                  id="tab-story-palmares"
+                  onclick="window.switchStoryExportTab && window.switchStoryExportTab('palmares')"
+                  class="flex-1 py-2 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer ${modalState.activeTab === 'palmares' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'} ${modalState.context === 'league' ? 'hidden' : ''}">
+            <span>🏆 Palmarès</span>
+          </button>
+          <button type="button"
+                  id="tab-story-tactical"
+                  onclick="window.switchStoryExportTab && window.switchStoryExportTab('tactical')"
+                  class="flex-1 py-2 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer ${modalState.activeTab === 'tactical' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'} ${modalState.context === 'league' ? 'hidden' : ''}">
+            <span>🎭 Identikit</span>
           </button>
         </div>
 
-        <!-- Team Selector (Visible for team-level cards) -->
+        <!-- Team / Manager Selector (Visible for team/manager-level cards) -->
         <div id="story-team-selector-container" class="flex items-center gap-2 ${(modalState.context === 'league' || modalState.activeTab === 'classifica' || modalState.activeTab === 'recap') ? 'hidden' : ''}">
-          <label for="story-team-select" class="text-xs font-bold text-slate-400 shrink-0">
-            Squadra:
+          <label id="story-team-select-label" for="story-team-select" class="text-xs font-bold text-slate-400 shrink-0">
+            ${isAllTimeManagerTab ? 'Allenatore:' : 'Squadra:'}
           </label>
           <select id="story-team-select"
                   onchange="window.changeStoryExportTeam && window.changeStoryExportTeam(this.value)"
                   class="w-full text-xs font-bold py-1.5 px-3 rounded-xl border bg-slate-900 text-white cursor-pointer"
                   style="border-color: var(--table-border, #1e293b);">
-            ${standings.map((t: any) => `
-              <option value="${t.teamName}" ${t.teamName === modalState.selectedTeamName ? 'selected' : ''}>
-                #${t.rank} ${t.teamName} (${t.coach || 'Allenatore'})
-              </option>
-            `).join('')}
+            ${renderSelectorOptionsHtml(liveData)}
           </select>
         </div>
       </div>
@@ -290,11 +432,12 @@ function renderModalShell(container: HTMLElement): void {
  * Updates active tab styling in DOM
  */
 function updateTabUI(): void {
-  const tabs: StoryCardType[] = ['classifica', 'recap', 'mc', 'power'];
+  const tabs: StoryCardType[] = ['classifica', 'recap', 'mc', 'power', 'palmares', 'tactical'];
   tabs.forEach(t => {
     const btn = document.getElementById(`tab-story-${t}`);
     if (btn) {
-      const isHiddenByContext = (modalState.context === 'league' && (t === 'mc' || t === 'power')) ||
+      const isHiddenByContext =
+        (modalState.context === 'league' && (t === 'mc' || t === 'power' || t === 'palmares' || t === 'tactical')) ||
         (modalState.context === 'team' && (t === 'classifica' || t === 'recap'));
       if (isHiddenByContext) {
         btn.classList.add('hidden');
@@ -303,9 +446,9 @@ function updateTabUI(): void {
       }
 
       if (t === modalState.activeTab) {
-        btn.className = `flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer bg-amber-500 text-slate-950 shadow-sm ${isHiddenByContext ? 'hidden' : ''}`;
+        btn.className = `flex-1 py-2 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer bg-amber-500 text-slate-950 shadow-sm ${isHiddenByContext ? 'hidden' : ''}`;
       } else {
-        btn.className = `flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-slate-400 hover:text-white ${isHiddenByContext ? 'hidden' : ''}`;
+        btn.className = `flex-1 py-2 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer text-slate-400 hover:text-white ${isHiddenByContext ? 'hidden' : ''}`;
       }
     }
   });
@@ -318,6 +461,16 @@ function updateTabUI(): void {
       selectorContainer.classList.remove('hidden');
     }
   }
+
+  const isAllTimeManagerTab = modalState.activeTab === 'palmares' || modalState.activeTab === 'tactical';
+  const selectLabel = document.getElementById('story-team-select-label');
+  if (selectLabel) {
+    selectLabel.textContent = isAllTimeManagerTab ? 'Allenatore:' : 'Squadra:';
+  }
+  const selectEl = document.getElementById('story-team-select') as HTMLSelectElement | null;
+  if (selectEl) {
+    selectEl.innerHTML = renderSelectorOptionsHtml(getEffectiveLiveData());
+  }
 }
 
 /**
@@ -325,7 +478,8 @@ function updateTabUI(): void {
  */
 async function generateAndRenderPreview(): Promise<void> {
   const liveData = getEffectiveLiveData();
-  if (!liveData) return;
+  const isAllTimeManagerTab = modalState.activeTab === 'palmares' || modalState.activeTab === 'tactical';
+  if (!liveData && !isAllTimeManagerTab) return;
 
   const spinner = document.getElementById('story-preview-spinner');
   const content = document.getElementById('story-preview-content');
@@ -336,7 +490,13 @@ async function generateAndRenderPreview(): Promise<void> {
 
   try {
     let canvas: HTMLCanvasElement;
-    const selectedTeam = (liveData.standings || []).find((t: any) => t.teamName === modalState.selectedTeamName) || liveData.standings?.[0];
+    const standings = liveData?.standings || [];
+    const selectedTeam =
+      standings.find(
+        (t: any) =>
+          t.teamName === modalState.selectedTeamName ||
+          (modalState.selectedManagerId && t.managerId === modalState.selectedManagerId)
+      ) || standings[0];
 
     if (modalState.activeTab === 'classifica') {
       canvas = await renderStandingsStoryCanvas(liveData);
@@ -345,6 +505,24 @@ async function generateAndRenderPreview(): Promise<void> {
     } else if (modalState.activeTab === 'mc') {
       if (!selectedTeam) throw new Error('Squadra non trovata');
       canvas = await renderMonteCarloStoryCanvas(selectedTeam, liveData);
+    } else if (modalState.activeTab === 'palmares' || modalState.activeTab === 'tactical') {
+      const managers = state.managers || [];
+      const manager =
+        managers.find(m => m.id === modalState.selectedManagerId) ||
+        managers.find(
+          m =>
+            m.id === modalState.selectedTeamName ||
+            m.name.toLowerCase() === modalState.selectedTeamName.toLowerCase()
+        ) ||
+        (selectedTeam && selectedTeam.managerId
+          ? managers.find(m => m.id === selectedTeam.managerId)
+          : managers.find(m => m.name.toLowerCase() === selectedTeam?.coach?.toLowerCase())) ||
+        managers[0];
+      if (!manager) throw new Error('Manager non trovato per la story');
+      canvas =
+        modalState.activeTab === 'palmares'
+          ? await renderManagerStoryCanvas(manager)
+          : await renderTacticalStoryCanvas(manager);
     } else {
       if (!selectedTeam) throw new Error('Squadra non trovata');
       canvas = await renderTeamPowerRadarStoryCanvas(selectedTeam, liveData);

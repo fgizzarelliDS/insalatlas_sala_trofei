@@ -10,6 +10,7 @@ import {
   downloadBlob,
   copyBlobToClipboard
 } from '@/export/canvas';
+import { renderTacticalStoryCanvas } from '@/export/renderers/story';
 
 /**
  * Formats rich banter text and direct link for WhatsApp sharing with preview
@@ -215,5 +216,28 @@ export async function exportProfileStoryHD(manager: Manager): Promise<void> {
   } catch (err) {
     console.error('Story export failed:', err);
     showToast('Impossibile esportare la Story', 'error');
+  }
+}
+
+/**
+ * Renders and downloads high-definition 9:16 vertical Instagram/WhatsApp Story for a manager's Tactical Identikit
+ */
+export async function exportProfileTacticalStoryHD(manager: Manager): Promise<void> {
+  showToast('Generazione Identikit Story 9:16 in corso...', 'info');
+
+  try {
+    const canvas = await renderTacticalStoryCanvas(manager);
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        showToast("Errore durante la creazione dell'Identikit Story", 'error');
+        return;
+      }
+      const filename = `${LEAGUE.filePrefix}_identikit_${manager.id}_${Date.now()}.png`;
+      downloadBlob(blob, filename);
+      showToast('Story Identikit scaricata con successo! 📸', 'success');
+    }, 'image/png');
+  } catch (err) {
+    console.error('Tactical story export failed:', err);
+    showToast("Impossibile esportare l'Identikit Story", 'error');
   }
 }

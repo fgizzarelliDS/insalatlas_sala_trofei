@@ -1,4 +1,4 @@
-import { AppState } from '@/types';
+import { AppState, LiveSeasonDetails } from '@/types';
 import { DEFAULT_TITLES, LEAGUE } from '@/config';
 
 const isMobileDevice = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
@@ -13,3 +13,20 @@ export const state: AppState = {
   selectedManagerId: null,
   titles: { ...DEFAULT_TITLES }
 };
+
+let cachedLiveSeasonDetails: LiveSeasonDetails | null = null;
+
+/**
+ * Returns currently cached live season details (if any)
+ */
+export function getLiveSeasonDetails(): LiveSeasonDetails | null {
+  return cachedLiveSeasonDetails;
+}
+
+/**
+ * Sets or overrides cached live season details
+ */
+export function setLiveSeasonDetails(details: LiveSeasonDetails | null): void {
+  cachedLiveSeasonDetails = details;
+}
+

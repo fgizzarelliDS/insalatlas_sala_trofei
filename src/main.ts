@@ -2,6 +2,7 @@ import { applyTitlesToDOM } from '@/ui';
 import { loadLeagueData } from '@/storage';
 import { loadLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 import { loadAnalyticsEloData } from '@/analytics/analyticsCore';
+import { loadManagerLore } from '@/analytics/tacticalProfiler';
 import {
   initModalMounts,
   initModalListeners,
@@ -82,15 +83,17 @@ export async function initApp(): Promise<void> {
   initModalListeners();
   initResponsiveDisplayMode();
   await loadLeagueData();
-  // Prefetch live season details and dynamic Elo data eagerly
+  // Prefetch live season details, dynamic Elo data and tactical manager lore eagerly
   loadLiveSeasonDetails().catch(() => {});
   loadAnalyticsEloData().catch(() => {});
+  const lorePromise = loadManagerLore().catch(() => {});
   applyTitlesToDOM();
   renderBoard();
   renderTopStatsCards();
   updateStatistics();
   initScrollHintListener();
   initPWA();
+  await lorePromise;
   await handleInitialDeepLinking();
   initDropdownClickOutsideListener();
 }

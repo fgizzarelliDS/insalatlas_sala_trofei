@@ -3,44 +3,48 @@ import { calculateManagerScore } from '@/score';
 import { populateProfileModalDOM } from './profile';
 import { getH2HReturnContext, clearH2HReturnContext } from './h2h/HeadToHeadContext';
 import { getTeamMatchesReturnContext, clearTeamMatchesReturnContext } from '../board/seasons/TeamMatchesModal';
+import { openStoryExportModal } from './export/StoryExportModal';
 
 /**
- * Switches between Tab 1 ('palmares'), Tab 2 ('career'), and Tab 3 ('badges')
+ * Switches between Tab 1 ('palmares'), Tab 2 ('tactical'), Tab 3 ('career'), and Tab 4 ('badges')
  */
-export function switchProfileModalTab(tab: 'palmares' | 'career' | 'badges'): void {
+export function switchProfileModalTab(tab: 'palmares' | 'tactical' | 'career' | 'badges'): void {
   const palmaresContent = document.getElementById('profile-tab-palmares-content');
+  const tacticalContent = document.getElementById('profile-tab-tactical-content');
   const careerContent = document.getElementById('profile-tab-career-content');
   const badgesContent = document.getElementById('profile-tab-badges-content');
   const btnPalmares = document.getElementById('profile-tab-btn-palmares');
+  const btnTactical = document.getElementById('profile-tab-btn-tactical');
   const btnCareer = document.getElementById('profile-tab-btn-career');
   const btnBadges = document.getElementById('profile-tab-btn-badges');
 
   const activeBtnClass =
-    'min-w-0 flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 sm:gap-1.5 border border-amber-500/40 bg-amber-500/10 text-amber-400 shadow-sm';
+    'flex-1 min-w-0 py-1.5 sm:py-2 px-1 sm:px-2 rounded-xl text-[10px] sm:text-xs font-bold transition flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 border border-amber-500/40 bg-amber-500/10 text-amber-400 shadow-sm cursor-pointer';
   const inactiveBtnClass =
-    'min-w-0 flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 sm:gap-1.5 border border-transparent opacity-60 hover:opacity-100';
+    'flex-1 min-w-0 py-1.5 sm:py-2 px-1 sm:px-2 rounded-xl text-[10px] sm:text-xs font-bold transition flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 border border-transparent opacity-60 hover:opacity-100 cursor-pointer';
+
+  palmaresContent?.classList.add('hidden');
+  tacticalContent?.classList.add('hidden');
+  careerContent?.classList.add('hidden');
+  badgesContent?.classList.add('hidden');
+
+  if (btnPalmares) btnPalmares.className = inactiveBtnClass;
+  if (btnTactical) btnTactical.className = inactiveBtnClass;
+  if (btnCareer) btnCareer.className = inactiveBtnClass;
+  if (btnBadges) btnBadges.className = inactiveBtnClass;
 
   if (tab === 'palmares') {
     palmaresContent?.classList.remove('hidden');
-    careerContent?.classList.add('hidden');
-    badgesContent?.classList.add('hidden');
     if (btnPalmares) btnPalmares.className = activeBtnClass;
-    if (btnCareer) btnCareer.className = inactiveBtnClass;
-    if (btnBadges) btnBadges.className = inactiveBtnClass;
+  } else if (tab === 'tactical') {
+    tacticalContent?.classList.remove('hidden');
+    if (btnTactical) btnTactical.className = activeBtnClass;
   } else if (tab === 'career') {
-    palmaresContent?.classList.add('hidden');
     careerContent?.classList.remove('hidden');
-    badgesContent?.classList.add('hidden');
     if (btnCareer) btnCareer.className = activeBtnClass;
-    if (btnPalmares) btnPalmares.className = inactiveBtnClass;
-    if (btnBadges) btnBadges.className = inactiveBtnClass;
   } else {
-    palmaresContent?.classList.add('hidden');
-    careerContent?.classList.add('hidden');
     badgesContent?.classList.remove('hidden');
     if (btnBadges) btnBadges.className = activeBtnClass;
-    if (btnPalmares) btnPalmares.className = inactiveBtnClass;
-    if (btnCareer) btnCareer.className = inactiveBtnClass;
   }
 }
 
@@ -330,15 +334,18 @@ export function toggleCompetitionDrawer(competitionId: number, season?: string):
 }
 
 /**
- * Exports currently opened manager profile as 9:16 Instagram/WhatsApp Story
+ * Opens 9:16 Story Cards Hub for the currently opened manager profile,
+ * defaulting to 'tactical' if Identikit tab is active, or 'palmares' otherwise.
  */
 export async function exportCurrentProfileStoryHD(): Promise<void> {
   const currentId = state.selectedManagerId;
   if (!currentId) return;
   const m = state.managers.find(item => item.id === currentId);
   if (m) {
-    const { exportProfileStoryHD } = await import('@/export');
-    await exportProfileStoryHD(m);
+    closeShareDropdown();
+    const tacticalContent = document.getElementById('profile-tab-tactical-content');
+    const isTacticalActive = Boolean(tacticalContent && !tacticalContent.classList.contains('hidden'));
+    openStoryExportModal(m.id, isTacticalActive ? 'tactical' : 'palmares', 'team');
   }
 }
 

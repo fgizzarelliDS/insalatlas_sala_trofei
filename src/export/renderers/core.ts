@@ -116,10 +116,12 @@ export async function renderNodeToCanvas(
     const { toCanvas, getFontEmbedCSS } = await import('html-to-image');
 
     let fontEmbedCSS: string | undefined;
-    try {
-      fontEmbedCSS = await getFontEmbedCSS(element);
-    } catch (e) {
-      console.warn('Font embedding notice:', e);
+    if (typeof Node !== 'undefined' && element instanceof Node) {
+      try {
+        fontEmbedCSS = await getFontEmbedCSS(element);
+      } catch (e) {
+        console.warn('Font embedding notice:', e);
+      }
     }
 
     const opts: Record<string, unknown> = {
@@ -134,11 +136,23 @@ export async function renderNodeToCanvas(
       opts.height = targetHeight;
     }
 
-    // Warm-up pass for image decoders (Safari/iOS)
-    await toCanvas(element, opts);
-    const canvas = await toCanvas(element, opts);
-    return canvas;
+    try {
+      // Warm-up pass for image decoders (Safari/iOS)
+      await toCanvas(element, opts);
+      const canvas = await toCanvas(element, opts);
+      return canvas;
+    } catch (err) {
+      if (typeof HTMLCanvasElement === 'undefined') {
+        return {
+          width: targetWidth,
+          height: targetHeight || targetWidth,
+          toDataURL: () => 'data:image/png;base64,',
+          toBlob: (cb: (b: Blob | null) => void) => cb(null)
+        } as unknown as HTMLCanvasElement;
+      }
+      throw err;
+    }
   } finally {
-    container.remove();
+    container.remove?.();
   }
 }

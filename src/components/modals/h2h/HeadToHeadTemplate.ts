@@ -1,8 +1,5 @@
 import type { Manager, HeadToHeadStats } from '@/types';
-import { renderHeadToHeadHero } from './HeadToHeadHero';
-import { renderHeadToHeadScoreboard } from './HeadToHeadScoreboard';
-import { renderHeadToHeadPalmares } from './HeadToHeadPalmares';
-import { renderHeadToHeadMetrics } from './HeadToHeadMetrics';
+import { renderHeadToHeadMatchupView } from './HeadToHeadMatchupView';
 import { renderNemesisMatrixView } from './NemesisMatrixView';
 import { renderMultiManagerView } from './MultiManagerView';
 
@@ -18,8 +15,8 @@ export type H2HTabMode = 'duel' | 'multi' | 'matrix';
 export function renderHeadToHeadModalHTML(
   stats: HeadToHeadStats,
   allManagers: Manager[],
-  isChronologyExpanded: boolean,
-  visualMode: 'radar' | 'bars' = 'radar',
+  _isChronologyExpanded: boolean = false,
+  _visualMode: 'radar' | 'bars' = 'radar',
   activeTab: H2HTabMode = 'duel',
   nemesisFilter: 'active' | 'veterans' | 'all' = 'active',
   profileReturnName?: string | null,
@@ -27,7 +24,6 @@ export function renderHeadToHeadModalHTML(
   hiddenMultiManagerIds: Set<string> = new Set(),
   multiTournamentMode: 'ppg' | 'simultaneous' = 'simultaneous'
 ): string {
-  const { managerA, managerB, palmares } = stats;
 
   return `
     <!-- Modal Header with Sub-tab Switcher -->
@@ -97,19 +93,7 @@ export function renderHeadToHeadModalHTML(
     <!-- Scrollable Modal Body -->
     <div class="p-3 sm:p-5 overflow-y-auto flex-1 space-y-4" style="scrollbar-width: thin; scrollbar-color: var(--table-border) transparent;">
       ${activeTab === 'duel'
-      ? `
-            <!-- 1. Hero Selectors & Face-off Cards -->
-            ${renderHeadToHeadHero(stats, allManagers)}
-
-            <!-- 2. Scoreboard Scontri Diretti in Campionato -->
-            ${renderHeadToHeadScoreboard(stats, managerA, managerB, isChronologyExpanded)}
-
-            <!-- 3. Palmarès a Specchio -->
-            ${renderHeadToHeadPalmares(palmares, managerA, managerB)}
-
-            <!-- 4. Indicatori di Performance & Grafico Dual-Mode -->
-            ${renderHeadToHeadMetrics(stats, managerA, managerB, visualMode)}
-          `
+      ? renderHeadToHeadMatchupView(stats, allManagers)
       : activeTab === 'multi'
         ? `
             <!-- 3+ Managers "Tavolo dei Rivali" Multi-Radar & Mini-Tournament -->

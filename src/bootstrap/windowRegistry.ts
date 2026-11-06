@@ -83,6 +83,7 @@ import {
   closeH2HShareDropdown,
   exportCurrentH2HDuelHD,
   copyCurrentH2HDuelToClipboard,
+  copyCurrentH2HDuelBanter,
   exportCurrentH2HDuelStoryHD,
   openMultiManagerModal,
   changeMultiManager,
@@ -274,6 +275,7 @@ declare global {
     closeH2HShareDropdown: typeof closeH2HShareDropdown;
     exportCurrentH2HDuelHD: typeof exportCurrentH2HDuelHD;
     copyCurrentH2HDuelToClipboard: typeof copyCurrentH2HDuelToClipboard;
+    copyCurrentH2HDuelBanter: typeof copyCurrentH2HDuelBanter;
     exportCurrentH2HDuelStoryHD: typeof exportCurrentH2HDuelStoryHD;
     openMultiManagerModal: typeof openMultiManagerModal;
     changeMultiManager: typeof changeMultiManager;
@@ -496,6 +498,7 @@ export function registerGlobalWindowHandlers(): void {
     closeH2HShareDropdown,
     exportCurrentH2HDuelHD,
     copyCurrentH2HDuelToClipboard,
+    copyCurrentH2HDuelBanter,
     exportCurrentH2HDuelStoryHD,
     openMultiManagerModal,
     changeMultiManager,

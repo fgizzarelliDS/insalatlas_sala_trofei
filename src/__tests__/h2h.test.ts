@@ -491,7 +491,9 @@ describe('Head-to-Head (H2H) Engine & Router', () => {
       // 6. Duel tab vs Matrix tab in Shell
       const duelHTML = renderHeadToHeadModalHTML(stats, [managerA, managerB], false, 'radar', 'duel');
       expect(duelHTML).toContain('Duello 1 vs 1');
-      expect(duelHTML).toContain('Bacheca Trofei a Confronto');
+      expect(duelHTML).toContain('Radar Tattico a 5 Assi');
+      expect(duelHTML).toContain('Precedenti in Campionato');
+      expect(duelHTML).toContain('Chiave Tattica del Duello');
       expect(duelHTML).toContain('Scarica / Condividi');
       expect(duelHTML).toContain('Scarica PNG');
       expect(duelHTML).toContain('Copia per WhatsApp');

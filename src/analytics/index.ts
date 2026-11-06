@@ -10,3 +10,4 @@ export * from './multiManager';
 export * from './records';
 export * from './analyticsCore';
 export * from './tacticalProfiler';
+export * from './tacticalMatchup';

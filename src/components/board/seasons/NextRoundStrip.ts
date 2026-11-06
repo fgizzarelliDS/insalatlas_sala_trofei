@@ -27,6 +27,8 @@ import {
   renderBradleyTerryFormulaHTML,
   buildNextRoundGuideHTML
 } from './liveNextRoundGuide';
+import { state } from '@/state';
+import { computeManagerTacticalProfile } from '@/analytics/tacticalProfiler';
 
 // Re-export domain logic and guide rendering for full backward compatibility
 export {
@@ -177,20 +179,43 @@ function renderMatchCard(
 ): string {
   const meta = resolveMatchupMetrics(m, idx, liveData, mode, totalTeams, leagueCtx);
 
+  const mgrHome = state.managers?.find(mgr => mgr.id === meta.homeMgrId);
+  const mgrAway = state.managers?.find(mgr => mgr.id === meta.awayMgrId);
+  let tacticalPillHTML = '';
+  if (mgrHome && mgrAway) {
+    const profHome = computeManagerTacticalProfile(mgrHome, state.managers, liveData);
+    const profAway = computeManagerTacticalProfile(mgrAway, state.managers, liveData);
+    const getShort = (trait: string) => {
+      const parts = trait.split('&')[0].replace(/^[^\p{L}\p{N}\s]+/u, '').trim().split(' ');
+      return parts[0] || 'Tattico';
+    };
+    const shortA = getShort(profHome.archetype.trait);
+    const shortB = getShort(profAway.archetype.trait);
+    tacticalPillHTML = `
+      <span class="px-2 py-0.5 rounded-full text-[8.5px] font-black tracking-tight border inline-flex items-center gap-1 whitespace-nowrap shrink-0 border-indigo-500/35 bg-indigo-500/10 text-indigo-400 dark:text-indigo-300"
+            title="Scontro Filosofico: ${escapeHtml(profHome.archetype.title)} vs ${escapeHtml(profAway.archetype.title)}">
+        <span>${escapeHtml(shortA)} vs ${escapeHtml(shortB)}</span>
+      </span>
+    `;
+  }
+
   return `
     <div onclick="window.openHeadToHeadModal && window.openHeadToHeadModal('${meta.homeMgrId}', '${meta.awayMgrId}');"
          class="p-3 rounded-2xl border transition-all duration-200 hover:scale-[1.01] hover:shadow-md cursor-pointer select-none flex flex-col justify-between gap-2.5"
          style="border-color: var(--table-border); background-color: var(--table-surface);"
          title="Analizza lo scontro diretto tra ${escapeHtml(meta.homeTeam)} e ${escapeHtml(meta.awayTeam)}">
       
-      <!-- Header: Match Index + Clima Match Badge -->
+      <!-- Header: Match Index + Tactical Clash Pill + Clima Match Badge -->
       <div class="flex items-center justify-between gap-1 text-[10px] font-bold">
-        <span class="opacity-40 text-[9px] font-mono tracking-wider" style="color: var(--text-muted);">
+        <span class="opacity-40 text-[9px] font-mono tracking-wider shrink-0" style="color: var(--text-muted);">
           MATCH ${idx + 1}
         </span>
-        <span class="px-2 py-0.5 rounded-full text-[9px] font-black tracking-wide border inline-flex items-center gap-1 whitespace-nowrap shrink-0 ${meta.clima.badgeClass}">
-          <span>${meta.clima.label}</span>
-        </span>
+        <div class="flex items-center gap-1.5 min-w-0">
+          ${tacticalPillHTML}
+          <span class="px-2 py-0.5 rounded-full text-[9px] font-black tracking-wide border inline-flex items-center gap-1 whitespace-nowrap shrink-0 ${meta.clima.badgeClass}">
+            <span>${meta.clima.label}</span>
+          </span>
+        </div>
       </div>
 
       <!-- Teams Rows: Crest, Name, and Clean Integer Elo Pill -->

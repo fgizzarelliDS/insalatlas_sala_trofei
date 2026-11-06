@@ -4,6 +4,8 @@ import { computeHeadToHead } from '@/analytics';
 import { renderHeadToHeadModalHTML, type H2HTabMode } from './HeadToHeadTemplate';
 import { closeProfileModal } from '@/components/modals/ProfileModal';
 import { buildH2HWhatsAppShareText, buildMultiManagerWhatsAppShareText } from '@/export/share/h2hText';
+import { showToast } from '@/utils/toast';
+import { getLiveSeasonDetails } from '@/components/board/seasons/liveAnalytics';
 
 let selectedManagerIdA: string | null = null;
 let selectedManagerIdB: string | null = null;
@@ -501,6 +503,47 @@ export async function exportCurrentH2HDuelStoryHD(): Promise<void> {
 }
 
 /**
+ * Copies preformatted tactical WhatsApp Banter for current 1vs1 H2H Duel 
+ */
+export async function copyCurrentH2HDuelBanter(): Promise<void> {
+  if (!selectedManagerIdA || !selectedManagerIdB) {
+    showToast('Nessun duello attivo selezionato', 'error');
+    return;
+  }
+  const managerA = state.managers.find(m => m.id === selectedManagerIdA);
+  const managerB = state.managers.find(m => m.id === selectedManagerIdB);
+  if (!managerA || !managerB) {
+    showToast('Manager non trovati', 'error');
+    return;
+  }
+  const { computeTacticalMatchup } = await import('@/analytics/tacticalMatchup');
+  const liveData = getLiveSeasonDetails();
+  const matchup = computeTacticalMatchup(managerA, managerB, state.managers, liveData);
+  const text = matchup.banterText;
+
+  try {
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      showToast('Banter Pre-Match WhatsApp copiato! 📋', 'success');
+    } else {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showToast('Banter Pre-Match WhatsApp copiato! 📋', 'success');
+    }
+  } catch (err) {
+    console.error('Failed to copy duel banter:', err);
+    showToast('Impossibile copiare negli appunti', 'error');
+  }
+}
+
+/**
  * Changes a manager at a specific index in the multi-manager comparison
  */
 export function changeMultiManager(index: number, newId: string): void {
@@ -645,6 +688,7 @@ if (typeof window !== 'undefined') {
   window.openMultiManagerModal = openMultiManagerModal;
   window.setMultiTournamentMode = setMultiTournamentMode;
   window.exportCurrentH2HDuelStoryHD = exportCurrentH2HDuelStoryHD;
+  window.copyCurrentH2HDuelBanter = copyCurrentH2HDuelBanter;
   window.exportMultiManagerStoryHD = exportMultiManagerStoryHD;
   window.exportCurrentMultiManagerHD = exportCurrentMultiManagerHD;
   window.copyCurrentMultiManagerToClipboard = copyCurrentMultiManagerToClipboard;

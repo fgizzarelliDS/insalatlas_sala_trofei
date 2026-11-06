@@ -287,3 +287,55 @@ Per le stagioni contrassegnate come `in_progress: true`, il sistema attiva un mo
      - Download diretto del file PNG ad alta definizione e copia nativa negli appunti (Blob PNG tramite `navigator.clipboard.write`).
      - Supporto per sfondo trasparente o scuro premium da pubblicare istantaneamente su WhatsApp, Telegram o Instagram.
 
+
+---
+
+### 12. Profiler Tattico & Identikit Manageriale (SPEC-25)
+
+Il modulo **Profiler Tattico** arricchisce la Scheda Profilo di ciascun allenatore con un'analisi multidimensionale fondata su econometria sportiva, normalizzazione $Z$-score con $\tanh$ e archetipi comportamentali della cultura calcistica italiana.
+
+1. **Tab "Identikit" nella Scheda Profilo (`ProfileTacticalTab.ts`)**:
+   - **Segmented Control Responsive**: Tab bar orizzontale a 4 posizioni (`Palmares`, `Identikit`, `Piazzamenti`, `Hall of Fame`) con layout a griglia `grid-cols-4` e icone impilate su mobile (`flex-col items-center`), garantendo leggibilità totale senza ellissi o troncamenti di testo.
+   - **Hero Card dell'Archetipo Tattico**:
+     - Badge dell'Archetipo dominante (es. `🎯 IL CORTO MUSO ALLEGRIANO`, `⚽ IL BIELSA INCOMPRESO`, `🔮 IL GIOCHISTA SENZA TITOLI`, `🏆 L'ARRAFFATUTTO INSAZIABILE`, `🧊 IL CECCHINO DEI RIGORI`, `🎰 L'ORACOLO DEL CAOS`, `🛡️ IL CATENACCIARO DE' NOANTRI`, `⚖️ IL MEDIANO DEL FANTACALCIO`).
+     - Tratto caratteristico distintivo e motto citazione filosofica in corsivo.
+     - Pillola cattedratica "Tattica Prediletta" (es. `1-0 e palla in tribuna`, `Iperoffensivismo Utipistico`).
+   - **Pentagono Radar SVG a 5 Assi (`ProfileTacticalRadar.ts`)**:
+     - *Assi Analizzati*: **POT** (Potenza Offensiva / Fanta-Media), **CIN** (Cinismo Corto Muso / % vittorie $\le 1$ gol), **LUK** (Fattore Fortuna / Punti vs xPTS), **REG** (Stabilità di Rendimento / Anti-Varianza piazzamenti), **KOC** (Freddezza da Coppe / Trofei e finali vinte con shrinkage bayesiano).
+     - Raggio $r = 96\text{px}$, centro $(180, 140)$, poligono ambra con gradiente e glow soffuso.
+     - Poligono tratteggiato della media di lega al $50\%$ per confronto immediato con la mediana dei colleghi.
+     - Valori raw effettivi posizionati sotto ciascuna etichetta d'asse con anchor geometrico reattivo per prevenire qualsiasi troncamento del canvas SVG.
+   - **Card Differenziale vs Media Lega**:
+     - 5 barre orizzontali comparative bicromatiche: colore d'accento quando superiore alla media di lega ($\Delta > 0$), sfumatura rossa quando deficitaria ($\Delta < 0$).
+     - Etichette con valore raw del mister e scostamento percentuale esatto $(\pm X\%)$.
+   - **Big Numbers della Filosofia**:
+     - 3 metriche riassuntive in evidenza: *Media di Fuoco* (Fanta-Media all-time), *Fattore Fortuna* ($\Delta$ punti vs xPTS), *Titoli Carriera* (Palmares complessivo).
+   - **Export Social Story 9:16 Identikit (`src/export/renderers/story/tacticalStory.ts`)**:
+     - Canvas verticale 1080x1920 con safe-zone Instagram/TikTok.
+     - Radar pentagonale ingrandito ad alta definizione con barre comparative integrate e branding ufficiale Insalatlas.
+
+---
+
+### 13. Matchup Tattico Head-to-Head & Pre-Match Experience 
+
+L'esperienza degli scontri diretti viene unificata e portata a livello televisivo integrando il confronto di stili di gioco sia nel modale Head-to-Head che nella striscia delle giornate live.
+
+1. **Modale H2H a Tab Unificato (`HeadToHeadMatchupView.ts`)**:
+   - Risponde all'esigenza di una consultazione immediata e priva di ridondanze attraverso una singola vista verticale focalizzata sul duello tattico:
+     1. **Hero Contenders con Selettori Interattivi & Archetipi**: Dropdown dinamici per selezionare qualsiasi coppia di manager della lega, stemmi dei club correnti o storici, badge degli archetipi tattici e motti identificativi a confronto.
+     2. **Radar Tattico a Doppio Poligono a 5 Assi (`HeadToHeadRadar.ts`)**:
+        - Poligono ambra per il Manager A sovrapposto al poligono ciano per il Manager B su sfondo neutro scuro con linea guida tratteggiata al $50\%$ della media lega.
+        - Sotto ciascuno dei 5 vertici (POTENZA, CINISMO, FORTUNA, STABILITÀ, COPPE) sono riportati sia il valore raw di A che quello di B affiancati (`74.2 FP vs 68.1 FP`).
+     3. **Precedenti in Campionato (Scoreboard Big Numbers)**:
+        - Posizionato strategicamente **direttamente sopra** la Chiave Tattica per fornire subito il bilancio storico dello scontro.
+        - 3 colonne sintetiche: *Vittorie Manager A*, *Pareggi*, *Vittorie Manager B* con conteggio delle stagioni condivise.
+     4. **Chiave Tattica del Duello (Analisi Narrativa Algoritmica)**:
+        - Box ambra con icona lampadina che sintetizza lo scontro filosofico (es. *Potenza di Fuoco vs Freddezza da Coppe*), spiegando in prosa quale manager possiede il vantaggio relativo sul campo e quale fattore deciderà il match.
+     5. **Pulsanti d'Azione Rapida**:
+        - `[📱 Esporta Story 9:16 Duello]`: Genera il poster verticale HD pronto per Instagram/WhatsApp Status.
+        - `[📋 Copia Banter WhatsApp]`: Genera e copia negli appunti un testo pronto per le chat di lega con formattazione corsivo/grassetto, emoji e link all'app.
+2. **Pillola Scontro Filosofico nel Prossimo Turno (`NextRoundStrip.ts`)**:
+   - In ciascuna card di matchday nella striscia live del Prossimo Turno, a fianco dell'indice di gara e del Clima Partita, è inserita una pillola compatta indaco (`⚡ Spavaldo vs ⚙️ Metodico`) che anticipa il clash filosofico tra i due mister al timone.
+   - Cliccando sulla card dell'incontro, il modale H2H si apre configurato direttamente con i due mister pronti per l'analisi tattica approfondita.
+3. **Generatore WhatsApp Banter (`tacticalMatchup.ts`)**:
+   - Formatta un messaggio ricco con riepilogo dello scontro filosofico, motti dei mister, confronto asse per asse con frecce di vantaggio (`Alfo ▲`), bilancio precedenti e verdetto della chiave tattica.

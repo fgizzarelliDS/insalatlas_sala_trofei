@@ -362,12 +362,78 @@ export function renderDualRadar5AxesSVG(
     kocSubLabel = `(${subA || subB})`;
   }
 
+  const isSeasonal = profileA.axes.koc.shortTitle === 'BIG MATCH' || profileB.axes.koc.shortTitle === 'BIG MATCH';
+
   const axes = [
-    { key: 'pot', label: 'POTENZA', x: cx, y: 18, scoreY: 33, subY: 0, anchor: 'middle', rawA: profileA.axes.pot.raw, rawB: profileB.axes.pot.raw, sub: '' },
-    { key: 'cin', label: 'CINISMO', x: cx + 118, y: 118, scoreY: 133, subY: 0, anchor: 'start', rawA: profileA.axes.cin.raw, rawB: profileB.axes.cin.raw, sub: '' },
-    { key: 'luk', label: 'FORTUNA', x: cx + 72, y: 269, scoreY: 284, subY: 0, anchor: 'middle', rawA: profileA.axes.luk.raw, rawB: profileB.axes.luk.raw, sub: '' },
-    { key: 'reg', label: profileA.axes.reg.shortTitle || 'STABILITÀ', x: cx - 72, y: 269, scoreY: 284, subY: 0, anchor: 'middle', rawA: profileA.axes.reg.raw, rawB: profileB.axes.reg.raw, sub: '' },
-    { key: 'koc', label: profileA.axes.koc.shortTitle || 'COPPE', x: cx - 118, y: 118, scoreY: 133, subY: 146, anchor: 'end', rawA: profileA.axes.koc.raw, rawB: profileB.axes.koc.raw, sub: kocSubLabel }
+    {
+      key: 'pot',
+      label: 'POTENZA',
+      x: cx,
+      y: 18,
+      scoreY: 33,
+      subY: 0,
+      anchor: 'middle',
+      rawA: profileA.axes.pot.raw,
+      rawB: profileB.axes.pot.raw,
+      sub: '',
+      title: 'POTENZA OFFENSIVA: fantamedia ponderata (70%) e media gol a partita (30%)'
+    },
+    {
+      key: 'cin',
+      label: 'CINISMO',
+      x: cx + 118,
+      y: 118,
+      scoreY: 133,
+      subY: 0,
+      anchor: 'start',
+      rawA: profileA.axes.cin.raw,
+      rawB: profileB.axes.cin.raw,
+      sub: '',
+      title: 'CINISMO CORTO MUSO: % vittorie ottenute con scarto di 1 gol o punteggio ≤ 68 FP'
+    },
+    {
+      key: 'luk',
+      label: 'FORTUNA',
+      x: cx + 72,
+      y: 269,
+      scoreY: 284,
+      subY: 0,
+      anchor: 'middle',
+      rawA: profileA.axes.luk.raw,
+      rawB: profileB.axes.luk.raw,
+      sub: '',
+      title: 'FATTORE FORTUNA: differenza tra punti reali conquistati e punti attesi dal calendario (xPoints)'
+    },
+    {
+      key: 'reg',
+      label: profileA.axes.reg.shortTitle || 'STABILITÀ',
+      x: cx - 72,
+      y: 269,
+      scoreY: 284,
+      subY: 0,
+      anchor: 'middle',
+      rawA: profileA.axes.reg.raw,
+      rawB: profileB.axes.reg.raw,
+      sub: '',
+      title: isSeasonal
+        ? 'STABILITÀ STAGIONALE: regolarità di rendimento e anti-varianza dei fantapunti turno per turno'
+        : 'STABILITÀ DI CARRIERA: costanza di piazzamento all-time ed assenza di crolli storici'
+    },
+    {
+      key: 'koc',
+      label: profileA.axes.koc.shortTitle || 'COPPE',
+      x: cx - 118,
+      y: 118,
+      scoreY: 133,
+      subY: 146,
+      anchor: 'end',
+      rawA: profileA.axes.koc.raw,
+      rawB: profileB.axes.koc.raw,
+      sub: kocSubLabel,
+      title: isSeasonal
+        ? 'RENDIMENTO BIG MATCH: punti e partite disputate negli scontri diretti contro le prime 4 in classifica'
+        : 'FREDDEZZA DA COPPE: bacheca trofei, finali vinte e tasso di successo nelle sfide a eliminazione'
+    }
   ];
 
   return `
@@ -410,19 +476,22 @@ export function renderDualRadar5AxesSVG(
         <!-- Manager B Polygon -->
         <polygon points="${ptsB}" fill="var(--h2h-contender-b, #06b6d4)" fill-opacity="0.22" stroke="var(--h2h-contender-b, #06b6d4)" stroke-width="2.6" style="filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.45));"></polygon>
 
-        <!-- 5 Axis Labels with Comparative Scores -->
+        <!-- 5 Axis Labels with Comparative Scores & Native Hover Tooltips -->
         ${axes.map(ax => `
-          <text x="${ax.x}" y="${ax.y}" text-anchor="${ax.anchor}" fill="currentColor" opacity="0.9" font-size="11" font-weight="900" letter-spacing="0.5">${ax.label}</text>
-          <text x="${ax.x}" y="${ax.scoreY}" text-anchor="${ax.anchor}" font-size="10" font-weight="800">
-            <tspan fill="var(--h2h-contender-a, #f59e0b)">${ax.rawA}</tspan>
-            <tspan fill="currentColor" opacity="0.45"> vs </tspan>
-            <tspan fill="var(--h2h-contender-b, #06b6d4)">${ax.rawB}</tspan>
-          </text>
-          ${ax.sub ? `
-            <text x="${ax.x}" y="${ax.subY}" text-anchor="${ax.anchor}" font-size="8.5" font-weight="700" fill="currentColor" opacity="0.55">
-              ${ax.sub}
+          <g class="cursor-help" style="cursor: help;">
+            <title>${escapeHtml(ax.title)}</title>
+            <text x="${ax.x}" y="${ax.y}" text-anchor="${ax.anchor}" fill="currentColor" opacity="0.9" font-size="11" font-weight="900" letter-spacing="0.5">${ax.label}</text>
+            <text x="${ax.x}" y="${ax.scoreY}" text-anchor="${ax.anchor}" font-size="10" font-weight="800">
+              <tspan fill="var(--h2h-contender-a, #f59e0b)">${ax.rawA}</tspan>
+              <tspan fill="currentColor" opacity="0.45"> vs </tspan>
+              <tspan fill="var(--h2h-contender-b, #06b6d4)">${ax.rawB}</tspan>
             </text>
-          ` : ''}
+            ${ax.sub ? `
+              <text x="${ax.x}" y="${ax.subY}" text-anchor="${ax.anchor}" font-size="8.5" font-weight="700" fill="currentColor" opacity="0.55">
+                ${ax.sub}
+              </text>
+            ` : ''}
+          </g>
         `).join('')}
       </svg>
     </div>

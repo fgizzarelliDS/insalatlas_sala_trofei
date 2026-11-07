@@ -5,6 +5,7 @@ import {
   collectDirectRoundMatches
 } from '@/components/modals/matchup/MatchupTemplate';
 import {
+  mountMatchupModal,
   openMatchupModal,
   closeMatchupModal,
   changeMatchupManagerA,
@@ -14,6 +15,7 @@ import {
   closeMatchupShareDropdown,
   exportMatchupStoryHD,
   setMatchupScope,
+  toggleTacticalRadarGuide,
   isMatchupOpen,
   getSelectedMatchupManagers
 } from '@/components/modals/matchup/MatchupModal';
@@ -64,6 +66,7 @@ describe('Dedicated Matchup Modal (Pre-Match & Next Round Experience)', () => {
 
     const mockModal = {
       id: 'matchup-modal',
+      className: '',
       classList: {
         classes: new Set(['hidden']),
         add(cls: string) { this.classes.add(cls); },
@@ -75,6 +78,20 @@ describe('Dedicated Matchup Modal (Pre-Match & Next Round Experience)', () => {
 
     const mockShareDropdown = {
       id: 'matchup-share-dropdown-menu',
+      classList: {
+        classes: new Set(['hidden']),
+        add(cls: string) { this.classes.add(cls); },
+        remove(cls: string) { this.classes.delete(cls); },
+        toggle(cls: string) {
+          if (this.classes.has(cls)) this.classes.delete(cls);
+          else this.classes.add(cls);
+        },
+        contains(cls: string) { return this.classes.has(cls); }
+      }
+    };
+
+    const mockGuidePanel = {
+      id: 'tactical-radar-guide-panel',
       classList: {
         classes: new Set(['hidden']),
         add(cls: string) { this.classes.add(cls); },
@@ -109,6 +126,7 @@ describe('Dedicated Matchup Modal (Pre-Match & Next Round Experience)', () => {
         if (id === 'matchup-modal') return mockModal;
         if (id === 'matchup-modal-content') return mockContent;
         if (id === 'matchup-share-dropdown-menu') return mockShareDropdown;
+        if (id === 'tactical-radar-guide-panel') return mockGuidePanel;
         return null;
       }),
       addEventListener: vi.fn()
@@ -223,8 +241,10 @@ describe('Dedicated Matchup Modal (Pre-Match & Next Round Experience)', () => {
       expect(html).toContain('Matchup Tattico');
       expect(html).toContain('Pre-Partita');
 
-      // 5-Axis Radar
+      // 5-Axis Radar & Guide Panel
       expect(html).toContain('Radar Tattico');
+      expect(html).toContain('tactical-radar-guide-panel');
+      expect(html).toContain('Guida ai 5 Assi Tattici');
 
       // Scontri diretti in campionato (Round-by-Round)
       expect(html).toContain('Scontri Diretti in Campionato (Round-by-Round)');
@@ -326,6 +346,18 @@ describe('Dedicated Matchup Modal (Pre-Match & Next Round Experience)', () => {
       expect(isMatchupOpen()).toBe(false);
     });
 
+    it('closes HeadToHead modal if open when opening Matchup modal and mounts with z-[90]', () => {
+      const closeH2HSpy = vi.fn();
+      (window as any).closeHeadToHeadModal = closeH2HSpy;
+
+      const modalEl = mountMatchupModal();
+      expect(modalEl.classList.contains('z-[90]')).toBe(true);
+
+      openMatchupModal('m_tazio', 'm_avvisatina');
+      expect(closeH2HSpy).toHaveBeenCalledWith(false);
+      delete (window as any).closeHeadToHeadModal;
+    });
+
     it('toggles detailed matches accordion via toggleMatchupDirectDetails', () => {
       openMatchupModal('m_tazio', 'm_avvisatina');
       expect(isMatchupOpen()).toBe(true);
@@ -382,6 +414,18 @@ describe('Dedicated Matchup Modal (Pre-Match & Next Round Experience)', () => {
 
       closeMatchupShareDropdown();
       expect(menu?.classList.contains('hidden')).toBe(true);
+    });
+
+    it('toggles the tactical radar guide explanation panel', () => {
+      openMatchupModal('m_tazio', 'm_avvisatina');
+      const panel = document.getElementById('tactical-radar-guide-panel');
+      expect(panel?.classList.contains('hidden')).toBe(true);
+
+      toggleTacticalRadarGuide();
+      expect(panel?.classList.contains('hidden')).toBe(false);
+
+      toggleTacticalRadarGuide();
+      expect(panel?.classList.contains('hidden')).toBe(true);
     });
 
     it('exports 9:16 Story using selected matchup managers', async () => {

@@ -120,7 +120,8 @@ import {
   exportMatchupCardHD,
   copyMatchupBanter,
   shareMatchupWhatsApp,
-  setMatchupScope
+  setMatchupScope,
+  toggleTacticalRadarGuide
 } from '@/components/modals/matchup';
 // Lazy export bindings to decouple canvas, svg foreignObject, and html-to-image from main bundle chunk
 type ExportModule = typeof import('@/export');
@@ -303,6 +304,7 @@ declare global {
     copyMatchupBanter: typeof copyMatchupBanter;
     shareMatchupWhatsApp: typeof shareMatchupWhatsApp;
     setMatchupScope: typeof setMatchupScope;
+    toggleTacticalRadarGuide: typeof toggleTacticalRadarGuide;
     openMultiManagerModal: typeof openMultiManagerModal;
     changeMultiManager: typeof changeMultiManager;
     addNextMultiManager: typeof addNextMultiManager;
@@ -538,6 +540,7 @@ export function registerGlobalWindowHandlers(): void {
     copyMatchupBanter,
     shareMatchupWhatsApp,
     setMatchupScope,
+    toggleTacticalRadarGuide,
     openMultiManagerModal,
     changeMultiManager,
     addNextMultiManager,

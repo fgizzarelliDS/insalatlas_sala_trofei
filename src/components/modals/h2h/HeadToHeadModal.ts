@@ -295,6 +295,17 @@ export function openHeadToHeadModal(
 ): void {
   if (state.managers.length < 2) return;
 
+  // Ensure Matchup modal is closed if open
+  if (typeof window !== 'undefined' && (window as any).closeMatchupModal) {
+    (window as any).closeMatchupModal(false);
+  } else {
+    const matchupModal = typeof document !== 'undefined' ? document.getElementById('matchup-modal') : null;
+    if (matchupModal) {
+      matchupModal.classList.add('hidden');
+      matchupModal.classList.remove('flex');
+    }
+  }
+
   // Determine initial manager A
   let initialA = idA && state.managers.some(m => m.id === idA) ? idA : state.managers[0].id;
 

@@ -24,6 +24,8 @@ export interface TacticalMatchupAxisComparison {
   scoreB: number;
   diff: number; // scoreA - scoreB
   winner: 'A' | 'B' | 'tie';
+  subRawA?: string;
+  subRawB?: string;
 }
 
 export interface TacticalMatchup {
@@ -80,7 +82,9 @@ export function computeTacticalMatchup(
       scoreA: axA.score,
       scoreB: axB.score,
       diff,
-      winner
+      winner,
+      subRawA: axA.subRaw,
+      subRawB: axB.subRaw
     };
 
     axesRecord[key] = item;
@@ -171,7 +175,7 @@ export function formatTacticalDuelWhatsAppBanter(
 ): string {
   const { managerA, managerB, profileA, profileB, axesList, h2hStats, tacticalKey } = matchup;
   const cleanUrl = baseUrl ? baseUrl.replace(/\/+$/, '') : 'https://insalatlas.it';
-  const duelUrl = `${cleanUrl}/?duel=${managerA.id}_vs_${managerB.id}`;
+  const matchupUrl = `${cleanUrl}/?matchup=${managerA.id}:${managerB.id}`;
 
   const iconWinner = (winner: 'A' | 'B' | 'tie') =>
     winner === 'A' ? `(${managerA.name} ▲)` : winner === 'B' ? `(${managerB.name} ▲)` : '(=)';
@@ -187,9 +191,15 @@ export function formatTacticalDuelWhatsAppBanter(
     `  ${profileB.archetype.motto}`,
     '',
     `📊 *Confronto 5 Assi Tattici:*`,
-    ...axesList.map(
-      ax => `• *${ax.shortTitle}:* ${ax.rawA} vs ${ax.rawB} ${iconWinner(ax.winner)}`
-    ),
+    ...axesList.map(ax => {
+      let subInfo = '';
+      if (ax.subRawA && ax.subRawB) {
+        subInfo = ` (${ax.subRawA.replace(/[()]/g, '')} vs ${ax.subRawB.replace(/[()]/g, '')})`;
+      } else if (ax.subRawA || ax.subRawB) {
+        subInfo = ` (${ax.subRawA || ax.subRawB})`;
+      }
+      return `• *${ax.shortTitle}:* ${ax.rawA} vs ${ax.rawB}${subInfo} ${iconWinner(ax.winner)}`;
+    }),
     '',
     `📜 *Precedenti in Campionato (${h2hStats.sharedSeasonsCount} stagioni):*`,
     `🏆 ${h2hStats.winsA} Vittorie ${managerA.name} • 🤝 ${h2hStats.ties} Pari • 🏆 ${h2hStats.winsB} Vittorie ${managerB.name}`,
@@ -197,7 +207,7 @@ export function formatTacticalDuelWhatsAppBanter(
     `💡 *Chiave del Match:*`,
     tacticalKey.description.replace(/<[^>]+>/g, ''),
     '',
-    `Analisi e Radar H2H: ${duelUrl}`
+    `Analisi e Radar Matchup: ${matchupUrl}`
   ];
 
   return lines.join('\n');

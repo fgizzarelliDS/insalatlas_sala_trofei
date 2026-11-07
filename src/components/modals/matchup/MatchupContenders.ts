@@ -48,7 +48,7 @@ export function renderMatchupContendersHTML(
 
   return `
     <div class="p-3 rounded-2xl border" style="background-color: var(--table-surface); border-color: var(--table-border);">
-      <div class="grid grid-cols-2 gap-3 items-center">
+      <div id="matchup-hero-dropdown-selectors" class="grid grid-cols-2 gap-3 items-center">
         <!-- Select A -->
         <div class="min-w-0">
           <label class="block text-[10px] font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5" style="color: var(--h2h-contender-a, #f59e0b);">
@@ -77,7 +77,7 @@ export function renderMatchupContendersHTML(
       </div>
 
       <!-- Contender Face-off Cards -->
-      <div class="grid grid-cols-11 gap-1 items-stretch mt-3 pt-3 border-t" style="border-color: var(--table-border);">
+      <div id="matchup-hero-cards-row" class="grid grid-cols-11 gap-1 items-stretch mt-3 pt-3 border-t" style="border-color: var(--table-border);">
         <!-- Contender A Card -->
         <div class="col-span-5 text-center p-3 rounded-xl border flex flex-col items-center justify-between min-w-0"
              style="background-color: var(--modal-bg); border-color: var(--table-border);">

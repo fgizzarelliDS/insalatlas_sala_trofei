@@ -494,6 +494,8 @@ describe('Head-to-Head (H2H) Engine & Router', () => {
       expect(duelHTML).toContain('Bacheca Trofei a Confronto');
       expect(duelHTML).toContain('Mostra Tabellino Annate');
       expect(duelHTML).toContain('Matchup Tattico');
+      expect(duelHTML).toContain('window.closeHeadToHeadModal && window.closeHeadToHeadModal()');
+      expect(duelHTML).toContain("window.openMatchupModal && window.openMatchupModal('m1', 'm2', true)");
       expect(duelHTML).toContain('Scarica / Condividi');
       expect(duelHTML).toContain('Scarica PNG');
       expect(duelHTML).toContain('Copia per WhatsApp');

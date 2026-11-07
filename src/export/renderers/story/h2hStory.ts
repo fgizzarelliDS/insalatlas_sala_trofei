@@ -51,6 +51,18 @@ export async function renderH2HDuelStoryCanvas(
   const logoA = resolveTeamLogo(teamA);
   const logoB = resolveTeamLogo(teamB);
 
+  // Big Match sub-label: compact comparative games "(X vs Y gare)"
+  const subA = profileA.axes.koc.subRaw ? profileA.axes.koc.subRaw.replace(/[()]/g, '') : '';
+  const subB = profileB.axes.koc.subRaw ? profileB.axes.koc.subRaw.replace(/[()]/g, '') : '';
+  let kocSubLabel = '';
+  if (subA && subB) {
+    const numA = subA.split(' ')[0] || subA;
+    const numB = subB.split(' ')[0] || subB;
+    kocSubLabel = `(${numA} vs ${numB} gare)`;
+  } else if (subA || subB) {
+    kocSubLabel = `(${subA || subB})`;
+  }
+
   // High-Resolution 5-Axis Dual Radar Geometry (680x460 viewBox, cx=340, cy=230, r=160)
   const ptsA = calculateRadarSvgPoints(
     {
@@ -197,6 +209,11 @@ export async function renderH2HDuelStoryCanvas(
           <text x="170" y="194" text-anchor="end" font-size="13" font-weight="800">
             <tspan fill="#f59e0b">${profileA.axes.koc.raw}</tspan> <tspan fill="#64748b">vs</tspan> <tspan fill="#06b6d4">${profileB.axes.koc.raw}</tspan>
           </text>
+          ${kocSubLabel ? `
+          <text x="170" y="210" text-anchor="end" font-size="11" font-weight="700" fill="#94a3b8">
+            ${kocSubLabel}
+          </text>
+          ` : ''}
         </svg>
       </div>
 
@@ -228,21 +245,19 @@ export async function renderH2HDuelStoryCanvas(
         </span>
       </div>
 
-      <!-- Consolidated Metric Bar: W A | X | W B -->
-      <div class="p-2 rounded-xl border border-slate-800 bg-slate-950/70 flex items-center justify-around text-center text-xs font-bold mb-2.5">
+      <!-- Consolidated Metric Bar: Vittorie | Pareggi | Vittorie -->
+      <div class="p-2 rounded-xl border border-slate-800 bg-slate-950/70 grid grid-cols-3 items-center text-center text-xs font-bold mb-2.5">
         <div>
-          <span class="text-[10px] uppercase font-extrabold text-amber-400/80 block">Vittorie ${escapeHtml(managerA.name)}</span>
-          <span class="text-xl font-black font-sport text-amber-400 font-mono">${directSummary.winsA}</span>
+          <span class="text-[10px] uppercase font-extrabold text-amber-400/90 tracking-wider block">Vittorie</span>
+          <span class="text-2xl font-black font-sport text-amber-400 font-mono mt-0.5 block">${directSummary.winsA}</span>
         </div>
-        <div class="h-7 w-px bg-slate-800"></div>
-        <div>
-          <span class="text-[10px] uppercase font-extrabold text-slate-400 block">Pareggi</span>
-          <span class="text-xl font-black font-sport text-slate-200 font-mono">${directSummary.ties}</span>
+        <div class="border-x border-slate-800 px-2">
+          <span class="text-[10px] uppercase font-extrabold text-slate-400 tracking-wider block">Pareggi</span>
+          <span class="text-2xl font-black font-sport text-slate-200 font-mono mt-0.5 block">${directSummary.ties}</span>
         </div>
-        <div class="h-7 w-px bg-slate-800"></div>
         <div>
-          <span class="text-[10px] uppercase font-extrabold text-cyan-400/80 block">Vittorie ${escapeHtml(managerB.name)}</span>
-          <span class="text-xl font-black font-sport text-cyan-400 font-mono">${directSummary.winsB}</span>
+          <span class="text-[10px] uppercase font-extrabold text-cyan-400/90 tracking-wider block">Vittorie</span>
+          <span class="text-2xl font-black font-sport text-cyan-400 font-mono mt-0.5 block">${directSummary.winsB}</span>
         </div>
       </div>
 

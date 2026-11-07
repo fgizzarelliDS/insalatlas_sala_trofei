@@ -106,6 +106,13 @@ export function renderMatchupModalHTML(
                   style="background-color: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.3); color: #818cf8;">
               ${scope === 'season' ? `Assetto Live ${escapeHtml(liveData?.season || '2026/27')}` : 'DNA All-Time'}
             </span>
+            <button type="button"
+              onclick="window.toggleTacticalRadarGuide && window.toggleTacticalRadarGuide();"
+              class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] opacity-75 hover:opacity-100 border transition cursor-pointer shrink-0 ml-0.5 active:scale-95"
+              style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--text-muted);"
+              title="Guida ai 5 Assi Tattici" aria-label="Spiegazione dei 5 Assi Tattici">
+              <i class="fa-solid fa-question text-[9px]"></i>
+            </button>
           </div>
 
           <!-- Scope Switch Toggle: Carriera vs Stagione Live -->
@@ -124,6 +131,26 @@ export function renderMatchupModalHTML(
               style="${scope === 'season' ? 'background-color: var(--modal-bg); color: var(--accent-color, #f59e0b);' : 'color: var(--text-muted);'}">
               ⚡ Stagione ${escapeHtml(liveData?.season ? liveData.season.replace(/^20/, '') : '26/27')}
             </button>
+          </div>
+        </div>
+
+        <!-- Collapsible 5-Axis Guide Panel (Mobile & Touch Accessible) -->
+        <div id="tactical-radar-guide-panel" class="hidden w-full mb-3 p-2.5 sm:p-3 rounded-xl border text-[11px] shadow-xs animate-fadeIn"
+             style="background-color: var(--modal-bg); border-color: var(--table-border); color: var(--text-main);">
+          <div class="flex items-center justify-between pb-1.5 mb-2 border-b" style="border-color: var(--table-border);">
+            <span class="font-black uppercase tracking-wider text-[10px] text-amber-500 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-info text-xs"></i>
+              Guida ai 5 Assi Tattici (${scope === 'season' ? 'Stagione Live' : 'Carriera All-Time'})
+            </span>
+            <button type="button" onclick="window.toggleTacticalRadarGuide && window.toggleTacticalRadarGuide();"
+              class="text-xs opacity-60 hover:opacity-100 px-1 font-bold cursor-pointer" aria-label="Chiudi guida">&times;</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10.5px] leading-snug">
+            <div><strong class="text-amber-500">⚡ Potenza:</strong> Fantamedia ponderata (70%) e media gol a partita (30%).</div>
+            <div><strong class="text-amber-500">🎯 Cinismo:</strong> % vittorie di misura (scarto 1 gol o punteggio &le; 68 FP).</div>
+            <div><strong class="text-amber-500">⭐ ${scope === 'season' ? 'Big Match:' : 'Coppe:'}</strong> ${scope === 'season' ? 'Punti conquistati negli scontri diretti contro le prime 4 in classifica.' : 'Freddezza nelle finali secche e bacheca trofei.'}</div>
+            <div><strong class="text-amber-500">🛡️ Stabilità:</strong> ${scope === 'season' ? 'Regolarità turno per turno (anti-varianza della fantamedia).' : 'Costanza di piazzamento storico ed assenza di crolli.'}</div>
+            <div class="sm:col-span-2"><strong class="text-amber-500">🍀 Fortuna:</strong> Punti effettivi conquistati rispetto agli expected points (xPoints) del calendario.</div>
           </div>
         </div>
 

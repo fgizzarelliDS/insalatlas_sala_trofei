@@ -133,7 +133,7 @@ export function selectTacticalArchetype(
 
   // Candidate C: IL CECCHINO DA COPPE (Cup specialist & high KOC score)
   if ((raw.finalsWon >= 3 && normalizedScores.koc >= 60) || raw.finalsWon >= 4) {
-    const affinity = 0.65 * normalizedScores.koc + raw.finalsWon * 9.5;
+    const affinity = 25.0 + 0.65 * normalizedScores.koc + raw.finalsWon * 9.5;
     candidates.push({ archetype: TACTICAL_ARCHETYPES.CECCHINO_COPPE, affinity });
   }
 

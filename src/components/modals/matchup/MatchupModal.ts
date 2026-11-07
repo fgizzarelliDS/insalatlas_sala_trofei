@@ -23,7 +23,7 @@ export function mountMatchupModal(): HTMLElement {
   if (!modalEl) {
     modalEl = document.createElement('div');
     modalEl.id = 'matchup-modal';
-    modalEl.className = 'fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4';
+    modalEl.className = 'fixed inset-0 z-[90] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4';
     modalEl.innerHTML = `
       <div id="matchup-modal-content"
            class="relative w-full max-w-2xl max-h-[92vh] flex flex-col rounded-3xl border shadow-2xl overflow-hidden transition-all duration-300"
@@ -49,6 +49,9 @@ export function mountMatchupModal(): HTMLElement {
         closeMatchupModal();
       }
     });
+  } else if (modalEl.classList && !modalEl.classList.contains('z-[90]')) {
+    modalEl.classList.remove('z-50');
+    modalEl.classList.add('z-[90]');
   }
   return modalEl;
 }
@@ -117,6 +120,17 @@ export function openMatchupModal(
   pushState = false
 ): void {
   if (state.managers.length < 2) return;
+
+  // Ensure any other overlapping duel modal (e.g. Head-to-Head & Nemesi) is closed
+  if (typeof window !== 'undefined' && (window as any).closeHeadToHeadModal) {
+    (window as any).closeHeadToHeadModal(false);
+  } else {
+    const h2hModal = typeof document !== 'undefined' ? document.getElementById('head-to-head-modal') : null;
+    if (h2hModal) {
+      h2hModal.classList.add('hidden');
+      h2hModal.classList.remove('flex');
+    }
+  }
 
   isDirectDetailsExpanded = false;
   const modalEl = mountMatchupModal();
@@ -224,6 +238,16 @@ export function closeMatchupShareDropdown(): void {
   const dropdown = document.getElementById('matchup-share-dropdown-menu');
   if (dropdown && !dropdown.classList.contains('hidden')) {
     dropdown.classList.add('hidden');
+  }
+}
+
+/**
+ * Toggles the tactical radar guide explanation panel inside Matchup modal
+ */
+export function toggleTacticalRadarGuide(): void {
+  const panel = document.getElementById('tactical-radar-guide-panel');
+  if (panel) {
+    panel.classList.toggle('hidden');
   }
 }
 

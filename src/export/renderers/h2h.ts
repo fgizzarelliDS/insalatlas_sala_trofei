@@ -26,15 +26,21 @@ export async function renderH2HDuelCanvas(card: HTMLElement): Promise<HTMLCanvas
     const onclickAttr = btn.getAttribute('onclick') || '';
     if (
       onclickAttr.includes('closeHeadToHeadModal') ||
+      onclickAttr.includes('closeMatchupModal') ||
       onclickAttr.includes('toggleH2HShareDropdown') ||
+      onclickAttr.includes('toggleMatchupShareDropdown') ||
+      onclickAttr.includes('toggleTacticalRadarGuide') ||
+      onclickAttr.includes('toggleMatchupDirectDetails') ||
       onclickAttr.includes('setH2HTab') ||
       onclickAttr.includes('setH2HVisualMode') ||
+      onclickAttr.includes('setMatchupScope') ||
+      onclickAttr.includes('openHeadToHeadModal') ||
       onclickAttr.includes('toggleH2HChronology') ||
       btn.id.includes('share') ||
       btn.id.includes('close')
     ) {
-      if (onclickAttr.includes('toggleH2HChronology')) {
-        btn.closest('.text-center')?.remove();
+      if (onclickAttr.includes('toggleH2HChronology') || onclickAttr.includes('toggleMatchupDirectDetails')) {
+        btn.closest('.text-center, .justify-center, .flex.justify-center')?.remove();
       } else {
         btn.remove();
       }
@@ -42,7 +48,10 @@ export async function renderH2HDuelCanvas(card: HTMLElement): Promise<HTMLCanvas
   });
 
   clone.querySelector('#btn-h2h-share-dropdown')?.closest('.relative')?.remove();
+  clone.querySelector('#btn-matchup-share-dropdown')?.closest('.relative')?.remove();
   clone.querySelector('#h2h-share-dropdown-menu')?.remove();
+  clone.querySelector('#matchup-share-dropdown-menu')?.remove();
+  clone.querySelector('#tactical-radar-guide-panel')?.remove();
 
   // Remove the footer bar completely
   const footerBar = clone.querySelector('.border-t.px-4.sm\\:px-6.py-3');
@@ -50,7 +59,9 @@ export async function renderH2HDuelCanvas(card: HTMLElement): Promise<HTMLCanvas
 
   // Remove interactive dropdown selectors row completely for the export card
   clone.querySelector('#h2h-hero-dropdown-selectors')?.remove();
-  const heroCardsRow = clone.querySelector('#h2h-hero-cards-row') as HTMLElement | null;
+  clone.querySelector('#matchup-hero-dropdown-selectors')?.remove();
+
+  const heroCardsRow = (clone.querySelector('#h2h-hero-cards-row') || clone.querySelector('#matchup-hero-cards-row')) as HTMLElement | null;
   if (heroCardsRow) {
     heroCardsRow.classList.remove('mt-3', 'pt-3', 'border-t', 'items-center');
     heroCardsRow.classList.add('items-stretch');
@@ -61,7 +72,7 @@ export async function renderH2HDuelCanvas(card: HTMLElement): Promise<HTMLCanvas
   }
 
   // Ensure hero contender cards have equal height and unclipped badges
-  clone.querySelectorAll('#h2h-hero-cards-row .col-span-5').forEach(cardEl => {
+  clone.querySelectorAll('#h2h-hero-cards-row .col-span-5, #matchup-hero-cards-row .col-span-5').forEach(cardEl => {
     const el = cardEl as HTMLElement;
     el.classList.remove('h-full');
     el.style.display = 'flex';
@@ -136,11 +147,12 @@ export async function renderH2HDuelCanvas(card: HTMLElement): Promise<HTMLCanvas
   footer.className = 'flex items-center justify-center gap-2 py-4 mt-3 border-t text-xs font-bold tracking-wider uppercase opacity-85';
   footer.style.borderColor = 'var(--table-border)';
   footer.style.color = 'var(--text-muted)';
+  const isMatchup = card.id === 'matchup-modal-content' || clone.id.includes('matchup');
   footer.innerHTML = `
     <img src="favicon-64x64.png" alt="${LEAGUE.brand.name}" class="w-4 h-4 object-contain inline-block rounded-full shadow-sm">
     <span class="font-extrabold tracking-widest text-[11px]" style="color: var(--text-main);">${LEAGUE.brand.name}</span>
     <span class="opacity-40">•</span>
-    <span class="text-[10px] tracking-wider" style="color: var(--accent-color);">Head-to-Head Ufficiale</span>
+    <span class="text-[10px] tracking-wider" style="color: var(--accent-color);">${isMatchup ? 'Matchup Tattico Ufficiale' : 'Head-to-Head Ufficiale'}</span>
   `;
   targetParent.appendChild(footer);
 

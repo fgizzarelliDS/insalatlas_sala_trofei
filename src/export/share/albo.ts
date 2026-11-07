@@ -57,11 +57,11 @@ export function shareAlboWhatsApp(): void {
   showToast('Apertura WhatsApp in corso...', 'info');
 }
 
-import { exportGraphicHD } from '@/export/canvas';
-
 /**
  * Triggers high-resolution Albo d'Oro export PNG download
  */
+import { exportGraphicHD } from '@/export/canvas';
+
 export async function exportAlboHD(): Promise<void> {
   await exportGraphicHD();
 }

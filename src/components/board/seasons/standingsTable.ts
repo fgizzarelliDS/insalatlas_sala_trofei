@@ -2,6 +2,7 @@ import type { CompetitionRecord } from '@/types';
 import { state } from '@/state';
 import { renderTrophySVG } from '@/trophies';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
+import { escapeHtml, escapeJsAttr } from '@/utils/dom';
 import { LEAGUE } from '@/config';
 import { getLiveSeasonDetails } from './liveAnalytics';
 import { buildLiveStandingsGuideHTML, toggleLiveStandingsGuide } from './liveStandingsGuide';
@@ -284,11 +285,11 @@ function renderStandardChampionshipTable(championship: CompetitionRecord): strin
     const managerName = mgr ? mgr.name : (r.coach || 'Sconosciuto');
     const hasValidPoints = typeof r.points === 'number' && r.points > 0;
     const ptsStr = hasValidPoints ? `${r.points} pt` : '-';
-    const clickHandler = r.managerId ? `onclick="openProfileModal('${r.managerId}')"` : '';
+    const clickHandler = r.managerId ? `onclick="openProfileModal('${escapeJsAttr(r.managerId)}')"` : '';
     const cursorClass = r.managerId ? 'cursor-pointer hover:bg-amber-500/10' : '';
 
     rowsHtml += `
-      <tr ${clickHandler} data-manager-id="${r.managerId || ''}" id="standings-row-${r.managerId || ''}" class="border-b last:border-b-0 transition-colors ${cursorClass}" style="border-color: var(--table-border);">
+      <tr ${clickHandler} data-manager-id="${escapeHtml(r.managerId || '')}" id="standings-row-${escapeHtml(r.managerId || '')}" class="border-b last:border-b-0 transition-colors ${cursorClass}" style="border-color: var(--table-border);">
         <td class="py-2 sm:py-2.5 px-1.5 sm:px-3 text-center align-middle whitespace-nowrap w-14 sm:w-28">
           <span class="px-1.5 sm:px-2 py-0.5 rounded-lg text-[11px] sm:text-xs border shadow-sm inline-block ${rankBadgeClass}">
             ${rankLabel}
@@ -296,16 +297,16 @@ function renderStandardChampionshipTable(championship: CompetitionRecord): strin
         </td>
         <td class="py-2 sm:py-2.5 px-2 sm:px-3 text-left align-middle min-w-0">
           <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
-            <img src="${resolveTeamLogo(r.teamName, r.logo)}" alt="${r.teamName}" 
+            <img src="${resolveTeamLogo(r.teamName, r.logo)}" alt="${escapeHtml(r.teamName)}" 
                  class="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-700 shadow-sm"
                  onerror="this.onerror=null; this.src='${getTeamFallbackCrest(r.teamName)}'">
             <div class="min-w-0 flex-1">
               <div class="font-bold text-xs sm:text-sm leading-snug break-words" style="color: var(--text-main); word-break: break-word;">
-                ${r.teamName}
+                ${escapeHtml(r.teamName)}
               </div>
               <div class="text-[10px] sm:text-[11px] font-semibold flex items-center gap-1 mt-0.5 truncate" style="color: var(--accent-color, #f59e0b);">
                 <i class="fa-solid fa-user-tie text-[9px] opacity-70 shrink-0"></i>
-                <span class="truncate">${managerName}</span>
+                <span class="truncate">${escapeHtml(managerName)}</span>
               </div>
             </div>
           </div>

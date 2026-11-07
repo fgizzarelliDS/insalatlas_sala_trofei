@@ -92,6 +92,7 @@ export async function renderAlboCanvas(customWrapper?: HTMLElement): Promise<HTM
     scrollContainer.style.overflowX = 'visible';
     scrollContainer.style.width = '100%';
     scrollContainer.style.maxWidth = 'none';
+    scrollContainer.style.minWidth = '100%';
   }
   const innerWrap = scrollContainer?.firstElementChild as HTMLElement | null;
   if (innerWrap) {
@@ -109,7 +110,7 @@ export async function renderAlboCanvas(customWrapper?: HTMLElement): Promise<HTM
   }
 
   // 7. Fix header row: remove sticky, apply dynamicColsTemplate inline to beat mobile @media queries
-  const headerRow = clone.querySelector('.albo-grid-row') as HTMLElement | null;
+  const headerRow = (clone.querySelector('#albo-table-header') || clone.querySelector('.albo-grid-row')) as HTMLElement | null;
   if (headerRow) {
     headerRow.style.paddingTop = '12px';
     headerRow.style.paddingBottom = '12px';
@@ -121,8 +122,8 @@ export async function renderAlboCanvas(customWrapper?: HTMLElement): Promise<HTM
     headerRow.style.gridTemplateColumns = dynamicColsTemplate;
   }
 
-  // De-truncate and unclip all header cells (prevents vertical font clipping in SVG foreignObject)
-  clone.querySelectorAll('.albo-grid-row > div').forEach(th => {
+  // De-truncate and unclip header cells specifically with explicit alignment
+  clone.querySelectorAll('#albo-table-header > div').forEach((th, idx) => {
     const el = th as HTMLElement;
     el.classList.remove('truncate', 'sticky');
     el.style.position = 'static';
@@ -131,6 +132,13 @@ export async function renderAlboCanvas(customWrapper?: HTMLElement): Promise<HTM
     el.style.fontSize = '12px';
     el.style.whiteSpace = 'nowrap';
     el.style.boxShadow = 'none';
+    if (idx === 0) {
+      el.style.textAlign = 'left';
+      el.style.paddingLeft = '16px';
+      el.style.borderRight = 'none';
+    } else {
+      el.style.textAlign = 'center';
+    }
   });
 
   // 8. Fix shelf rows: remove sticky, unclip manager name and apply dynamicColsTemplate inline

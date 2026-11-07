@@ -1,6 +1,7 @@
 import type { LiveTeamMetrics } from '@/types';
 import { state } from '@/state';
 import { resolveTeamLogo, getTeamFallbackCrest } from '@/crests';
+import { escapeHtml, escapeJsAttr } from '@/utils/dom';
 import { renderFormDotsHTML, renderStatusBadgeHTML } from './liveAnalytics';
 import {
   getEloMode,
@@ -27,11 +28,12 @@ export function getCurrentRealSort(): 'rank' | 'elo' {
  * Renders desktop table rows for the Real Championship Standings
  */
 export function renderRealDesktopRows(standings: LiveTeamMetrics[], mode: EloTrackMode = getEloMode()): string {
+  const bottomStartRank = Math.max(4, standings.length - 2);
   return standings.map(team => {
     const mgr = state.managers?.find(m => m.id === team.managerId);
     const managerName = mgr ? mgr.name : (team.coach || 'Allenatore');
     const teamLogo = resolveTeamLogo(team.teamName, team.logo);
-    const escapedTeamName = team.teamName.replace(/'/g, "\\'");
+    const escapedTeamName = escapeJsAttr(team.teamName);
 
     let rankBadgeClass = 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 font-bold';
     if (team.rank === 1) {
@@ -40,7 +42,7 @@ export function renderRealDesktopRows(standings: LiveTeamMetrics[], mode: EloTra
       rankBadgeClass = 'bg-slate-200 text-slate-800 border-slate-300 dark:bg-slate-700/60 dark:text-slate-200 dark:border-slate-600 font-bold';
     } else if (team.rank === 3) {
       rankBadgeClass = 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-700/25 dark:text-amber-400 dark:border-amber-700/40 font-bold';
-    } else if (team.rank >= 12) {
+    } else if (team.rank >= bottomStartRank) {
       rankBadgeClass = 'bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/40 font-bold';
     }
 
@@ -53,7 +55,7 @@ export function renderRealDesktopRows(standings: LiveTeamMetrics[], mode: EloTra
     const eloDeltaColor = eloDelta > 0 ? 'text-emerald-400' : eloDelta < 0 ? 'text-rose-400' : 'text-slate-400';
 
     return `
-      <tr onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${team.managerId || ''}', '${escapedTeamName}')"
+      <tr onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${escapeJsAttr(team.managerId || '')}', '${escapedTeamName}')"
           class="border-b last:border-b-0 transition-colors cursor-pointer hover:bg-amber-500/10 group"
           style="border-color: var(--table-border);">
         <!-- Pos -->
@@ -65,16 +67,16 @@ export function renderRealDesktopRows(standings: LiveTeamMetrics[], mode: EloTra
         <!-- Squadra & Manager -->
         <td class="py-2.5 px-3 text-left align-middle min-w-0">
           <div class="flex items-center gap-2.5 min-w-0">
-            <img src="${teamLogo}" alt="${team.teamName}"
+            <img src="${teamLogo}" alt="${escapeHtml(team.teamName)}"
                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-700 shadow-sm transition-transform group-hover:scale-105"
                  onerror="this.onerror=null; this.src='${getTeamFallbackCrest(team.teamName)}'">
             <div class="min-w-0 flex-1">
               <div class="font-bold text-xs sm:text-sm leading-snug truncate" style="color: var(--text-main);">
-                ${team.teamName}
+                ${escapeHtml(team.teamName)}
               </div>
               <div class="text-[10px] sm:text-[11px] font-semibold flex items-center gap-1 mt-0.5 truncate" style="color: var(--accent-color);">
                 <i class="fa-solid fa-user-tie text-[9px] opacity-70 shrink-0"></i>
-                <span class="truncate">${managerName}</span>
+                <span class="truncate">${escapeHtml(managerName)}</span>
               </div>
             </div>
           </div>
@@ -112,7 +114,7 @@ export function renderRealMobileCards(standings: LiveTeamMetrics[], mode: EloTra
     const mgr = state.managers?.find(m => m.id === team.managerId);
     const managerName = mgr ? mgr.name : (team.coach || 'Allenatore');
     const teamLogo = resolveTeamLogo(team.teamName, team.logo);
-    const escapedTeamName = team.teamName.replace(/'/g, "\\'");
+    const escapedTeamName = escapeJsAttr(team.teamName);
 
     let rankBadgeClass = 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-300 font-bold';
     if (team.rank === 1) {
@@ -128,7 +130,7 @@ export function renderRealMobileCards(standings: LiveTeamMetrics[], mode: EloTra
     const eloDeltaColor = eloDelta > 0 ? 'text-emerald-400' : eloDelta < 0 ? 'text-rose-400' : 'text-slate-400';
 
     return `
-      <div onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${team.managerId || ''}', '${escapedTeamName}')"
+      <div onclick="window.openTeamMatchesModal && window.openTeamMatchesModal('${escapeJsAttr(team.managerId || '')}', '${escapedTeamName}')"
            class="p-2.5 sm:p-3 border-b last:border-b-0 transition-colors active:bg-amber-500/10 cursor-pointer select-none"
            style="border-color: var(--table-border);">
         <div class="flex items-center justify-between gap-2">
@@ -137,15 +139,15 @@ export function renderRealMobileCards(standings: LiveTeamMetrics[], mode: EloTra
             <span class="w-7 h-6 rounded-md text-[11px] border flex items-center justify-center shrink-0 ${rankBadgeClass}">
               #${team.rank}
             </span>
-            <img src="${teamLogo}" alt="${team.teamName}"
+            <img src="${teamLogo}" alt="${escapeHtml(team.teamName)}"
                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-contain shrink-0 bg-white/20 border border-slate-300 dark:border-slate-700"
                  onerror="this.onerror=null; this.src='${getTeamFallbackCrest(team.teamName)}'">
             <div class="min-w-0 flex-1">
               <div class="font-bold text-xs sm:text-sm leading-snug break-words" style="color: var(--text-main);">
-                ${team.teamName}
+                ${escapeHtml(team.teamName)}
               </div>
               <div class="text-[10px] sm:text-[11px] font-semibold opacity-80 break-words mt-0.5" style="color: var(--accent-color);">
-                ${managerName}
+                ${escapeHtml(managerName)}
               </div>
             </div>
           </div>

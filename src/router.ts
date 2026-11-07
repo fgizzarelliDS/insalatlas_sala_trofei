@@ -99,10 +99,33 @@ export function getManagerParamFromURL(customUrl?: string): string | null {
 }
 
 /**
- * Extracts ?h2h=idA:idB query parameter from search or hash
+ * Extracts ?h2h=idA:idB or ?duel=idA_vs_idB query parameter from search or hash
  */
 export function getH2HParamFromURL(customUrl?: string): { managerA: string; managerB: string } | null {
-  const raw = getURLParam('h2h', customUrl);
+  const raw = getURLParam('h2h', customUrl) || getURLParam('duel', customUrl);
+  if (!raw) return null;
+  const decoded = safeDecodeURI(raw).trim();
+  let parts: string[] = [];
+  if (decoded.includes(':')) {
+    parts = decoded.split(':');
+  } else if (/_vs_/i.test(decoded)) {
+    parts = decoded.split(/_vs_/i);
+  } else if (/-vs-/i.test(decoded)) {
+    parts = decoded.split(/-vs-/i);
+  } else if (/ vs /i.test(decoded)) {
+    parts = decoded.split(/ vs /i);
+  }
+  if (parts.length >= 2 && parts[0].trim() && parts[1].trim()) {
+    return { managerA: parts[0].trim(), managerB: parts[1].trim() };
+  }
+  return null;
+}
+
+/**
+ * Extracts ?matchup=idA:idB query parameter from search or hash
+ */
+export function getMatchupParamFromURL(customUrl?: string): { managerA: string; managerB: string } | null {
+  const raw = getURLParam('matchup', customUrl);
   if (!raw) return null;
   const decoded = safeDecodeURI(raw).trim();
   let parts: string[] = [];

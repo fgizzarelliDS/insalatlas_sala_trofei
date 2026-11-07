@@ -83,6 +83,7 @@ import {
   closeH2HShareDropdown,
   exportCurrentH2HDuelHD,
   copyCurrentH2HDuelToClipboard,
+  copyCurrentH2HDuelBanter,
   exportCurrentH2HDuelStoryHD,
   openMultiManagerModal,
   changeMultiManager,
@@ -107,6 +108,21 @@ import {
   selectEloChartPoint,
   toggleProfileEloMode
 } from '@/components/modals';
+import {
+  openMatchupModal,
+  closeMatchupModal,
+  changeMatchupManagerA,
+  changeMatchupManagerB,
+  toggleMatchupDirectDetails,
+  toggleMatchupShareDropdown,
+  closeMatchupShareDropdown,
+  exportMatchupStoryHD,
+  exportMatchupCardHD,
+  copyMatchupBanter,
+  shareMatchupWhatsApp,
+  setMatchupScope,
+  toggleTacticalRadarGuide
+} from '@/components/modals/matchup';
 // Lazy export bindings to decouple canvas, svg foreignObject, and html-to-image from main bundle chunk
 type ExportModule = typeof import('@/export');
 const lazyExport = <K extends keyof ExportModule>(name: K): ExportModule[K] => {
@@ -274,7 +290,21 @@ declare global {
     closeH2HShareDropdown: typeof closeH2HShareDropdown;
     exportCurrentH2HDuelHD: typeof exportCurrentH2HDuelHD;
     copyCurrentH2HDuelToClipboard: typeof copyCurrentH2HDuelToClipboard;
+    copyCurrentH2HDuelBanter: typeof copyCurrentH2HDuelBanter;
     exportCurrentH2HDuelStoryHD: typeof exportCurrentH2HDuelStoryHD;
+    openMatchupModal: typeof openMatchupModal;
+    closeMatchupModal: typeof closeMatchupModal;
+    changeMatchupManagerA: typeof changeMatchupManagerA;
+    changeMatchupManagerB: typeof changeMatchupManagerB;
+    toggleMatchupDirectDetails: typeof toggleMatchupDirectDetails;
+    toggleMatchupShareDropdown: typeof toggleMatchupShareDropdown;
+    closeMatchupShareDropdown: typeof closeMatchupShareDropdown;
+    exportMatchupStoryHD: typeof exportMatchupStoryHD;
+    exportMatchupCardHD: typeof exportMatchupCardHD;
+    copyMatchupBanter: typeof copyMatchupBanter;
+    shareMatchupWhatsApp: typeof shareMatchupWhatsApp;
+    setMatchupScope: typeof setMatchupScope;
+    toggleTacticalRadarGuide: typeof toggleTacticalRadarGuide;
     openMultiManagerModal: typeof openMultiManagerModal;
     changeMultiManager: typeof changeMultiManager;
     addNextMultiManager: typeof addNextMultiManager;
@@ -496,7 +526,21 @@ export function registerGlobalWindowHandlers(): void {
     closeH2HShareDropdown,
     exportCurrentH2HDuelHD,
     copyCurrentH2HDuelToClipboard,
+    copyCurrentH2HDuelBanter,
     exportCurrentH2HDuelStoryHD,
+    openMatchupModal,
+    closeMatchupModal,
+    changeMatchupManagerA,
+    changeMatchupManagerB,
+    toggleMatchupDirectDetails,
+    toggleMatchupShareDropdown,
+    closeMatchupShareDropdown,
+    exportMatchupStoryHD,
+    exportMatchupCardHD,
+    copyMatchupBanter,
+    shareMatchupWhatsApp,
+    setMatchupScope,
+    toggleTacticalRadarGuide,
     openMultiManagerModal,
     changeMultiManager,
     addNextMultiManager,

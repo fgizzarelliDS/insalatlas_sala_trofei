@@ -647,7 +647,92 @@ Ciascun match riceve un'etichetta contestuale (*Clima Partita*) valutata tramite
 
 ---
 
-## 11. Roadmap & Evoluzioni Future
+## 11. Modello Matematico del Profiler Tattico a 5 Assi 
+
+Il **Profiler Tattico** analizza lo stile manageriale all-time e stagionale attraverso 5 dimensioni ortogonali normalizzate su scala $[5, 100]$ con mediana ancorata a $50$.
+
+### 11.1 Definizione degli Assi e Metriche Fondamentali
+
+1. **POT (Potenza Offensiva)**:
+   Misura la capacità di generare punteggi elevati indipendentemente dai risultati:
+   $$x_{\text{POT}} = \bar{FP} = \frac{\sum_{\text{partite}} FP}{N_{\text{partite}}}$$
+2. **CIN (Cinismo Corto Muso)**:
+   Percentuale di vittorie ottenute di misura (con scarto pari o inferiore a 1 gol):
+   $$x_{\text{CIN}} = \frac{V_{\le 1\text{gol}}}{V_{\text{totale}}} \times 100$$
+3. **LUK (Fattore Fortuna)**:
+   Scarto cumulativo all-time e stagionale tra i punti effettivi di classifica e i punti attesi dal calendario ($x\text{PTS}$):
+   $$x_{\text{LUK}} = \text{PTS}_{\text{reali}} - x\text{PTS}$$
+4. **REG (Stabilità di Rendimento / Anti-Varianza)**:
+   Misura la costanza di rendimento tra le stagioni come inverso della deviazione standard del piazzamento finale ($\sigma_{\text{rank}}$). Per massimizzare i manager costanti:
+   $$x_{\text{REG}} = -\sigma_{\text{rank}}$$
+5. **KOC (Freddezza da Coppe - Knockout Clutch)**:
+   Indice ponderato di bacheca nelle competizioni a eliminazione diretta e finali vinte (Coppa di Lega, Supercoppa, Mundialito):
+   $$x_{\text{KOC, raw}} = 3.0 \cdot \text{Titoli}_{\text{Coppa}} + 1.5 \cdot \text{Finali Vinte}$$
+
+### 11.2 Standardizzazione Z-Score e Compressione Sigmoidale ad Ancoraggio $\mu=50$
+
+Per garantire comparabilità tra leghe e generazioni e impedire distorsioni causate da outlier estremi, ciascun valore grezzo $x_{i}$ viene convertito in punteggio normalizzato $\text{Score}_i \in [5, 100]$:
+
+1. **Calcolo dello Z-Score**:
+   $$Z_i = \frac{x_i - \mu_x}{\max(\sigma_x, \epsilon)}$$
+2. **Compressione Sigmoidale con Tangente Iperbolica**:
+   $$\text{Score}_i = \text{round}\left(50 + 28 \cdot \tanh\left(\frac{Z_i}{1.35}\right)\right)$$
+   Questo assicura:
+   - Mediana della lega esattamente ancorata a $50$ (linea guida radar).
+   - Uno scostamento di $+1\sigma$ corrisponde a un punteggio di circa $70$.
+   - Uno scostamento di $-1\sigma$ corrisponde a circa $30$.
+   - Nessun asse satura a $0$ o $100$ tranne per scostamenti asintotici estremi ($|Z| > 3.5\sigma$).
+
+### 11.3 Ritiro Bayesiano (Bayesian Shrinkage) per la Freddezza da Coppe
+
+I manager esordienti o con poche stagioni all'attivo presentano campioni di partite di coppa ridotti. Per evitare punteggi KOC artificialmente estremi dovuti a una singola finale vinta o persa per caso, il punteggio grezzo viene regolarizzato verso la media di lega $\mu_{\text{KOC}}$ mediante un peso bayesiano $w$:
+
+$$w = \frac{N_{\text{stagioni}}}{N_{\text{stagioni}} + k_{\text{bayes}}}, \qquad k_{\text{bayes}} = 2.5$$
+$$\tilde{x}_{\text{KOC}} = w \cdot x_{\text{KOC, raw}} + (1 - w) \cdot \mu_{\text{KOC}}$$
+
+### 11.4 Assegnazione Deterministica dell'Archetipo Tattico
+
+Ciascun manager viene classificato in un archetipo comportamentale caratteristico calcolando un **Dominant Affinity Score**:
+
+1. Vengono valutati i delta rispetto alla media di lega $\Delta_a = \text{Score}_a - 50$ per i 5 assi.
+2. Vengono identificate le caratteristiche dominanti:
+   - **Cinico Corto Muso**: $\Delta_{\text{CIN}} \ge +12 \land \Delta_{\text{POT}} \le +5$.
+   - **Bielsa Incompreso**: $\Delta_{\text{POT}} \ge +14 \land \Delta_{\text{CIN}} \le -6$.
+   - **Giochista Senza Titoli**: $\Delta_{\text{POT}} \ge +10 \land \Delta_{\text{KOC}} \le -8$.
+   - **Arraffatutto Insaziabile**: $\Delta_{\text{KOC}} \ge +14 \land \Delta_{\text{POT}} \ge +8$.
+   - **Cecchino dei Rigori / Freddezza Estrema**: $\Delta_{\text{KOC}} \ge +16$.
+   - **Oracolo del Caos**: $\Delta_{\text{LUK}} \ge +14 \land \Delta_{\text{CIN}} \ge +6$.
+   - **Catenacciaro de' Noantri**: $\Delta_{\text{CIN}} \ge +10 \land \Delta_{\text{REG}} \ge +8$.
+   - **Mediano del Fantacalcio**: Default bilanciato per manager con varianza contenuta su tutti gli assi.
+
+---
+
+## 12. Econometria del Matchup Tattico H2H 
+
+### 12.1 Differenziali Relativi $\Delta\text{Score}$ e Vantaggio d'Asse
+
+Nel confronto diretto tra due manager $A$ e $B$, il differenziale per ciascun asse $k \in \{\text{POT}, \text{CIN}, \text{LUK}, \text{REG}, \text{KOC}\}$ è calcolato come:
+
+$$\Delta\text{Score}_k = \text{Score}_{A, k} - \text{Score}_{B, k}$$
+
+Il vantaggio d'asse viene attribuito deterministicamente con soglia di tolleranza paritetica:
+
+$$\text{Winner}_k = \begin{cases} A & \text{se } \Delta\text{Score}_k \ge +3 \\ B & \text{se } \Delta\text{Score}_k \le -3 \\ \text{tie} & \text{se } |\Delta\text{Score}_k| < 3 \end{cases}$$
+
+### 12.2 Motore Euristico della "Chiave Tattica del Duello"
+
+La sintesi narrativa della sfida identifica l'asse con il maggior dislivello relativo:
+
+$$k^* = \arg\max_k |\Delta\text{Score}_k|$$
+
+In base alla natura dell'asse critico $k^*$ e ai profili dei contendenti, l'algoritmo formula:
+1. **Headline del Duello**: Titolo a forte impatto sportivo (es. *Potenza di Fuoco vs Freddezza da Coppe* o *Il Trionfo del Cinismo contro la Varianza*).
+2. **Descrizione Dinamica**: Argomentazione analitica che spiega come il differenziale su $k^*$ impatterà l'esito dello scontro e quale variabile rappresenta la contromisura tattica per l'avversario.
+
+---
+
+## 13. Roadmap & Evoluzioni Future
 
 - **Integrazione Storico Mundialito**: Formalizzazione dello storico finale Mundialito (vinti e persi) per completare il set di dati delle coppe della lega quando i dati delle prime edizioni saranno integralmente reperiti.
+
 

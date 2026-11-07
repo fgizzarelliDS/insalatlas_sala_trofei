@@ -18,7 +18,7 @@ export type H2HTabMode = 'duel' | 'multi' | 'matrix';
 export function renderHeadToHeadModalHTML(
   stats: HeadToHeadStats,
   allManagers: Manager[],
-  isChronologyExpanded: boolean,
+  isChronologyExpanded: boolean = false,
   visualMode: 'radar' | 'bars' = 'radar',
   activeTab: H2HTabMode = 'duel',
   nemesisFilter: 'active' | 'veterans' | 'all' = 'active',
@@ -98,16 +98,16 @@ export function renderHeadToHeadModalHTML(
     <div class="p-3 sm:p-5 overflow-y-auto flex-1 space-y-4" style="scrollbar-width: thin; scrollbar-color: var(--table-border) transparent;">
       ${activeTab === 'duel'
       ? `
-            <!-- 1. Hero Selectors & Face-off Cards -->
+            <!-- 1. Hero Contenders & Selectors -->
             ${renderHeadToHeadHero(stats, allManagers)}
 
-            <!-- 2. Scoreboard Scontri Diretti in Campionato -->
+            <!-- 2. Big Numbers Scoreboard & Historical Chronology Accordion ("Mostra Tabellino Annate") -->
             ${renderHeadToHeadScoreboard(stats, managerA, managerB, isChronologyExpanded)}
 
-            <!-- 3. Palmarès a Specchio -->
+            <!-- 3. Palmares Breakdown: Scudetti, Coppe & Finali a Confronto -->
             ${renderHeadToHeadPalmares(palmares, managerA, managerB)}
 
-            <!-- 4. Indicatori di Performance & Grafico Dual-Mode -->
+            <!-- 4. 6-Axis Radar Plot & Mirrored Duel Bars Toggleable View -->
             ${renderHeadToHeadMetrics(stats, managerA, managerB, visualMode)}
           `
       : activeTab === 'multi'
@@ -127,6 +127,16 @@ export function renderHeadToHeadModalHTML(
       <div class="flex items-center gap-2">
         ${activeTab === 'duel'
       ? `
+              <!-- Jump to Matchup Tattico Pre-Gara -->
+              <button type="button"
+                onclick="window.closeHeadToHeadModal && window.closeHeadToHeadModal(); window.openMatchupModal && window.openMatchupModal('${managerA.id}', '${managerB.id}', true);"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold border transition shadow-sm flex items-center gap-1.5 bg-indigo-500/10 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/20 active:scale-95 cursor-pointer"
+                title="Apri il Matchup Tattico pre-partita">
+                <i class="fa-solid fa-bolt text-indigo-400"></i>
+                <span class="hidden sm:inline">Matchup Tattico</span>
+                <span class="sm:hidden">Matchup</span>
+              </button>
+
               <!-- Dropdown Popover Menu for H2H Duel (opens upward) -->
               <div class="relative">
                 <button id="btn-h2h-share-dropdown" onclick="toggleH2HShareDropdown(event)"

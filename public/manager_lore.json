@@ -1,0 +1,23 @@
+{
+  "_comment": "InsalAtlas Sala Trofei - Manager Tactical Lore & Banter Customizations. Optional overrides for mottos, traits, and banter notes.",
+  "m_alfo": {
+    "customMotto": "\"Vincere con 66.0 non è importante, è l'unica cosa che conta. Un punto in più dell'avversario e palla al centro.\"",
+    "customTrait": "🎯 Maestro del Corto Muso & Re di Coppe"
+  },
+  "m_vannico": {
+    "customMotto": "\"Il campionato non è uno sprint, è un logorio metodico. La costanza batte l'estro ogni singolo anno.\"",
+    "customTrait": "⚙️ Cannibale Dinastico & Regolarità Assoluta"
+  },
+  "m_lucchetto": {
+    "customMotto": "\"Nel dentro-o-fuori non tremano le mani. Il campionato logora, la coppa consegna all'eternità.\"",
+    "customTrait": "❄️ Cecchino Infallibile nei Rigori di Coppa"
+  },
+  "m_gizzagustacito": {
+    "customMotto": "\"Nessun timore reverenziale per i senatori di lega: siamo qui per scombinare le gerarchie fin dal debutto.\"",
+    "customTrait": "⚡ Matricola Terribile & Pirotecnico"
+  },
+  "m_pippo": {
+    "customMotto": "\"Chiunque giochi contro di me trova la partita della vita e il portiere che para l'impossibile. Ma non mollerò mai.\"",
+    "customTrait": "💀 Bersagliato dal Calendario & Martire Eroico"
+  }
+}

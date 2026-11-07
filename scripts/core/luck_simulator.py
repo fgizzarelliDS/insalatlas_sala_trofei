@@ -366,7 +366,7 @@ def run_monte_carlo_schedule_simulation(
         remaining_rounds = total_rounds - r_completed
         w_elo = float(active_odds_cfg.get('flat_weights', {}).get('elo', 0.65))
         w_pow = float(active_odds_cfg.get('flat_weights', {}).get('power', 0.35))
-        kappa_0 = float(active_odds_cfg.get('sensitivity_kappa', 0.35))
+        kappa_0 = float(active_odds_cfg.get('sensitivity_kappa', 0.55))
         nu0 = float(active_odds_cfg.get('base_draw_nu', 0.72))
         lam = float(active_odds_cfg.get('draw_decay_lambda', 0.03))
         min_sigma_elo = float(active_odds_cfg.get('min_sigma_elo', 35.0))
@@ -572,7 +572,7 @@ def run_monte_carlo_schedule_simulation(
 
                     ranked_indices = sorted(
                         range(n_teams),
-                        key=lambda x: (final_k_pts[x], expected_total_fp[x]),
+                        key=lambda x: (final_k_pts[x], expected_total_fp[x], rand()),
                         reverse=True
                     )
                     for pos, t_idx in enumerate(ranked_indices):

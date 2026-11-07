@@ -69,24 +69,30 @@ export function getProfileModalShellHTML(): string {
       </div>
 
       <!-- Profile Modal Tabs -->
-      <div id="profile-modal-tabs" class="flex items-center gap-1.5 sm:gap-2 border-b pb-2 mb-4 w-full min-w-0"
+      <div id="profile-modal-tabs" class="grid grid-cols-4 sm:flex items-center gap-1 sm:gap-2 border-b pb-2 mb-4 w-full"
         style="border-color: var(--table-border);">
         <button id="profile-tab-btn-palmares" type="button" onclick="switchProfileModalTab('palmares')"
-          class="min-w-0 flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 sm:gap-1.5 border border-amber-500/40 bg-amber-500/10 text-amber-400 shadow-sm">
+          class="flex-1 min-w-0 py-1.5 sm:py-2 px-1 sm:px-2 rounded-xl text-[10px] sm:text-xs font-bold transition flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 border border-amber-500/40 bg-amber-500/10 text-amber-400 shadow-sm cursor-pointer">
           <i class="fa-solid fa-trophy text-[11px] sm:text-xs shrink-0"></i>
-          <span class="truncate"><span class="hidden sm:inline">Bacheca &amp; </span>Palmarès</span>
+          <span class="leading-tight text-center tracking-tight sm:tracking-normal whitespace-nowrap"><span class="hidden sm:inline">Bacheca &amp; </span>Palmarès</span>
+        </button>
+        <button id="profile-tab-btn-tactical" type="button" onclick="switchProfileModalTab('tactical')"
+          class="flex-1 min-w-0 py-1.5 sm:py-2 px-1 sm:px-2 rounded-xl text-[10px] sm:text-xs font-bold transition flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 border border-transparent opacity-60 hover:opacity-100 cursor-pointer"
+          style="color: var(--text-main);">
+          <i class="fa-solid fa-masks-theater text-[11px] sm:text-xs shrink-0"></i>
+          <span class="leading-tight text-center tracking-tight sm:tracking-normal whitespace-nowrap">Identikit</span>
         </button>
         <button id="profile-tab-btn-career" type="button" onclick="switchProfileModalTab('career')"
-          class="min-w-0 flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 sm:gap-1.5 border border-transparent opacity-60 hover:opacity-100"
+          class="flex-1 min-w-0 py-1.5 sm:py-2 px-1 sm:px-2 rounded-xl text-[10px] sm:text-xs font-bold transition flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 border border-transparent opacity-60 hover:opacity-100 cursor-pointer"
           style="color: var(--text-main);">
           <i class="fa-solid fa-clock-rotate-left text-[11px] sm:text-xs shrink-0"></i>
-          <span class="truncate">Piazzamenti</span>
+          <span class="leading-tight text-center tracking-tight sm:tracking-normal whitespace-nowrap">Piazzamenti</span>
         </button>
         <button id="profile-tab-btn-badges" type="button" onclick="switchProfileModalTab('badges')"
-          class="min-w-0 flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 sm:gap-1.5 border border-transparent opacity-60 hover:opacity-100"
+          class="flex-1 min-w-0 py-1.5 sm:py-2 px-1 sm:px-2 rounded-xl text-[10px] sm:text-xs font-bold transition flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 border border-transparent opacity-60 hover:opacity-100 cursor-pointer"
           style="color: var(--text-main);">
           <i class="fa-solid fa-medal text-[11px] sm:text-xs shrink-0"></i>
-          <span class="truncate">Hall of Fame</span>
+          <span class="leading-tight text-center tracking-tight sm:tracking-normal whitespace-nowrap">Hall of Fame</span>
         </button>
       </div>
 
@@ -181,7 +187,10 @@ export function getProfileModalShellHTML(): string {
         </div>
       </div>
 
-      <!-- TAB 2: Cronologia & Piazzamenti -->
+      <!-- TAB 2: Identikit Tattico & Profiler Psicologico -->
+      <div id="profile-tab-tactical-content" class="hidden min-w-0 space-y-4 sm:space-y-5"></div>
+
+      <!-- TAB 3: Cronologia & Piazzamenti -->
       <div id="profile-tab-career-content" class="hidden">
         <!-- Denominazioni Storiche Squadra -->
         <div id="profile-historical-teams-card" class="p-4 rounded-2xl border mb-5 hidden"

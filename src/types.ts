@@ -122,6 +122,11 @@ export interface LeagueProfile {
     categoryIdMap: Record<string, string>;
   };
   elo?: import('./types/analytics').EloConfig;
+  tacticalProfiler?: {
+    enabled?: boolean;
+    customMottos?: Record<string, string>;
+    customTraits?: Record<string, string>;
+  };
 }
 
 export * from './types/analytics';
